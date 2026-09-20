@@ -23,11 +23,7 @@ interface GithubPullRequest {
   body?: string | null;
 }
 
-interface GithubTimelineEvent {
-  event?: string;
-  source?: { issue?: { number?: number; pull_request?: unknown } };
-  subject?: { url?: string };
-}
+type GithubTimelineEvent = Record<string, unknown>;
 
 interface GithubRepository {
   id: number;
@@ -82,7 +78,7 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
   const linkedPullRequestNumbers = [...new Set([
     ...extractClosingReferences(issue.body, rules.closingKeywords),
     ...extractClosingReferences(issue.title, rules.closingKeywords),
-    ...extractTimelinePullRequestNumbers(timeline)
+    ...extractTimelinePullRequestNumbers(timeline, pullRequestByNumber)
   ])];
   const linkedPullRequestIds = linkedPullRequestNumbers
     .map((number) => pullRequestByNumber.get(number))
@@ -104,15 +100,21 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
   };
 }
 
-function extractTimelinePullRequestNumbers(events: GithubTimelineEvent[]): number[] {
+function extractTimelinePullRequestNumbers(events: GithubTimelineEvent[], pullRequestByNumber: Map<number, GithubPullRequest>): number[] {
   return events
     .filter((event) => event.event === 'cross-referenced' || event.event === 'connected')
-    .map((event) => {
-      if (event.source?.issue?.pull_request && event.source.issue.number) return event.source.issue.number;
-      const match = event.subject?.url?.match(/\/pulls\/(\d+)$/);
-      return match?.[1] ? Number(match[1]) : undefined;
-    })
-    .filter((number): number is number => Number.isInteger(number));
+    .flatMap((event) => collectPullRequestNumbers(event, pullRequestByNumber));
+}
+
+function collectPullRequestNumbers(value: unknown, pullRequestByNumber: Map<number, GithubPullRequest>): number[] {
+  if (typeof value === 'string') {
+    return [...value.matchAll(/\/(?:pulls|pull)\/(\d+)(?:\D|$)/gi)]
+      .map((match) => Number(match[1]))
+      .filter((number) => pullRequestByNumber.has(number));
+  }
+  if (Array.isArray(value)) return value.flatMap((item) => collectPullRequestNumbers(item, pullRequestByNumber));
+  if (value && typeof value === 'object') return Object.values(value).flatMap((item) => collectPullRequestNumbers(item, pullRequestByNumber));
+  return [];
 }
 
 function toRawPullRequest(pullRequest: GithubPullRequest, repository: string, rules: GithubProcessingConfig): RawPullRequest {
@@ -136,7 +138,7 @@ function inferIssueType(labels: string[], title: string, rules: GithubProcessing
 function extractClosingReferences(value: string | null | undefined, closingKeywords: string[]): number[] {
   if (!value) return [];
   const references: number[] = [];
-  const expression = new RegExp(`(?:${closingKeywords.map((keyword) => escapeRegExp(keyword)).join('|')})\\s+#(\\d+)`, 'gi');
+  const expression = new RegExp(`(?:${closingKeywords.map((keyword) => escapeRegExp(keyword)).join('|')})\\s+(?:(?:[\\w.-]+\\/[\\w.-]+)|(?:https?:\\/\\/[^\\s]+\\/issues))?#(\\d+)`, 'gi');
   for (const match of value.matchAll(expression)) {
     const number = Number(match[1]);
     if (Number.isInteger(number)) references.push(number);

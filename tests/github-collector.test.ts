@@ -31,7 +31,7 @@ describe('collecteur GitHub', () => {
         return new Response(JSON.stringify([{ id: 900, number: 42, title: 'Fixes #12', body: 'Fixes #12', state: 'closed', merged_at: '2026-09-02T12:00:00Z' }]), { status: 200 });
       }
       if (url.includes('/issues/13/timeline?')) {
-        return new Response(JSON.stringify([{ event: 'connected', subject: { url: 'https://api.github.com/repos/acme/design-system/pulls/42' } }]), { status: 200 });
+        return new Response(JSON.stringify([{ event: 'connected', source: { issue: { number: 42, pull_request: { html_url: 'https://github.com/acme/design-system/pull/42' } } } }]), { status: 200 });
       }
       if (url.includes('/issues/') && url.includes('/timeline?')) {
         return new Response(JSON.stringify([]), { status: 200 });
