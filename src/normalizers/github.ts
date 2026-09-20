@@ -58,7 +58,7 @@ export function normalizeGithub(raw: RawDataset, rules: GithubProcessingConfig):
         anomalyId: stableId('anomaly', issue.id),
         auditId,
         componentId,
-        criticality: issue.criticities[0] as Anomaly['criticality'],
+        criticality: criticalityValue(issue.criticities[0], rules),
         categories: issue.labels.filter((label) => label.toLowerCase().startsWith(rules.labels.categoryPrefix.toLowerCase())).map((label) => label.slice(rules.labels.categoryPrefix.length)),
         status: issue.state === 'OPEN' ? 'open' : 'done',
         createdAt: issue.createdAt,
@@ -84,4 +84,10 @@ export function normalizeGithub(raw: RawDataset, rules: GithubProcessingConfig):
   }
 
   return { libraries, components: [...componentsByName.values()], audits, anomalies, pullRequests };
+}
+
+function criticalityValue(value: string | undefined, rules: GithubProcessingConfig): Anomaly['criticality'] {
+  if (!value) return undefined;
+  const normalized = value.toLowerCase();
+  return rules.labels.criticalityValues[normalized] ?? (['blocking', 'major', 'minor'].includes(normalized) ? normalized as Anomaly['criticality'] : undefined);
 }

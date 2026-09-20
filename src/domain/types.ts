@@ -137,6 +137,7 @@ export interface Analytics {
   anomaliesCorrected: KpiValue;
   openAnomalies: KpiValue;
   anomaliesByCriticality: Record<string, number | 'unknown'>;
+  anomaliesByCategory: Record<string, number | 'unknown'>;
   auditsCoverage: KpiValue;
   conformityRate: KpiValue;
   averageCorrectionDelayDays: KpiValue;

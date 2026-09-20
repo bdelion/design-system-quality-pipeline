@@ -9,6 +9,7 @@ export interface GithubProcessingConfig {
     criticalityPrefix: string;
     categoryPrefix: string;
     unknown: string;
+    criticalityValues: Record<string, 'blocking' | 'major' | 'minor'>;
   };
   issueTypes: {
     anomaly: string;

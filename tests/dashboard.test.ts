@@ -23,6 +23,8 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('design-system-docs');
   expect(html).toContain('Délai moyen de correction');
   expect(html).toContain('Temps de correction par repository');
+  expect(html).toContain('Critères d’accessibilité');
+  expect(html).toContain('focus');
   expect(html).toContain('Nombre d’anomalies conservées après les exclusions de qualité des données.');
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
   expect(html).toContain('window.__SNAPSHOT__');
@@ -31,6 +33,11 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/pull/201"');
   expect(anomaliesHtml).toContain('PR liées');
+  expect(anomaliesHtml).toContain('<th>Catégorie</th>');
+  expect(anomaliesHtml).toContain('data-criticality="major"');
+  expect(anomaliesHtml).toContain('data-categories="focus"');
+  expect(html).toContain('href="anomalies.html?criticality=major"');
+  expect(html).toContain('href="anomalies.html?category=focus"');
   expect(anomaliesHtml).toContain('Cible : anomalie');
   expect(anomaliesHtml).toContain('Ouvrir la source');
   expect(anomaliesHtml).toContain('Aucune source GitHub disponible (nexus)');
