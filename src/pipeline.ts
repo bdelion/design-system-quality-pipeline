@@ -15,7 +15,7 @@ export type CollectionSource = 'fixture' | 'github';
 export async function runPipeline(source: CollectionSource = 'fixture'): Promise<Snapshot> {
   const config = await loadConfig();
   const raw = source === 'github'
-    ? await collectGithub({ token: githubTokenFromEnvironment(), owner: config.githubOwner, repositories: config.repositories, apiUrl: config.githubApiUrl, rules: config.github })
+    ? await collectGithub({ token: githubTokenFromEnvironment(), owner: config.githubOwner, repositories: config.repositories, apiUrl: config.githubApiUrl, graphqlUrl: config.githubGraphqlUrl, rules: config.github })
     : await collectFixture();
   validateRepositories(config.repositories, raw);
   const normalized = normalizeGithub(raw, config.github);

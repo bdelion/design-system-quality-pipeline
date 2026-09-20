@@ -49,4 +49,28 @@ describe('collecteur GitHub', () => {
     expect(dataset.repositories[0]?.pullRequests[0]?.relatedIssueIds).toEqual(['acme/design-system:issue:12']);
     expect(requests.some((url) => url.includes('page=2'))).toBe(true);
   });
+
+  it('récupère une PR liée manuellement via GraphQL sans mot-clé de fermeture', async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url === 'https://api.github.com/graphql') {
+        return new Response(JSON.stringify({ data: { repository: { issue: { closedByPullRequestsReferences: { nodes: [{ id: 900, number: 42 }] } } } } }), { status: 200 });
+      }
+      if (url.endsWith('/repos/acme/design-system')) {
+        return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
+      }
+      if (url.includes('/issues?')) {
+        return new Response(JSON.stringify([{ id: 13, number: 13, title: 'Button audit', state: 'closed', labels: [{ name: 'Component:Button' }], created_at: '2026-09-02T00:00:00Z', closed_at: '2026-09-03T00:00:00Z' }]), { status: 200 });
+      }
+      if (url.includes('/pulls?')) {
+        return new Response(JSON.stringify([{ id: 900, number: 42, title: 'Button fix', body: 'Technical details only', state: 'closed', merged_at: '2026-09-02T12:00:00Z' }]), { status: 200 });
+      }
+      if (url.includes('/timeline?')) return new Response(JSON.stringify([]), { status: 200 });
+      throw new Error(`Unexpected GitHub request: ${url} ${init?.method ?? 'GET'}`);
+    }) as typeof fetch;
+
+    const config = await loadConfig();
+    const dataset = await collectGithub({ token: 'test-token', owner: 'acme', repositories: ['design-system'], apiUrl: 'https://api.github.com', graphqlUrl: 'https://api.github.com/graphql', rules: config.github });
+    expect(dataset.repositories[0]?.issues[0]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
+  });
 });

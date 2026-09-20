@@ -12,7 +12,7 @@ const program = new Command()
 program.command('collect').description('Collect read-only data from a fixture or GitHub').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
   const config = await loadConfig();
   const raw = options.source === 'github'
-    ? await collectGithub({ token: githubTokenFromEnvironment(), owner: config.githubOwner, repositories: config.repositories, apiUrl: config.githubApiUrl, rules: config.github })
+    ? await collectGithub({ token: githubTokenFromEnvironment(), owner: config.githubOwner, repositories: config.repositories, apiUrl: config.githubApiUrl, graphqlUrl: config.githubGraphqlUrl, rules: config.github })
     : await collectFixture();
   console.log(`COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt}`);
 });
