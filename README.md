@@ -122,7 +122,9 @@ Un collecteur GitHub REST est maintenant disponible. Il fonctionne en lecture se
 	npm run pipeline -- --source github
 	```
 
-Le token n'est jamais écrit dans les snapshots, les logs ou le dashboard. Pour GitHub Enterprise, définir `GITHUB_API_URL` avec l'URL de l'API REST, par exemple `https://github.example.com/api/v3`.
+Le token n'est jamais écrit dans les snapshots, les logs ou le dashboard. Définir `GITHUB_API_URL` avec l'URL de l'API REST et `GITHUB_URL` avec l'URL web correspondante dans le fichier `.env` (pour GitHub Enterprise, par exemple `https://github.example.com/api/v3` et `https://github.example.com`).
+
+Les règles de lecture GitHub sont configurées dans `config/system.yaml` : préfixes des labels, label inconnu, types d'issues, mots-clés d'inférence et mots-clés de fermeture des issues. Le code ne dépend donc pas des libellés métier propres à un dépôt.
 
 Le collecteur déduit les composants depuis les labels `Component:`, les criticités depuis `criticite:` et les types depuis les types GitHub ou les labels/titres. Les références `Fixes #123`, `Closes #123` et `Resolves #123` permettent de relier les issues aux PR.
 
