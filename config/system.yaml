@@ -9,9 +9,13 @@ repositories:
 github:
   labels:
     componentPrefix: "Component:"
-    criticalityPrefix: "criticite:"
-    categoryPrefix: "rgaa:"
+    criticalityPrefix: "rgaa:"
+    categoryPrefix: "a11y:"
     unknown: "label:unknown"
+    criticalityValues:
+      bloquante: "blocking"
+      majeure: "major"
+      mineure: "minor"
   issueTypes:
     anomaly: "BUG"
     keywords:

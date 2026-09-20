@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20260920100251668-0a669944",
-  "capturedAt": "2026-09-20T10:02:51.668Z",
+  "snapshotId": "snapshot-20260920135414375-47ad0602",
+  "capturedAt": "2026-09-20T13:54:14.375Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-09-08T09:00:00.000Z",
@@ -29,8 +29,8 @@
             "issueType": "BUG",
             "labels": [
               "Component:Button",
-              "rgaa:focus",
-              "criticite:major"
+              "a11y:focus",
+              "rgaa:majeure"
             ],
             "component": "Button",
             "criticities": [
@@ -54,8 +54,8 @@
             "issueType": "BUG",
             "labels": [
               "Component:Modal",
-              "rgaa:keyboard",
-              "criticite:blocking"
+              "a11y:keyboard",
+              "rgaa:bloquante"
             ],
             "component": "Modal",
             "criticities": [
@@ -75,7 +75,7 @@
             "issueType": "BUG",
             "labels": [
               "Component:Tooltip",
-              "rgaa:name"
+              "a11y:name"
             ],
             "component": "Tooltip",
             "criticities": [],
@@ -114,8 +114,8 @@
             "issueType": "BUG",
             "labels": [
               "Component:Select",
-              "rgaa:focus",
-              "criticite:major"
+              "a11y:focus",
+              "rgaa:majeure"
             ],
             "component": "Select",
             "criticities": [
@@ -139,8 +139,8 @@
             "issueType": "BUG",
             "labels": [
               "Component:DatePicker",
-              "rgaa:name",
-              "criticite:minor"
+              "a11y:name",
+              "rgaa:mineure"
             ],
             "component": "DatePicker",
             "criticities": [
@@ -198,8 +198,8 @@
             "issueType": "BUG",
             "labels": [
               "Component:Alert",
-              "rgaa:contrast",
-              "criticite:blocking"
+              "a11y:contrast",
+              "rgaa:bloquante"
             ],
             "component": "Alert",
             "criticities": [
@@ -223,7 +223,7 @@
             "issueType": "BUG",
             "labels": [
               "Component:Card",
-              "rgaa:structure",
+              "a11y:structure",
               "label:unknown"
             ],
             "component": "Card",
@@ -851,6 +851,13 @@
       "blocking": 2,
       "major": 2,
       "minor": 2
+    },
+    "anomaliesByCategory": {
+      "focus": 2,
+      "keyboard": 1,
+      "name": 1,
+      "contrast": 1,
+      "structure": 1
     },
     "auditsCoverage": {
       "value": 1,

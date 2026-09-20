@@ -19,6 +19,8 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     expect(normalized.anomalies.every((anomaly) => anomaly.provenance.source === 'github')).toBe(true);
     expect(normalized.audits.some((audit) => audit.objectiveAuditResult === 'conform')).toBe(true);
     expect(normalized.components.some((component) => component.name === 'Toast')).toBe(true);
+    expect(normalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.criticality).toBe('major');
+    expect(normalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.categories).toEqual(['focus']);
   });
 
   it('keeps invalid source data and excludes only the affected KPI object', () => {
