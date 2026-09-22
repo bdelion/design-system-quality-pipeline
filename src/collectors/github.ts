@@ -23,11 +23,12 @@ interface GithubPullRequest {
   body?: string | null;
 }
 
-interface GithubTimelineEvent {
-  event?: string;
-  source?: { issue?: { number?: number; pull_request?: unknown } };
-  subject?: { url?: string };
+interface GithubGraphqlPullRequest {
+  id: number;
+  number: number;
 }
+
+type GithubTimelineEvent = Record<string, unknown>;
 
 interface GithubRepository {
   id: number;
@@ -42,6 +43,7 @@ interface GithubCollectorOptions {
   owner: string;
   repositories: string[];
   apiUrl?: string | undefined;
+  graphqlUrl?: string | undefined;
   maxRetries?: number | undefined;
   rules: GithubProcessingConfig;
 }
@@ -63,7 +65,8 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
   const pullRequestByNumber = new Map(pullRequests.map((pullRequest) => [pullRequest.number, pullRequest]));
   const rawIssues = await Promise.all(issues.filter((issue) => !issue.pull_request).map(async (issue) => {
     const timeline = await githubGetAll<GithubTimelineEvent>(apiUrl, `/repos/${repository.full_name}/issues/${issue.number}/timeline?per_page=100`, options);
-    return toRawIssue(issue, repository.full_name, pullRequestByNumber, options.rules, timeline);
+    const graphqlPullRequests = options.graphqlUrl ? await linkedPullRequestsFromGraphql(options.graphqlUrl, options, repository.owner.login, repository.name, issue.number) : [];
+    return toRawIssue(issue, repository.full_name, pullRequestByNumber, options.rules, timeline, graphqlPullRequests);
   }));
   return {
     id: String(repository.id),
@@ -75,14 +78,15 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
   };
 }
 
-function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber: Map<number, GithubPullRequest>, rules: GithubProcessingConfig, timeline: GithubTimelineEvent[]): RawIssue {
+function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber: Map<number, GithubPullRequest>, rules: GithubProcessingConfig, timeline: GithubTimelineEvent[], graphqlPullRequests: GithubGraphqlPullRequest[]): RawIssue {
   const labels = issue.labels.map((label) => label.name).filter((label): label is string => Boolean(label));
   const componentLabel = labels.find((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()));
   const issueType = issue.type?.name?.toUpperCase() ?? inferIssueType(labels, issue.title, rules);
   const linkedPullRequestNumbers = [...new Set([
     ...extractClosingReferences(issue.body, rules.closingKeywords),
     ...extractClosingReferences(issue.title, rules.closingKeywords),
-    ...extractTimelinePullRequestNumbers(timeline)
+    ...extractTimelinePullRequestNumbers(timeline, pullRequestByNumber),
+    ...graphqlPullRequests.map((pullRequest) => pullRequest.number)
   ])];
   const linkedPullRequestIds = linkedPullRequestNumbers
     .map((number) => pullRequestByNumber.get(number))
@@ -104,15 +108,40 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
   };
 }
 
-function extractTimelinePullRequestNumbers(events: GithubTimelineEvent[]): number[] {
+async function linkedPullRequestsFromGraphql(graphqlUrl: string, options: GithubCollectorOptions, owner: string, repository: string, issueNumber: number): Promise<GithubGraphqlPullRequest[]> {
+  const response = await fetch(graphqlUrl, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${options.token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: `query($owner: String!, $repository: String!, $issueNumber: Int!) { repository(owner: $owner, name: $repository) { issue(number: $issueNumber) { closedByPullRequestsReferences(first: 100) { nodes { id number } } } } }`,
+      variables: { owner, repository, issueNumber }
+    })
+  });
+  if (!response.ok) throw new Error(`GitHub GraphQL request failed (${response.status}).`);
+  const payload = await response.json() as { data?: { repository?: { issue?: { closedByPullRequestsReferences?: { nodes?: Array<GithubGraphqlPullRequest | null> } } | null } | null }; errors?: Array<{ message?: string }> };
+  if (payload.errors?.length) throw new Error(`GitHub GraphQL query failed: ${payload.errors.map((error) => error.message ?? 'unknown error').join('; ')}`);
+  return payload.data?.repository?.issue?.closedByPullRequestsReferences?.nodes?.filter((pullRequest): pullRequest is GithubGraphqlPullRequest => Boolean(pullRequest)) ?? [];
+}
+
+function extractTimelinePullRequestNumbers(events: GithubTimelineEvent[], pullRequestByNumber: Map<number, GithubPullRequest>): number[] {
   return events
     .filter((event) => event.event === 'cross-referenced' || event.event === 'connected')
-    .map((event) => {
-      if (event.source?.issue?.pull_request && event.source.issue.number) return event.source.issue.number;
-      const match = event.subject?.url?.match(/\/pulls\/(\d+)$/);
-      return match?.[1] ? Number(match[1]) : undefined;
-    })
-    .filter((number): number is number => Number.isInteger(number));
+    .flatMap((event) => collectPullRequestNumbers(event, pullRequestByNumber));
+}
+
+function collectPullRequestNumbers(value: unknown, pullRequestByNumber: Map<number, GithubPullRequest>): number[] {
+  if (typeof value === 'string') {
+    return [...value.matchAll(/\/(?:pulls|pull)\/(\d+)(?:\D|$)/gi)]
+      .map((match) => Number(match[1]))
+      .filter((number) => pullRequestByNumber.has(number));
+  }
+  if (Array.isArray(value)) return value.flatMap((item) => collectPullRequestNumbers(item, pullRequestByNumber));
+  if (value && typeof value === 'object') return Object.values(value).flatMap((item) => collectPullRequestNumbers(item, pullRequestByNumber));
+  return [];
 }
 
 function toRawPullRequest(pullRequest: GithubPullRequest, repository: string, rules: GithubProcessingConfig): RawPullRequest {
@@ -136,7 +165,7 @@ function inferIssueType(labels: string[], title: string, rules: GithubProcessing
 function extractClosingReferences(value: string | null | undefined, closingKeywords: string[]): number[] {
   if (!value) return [];
   const references: number[] = [];
-  const expression = new RegExp(`(?:${closingKeywords.map((keyword) => escapeRegExp(keyword)).join('|')})\\s+#(\\d+)`, 'gi');
+  const expression = new RegExp(`(?:${closingKeywords.map((keyword) => escapeRegExp(keyword)).join('|')})\\s+(?:(?:[\\w.-]+\\/[\\w.-]+)|(?:https?:\\/\\/[^\\s]+\\/issues))?#(\\d+)`, 'gi');
   for (const match of value.matchAll(expression)) {
     const number = Number(match[1]);
     if (Number.isInteger(number)) references.push(number);

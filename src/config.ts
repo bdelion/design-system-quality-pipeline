@@ -25,16 +25,18 @@ export interface PipelineConfig {
   githubOwner: string;
   repositories: string[];
   githubApiUrl: string | undefined;
+  githubGraphqlUrl: string | undefined;
   githubUrl: string | undefined;
   github: GithubProcessingConfig;
 }
 
 export async function loadConfig(): Promise<PipelineConfig> {
   const content = await readFile(`${configPath}/system.yaml`, 'utf8');
-  const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
+  const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubGraphqlUrl' | 'githubUrl'>;
   return {
     ...systemConfig,
     githubApiUrl: process.env.GITHUB_API_URL,
+    githubGraphqlUrl: process.env.GITHUB_GRAPHQL_URL,
     githubUrl: process.env.GITHUB_URL
   };
 }
