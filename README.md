@@ -126,6 +126,16 @@ Le token n'est jamais écrit dans les snapshots, les logs ou le dashboard. Défi
 
 Les règles de lecture GitHub sont configurées dans `config/system.yaml` : préfixes des labels, label inconnu, types d'issues, mots-clés d'inférence et mots-clés de fermeture des issues. Le code ne dépend donc pas des libellés métier propres à un dépôt.
 
+Les statuts GitHub Projects sont conservés pour toutes les issues. Une issue est considérée comme `Cancelled` dès qu'un Project porte une valeur déclarée dans `github.cancelledProjectStatuses`. Elle reste traçable mais est exclue des KPI ; les relations interdites sont signalées par `DQ-008` et `DQ-010`.
+
+## Documentation des Quality Rules
+
+L'index de la documentation technique est disponible dans [docs/index.md](docs/index.md). Il couvre l'architecture, le workflow, les flux de données, les calculs KPI, les snapshots, le dashboard et les tests.
+
+Le détail de chaque contrôle de qualité est disponible dans [docs/quality-rules.md](docs/quality-rules.md). Cette documentation explique le déclencheur, la sévérité, l'action sur les KPI et la correction attendue pour chaque règle `DQ-*`.
+
+La liste de composants de référence et ses métadonnées sont définies dans [config/catalogue.yaml](config/catalogue.yaml). Le catalogue est validé au chargement du pipeline.
+
 Lorsque `GITHUB_GRAPHQL_URL` est défini, le pipeline consulte aussi `closedByPullRequestsReferences` pour récupérer les pull requests liées à une issue via l'interface GitHub **Development**, même lorsqu'aucun mot-clé `Closes`, `Fixes` ou `Resolves` n'est présent.
 
 Le collecteur déduit les composants depuis les labels `Component:`, les criticités depuis `criticite:` et les types depuis les types GitHub ou les labels/titres. Les références `Fixes #123`, `Closes #123` et `Resolves #123` permettent de relier les issues aux PR.

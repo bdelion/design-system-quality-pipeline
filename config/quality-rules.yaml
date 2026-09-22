@@ -27,6 +27,14 @@ rules:
     severity: WARNING
     action: include
     message: "Issue contains an unknown label."
+  - id: DQ-008
+    severity: ERROR
+    action: exclude
+    message: "Cancelled issue is referenced by a pull request."
+  - id: DQ-010
+    severity: ERROR
+    action: exclude
+    message: "Cancelled issue is attached to a milestone."
   - id: DQ-009
     severity: WARNING
     action: include

@@ -4,12 +4,14 @@ import { loadConfig } from '../src/config.js';
 
 const originalFetch = globalThis.fetch;
 
+// Chaque test remplace fetch et doit restaurer l'environnement global à sa sortie.
 afterEach(() => {
   globalThis.fetch = originalFetch;
   vi.restoreAllMocks();
 });
 
 describe('collecteur GitHub', () => {
+  // Vérifie pagination, séparation issue/PR et liens détectés par les mots-clés.
   it('pagine les issues, sépare les PR et conserve les relations', async () => {
     const requests: string[] = [];
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
@@ -29,6 +31,9 @@ describe('collecteur GitHub', () => {
       }
       if (url.includes('/pulls?')) {
         return new Response(JSON.stringify([{ id: 900, number: 42, title: 'Fixes #12', body: 'Fixes #12', state: 'closed', merged_at: '2026-09-02T12:00:00Z' }]), { status: 200 });
+      }
+      if (url.includes('/projects?')) {
+        return new Response(JSON.stringify([]), { status: 200 });
       }
       if (url.includes('/issues/13/timeline?')) {
         return new Response(JSON.stringify([{ event: 'connected', source: { issue: { number: 42, pull_request: { html_url: 'https://github.com/acme/design-system/pull/42' } } } }]), { status: 200 });
@@ -50,11 +55,12 @@ describe('collecteur GitHub', () => {
     expect(requests.some((url) => url.includes('page=2'))).toBe(true);
   });
 
+  // Vérifie le chemin GraphQL utilisé par la relation Development de GitHub.
   it('récupère une PR liée manuellement via GraphQL sans mot-clé de fermeture', async () => {
     globalThis.fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       if (url === 'https://api.github.com/graphql') {
-        return new Response(JSON.stringify({ data: { repository: { issue: { closedByPullRequestsReferences: { nodes: [{ id: 900, number: 42 }] } } } } }), { status: 200 });
+        return new Response(JSON.stringify({ data: { repository: { issue: { closedByPullRequestsReferences: { nodes: [{ id: 900, number: 42 }] }, projectItems: { nodes: [{ project: { id: 'project-1', title: 'Quality' }, fieldValues: { nodes: [{ name: 'Cancelled', field: { name: 'Status' } }] } }] } } } } }), { status: 200 });
       }
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
@@ -65,6 +71,9 @@ describe('collecteur GitHub', () => {
       if (url.includes('/pulls?')) {
         return new Response(JSON.stringify([{ id: 900, number: 42, title: 'Button fix', body: 'Technical details only', state: 'closed', merged_at: '2026-09-02T12:00:00Z' }]), { status: 200 });
       }
+      if (url.includes('/projects?')) {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
       if (url.includes('/timeline?')) return new Response(JSON.stringify([]), { status: 200 });
       throw new Error(`Unexpected GitHub request: ${url} ${init?.method ?? 'GET'}`);
     }) as typeof fetch;
@@ -72,5 +81,6 @@ describe('collecteur GitHub', () => {
     const config = await loadConfig();
     const dataset = await collectGithub({ token: 'test-token', owner: 'acme', repositories: ['design-system'], apiUrl: 'https://api.github.com', graphqlUrl: 'https://api.github.com/graphql', rules: config.github });
     expect(dataset.repositories[0]?.issues[0]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
+    expect(dataset.repositories[0]?.issues[0]?.projectStatuses).toEqual([{ projectId: 'project-1', projectName: 'Quality', status: 'Cancelled' }]);
   });
 });

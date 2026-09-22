@@ -9,6 +9,7 @@ import { buildSnapshot } from '../src/snapshots/snapshot.js';
 import { generateDashboard } from '../src/dashboard/generate.js';
 import { loadConfig } from '../src/config.js';
 
+// Vérifie le contrat HTML public du dashboard sans dépendre d'un navigateur.
 it('generates static dashboard pages from the snapshot contract', async () => {
   const raw = await collectFixture();
   const config = await loadConfig();
@@ -43,5 +44,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(anomaliesHtml).toContain('Aucune source GitHub disponible (nexus)');
   expect(anomaliesHtml).toContain('L’anomalie n’a pas de criticité.');
   expect(anomaliesHtml).not.toContain('<p>Anomaly has no criticality.</p>');
+  expect(anomaliesHtml).toContain('Copier le YAML');
+  expect(anomaliesHtml).toContain('data-copy-yaml=');
   await rm(output, { recursive: true, force: true });
 });

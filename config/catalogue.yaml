@@ -1,0 +1,106 @@
+version: "1.0"
+
+components:
+  - name: Button
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: stable
+    rgaaLevel: AA
+
+    figmaUrl: https://figma.example.com/button
+    documentationUrl: https://plume.example.com/button
+
+    tags:
+      - form
+      - action
+
+    audit:
+      frequency: quarterly
+      lastAuditDate: 2026-08-12
+
+  - name: Modal
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: stable
+    rgaaLevel: AA
+
+    figmaUrl: https://figma.example.com/modal
+    documentationUrl: https://plume.example.com/modal
+
+    tags:
+      - overlay
+      - dialog
+
+    audit:
+      frequency: quarterly
+      lastAuditDate: 2026-08-01
+
+  - name: DatePicker
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: stable
+    rgaaLevel: AA
+
+    figmaUrl: https://figma.example.com/datepicker
+    documentationUrl: https://plume.example.com/datepicker
+
+    tags:
+      - form
+      - date
+
+    audit:
+      frequency: monthly
+      lastAuditDate: 2026-07-15
+
+  - name: Alert
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: stable
+    rgaaLevel: AA
+
+    tags:
+      - feedback
+
+    audit:
+      frequency: quarterly
+
+  - name: Card
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: stable
+    rgaaLevel: AA
+
+    tags:
+      - layout
+
+  - name: Toast
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: experimental
+    rgaaLevel: AA
+
+    tags:
+      - feedback
+
+  - name: Tabs
+    stream: React
+    owner: Communs du Dev
+    squad: Plume
+
+    status: stable
+    rgaaLevel: AA
+
+    tags:
+      - navigation

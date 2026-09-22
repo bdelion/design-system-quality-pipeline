@@ -1,24 +1,29 @@
 import type { Analytics, DataQualityIssue, KpiValue, NormalizedData } from '../domain/types.js';
 
+/** Construit un KPI numérique en conservant ses entités sources. */
 function kpi(value: number, denominator: number, definition: string, sourceEntityIds: string[], reliability: KpiValue['reliability'] = 'reliable'): KpiValue {
   return { value, numerator: value, denominator, definition, sourceEntityIds, reliability };
 }
 
+/** Construit un KPI explicitement inconnu lorsqu'aucun calcul fiable n'est possible. */
 function unknownKpi(definition: string): KpiValue {
   return { value: 'unknown', numerator: 'unknown', denominator: 'unknown', definition, sourceEntityIds: [], reliability: 'unknown' };
 }
 
+/** Calcule un délai calendaire entre deux dates ISO. */
 function correctionDelayDays(createdAt: string, firstDoneAt: string): number {
   return (Date.parse(firstDoneAt) - Date.parse(createdAt)) / 86_400_000;
 }
 
+/** Calcule tous les KPI en excluant uniquement les anomalies invalides. */
 export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]): Analytics {
   const excludedAnomalies = new Set(dqIssues.filter((issue) => issue.entityType === 'anomaly' && issue.action === 'exclude').map((issue) => issue.entityId));
-  const countedAnomalies = data.anomalies.filter((anomaly) => !excludedAnomalies.has(anomaly.anomalyId));
+  const countedAnomalies = data.anomalies.filter((anomaly) => !anomaly.cancelled && !excludedAnomalies.has(anomaly.anomalyId));
   const completedAudits = data.audits.filter((audit) => audit.status !== 'in_progress' && audit.status !== 'not_evaluated');
   const unreliable = dqIssues.some((issue) => issue.severity === 'ERROR') ? 'partial' : dqIssues.length > 0 ? 'partial' : 'reliable';
   const correctedAnomalies = countedAnomalies.filter((anomaly): anomaly is typeof anomaly & { firstDoneAt: string } => Boolean(anomaly.firstDoneAt));
   const correctionDelays = correctedAnomalies.map((anomaly) => correctionDelayDays(anomaly.createdAt, anomaly.firstDoneAt));
+  // Le tri sur une copie permet de conserver l'ordre du snapshot original.
   const sortedDelays = [...correctionDelays].sort((left, right) => left - right);
   const medianDelay = sortedDelays.length === 0 ? undefined : sortedDelays.length % 2 === 1 ? sortedDelays[Math.floor(sortedDelays.length / 2)] : ((sortedDelays[sortedDelays.length / 2 - 1] ?? 0) + (sortedDelays[sortedDelays.length / 2] ?? 0)) / 2;
   return {

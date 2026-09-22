@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20260920135414375-47ad0602",
-  "capturedAt": "2026-09-20T13:54:14.375Z",
+  "snapshotId": "snapshot-20260922205210242-403296b5",
+  "capturedAt": "2026-09-22T20:52:10.242Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-09-08T09:00:00.000Z",
@@ -8,11 +8,11 @@
     "catalogueComponents": [
       "Button",
       "Modal",
-      "Select",
       "DatePicker",
       "Alert",
       "Card",
-      "Toast"
+      "Toast",
+      "Tabs"
     ],
     "repositories": [
       {
@@ -301,6 +301,20 @@
         "status": "active",
         "aliases": [],
         "discoverySource": "catalogue",
+        "tags": [
+          "form",
+          "action"
+        ],
+        "stream": "React",
+        "owner": "Communs du Dev",
+        "squad": "Plume",
+        "rgaaLevel": "AA",
+        "figmaUrl": "https://figma.example.com/button",
+        "documentationUrl": "https://plume.example.com/button",
+        "audit": {
+          "frequency": "quarterly",
+          "lastAuditDate": "2026-08-12"
+        },
         "provenance": {
           "source": "catalogue",
           "sourceId": "issue-101",
@@ -315,6 +329,20 @@
         "status": "active",
         "aliases": [],
         "discoverySource": "catalogue",
+        "tags": [
+          "overlay",
+          "dialog"
+        ],
+        "stream": "React",
+        "owner": "Communs du Dev",
+        "squad": "Plume",
+        "rgaaLevel": "AA",
+        "figmaUrl": "https://figma.example.com/modal",
+        "documentationUrl": "https://plume.example.com/modal",
+        "audit": {
+          "frequency": "quarterly",
+          "lastAuditDate": "2026-08-01"
+        },
         "provenance": {
           "source": "catalogue",
           "sourceId": "issue-102",
@@ -329,6 +357,7 @@
         "status": "active",
         "aliases": [],
         "discoverySource": "suggested",
+        "tags": [],
         "provenance": {
           "source": "github",
           "sourceId": "issue-103",
@@ -342,13 +371,14 @@
         "libraryId": "lib-6b2c5efbc625",
         "status": "active",
         "aliases": [],
-        "discoverySource": "catalogue",
+        "discoverySource": "suggested",
+        "tags": [],
         "provenance": {
-          "source": "catalogue",
+          "source": "github",
           "sourceId": "issue-201",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "partial"
       },
       {
         "componentId": "component-0de9fd0f1d03",
@@ -357,6 +387,20 @@
         "status": "active",
         "aliases": [],
         "discoverySource": "catalogue",
+        "tags": [
+          "form",
+          "date"
+        ],
+        "stream": "React",
+        "owner": "Communs du Dev",
+        "squad": "Plume",
+        "rgaaLevel": "AA",
+        "figmaUrl": "https://figma.example.com/datepicker",
+        "documentationUrl": "https://plume.example.com/datepicker",
+        "audit": {
+          "frequency": "monthly",
+          "lastAuditDate": "2026-07-15"
+        },
         "provenance": {
           "source": "catalogue",
           "sourceId": "issue-202",
@@ -368,9 +412,16 @@
         "componentId": "component-5ca56c189415",
         "name": "Toast",
         "libraryId": "lib-6b2c5efbc625",
-        "status": "active",
+        "status": "experimental",
         "aliases": [],
         "discoverySource": "catalogue",
+        "tags": [
+          "feedback"
+        ],
+        "stream": "React",
+        "owner": "Communs du Dev",
+        "squad": "Plume",
+        "rgaaLevel": "AA",
         "provenance": {
           "source": "catalogue",
           "sourceId": "issue-204",
@@ -385,6 +436,16 @@
         "status": "active",
         "aliases": [],
         "discoverySource": "catalogue",
+        "tags": [
+          "feedback"
+        ],
+        "stream": "React",
+        "owner": "Communs du Dev",
+        "squad": "Plume",
+        "rgaaLevel": "AA",
+        "audit": {
+          "frequency": "quarterly"
+        },
         "provenance": {
           "source": "catalogue",
           "sourceId": "issue-301",
@@ -399,6 +460,13 @@
         "status": "active",
         "aliases": [],
         "discoverySource": "catalogue",
+        "tags": [
+          "layout"
+        ],
+        "stream": "React",
+        "owner": "Communs du Dev",
+        "squad": "Plume",
+        "rgaaLevel": "AA",
         "provenance": {
           "source": "catalogue",
           "sourceId": "issue-302",
@@ -553,7 +621,9 @@
           "sourceId": "issue-101",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       },
       {
         "anomalyId": "anomaly-36af22bb43d9",
@@ -575,7 +645,9 @@
           "sourceId": "issue-102",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       },
       {
         "anomalyId": "anomaly-3b49cceb9117",
@@ -597,7 +669,9 @@
           "sourceId": "issue-103",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       },
       {
         "anomalyId": "anomaly-79ea06e1c5e4",
@@ -622,7 +696,9 @@
           "sourceId": "issue-201",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       },
       {
         "anomalyId": "anomaly-a0be3ebb1287",
@@ -644,7 +720,9 @@
           "sourceId": "issue-202",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       },
       {
         "anomalyId": "anomaly-f98e8ca4cfb6",
@@ -669,7 +747,9 @@
           "sourceId": "issue-301",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       },
       {
         "anomalyId": "anomaly-52867d3fbb31",
@@ -691,7 +771,9 @@
           "sourceId": "issue-302",
           "collectedAt": "2026-09-08T09:00:00.000Z"
         },
-        "dataQualityStatus": "reliable"
+        "dataQualityStatus": "reliable",
+        "cancelled": false,
+        "cancelledProjectStatuses": []
       }
     ],
     "pullRequests": [
@@ -785,6 +867,16 @@
         "detectedAt": "2026-09-08T09:00:00.000Z"
       },
       {
+        "id": "DQ-006:component-5a04995ea6fc",
+        "ruleId": "DQ-006",
+        "severity": "WARNING",
+        "action": "include",
+        "entityType": "component",
+        "entityId": "component-5a04995ea6fc",
+        "message": "Source component is absent from the catalogue.",
+        "detectedAt": "2026-09-08T09:00:00.000Z"
+      },
+      {
         "id": "DQ-009:nexus",
         "ruleId": "DQ-009",
         "severity": "WARNING",
@@ -797,7 +889,7 @@
     ],
     "summary": {
       "INFO": 0,
-      "WARNING": 4,
+      "WARNING": 5,
       "ERROR": 1
     }
   },
