@@ -29,6 +29,9 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('Nombre d’anomalies conservées après les exclusions de qualité des données.');
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
   expect(html).toContain('window.__SNAPSHOT__');
+  expect(html).toContain('class="sidebar"');
+  expect(html).toContain('ArchInsight');
+  expect(html).toContain('assets/logo.svg');
   const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
@@ -46,5 +49,17 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(anomaliesHtml).not.toContain('<p>Anomaly has no criticality.</p>');
   expect(anomaliesHtml).toContain('Copier le YAML');
   expect(anomaliesHtml).toContain('data-copy-yaml=');
+  expect(anomaliesHtml).toContain('data-filter-repository');
+  expect(anomaliesHtml).toContain('data-filter-criticality');
+  expect(anomaliesHtml).toContain('data-reset-filters');
+  const graphHtml = await readFile(resolve(output, 'dashboard/graph.html'), 'utf8');
+  expect(graphHtml).toContain('Cartographie des dépendances qualité');
+  expect(graphHtml).toContain('assets/graph.js');
+  expect(graphHtml).toContain('graph-node issue');
+  expect(graphHtml).toContain('data-graph-filter');
+  const graphScript = await readFile(resolve(output, 'dashboard/assets/graph.js'), 'utf8');
+  expect(graphScript).toContain('data-graph-node');
+  const logo = await readFile(resolve(output, 'dashboard/assets/logo.svg'), 'utf8');
+  expect(logo).toContain('<svg');
   await rm(output, { recursive: true, force: true });
 });
