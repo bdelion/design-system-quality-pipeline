@@ -1,3 +1,4 @@
+import pLimit from 'p-limit';
 import type { RawDataset, RawIssue, RawPullRequest, RawRepository } from '../domain/types.js';
 import type { GithubProcessingConfig } from '../config.js';
 
@@ -13,6 +14,11 @@ interface GithubIssue {
   pull_request?: { url?: string };
   milestone?: { id: number; number: number; title: string } | null;
   type?: { name?: string } | null;
+}
+
+interface GithubGraphqlIssueData {
+  pullRequests: GithubGraphqlPullRequest[];
+  projectStatuses: GithubProjectStatus[];
 }
 
 interface GithubPullRequest {
@@ -78,13 +84,59 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
   const rawPullRequests = pullRequests.map((pullRequest) => toRawPullRequest(pullRequest, repository.full_name, options.rules));
   const pullRequestByNumber = new Map(pullRequests.map((pullRequest) => [pullRequest.number, pullRequest]));
   // Les pull requests apparaissent aussi dans l'endpoint des issues : elles sont écartées ici.
-  const rawIssues = await Promise.all(issues.filter((issue) => !issue.pull_request).map(async (issue) => {
-    const timeline = await githubGetAll<GithubTimelineEvent>(apiUrl, `/repos/${repository.full_name}/issues/${issue.number}/timeline?per_page=100`, options);
-    const graphqlPullRequests = options.graphqlUrl ? await linkedPullRequestsFromGraphql(options.graphqlUrl, options, repository.owner.login, repository.name, issue.number) : [];
-    const graphqlProjectStatuses = options.graphqlUrl ? await projectStatusesFromGraphql(options.graphqlUrl, options, repository.owner.login, repository.name, issue.number) : [];
-    const restProjectStatuses = await projectStatusesFromRest(apiUrl, repository.full_name, issue.number, options);
-    return toRawIssue(issue, repository.full_name, pullRequestByNumber, options.rules, timeline, graphqlPullRequests, [...restProjectStatuses, ...graphqlProjectStatuses]);
-  }));
+  const limit = pLimit(5);
+
+  const rawIssues = await Promise.all(
+    issues
+      .filter((issue) => !issue.pull_request)
+      .map(issue =>
+        limit(async () => {
+
+          const timeline =
+            await githubGetAll<GithubTimelineEvent>(
+              apiUrl,
+              `/repos/${repository.full_name}/issues/${issue.number}/timeline?per_page=100`,
+              options
+            );
+
+          const graphqlData =
+            options.graphqlUrl
+              ? await issueDataFromGraphql(
+                options.graphqlUrl,
+                options,
+                repository.owner.login,
+                repository.name,
+                issue.number
+              )
+              : {
+                pullRequests: [],
+                projectStatuses: []
+              };
+
+          const restProjectStatuses =
+            await projectStatusesFromRest(
+              apiUrl,
+              repository.full_name,
+              issue.number,
+              options
+            );
+
+          return toRawIssue(
+            issue,
+            repository.full_name,
+            pullRequestByNumber,
+            options.rules,
+            timeline,
+            graphqlData.pullRequests,
+            [
+              ...restProjectStatuses,
+              ...graphqlData.projectStatuses
+            ]
+          );
+        })
+      )
+  );
+  ;
   return {
     id: String(repository.id),
     name: repository.name,
@@ -128,29 +180,15 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
   };
 }
 
-/** Recherche les PR liées via Development lorsque les mots-clés sont absents. */
-async function linkedPullRequestsFromGraphql(graphqlUrl: string, options: GithubCollectorOptions, owner: string, repository: string, issueNumber: number): Promise<GithubGraphqlPullRequest[]> {
-  const response = await fetch(graphqlUrl, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${options.token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      // La relation Development de GitHub reste disponible via GraphQL sans mot-clé de clôture.
-      query: `query($owner: String!, $repository: String!, $issueNumber: Int!) { repository(owner: $owner, name: $repository) { issue(number: $issueNumber) { closedByPullRequestsReferences(first: 100) { nodes { id number } } } } }`,
-      variables: { owner, repository, issueNumber }
-    })
-  });
-  if (!response.ok) throw new Error(`GitHub GraphQL request failed (${response.status}).`);
-  const payload = await response.json() as { data?: { repository?: { issue?: { closedByPullRequestsReferences?: { nodes?: Array<GithubGraphqlPullRequest | null> } } | null } | null }; errors?: Array<{ message?: string }> };
-  if (payload.errors?.length) throw new Error(`GitHub GraphQL query failed: ${payload.errors.map((error) => error.message ?? 'unknown error').join('; ')}`);
-  return payload.data?.repository?.issue?.closedByPullRequestsReferences?.nodes?.filter((pullRequest): pullRequest is GithubGraphqlPullRequest => Boolean(pullRequest)) ?? [];
-}
+/** Récupère en une seule requête GraphQL les PR liées et les statuts Projects v2. */
+async function issueDataFromGraphql(
+  graphqlUrl: string,
+  options: GithubCollectorOptions,
+  owner: string,
+  repository: string,
+  issueNumber: number
+): Promise<GithubGraphqlIssueData> {
 
-/** Récupère les statuts des Projects v2 associés à une issue via GraphQL. */
-async function projectStatusesFromGraphql(graphqlUrl: string, options: GithubCollectorOptions, owner: string, repository: string, issueNumber: number): Promise<GithubProjectStatus[]> {
   const response = await fetch(graphqlUrl, {
     method: 'POST',
     headers: {
@@ -159,22 +197,174 @@ async function projectStatusesFromGraphql(graphqlUrl: string, options: GithubCol
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      query: `query($owner: String!, $repository: String!, $issueNumber: Int!) { repository(owner: $owner, name: $repository) { issue(number: $issueNumber) { projectItems(first: 100) { nodes { project { id title } fieldValues(first: 50) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name field { ... on ProjectV2SingleSelectField { name } } } } } } } } } }`,
-      variables: { owner, repository, issueNumber }
+      query: `
+        query(
+          $owner: String!,
+          $repository: String!,
+          $issueNumber: Int!
+        ) {
+          rateLimit {
+            cost
+            remaining
+            resetAt
+          }
+
+          repository(
+            owner: $owner,
+            name: $repository
+          ) {
+            issue(number: $issueNumber) {
+
+              closedByPullRequestsReferences(first: 100) {
+                nodes {
+                  id
+                  number
+                }
+              }
+
+              projectItems(first: 100) {
+                nodes {
+                  project {
+                    id
+                    title
+                  }
+
+                  fieldValues(first: 50) {
+                    nodes {
+                      ... on ProjectV2ItemFieldSingleSelectValue {
+                        name
+
+                        field {
+                          ... on ProjectV2SingleSelectField {
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `,
+      variables: {
+        owner,
+        repository,
+        issueNumber
+      }
     })
   });
-  if (!response.ok) throw new Error(`GitHub GraphQL request failed (${response.status}).`);
+
+  if (!response.ok) {
+    throw new Error(
+      `GitHub GraphQL request failed (${response.status}).`
+    );
+  }
+
   const payload = await response.json() as {
-    data?: { repository?: { issue?: { projectItems?: { nodes?: Array<{ project?: { id?: string; title?: string }; fieldValues?: { nodes?: Array<{ name?: string; field?: { name?: string } }> } } | null> } } | null } | null };
-    errors?: Array<{ message?: string }>;
+    data?: {
+      rateLimit?: {
+        cost: number;
+        remaining: number;
+        resetAt: string;
+      };
+      repository?: {
+        issue?: {
+          closedByPullRequestsReferences?: {
+            nodes?: Array<GithubGraphqlPullRequest | null>;
+          };
+          projectItems?: {
+            nodes?: Array<{
+              project?: {
+                id?: string;
+                title?: string;
+              };
+              fieldValues?: {
+                nodes?: Array<{
+                  name?: string;
+                  field?: {
+                    name?: string;
+                  };
+                }>;
+              };
+            } | null>;
+          };
+        } | null;
+      } | null;
+    };
+
+    errors?: Array<{
+      message?: string;
+    }>;
   };
-  if (payload.errors?.length) throw new Error(`GitHub GraphQL query failed: ${payload.errors.map((error) => error.message ?? 'unknown error').join('; ')}`);
-  return payload.data?.repository?.issue?.projectItems?.nodes
-    ?.flatMap((item) => {
+
+  const rateLimitExceeded = payload.errors?.some(
+    error =>
+      error.message?.toLowerCase().includes('rate limit')
+  );
+
+  if (rateLimitExceeded) {
+    console.warn(`GraphQL rate limit exceeded for issue #${issueNumber}`);
+
+    return {
+      pullRequests: [],
+      projectStatuses: []
+    };
+  }
+
+  if (payload.errors?.length) {
+    throw new Error(
+      `GitHub GraphQL query failed: ${payload.errors
+        .map(error => error.message ?? 'unknown error')
+        .join('; ')
+      }`
+    );
+  }
+
+  const issue = payload.data?.repository?.issue;
+
+  const pullRequests =
+    issue?.closedByPullRequestsReferences?.nodes
+      ?.filter(
+        (pr): pr is GithubGraphqlPullRequest =>
+          Boolean(pr)
+      ) ?? [];
+
+  const projectStatuses =
+    issue?.projectItems?.nodes?.flatMap(item => {
+
       const project = item?.project;
-      const status = item?.fieldValues?.nodes?.find((field) => field.field?.name?.toLowerCase() === 'status' && field.name);
-      return project?.id && project.title && status?.name ? [{ projectId: project.id, projectName: project.title, status: status.name }] : [];
+
+      const status =
+        item?.fieldValues?.nodes?.find(
+          field =>
+            field.field?.name?.toLowerCase() === 'status'
+            && field.name
+        );
+
+      return (
+        project?.id &&
+        project.title &&
+        status?.name
+      )
+        ? [{
+          projectId: project.id,
+          projectName: project.title,
+          status: status.name
+        }]
+        : [];
+
     }) ?? [];
+
+  if (payload.data?.rateLimit) {
+    console.debug(`GraphQL rate limit: remaining=${payload.data.rateLimit.remaining}, cost=${payload.data.rateLimit.cost}`);
+  }
+
+  return {
+    pullRequests,
+    projectStatuses
+  };
 }
 
 /** Récupère les statuts des Projects classiques exposés par l'API REST. */
@@ -275,7 +465,7 @@ async function githubRequest<T>(url: string, options: GithubCollectorOptions): P
           Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${options.token}`,
           'X-GitHub-Api-Version': apiVersion,
-          'User-Agent': 'design-system-quality-pipeline'
+          'User-Agent': 'plume-ds-quality-board'
         }
       });
 
