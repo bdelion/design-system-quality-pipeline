@@ -6,6 +6,7 @@ import { evaluateDataQuality } from '../src/quality/rules.js';
 import { buildSnapshot } from '../src/snapshots/snapshot.js';
 import { loadConfig } from '../src/config.js';
 
+// Vérifie que le snapshot conserve ensemble les sources, résultats et versions.
  describe('snapshot contract', () => {
   it('preserves RAW, normalized data, DQ and rule versions together', async () => {
     const raw = await collectFixture();

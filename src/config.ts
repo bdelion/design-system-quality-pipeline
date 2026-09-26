@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { parse } from 'yaml';
 import { configPath } from './lib/paths.js';
 
+/** Paramètres de lecture des issues et pull requests GitHub. */
 export interface GithubProcessingConfig {
   labels: {
     componentPrefix: string;
@@ -16,8 +17,10 @@ export interface GithubProcessingConfig {
     keywords: Record<string, string[]>;
   };
   closingKeywords: string[];
+  cancelledProjectStatuses: string[];
 }
 
+/** Configuration globale nécessaire à l'exécution d'un pipeline. */
 export interface PipelineConfig {
   modelVersion: string;
   ruleVersion: string;
@@ -30,9 +33,10 @@ export interface PipelineConfig {
   github: GithubProcessingConfig;
 }
 
+/** Charge la configuration YAML et complète les URLs avec l'environnement. */
 export async function loadConfig(): Promise<PipelineConfig> {
   const content = await readFile(`${configPath}/system.yaml`, 'utf8');
-  const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubGraphqlUrl' | 'githubUrl'>;
+  const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
   return {
     ...systemConfig,
     githubApiUrl: process.env.GITHUB_API_URL,

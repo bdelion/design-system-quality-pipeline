@@ -4,11 +4,13 @@ import { collectGithub, githubTokenFromEnvironment } from './collectors/github.j
 import { loadConfig } from './config.js';
 import { runPipeline, pipelineStatus, type CollectionSource } from './pipeline.js';
 
+/** Interface CLI des commandes de collecte, analyse et génération. */
 const program = new Command()
   .name('design-system-quality')
   .description('GitHub-first Design System quality pipeline')
   .version('0.1.0');
 
+// La collecte reste volontairement en lecture seule : elle produit un RAW sans modifier GitHub.
 program.command('collect').description('Collect read-only data from a fixture or GitHub').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
   const config = await loadConfig();
   const raw = options.source === 'github'
@@ -17,6 +19,7 @@ program.command('collect').description('Collect read-only data from a fixture or
   console.log(`COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt}`);
 });
 
+// Cette commande vérifie le périmètre configuré sans lancer les étapes coûteuses du pipeline.
 program.command('validate').description('Validate configuration and source scope').action(async () => {
   const config = await loadConfig();
   const raw = await collectFixture();
@@ -41,6 +44,7 @@ program.command('dashboard').description('Generate static dashboard pages from t
   console.log(`DASHBOARD data/dashboard/index.html (${snapshot.snapshotId})`);
 });
 
+// La commande complète retourne un statut exploitable par un job CI.
 program.command('pipeline').description('Run the complete fixture or GitHub pipeline').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
   const snapshot = await runPipeline(options.source);
   console.log(`${pipelineStatus(snapshot)} ${snapshot.snapshotId}`);
