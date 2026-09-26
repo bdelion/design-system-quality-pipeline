@@ -1,54 +1,39 @@
-import { Command } from 'commander';
+import { join, resolve } from 'node:path';
+import { runPipeline } from './pipeline.js';
 import { collectFixture } from './collectors/fixture.js';
-import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
 import { loadConfig } from './config.js';
-import { runPipeline, pipelineStatus, type CollectionSource } from './pipeline.js';
+import { writeJson } from './lib/files.js';
+import { runPath } from './lib/paths.js';
+import { generateDashboard } from './dashboard/generate.js';
 
-/** Interface CLI des commandes de collecte, analyse et génération. */
-const program = new Command()
-  .name('design-system-quality')
-  .description('GitHub-first Design System quality pipeline')
-  .version('0.1.0');
+async function main() {
+  console.log('🚀 Lancement du pipeline d’analyse Design System (V2)...');
 
-// La collecte reste volontairement en lecture seule : elle produit un RAW sans modifier GitHub.
-program.command('collect').description('Collect read-only data from a fixture or GitHub').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
-  const config = await loadConfig();
-  const raw = options.source === 'github'
-    ? await collectGithub({ token: githubTokenFromEnvironment(), owner: config.githubOwner, repositories: config.repositories, apiUrl: config.githubApiUrl, graphqlUrl: config.githubGraphqlUrl, rules: config.github })
-    : await collectFixture();
-  console.log(`COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt}`);
-});
+  try {
+    const config = await loadConfig();
 
-// Cette commande vérifie le périmètre configuré sans lancer les étapes coûteuses du pipeline.
-program.command('validate').description('Validate configuration and source scope').action(async () => {
-  const config = await loadConfig();
-  const raw = await collectFixture();
-  const actual = new Set(raw.repositories.map((repository) => repository.name));
-  const missing = config.repositories.filter((repository) => !actual.has(repository));
-  if (missing.length > 0) throw new Error(`Missing configured repositories: ${missing.join(', ')}`);
-  console.log(`VALID ${config.repositories.length} configured repositories`);
-});
+    // 1. Exécution du pipeline pour construire le snapshot
+    const snapshot = await runPipeline(collectFixture, config);
 
-program.command('analyze').description('Run normalization, Data Quality and KPI calculations').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
-  const snapshot = await runPipeline(options.source);
-  console.log(`ANALYZED ${snapshot.normalizedData.anomalies.length} anomalies; ${snapshot.dataQuality.issues.length} DQ issues`);
-});
+    // 2. Sauvegarde du snapshot JSON dans data/runs
+    const outputPath = join(runPath, `${snapshot.id}.json`);
+    await writeJson(outputPath, snapshot);
 
-program.command('snapshot').description('Build and persist an immutable snapshot and dashboard').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
-  const snapshot = await runPipeline(options.source);
-  console.log(`SNAPSHOT ${snapshot.snapshotId}`);
-});
+    console.log(`✅ Snapshot V2 généré avec succès dans : ${outputPath}`);
+    console.log(`📊 Total métriques calculées : ${Object.keys(snapshot.analytics.metrics).length}`);
+    console.log(`⚠️  Réserves DQ détectées : ${snapshot.analytics.metrics['data_health.issues.total_count']?.value ?? 0}`);
 
-program.command('dashboard').description('Generate static dashboard pages from the current pipeline snapshot').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
-  const snapshot = await runPipeline(options.source);
-  console.log(`DASHBOARD data/dashboard/index.html (${snapshot.snapshotId})`);
-});
+    // 3. Génération du dashboard web HTML
+    const outputDir = resolve(process.cwd(), process.argv[2] || 'dist');
+    console.log(`🎨 Génération du dashboard dans : ${outputDir}/dashboard...`);
+    
+    await generateDashboard(snapshot, outputDir, config.githubUrl);
 
-// La commande complète retourne un statut exploitable par un job CI.
-program.command('pipeline').description('Run the complete fixture or GitHub pipeline').option('--source <source>', 'fixture or github', 'fixture').action(async (options: { source: CollectionSource }) => {
-  const snapshot = await runPipeline(options.source);
-  console.log(`${pipelineStatus(snapshot)} ${snapshot.snapshotId}`);
-  console.log(JSON.stringify(snapshot.analytics, null, 2));
-});
+    console.log(`✨ Dashboard généré avec succès dans ${join(outputDir, 'dashboard', 'index.html')}`);
+  } catch (error) {
+    console.error('❌ Erreur lors de l’exécution du pipeline :', error);
+    process.exit(1);
+  }
+}
 
-await program.parseAsync();
+main();

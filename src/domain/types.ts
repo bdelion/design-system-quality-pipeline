@@ -205,3 +205,66 @@ export interface Snapshot {
   modelVersion: string;
   reliability: DataQualityStatus;
 }
+
+// src/domain/types.ts
+
+export type DqRuleId =
+  | 'DQ-001'
+  | 'DQ-002'
+  | 'DQ-003'
+  | 'DQ-004'
+  | 'DQ-005'
+  | 'DQ-006'
+  | 'DQ-007'
+  | 'DQ-008'
+  | 'DQ-009'
+  | 'DQ-010';
+
+export type DataQualityStatus = 'reliable' | 'partial' | 'unreliable';
+
+export interface Component {
+  id: string;
+  name: string;
+  repository?: string;
+  status?: string;
+  version?: string;
+}
+
+export interface Audit {
+  id: string;
+  componentId: string;
+  status: 'completed' | 'conformal' | 'in_progress' | 'failed' | 'pending';
+  result?: 'compliant' | 'non_compliant' | 'partially_compliant';
+  isConformal?: boolean;
+  auditedAt?: string;
+}
+
+export interface Anomaly {
+  id: string;
+  title: string;
+  status: 'open' | 'in_progress' | 'reopened' | 'closed' | 'done';
+  severity?: 'critical' | 'high' | 'medium' | 'low';
+  criticality?: 'critical' | 'high' | 'medium' | 'low';
+  repository?: string;
+  category?: string;
+  categories?: string[];
+  createdAt: string;
+  firstDoneAt?: string;
+  closedAt?: string;
+  resolvedAt?: string;
+}
+
+export interface NormalizedData {
+  components: Component[];
+  audits: Audit[];
+  anomalies: Anomaly[];
+}
+
+export interface DataQualityIssue {
+  id?: string;
+  ruleId: DqRuleId | string;
+  message: string;
+  entityId?: string;
+  entityType?: 'component' | 'audit' | 'anomaly' | 'repository';
+  severity?: 'error' | 'warning' | 'info';
+}
