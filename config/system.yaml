@@ -1,0 +1,46 @@
+modelVersion: "2.1"
+ruleVersion: "dq-2026.09"
+scope: "configured-github-repositories"
+githubOwner: "example"
+repositories:
+  - "design-system-core"
+  - "design-system-react"
+  - "design-system-docs"
+github:
+  labels:
+    componentPrefix: "Component:"
+    criticalityPrefix: "rgaa:"
+    categoryPrefix: "a11y:"
+    unknown: "label:unknown"
+    criticalityValues:
+      bloquante: "blocking"
+      majeure: "major"
+      mineure: "minor"
+  issueTypes:
+    anomaly: "BUG"
+    keywords:
+      AUDIT:
+        - "audit"
+      EPIC:
+        - "epic"
+      NEW_COMPONENT:
+        - "new_component"
+        - "new component"
+      FEATURE:
+        - "feature"
+      BUG:
+        - "bug"
+        - "rgaa"
+        - "a11y"
+  closingKeywords:
+    - "close"
+    - "closed"
+    - "closes"
+    - "fix"
+    - "fixed"
+    - "fixes"
+    - "resolve"
+    - "resolved"
+    - "resolves"
+  cancelledProjectStatuses:
+    - "Cancelled"

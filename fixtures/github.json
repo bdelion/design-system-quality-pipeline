@@ -1,0 +1,173 @@
+{
+  "collectedAt": "2026-09-08T09:00:00.000Z",
+  "nexusAvailable": false,
+  "catalogueComponents": ["Button", "Modal", "Select", "DatePicker", "Alert", "Card", "Toast"],
+  "repositories": [
+    {
+      "id": "repo-core",
+      "name": "design-system-core",
+      "owner": "example",
+      "defaultBranch": "main",
+      "issues": [
+        {
+          "id": "issue-101",
+          "number": 101,
+          "title": "Button: focus indicator is insufficient",
+          "state": "CLOSED",
+          "issueType": "BUG",
+          "labels": ["Component:Button", "a11y:focus", "rgaa:majeure"],
+          "component": "Button",
+          "criticities": ["major"],
+          "parents": ["audit-button-1"],
+          "createdAt": "2026-08-01T10:00:00.000Z",
+          "closedAt": "2026-08-06T10:00:00.000Z",
+          "firstDoneAt": "2026-08-05T10:00:00.000Z",
+          "linkedPullRequestIds": ["pr-201"]
+        },
+        {
+          "id": "issue-102",
+          "number": 102,
+          "title": "Modal: keyboard trap",
+          "state": "OPEN",
+          "issueType": "BUG",
+          "labels": ["Component:Modal", "a11y:keyboard", "rgaa:bloquante"],
+          "component": "Modal",
+          "criticities": ["blocking"],
+          "parents": ["audit-modal-1"],
+          "createdAt": "2026-08-10T10:00:00.000Z",
+          "linkedPullRequestIds": []
+        },
+        {
+          "id": "issue-103",
+          "number": 103,
+          "title": "Tooltip: missing accessible name",
+          "state": "CLOSED",
+          "issueType": "BUG",
+          "labels": ["Component:Tooltip", "a11y:name"],
+          "component": "Tooltip",
+          "criticities": [],
+          "parents": ["audit-tooltip-1"],
+          "createdAt": "2026-08-12T10:00:00.000Z",
+          "closedAt": "2026-08-14T10:00:00.000Z",
+          "firstDoneAt": "2026-08-14T10:00:00.000Z",
+          "linkedPullRequestIds": []
+        }
+      ],
+      "pullRequests": [
+        {
+          "id": "pr-201",
+          "number": 201,
+          "state": "MERGED",
+          "mergedAt": "2026-08-05T09:00:00.000Z",
+          "relatedIssueIds": ["issue-101"]
+        }
+      ]
+    },
+    {
+      "id": "repo-react",
+      "name": "design-system-react",
+      "owner": "example",
+      "defaultBranch": "main",
+      "issues": [
+        {
+          "id": "issue-201",
+          "number": 201,
+          "title": "Select: le focus n'est pas visible au clavier",
+          "state": "CLOSED",
+          "issueType": "BUG",
+          "labels": ["Component:Select", "a11y:focus", "rgaa:majeure"],
+          "component": "Select",
+          "criticities": ["major"],
+          "parents": ["audit-select-1"],
+          "createdAt": "2026-08-03T09:00:00.000Z",
+          "closedAt": "2026-08-12T15:00:00.000Z",
+          "firstDoneAt": "2026-08-11T15:00:00.000Z",
+          "linkedPullRequestIds": ["pr-301"]
+        },
+        {
+          "id": "issue-202",
+          "number": 202,
+          "title": "DatePicker: le nom accessible manque sur le champ",
+          "state": "OPEN",
+          "issueType": "BUG",
+          "labels": ["Component:DatePicker", "a11y:name", "rgaa:mineure"],
+          "component": "DatePicker",
+          "criticities": ["minor"],
+          "parents": ["audit-datepicker-1"],
+          "createdAt": "2026-08-15T11:00:00.000Z",
+          "linkedPullRequestIds": []
+        },
+        {
+          "id": "issue-204",
+          "number": 204,
+          "title": "Audit du composant Toast",
+          "state": "CLOSED",
+          "issueType": "AUDIT",
+          "labels": ["Component:Toast", "audit:completed"],
+          "component": "Toast",
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-08-01T09:00:00.000Z",
+          "closedAt": "2026-08-04T16:00:00.000Z",
+          "auditStatus": "conform",
+          "auditResult": "conform",
+          "linkedPullRequestIds": []
+        }
+      ],
+      "pullRequests": [
+        {
+          "id": "pr-301",
+          "number": 301,
+          "state": "MERGED",
+          "mergedAt": "2026-08-11T14:00:00.000Z",
+          "relatedIssueIds": ["issue-201"]
+        }
+      ]
+    },
+    {
+      "id": "repo-docs",
+      "name": "design-system-docs",
+      "owner": "example",
+      "defaultBranch": "main",
+      "issues": [
+        {
+          "id": "issue-301",
+          "number": 301,
+          "title": "Alert: contraste insuffisant dans la documentation",
+          "state": "CLOSED",
+          "issueType": "BUG",
+          "labels": ["Component:Alert", "a11y:contrast", "rgaa:bloquante"],
+          "component": "Alert",
+          "criticities": ["blocking"],
+          "parents": ["audit-alert-1"],
+          "createdAt": "2026-08-05T08:30:00.000Z",
+          "closedAt": "2026-08-20T13:00:00.000Z",
+          "firstDoneAt": "2026-08-19T13:00:00.000Z",
+          "linkedPullRequestIds": ["pr-401"]
+        },
+        {
+          "id": "issue-302",
+          "number": 302,
+          "title": "Card: ordre de lecture à vérifier",
+          "state": "OPEN",
+          "issueType": "BUG",
+          "labels": ["Component:Card", "a11y:structure", "label:unknown"],
+          "component": "Card",
+          "criticities": ["minor"],
+          "parents": ["audit-card-1"],
+          "createdAt": "2026-08-22T14:00:00.000Z",
+          "linkedPullRequestIds": []
+        }
+      ],
+      "pullRequests": [
+        {
+          "id": "pr-401",
+          "number": 401,
+          "state": "MERGED",
+          "mergedAt": "2026-08-19T12:00:00.000Z",
+          "relatedIssueIds": ["issue-301"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+rules:
+  - id: DQ-001
+    severity: ERROR
+    action: exclude
+    message: "Anomaly has no criticality."
+  - id: DQ-002
+    severity: ERROR
+    action: exclude
+    message: "Anomaly has incompatible multiple criticalities."
+  - id: DQ-003
+    severity: ERROR
+    action: exclude
+    message: "Anomaly has incompatible multiple parents."
+  - id: DQ-004
+    severity: WARNING
+    action: include
+    message: "Done issue has no identifiable pull request."
+  - id: DQ-005
+    severity: WARNING
+    action: include
+    message: "Merged pull request is linked to an open issue."
+  - id: DQ-006
+    severity: WARNING
+    action: include
+    message: "Source component is absent from the catalogue."
+  - id: DQ-007
+    severity: WARNING
+    action: include
+    message: "Issue contains an unknown label."
+  - id: DQ-008
+    severity: ERROR
+    action: exclude
+    message: "Cancelled issue is referenced by a pull request."
+  - id: DQ-010
+    severity: ERROR
+    action: exclude
+    message: "Cancelled issue is attached to a milestone."
+  - id: DQ-009
+    severity: WARNING
+    action: include
+    message: "Nexus is unavailable; release evidence is unknown."
