@@ -3,6 +3,9 @@ export type Source = 'github' | 'catalogue' | 'manual' | 'suggested';
 export type DataQualityStatus = 'reliable' | 'partial' | 'unknown' | 'invalid';
 export type Severity = 'INFO' | 'WARNING' | 'ERROR';
 export type DqAction = 'include' | 'exclude' | 'block';
+export type MetricUnit = 'count' | 'percentage' | 'days';
+export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
+export type MetricReliabilityStatus = DataQualityStatus;
 export type AuditStatus = 'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
 
@@ -158,6 +161,45 @@ export interface DataQualityIssue {
   entityId: string;
   message: string;
   detectedAt: string;
+  impacts: DataQualityImpact[];
+}
+
+/** Décrit l'effet d'une réserve DQ sur une métrique précise. */
+export interface DataQualityImpact {
+  metricId: string;
+  action: 'include' | 'exclude' | 'unknown';
+  reason: string;
+}
+
+export interface MetricPeriod {
+  from?: string;
+  to?: string;
+}
+
+export interface MetricReliability {
+  status: MetricReliabilityStatus;
+  issueIds: string[];
+}
+
+export interface MetricBreakdown {
+  dimension: string;
+  values: Record<string, number>;
+}
+
+/** Métrique auto-documentée utilisée par le dashboard V2. */
+export interface Metric {
+  id: string;
+  value: number | 'unknown';
+  unit: MetricUnit;
+  numerator?: number | 'unknown';
+  denominator?: number | 'unknown';
+  scope: MetricScope;
+  period?: MetricPeriod;
+  definition: string;
+  sourceEntityIds: string[];
+  reliability: MetricReliability;
+  exclusions: { entityId: string; ruleId: string }[];
+  breakdowns?: MetricBreakdown[];
 }
 
 /** Valeur d'un KPI avec son périmètre et son niveau de fiabilité. */
@@ -181,6 +223,7 @@ export interface Analytics {
   conformityRate: KpiValue;
   averageCorrectionDelayDays: KpiValue;
   medianCorrectionDelayDays: KpiValue;
+  metrics: Record<string, Metric>;
 }
 
 /** Données métier après collecte et normalisation. */

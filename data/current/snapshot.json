@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20260922211307346-57a3b746",
-  "capturedAt": "2026-09-22T21:13:07.346Z",
+  "snapshotId": "snapshot-20260926140308062-dbe3df78",
+  "capturedAt": "2026-09-26T14:03:08.062Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-09-08T09:00:00.000Z",
@@ -834,7 +834,29 @@
         "entityType": "anomaly",
         "entityId": "anomaly-3b49cceb9117",
         "message": "Anomaly has no criticality.",
-        "detectedAt": "2026-09-08T09:00:00.000Z"
+        "detectedAt": "2026-09-08T09:00:00.000Z",
+        "impacts": [
+          {
+            "metricId": "anomaly.byCriticality.blocking",
+            "action": "exclude",
+            "reason": "Criticité absente."
+          },
+          {
+            "metricId": "anomaly.byCriticality.major",
+            "action": "exclude",
+            "reason": "Criticité absente."
+          },
+          {
+            "metricId": "anomaly.byCriticality.minor",
+            "action": "exclude",
+            "reason": "Criticité absente."
+          },
+          {
+            "metricId": "anomaly.criticalityCoverage",
+            "action": "exclude",
+            "reason": "Criticité absente."
+          }
+        ]
       },
       {
         "id": "DQ-004:anomaly-3b49cceb9117",
@@ -844,7 +866,89 @@
         "entityType": "anomaly",
         "entityId": "anomaly-3b49cceb9117",
         "message": "Done issue has no identifiable pull request.",
-        "detectedAt": "2026-09-08T09:00:00.000Z"
+        "detectedAt": "2026-09-08T09:00:00.000Z",
+        "impacts": [
+          {
+            "metricId": "anomaly.total",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.open",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.inProgress",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.done",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.byCriticality.blocking",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.byCriticality.major",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.byCriticality.minor",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.criticalityCoverage",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.created",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.corrected",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.reopened",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.cancelled",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.correctionDelay.average",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.correctionDelay.median",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.correctionDelay.p90",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          },
+          {
+            "metricId": "anomaly.backlog.oldestAge",
+            "action": "include",
+            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
+          }
+        ]
       },
       {
         "id": "DQ-007:anomaly-52867d3fbb31",
@@ -854,7 +958,8 @@
         "entityType": "anomaly",
         "entityId": "anomaly-52867d3fbb31",
         "message": "Issue contains an unknown label.",
-        "detectedAt": "2026-09-08T09:00:00.000Z"
+        "detectedAt": "2026-09-08T09:00:00.000Z",
+        "impacts": []
       },
       {
         "id": "DQ-006:component-c3bf1645fdf3",
@@ -864,7 +969,34 @@
         "entityType": "component",
         "entityId": "component-c3bf1645fdf3",
         "message": "Source component is absent from the catalogue.",
-        "detectedAt": "2026-09-08T09:00:00.000Z"
+        "detectedAt": "2026-09-08T09:00:00.000Z",
+        "impacts": [
+          {
+            "metricId": "portfolio.repositories",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.libraries",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.components",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.componentsAudited",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.auditCoverage",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          }
+        ]
       },
       {
         "id": "DQ-006:component-5a04995ea6fc",
@@ -874,7 +1006,34 @@
         "entityType": "component",
         "entityId": "component-5a04995ea6fc",
         "message": "Source component is absent from the catalogue.",
-        "detectedAt": "2026-09-08T09:00:00.000Z"
+        "detectedAt": "2026-09-08T09:00:00.000Z",
+        "impacts": [
+          {
+            "metricId": "portfolio.repositories",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.libraries",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.components",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.componentsAudited",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          },
+          {
+            "metricId": "portfolio.auditCoverage",
+            "action": "include",
+            "reason": "Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes."
+          }
+        ]
       },
       {
         "id": "DQ-009:nexus",
@@ -884,7 +1043,8 @@
         "entityType": "dataset",
         "entityId": "nexus",
         "message": "Nexus is unavailable; release evidence is unknown.",
-        "detectedAt": "2026-09-08T09:00:00.000Z"
+        "detectedAt": "2026-09-08T09:00:00.000Z",
+        "impacts": []
       }
     ],
     "summary": {
@@ -1001,6 +1161,683 @@
         "anomaly-f98e8ca4cfb6"
       ],
       "reliability": "partial"
+    },
+    "metrics": {
+      "portfolio.repositories": {
+        "id": "portfolio.repositories",
+        "value": 3,
+        "unit": "count",
+        "numerator": 3,
+        "denominator": 3,
+        "scope": "portfolio",
+        "definition": "Nombre de repositories effectivement analysés.",
+        "sourceEntityIds": [
+          "lib-bc07e47046c9",
+          "lib-6b2c5efbc625",
+          "lib-960acee5096c"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-006:component-c3bf1645fdf3",
+            "DQ-006:component-5a04995ea6fc"
+          ]
+        },
+        "exclusions": []
+      },
+      "portfolio.libraries": {
+        "id": "portfolio.libraries",
+        "value": 3,
+        "unit": "count",
+        "numerator": 3,
+        "denominator": 3,
+        "scope": "portfolio",
+        "definition": "Nombre de bibliothèques analysées.",
+        "sourceEntityIds": [
+          "lib-bc07e47046c9",
+          "lib-6b2c5efbc625",
+          "lib-960acee5096c"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-006:component-c3bf1645fdf3",
+            "DQ-006:component-5a04995ea6fc"
+          ]
+        },
+        "exclusions": []
+      },
+      "portfolio.components": {
+        "id": "portfolio.components",
+        "value": 7,
+        "unit": "count",
+        "numerator": 7,
+        "denominator": 7,
+        "scope": "portfolio",
+        "definition": "Nombre de composants actifs dans le périmètre du patrimoine.",
+        "sourceEntityIds": [
+          "component-ced41748a496",
+          "component-609bdffc4e21",
+          "component-c3bf1645fdf3",
+          "component-5a04995ea6fc",
+          "component-0de9fd0f1d03",
+          "component-fdf4d670e47f",
+          "component-47b6bd45a8ee"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-006:component-c3bf1645fdf3",
+            "DQ-006:component-5a04995ea6fc"
+          ]
+        },
+        "exclusions": []
+      },
+      "portfolio.componentsAudited": {
+        "id": "portfolio.componentsAudited",
+        "value": 1,
+        "unit": "count",
+        "numerator": 1,
+        "denominator": 7,
+        "scope": "portfolio",
+        "definition": "Nombre de composants actifs disposant d’au moins un audit terminé.",
+        "sourceEntityIds": [
+          "component-5ca56c189415"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-006:component-c3bf1645fdf3",
+            "DQ-006:component-5a04995ea6fc"
+          ]
+        },
+        "exclusions": []
+      },
+      "portfolio.auditCoverage": {
+        "id": "portfolio.auditCoverage",
+        "value": 14.3,
+        "unit": "percentage",
+        "numerator": 1,
+        "denominator": 7,
+        "scope": "portfolio",
+        "definition": "Composants actifs disposant d’un audit terminé / composants actifs du périmètre.",
+        "sourceEntityIds": [
+          "component-5ca56c189415"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-006:component-c3bf1645fdf3",
+            "DQ-006:component-5a04995ea6fc"
+          ]
+        },
+        "exclusions": []
+      },
+      "audit.completed": {
+        "id": "audit.completed",
+        "value": 1,
+        "unit": "count",
+        "numerator": 1,
+        "denominator": 8,
+        "scope": "audit",
+        "definition": "Nombre d’audits ayant atteint un résultat exploitable.",
+        "sourceEntityIds": [
+          "audit-c839704cca99"
+        ],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "audit.conform": {
+        "id": "audit.conform",
+        "value": 1,
+        "unit": "count",
+        "numerator": 1,
+        "denominator": 1,
+        "scope": "audit",
+        "definition": "Nombre d’audits dont le résultat objectif est conforme.",
+        "sourceEntityIds": [
+          "audit-c839704cca99"
+        ],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "audit.conditional": {
+        "id": "audit.conditional",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 1,
+        "scope": "audit",
+        "definition": "Nombre d’audits conditionnels.",
+        "sourceEntityIds": [
+          "audit-c839704cca99"
+        ],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "audit.nonConform": {
+        "id": "audit.nonConform",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 1,
+        "scope": "audit",
+        "definition": "Nombre d’audits non conformes.",
+        "sourceEntityIds": [
+          "audit-c839704cca99"
+        ],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "audit.critical": {
+        "id": "audit.critical",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 1,
+        "scope": "audit",
+        "definition": "Nombre d’audits critiques.",
+        "sourceEntityIds": [
+          "audit-c839704cca99"
+        ],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "audit.conformityRate": {
+        "id": "audit.conformityRate",
+        "value": 100,
+        "unit": "percentage",
+        "numerator": 1,
+        "denominator": 1,
+        "scope": "audit",
+        "definition": "Audits conformes / audits terminés.",
+        "sourceEntityIds": [
+          "audit-c839704cca99"
+        ],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "anomaly.total": {
+        "id": "anomaly.total",
+        "value": 7,
+        "unit": "count",
+        "numerator": 7,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies non annulées et conservées dans le périmètre général.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-36af22bb43d9",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-a0be3ebb1287",
+          "anomaly-f98e8ca4cfb6",
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.open": {
+        "id": "anomaly.open",
+        "value": 3,
+        "unit": "count",
+        "numerator": 3,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies actuellement ouvertes ou rouvertes.",
+        "sourceEntityIds": [
+          "anomaly-36af22bb43d9",
+          "anomaly-a0be3ebb1287",
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.inProgress": {
+        "id": "anomaly.inProgress",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies actuellement en cours de traitement.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.done": {
+        "id": "anomaly.done",
+        "value": 4,
+        "unit": "count",
+        "numerator": 4,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies actuellement terminées.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.byCriticality.blocking": {
+        "id": "anomaly.byCriticality.blocking",
+        "value": 2,
+        "unit": "count",
+        "numerator": 2,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies de criticité blocking.",
+        "sourceEntityIds": [
+          "anomaly-36af22bb43d9",
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-001:anomaly-3b49cceb9117",
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": [
+          {
+            "entityId": "anomaly-3b49cceb9117",
+            "ruleId": "DQ-001"
+          }
+        ]
+      },
+      "anomaly.byCriticality.major": {
+        "id": "anomaly.byCriticality.major",
+        "value": 2,
+        "unit": "count",
+        "numerator": 2,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies de criticité major.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-79ea06e1c5e4"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-001:anomaly-3b49cceb9117",
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": [
+          {
+            "entityId": "anomaly-3b49cceb9117",
+            "ruleId": "DQ-001"
+          }
+        ]
+      },
+      "anomaly.byCriticality.minor": {
+        "id": "anomaly.byCriticality.minor",
+        "value": 2,
+        "unit": "count",
+        "numerator": 2,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies de criticité minor.",
+        "sourceEntityIds": [
+          "anomaly-a0be3ebb1287",
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-001:anomaly-3b49cceb9117",
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": [
+          {
+            "entityId": "anomaly-3b49cceb9117",
+            "ruleId": "DQ-001"
+          }
+        ]
+      },
+      "anomaly.criticalityCoverage": {
+        "id": "anomaly.criticalityCoverage",
+        "value": 85.7,
+        "unit": "percentage",
+        "numerator": 6,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Anomalies disposant d’une criticité valide / anomalies nécessitant une criticité.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-36af22bb43d9",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-a0be3ebb1287",
+          "anomaly-f98e8ca4cfb6",
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-001:anomaly-3b49cceb9117",
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": [
+          {
+            "entityId": "anomaly-3b49cceb9117",
+            "ruleId": "DQ-001"
+          }
+        ]
+      },
+      "anomaly.byCategory.focus": {
+        "id": "anomaly.byCategory.focus",
+        "value": 2,
+        "unit": "count",
+        "numerator": 2,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies portant la catégorie focus. Les catégories sont multi-étiquettes.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-79ea06e1c5e4"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117",
+            "DQ-007:anomaly-52867d3fbb31"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.byCategory.keyboard": {
+        "id": "anomaly.byCategory.keyboard",
+        "value": 1,
+        "unit": "count",
+        "numerator": 1,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies portant la catégorie keyboard. Les catégories sont multi-étiquettes.",
+        "sourceEntityIds": [
+          "anomaly-36af22bb43d9"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117",
+            "DQ-007:anomaly-52867d3fbb31"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.byCategory.name": {
+        "id": "anomaly.byCategory.name",
+        "value": 2,
+        "unit": "count",
+        "numerator": 2,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies portant la catégorie name. Les catégories sont multi-étiquettes.",
+        "sourceEntityIds": [
+          "anomaly-3b49cceb9117",
+          "anomaly-a0be3ebb1287"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117",
+            "DQ-007:anomaly-52867d3fbb31"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.byCategory.contrast": {
+        "id": "anomaly.byCategory.contrast",
+        "value": 1,
+        "unit": "count",
+        "numerator": 1,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies portant la catégorie contrast. Les catégories sont multi-étiquettes.",
+        "sourceEntityIds": [
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117",
+            "DQ-007:anomaly-52867d3fbb31"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.byCategory.structure": {
+        "id": "anomaly.byCategory.structure",
+        "value": 1,
+        "unit": "count",
+        "numerator": 1,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies portant la catégorie structure. Les catégories sont multi-étiquettes.",
+        "sourceEntityIds": [
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117",
+            "DQ-007:anomaly-52867d3fbb31"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.created": {
+        "id": "anomaly.created",
+        "value": 7,
+        "unit": "count",
+        "numerator": 7,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies créées dans le périmètre du snapshot. La période sera activée avec les snapshots historiques.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-36af22bb43d9",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-a0be3ebb1287",
+          "anomaly-f98e8ca4cfb6",
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.corrected": {
+        "id": "anomaly.corrected",
+        "value": 4,
+        "unit": "count",
+        "numerator": 4,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies ayant une première correction métier documentée.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.reopened": {
+        "id": "anomaly.reopened",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies actuellement rouvertes.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.cancelled": {
+        "id": "anomaly.cancelled",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 7,
+        "scope": "anomaly",
+        "definition": "Nombre d’anomalies annulées, conservées uniquement pour traçabilité.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.correctionDelay.average": {
+        "id": "anomaly.correctionDelay.average",
+        "value": 7.1,
+        "unit": "days",
+        "numerator": 4,
+        "denominator": 4,
+        "scope": "anomaly",
+        "definition": "Délai moyen entre la création et la première correction métier, en jours calendaires.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.correctionDelay.median": {
+        "id": "anomaly.correctionDelay.median",
+        "value": 6.1,
+        "unit": "days",
+        "numerator": 4,
+        "denominator": 4,
+        "scope": "anomaly",
+        "definition": "Délai médian entre la création et la première correction métier, en jours calendaires.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.correctionDelay.p90": {
+        "id": "anomaly.correctionDelay.p90",
+        "value": 12.4,
+        "unit": "days",
+        "numerator": 4,
+        "denominator": 4,
+        "scope": "anomaly",
+        "definition": "90e percentile du délai entre création et première correction métier.",
+        "sourceEntityIds": [
+          "anomaly-58d181a7aa98",
+          "anomaly-3b49cceb9117",
+          "anomaly-79ea06e1c5e4",
+          "anomaly-f98e8ca4cfb6"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      },
+      "anomaly.backlog.oldestAge": {
+        "id": "anomaly.backlog.oldestAge",
+        "value": 12.2,
+        "unit": "days",
+        "numerator": 3,
+        "denominator": 3,
+        "scope": "anomaly",
+        "definition": "Âge du plus ancien élément actuellement ouvert, calculé par rapport à la date la plus récente connue du snapshot.",
+        "sourceEntityIds": [
+          "anomaly-36af22bb43d9",
+          "anomaly-a0be3ebb1287",
+          "anomaly-52867d3fbb31"
+        ],
+        "reliability": {
+          "status": "partial",
+          "issueIds": [
+            "DQ-004:anomaly-3b49cceb9117"
+          ]
+        },
+        "exclusions": []
+      }
     }
   },
   "ruleVersion": "dq-2026.09",

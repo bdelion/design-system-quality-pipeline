@@ -1,22 +1,27 @@
-# Calculs KPI
+# Modèle analytique V2
 
-Les KPI sont calculés après normalisation et évaluation des règles qualité.
+Les métriques sont calculées après normalisation et contrôle qualité. Une métrique V2 est auto-documentée : valeur, unité, numérateur/dénominateur, périmètre, définition, entités sources, réserves DQ et exclusions sont conservés ensemble dans le snapshot.
 
-## Périmètre
+## Familles
 
-Les anomalies ciblées par une alerte `action: exclude` sont retirées du périmètre des indicateurs concernés. Les alertes `include` conservent l'objet et rendent la fiabilité `partial`.
+- `portfolio.*` : état du patrimoine et couverture des audits ;
+- `audit.*` : volume et résultats des audits ;
+- `anomaly.*` : stock, criticité, catégories et délais de correction.
 
-Les anomalies annulées sont toujours exclues de tous les KPI, même lorsqu'elles ne déclenchent aucune alerte de relation. Elles restent visibles dans le snapshot pour la traçabilité.
+## Couverture
 
-## Indicateurs
+`portfolio.auditCoverage` mesure les composants actifs disposant d'au moins un audit terminé rapportés aux composants actifs du patrimoine. Le nombre d'audits terminés est une métrique distincte (`audit.completed`).
 
-- **Anomalies déclarées** : anomalies conservées après exclusion.
-- **Anomalies corrigées** : anomalies conservées ayant une date de première correction métier.
-- **Anomalies ouvertes** : anomalies `open` ou `reopened`.
-- **Répartition par criticité** : comptage par `blocking`, `major` et `minor`.
-- **Répartition par catégorie** : comptage par catégorie d'accessibilité.
-- **Couverture des audits** : audits terminés rapportés aux composants découverts.
-- **Taux de conformité** : audits conformes rapportés aux audits terminés.
-- **Délai moyen et médian** : durée entre `createdAt` et `firstDoneAt`.
+## Conformité
 
-Une moyenne ou une médiane sans observation est `unknown`. Les dates sont traitées en jours calendaires.
+`audit.conformityRate` mesure les audits conformes rapportés aux audits terminés. Le dashboard doit toujours afficher le numérateur et le dénominateur avec le pourcentage.
+
+## Délais
+
+Les métriques `anomaly.correctionDelay.average`, `.median` et `.p90` utilisent le délai calendaire entre `createdAt` et `firstDoneAt`. Une absence d'observation produit `unknown`.
+
+## Impact des règles DQ
+
+Une règle DQ n'exclut plus implicitement une entité de tous les KPI. Elle déclare ses impacts métrique par métrique : `include`, `exclude` ou `unknown`. La fiabilité d'une métrique dépend uniquement des réserves qui la concernent.
+
+Les données sources et les entités exclues restent conservées dans le snapshot pour permettre l'explication et la correction.

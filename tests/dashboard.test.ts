@@ -26,7 +26,10 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('Temps de correction par repository');
   expect(html).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
-  expect(html).toContain('Nombre d’anomalies conservées après les exclusions de qualité des données.');
+  expect(html).toContain('Les indicateurs sont calculés dans le pipeline puis expliqués ici avec leur périmètre, leur ratio et leur fiabilité.');
+  expect(html).toContain('Couverture des audits');
+  expect(html).toContain('Fiabilité par métrique');
+  expect(html).toContain('Pourquoi certains chiffres sont partiels');
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
   expect(html).toContain('window.__SNAPSHOT__');
   expect(html).toContain('class="sidebar"');

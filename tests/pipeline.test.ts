@@ -99,3 +99,22 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     expect(cancelledAnalytics.anomaliesDeclared.value).toBe(5);
   });
 });
+
+it('builds self-explaining V2 metrics with metric-scoped DQ impacts', () => {
+  const analytics = calculateKpis(normalized, issues);
+  const metrics = analytics.metrics;
+
+  expect(metrics['portfolio.auditCoverage']).toMatchObject({
+    unit: 'percentage',
+    numerator: expect.any(Number),
+    denominator: expect.any(Number)
+  });
+  expect(metrics['portfolio.auditCoverage']?.definition).toContain('Composants actifs');
+  expect(metrics['anomaly.byCriticality.major']?.unit).toBe('count');
+  expect(metrics['anomaly.correctionDelay.p90']?.unit).toBe('days');
+
+  const missingCriticality = issues.find((issue) => issue.ruleId === 'DQ-001');
+  expect(missingCriticality?.impacts.some((impact) => impact.metricId === 'anomaly.byCriticality.major')).toBe(true);
+  expect(metrics['anomaly.byCriticality.major']?.reliability.status).toBe('partial');
+  expect(metrics['anomaly.correctionDelay.average']?.reliability.status).not.toBe('invalid');
+});

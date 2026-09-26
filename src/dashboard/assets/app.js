@@ -23,6 +23,10 @@ function applyFilters() {
     row.hidden = !matches;
   });
 }
+const params = new URLSearchParams(window.location.search);
+if (controls.criticality && params.get('criticality')) controls.criticality.value = params.get('criticality');
+if (controls.category && params.get('category')) controls.category.value = params.get('category');
+if (controls.status && params.get('status')) controls.status.value = params.get('status');
 Object.values(controls).filter(Boolean).forEach((control) => control.addEventListener('input', applyFilters));
 document.querySelector('[data-reset-filters]')?.addEventListener('click', () => {
   Object.values(controls).forEach((control) => { if (control) control.value = ''; });
