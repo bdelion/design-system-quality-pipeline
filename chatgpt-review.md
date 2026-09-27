@@ -1947,3 +1947,654 @@ La prochaine étape que je recommande est désormais **la stabilisation finale d
 
 -----
 
+C’est fait : j’ai traité cette étape comme une **stabilisation de release candidate V2**, plutôt que comme une nouvelle évolution fonctionnelle.
+
+### Ce qui est maintenant verrouillé
+
+**Contrat analytique**
+
+* `Analytics.metrics` reste la source de vérité.
+* Les anciens KPI sont uniquement des projections de compatibilité.
+* Chaque métrique produite doit exister dans le catalogue contractuel.
+* Les stocks et les flux sont explicitement séparés.
+
+**Historique**
+
+* Les flux `created / corrected / reopened / cancelled` nécessitent deux snapshots.
+* Chaque flux porte exactement la période `snapshot N → snapshot N+1`.
+* Les tests vérifient cette période et les événements détectés.
+
+**Qualité des données**
+
+* Les impacts DQ restent métriques par métrique.
+* Une anomalie DQ ne dégrade pas arbitrairement tout le reporting.
+* Les exclusions restent traçables.
+
+**Tests**
+J’ai ajouté/renforcé les tests sur :
+
+* contrat des métriques ;
+* métriques dynamiques par catégorie ;
+* snapshots ;
+* différences entre snapshots ;
+* flux temporels ;
+* scénarios DQ ;
+* données annulées ;
+* dashboard ;
+* fixture analytique V2.
+
+**CI GitHub**
+
+Nouveau workflow :
+
+```text
+npm ci
+   ↓
+typecheck
+   ↓
+lint
+   ↓
+tests
+   ↓
+build
+```
+
+Il s'exécute sur les PR et sur `main`, `master` et `develop`.
+
+**Documentation**
+
+Ajout de :
+
+`docs/release-readiness.md`
+
+avec :
+
+* contrat ;
+* règles DQ ;
+* fonctionnement de l'historique ;
+* procédure de validation ;
+* checklist de release ;
+* limite connue de l'environnement actuel.
+
+### Vérification réelle
+
+L'archive a été contrôlée avec `unzip -t` : **OK**.
+
+J'ai tenté une installation propre avec `npm ci`, mais l'environnement d'exécution dépasse le délai avant d'avoir installé les dépendances. J'ai ensuite lancé le `tsc` disponible globalement : il s'arrête uniquement sur les définitions de types absentes de `node_modules` (`node`, `chai`, `estree`, etc.).
+
+Donc je distingue volontairement :
+
+* **code et architecture vérifiés statiquement** : oui ;
+* **archive valide** : oui ;
+* **suite complète `npm test` verte dans cet environnement** : non vérifiable ;
+* **CI GitHub prête à effectuer cette validation dans un environnement propre** : oui.
+
+### Version finale
+
+[**Télécharger Design System Quality Pipeline – V2 Final / Release Candidate**](sandbox:/mnt/data/design-system-quality-pipeline-v2-final.zip)
+
+À ce stade, je considérerais le projet comme une **V2 Release Candidate**. La prochaine étape ne devrait plus être une grosse refonte : il faudra surtout faire tourner cette archive dans ton environnement VSCode/Node, corriger les éventuels écarts révélés par `npm ci && npm test`, puis éventuellement faire une **V2.0.0 propre** avec changelog et suppression définitive des compatibilités legacy.
+
+----
+
+Oui. Et dans ton cas, **je te conseille de ne pas fabriquer le fixture à la main** : le mieux serait d'ajouter au projet un petit outil d'**export anonymisé**, capable de prendre les données réelles produites par tes audits et de générer automatiquement un fixture exploitable par `design-system-quality-pipeline`.
+
+### Le principe que je te recommande
+
+```text
+Repository réel
+      │
+      ▼
+Collecte GitHub réelle
+      │
+      ▼
+RawDataset réel
+      │
+      ▼
+┌──────────────────────────┐
+│ Anonymiseur               │
+│                          │
+│ noms → noms fictifs       │
+│ URLs → URLs fictives      │
+│ IDs → IDs déterministes   │
+│ utilisateurs → acteurs    │
+│ dates → dates décalées    │
+│ descriptions → nettoyées  │
+│ secrets → supprimés       │
+└─────────────┬────────────┘
+              ▼
+       Fixture JSON
+              │
+              ▼
+   Pipeline V2 complet
+              │
+              ▼
+        Dashboard
+```
+
+Le gros avantage est que **le fixture reste structurellement réaliste**.
+
+Par exemple, au lieu de créer artificiellement :
+
+```json
+{
+  "repository": "repo-1",
+  "component": "Button",
+  "issue": "issue-1"
+}
+```
+
+on pourrait partir de vraies données :
+
+```text
+design-system-components
+  ├── Button
+  │    ├── audit
+  │    ├── issue
+  │    └── PR
+  ├── Tooltip
+  │    └── audit
+  └── Modal
+       ├── audit
+       └── issues
+```
+
+puis anonymiser uniquement ce qui permettrait d'identifier ton organisation.
+
+---
+
+## Est-ce qu'il te faut un tool ?
+
+**Oui, mais pas forcément un outil externe.**
+
+Je privilégierais **un nouvel outil intégré directement à ton projet**, par exemple :
+
+```bash
+npm run fixture:anonymize
+```
+
+ou :
+
+```bash
+npm run fixture:from-github
+```
+
+avec une commande du type :
+
+```bash
+npm run fixture:anonymize \
+  --input ./data/raw-real.json \
+  --output ./fixtures/anonymized.json
+```
+
+Cela aurait plusieurs avantages :
+
+* reproductible ;
+* versionnable ;
+* testable ;
+* pas besoin de transmettre les données réelles à ChatGPT ;
+* tu peux refaire l'opération après chaque nouvelle campagne d'audit ;
+* l'anonymisation devient une étape officielle du pipeline.
+
+---
+
+# Ce que j'anonymiserais
+
+Il faut faire attention à ne pas anonymiser uniquement les noms.
+
+### 1. Repository
+
+Par exemple :
+
+```text
+company-design-system
+```
+
+→
+
+```text
+repo-alpha
+```
+
+et :
+
+```text
+https://github.com/company/design-system
+```
+
+→
+
+```text
+https://github.com/example/design-system-alpha
+```
+
+Mais surtout **ne pas laisser le vrai owner GitHub**.
+
+---
+
+### 2. Composants
+
+Je conserverais idéalement les noms **fonctionnels**, parce qu'ils sont utiles pour tester le pipeline :
+
+```text
+Button
+Modal
+Tooltip
+Select
+DataTable
+```
+
+Ce sont généralement des noms génériques.
+
+En revanche, si vos composants ont des noms propriétaires :
+
+```text
+AcmeSuperButton
+BrandNavigation
+CompanySpecificWidget
+```
+
+ils devraient devenir :
+
+```text
+Button
+Navigation
+Widget
+```
+
+---
+
+### 3. Issues / PR
+
+Il faut remplacer :
+
+```text
+company/design-system#482
+```
+
+par exemple par :
+
+```text
+example/repo-alpha#103
+```
+
+Mais surtout conserver les relations :
+
+```text
+audit
+  ↓
+issue #103
+  ↓
+PR #205
+```
+
+Le numéro lui-même n'a pas beaucoup d'importance.
+
+---
+
+### 4. Utilisateurs
+
+Très important.
+
+Remplacer :
+
+```text
+jean.dupont
+marie.martin
+```
+
+par :
+
+```text
+user-01
+user-02
+```
+
+Et idéalement conserver un mapping **stable**.
+
+Ainsi :
+
+```text
+jean.dupont
+```
+
+devient toujours :
+
+```text
+user-01
+```
+
+dans tous les objets.
+
+Cela permet de tester les regroupements par auteur/auditeur sans révéler l'identité.
+
+---
+
+### 5. URLs
+
+Il faut anonymiser toutes les URLs, pas seulement celles du repository.
+
+Par exemple :
+
+```text
+https://github.com/company/design-system/issues/482
+```
+
+→
+
+```text
+https://github.com/example/repo-alpha/issues/103
+```
+
+Même chose pour :
+
+* PR ;
+* commits ;
+* branches ;
+* releases ;
+* packages ;
+* documentation ;
+* Storybook ;
+* Nexus ;
+* registry npm ;
+* etc.
+
+---
+
+### 6. Descriptions
+
+C'est probablement le point **le plus dangereux**.
+
+Une issue peut contenir :
+
+```text
+Le composant utilisé par le portail client X...
+```
+
+ou :
+
+```text
+Voir la documentation interne de CompanyName...
+```
+
+Même si le nom du repository est anonymisé, la description peut révéler l'organisation.
+
+Je prévoirais donc deux modes :
+
+```text
+--sanitize-text
+--strict
+```
+
+Le mode `strict` pourrait même **supprimer complètement les descriptions** du fixture.
+
+Pour ton besoin de démonstration, je pense que c'est souvent préférable.
+
+---
+
+### 7. Dates
+
+Il y a deux possibilités.
+
+Je préfère conserver la structure temporelle mais décaler toutes les dates.
+
+Exemple :
+
+```text
+2026-09-01
+2026-09-03
+2026-09-10
+```
+
+devient :
+
+```text
+2025-04-14
+2025-04-16
+2025-04-23
+```
+
+avec **le même décalage pour toutes les données**.
+
+Ainsi :
+
+```text
+audit
+    ↓ 2 jours
+issue créée
+    ↓ 6 jours
+PR
+    ↓ 1 jour
+correction
+```
+
+reste exactement identique.
+
+C'est très important pour tester tes KPI de délais.
+
+---
+
+# Et surtout : conserver les propriétés statistiques
+
+C'est là que l'outil devient intéressant.
+
+Je ne voudrais pas simplement faire :
+
+> remplacer chaque chaîne par `xxx`.
+
+Je voudrais que l'anonymisation préserve :
+
+* nombre de repositories ;
+* nombre de composants ;
+* nombre d'audits ;
+* nombre d'anomalies ;
+* distribution des criticités ;
+* catégories ;
+* états ;
+* relations ;
+* dates relatives ;
+* délais ;
+* PR associées ;
+* anomalies sans PR ;
+* composants sans audit ;
+* données DQ volontairement incorrectes.
+
+Ainsi ton fixture devient un **jeu de données de démonstration réaliste**, pas simplement une copie masquée.
+
+---
+
+# Je te proposerais même deux fixtures
+
+### `fixture-demo.json`
+
+Données anonymisées mais relativement riches.
+
+Utilisée pour :
+
+```text
+npm test
+```
+
+et la démonstration du dashboard.
+
+### `fixture-edge-cases.json`
+
+Données synthétiques destinées uniquement aux tests :
+
+```text
+missing criticality
+duplicate component
+unknown category
+audit without anomaly
+anomaly without PR
+component without audit
+reopened anomaly
+cancelled anomaly
+invalid dates
+missing repository
+```
+
+Cela sépare très bien :
+
+**réalisme** et **tests de cas limites**.
+
+---
+
+## Et je ferais un troisième élément : un rapport d'anonymisation
+
+Après transformation :
+
+```text
+Anonymisation report
+────────────────────────────
+Repositories       3 → 3
+Components         47 → 47
+Issues             128 → 128
+Pull Requests      93 → 93
+Users              14 → 14
+
+URLs anonymisées   321
+Dates décalées     184
+Descriptions       97 supprimées
+Secrets détectés   0
+Emails détectés    0
+Tokens détectés    0
+```
+
+Et surtout :
+
+```text
+⚠ 3 champs nécessitent une vérification manuelle
+```
+
+Cela permettrait de faire une **revue de sécurité avant de publier le fixture**.
+
+---
+
+### Donc ma recommandation
+
+Je ne chercherais **pas un SaaS ou un outil externe d'anonymisation**.
+
+Je construirais dans ton projet un petit module :
+
+```text
+src/
+  anonymization/
+      anonymizer.ts
+      mapping.ts
+      sanitize.ts
+      validators.ts
+      report.ts
+```
+
+avec :
+
+```bash
+npm run fixture:anonymize
+npm run fixture:validate
+```
+
+Le premier transforme les données réelles, le second vérifie qu'il ne reste **aucune information identifiable**.
+
+Et pour ton projet, ce serait même une excellente évolution : **le fixture anonymisé deviendrait la référence de démonstration officielle du pipeline V2**.
+
+Si tu veux, **je peux te concevoir et intégrer directement cet anonymiseur dans la prochaine version du projet**, avec une stratégie d'anonymisation déterministe et un rapport de contrôle.
+
+-------
+
+C’est intégré dans le projet.
+
+### Ce qui a été ajouté
+
+* `fixture:anonymize`
+
+  * anonymisation **déterministe** avec `--seed`
+  * décalage uniforme des dates
+  * anonymisation des repositories, owners, IDs, numéros, projets, milestones et PR
+  * mode strict : suppression du contenu libre sensible
+  * option pour anonymiser aussi les noms de composants
+  * conservation des relations issues ↔ PR et des propriétés analytiques
+
+* `fixture:validate`
+
+  * détection d’emails, téléphones, URLs et tokens GitHub
+  * contrôle de l’intégrité des références entre issues et PR
+
+* `collect --output`
+
+  * permet maintenant de sauvegarder le `RawDataset` réel avant anonymisation
+
+* tests dédiés :
+
+  * déterminisme
+  * conservation des volumes
+  * intégrité des relations
+  * décalage des dates
+  * anonymisation du texte
+  * anonymisation optionnelle des composants
+
+* documentation : `docs/fixture-anonymization.md`
+
+* `data/raw/` est ajouté au `.gitignore` afin que les données GitHub réelles ne puissent pas être commitées par inadvertance.
+
+Le principe est donc exactement celui recherché :
+
+```text
+GitHub réel
+    ↓
+collect --source github --output data/raw/real.json
+    ↓
+fixture:anonymize
+    ↓
+fixture anonymisée
+    ↓
+pipeline V2
+    ↓
+dashboard / tests / partage
+```
+
+GitHub recommande notamment de traiter les tokens comme des mots de passe, et son API REST nécessite une pagination correcte pour éviter de récupérer un jeu de données incomplet. ([GitHub Docs][1])
+
+### Commandes à utiliser chez toi
+
+```bash
+npm ci
+
+npm run collect -- \
+  --source github \
+  --output data/raw/my-real-dataset.json
+
+npm run fixture:anonymize -- \
+  --input data/raw/my-real-dataset.json \
+  --output fixtures/my-anonymized-fixture.json \
+  --seed my-fixture-v1 \
+  --date-offset-days -500
+
+npm run fixture:validate -- \
+  --input fixtures/my-anonymized-fixture.json
+```
+
+Puis tu pourras faire tourner le pipeline sur cette fixture.
+
+### Validation de mon côté
+
+Je n’ai **pas pu exécuter les tests TypeScript**, car l’environnement de travail n’a pas les dépendances installées et `npm ci` a de nouveau expiré. Je ne vais donc pas te dire que la suite est verte.
+
+En revanche, j’ai intégré le code, les tests et la documentation dans une archive complète :
+
+**[Télécharger le projet V2 avec l’anonymiseur](sandbox:/mnt/data/design-system-quality-pipeline-v2-anonymizer.zip)**
+
+Une fois `npm ci` réussi sur ton PC, je te conseille de lancer d’abord :
+
+```bash
+npm run typecheck
+npm run test
+npm run lint
+npm run build
+```
+
+Puis de tester la chaîne réelle avec **un seul de tes repositories** avant de collecter les trois.
+
+[1]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?utm_source=chatgpt.com "Managing your personal access tokens - GitHub Docs"
+
+-----
