@@ -374,9 +374,94 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
 
 /** Construit la page listant les composants, audits et statuts de fiabilité. */
 function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
-  const libraryById = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
-  const rows = snapshot.normalizedData.components.map((component) => { const audit = snapshot.normalizedData.audits.find((item) => item.componentId === component.componentId); return `<tr><td>${repositoryReference(snapshot, libraryById.get(component.libraryId) ?? 'repository inconnu', githubUrl)}</td><td><strong>${escapeHtml(component.name)}</strong><small>${escapeHtml(component.componentId)}</small></td><td><span class="tag tag-${component.discoverySource}">${discoveryLabel(component.discoverySource)}</span></td><td>${audit ? `<span class="state state-${audit.status}">${auditStatusLabel(audit.status)}</span>` : '<span class="state state-unknown">inconnu</span>'}</td><td>${audit?.version ?? '—'}</td><td>${qualityLabel(component.dataQualityStatus)}</td></tr>`; }).join('');
-  return `<section class="page-intro"><p class="muted">Un composant non audité n’est jamais interprété comme non conforme.</p></section><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Catalogue et audit</p><h2>Composants couverts</h2></div><span class="badge">${snapshot.normalizedData.components.length} composants</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Découverte</th><th>Résultat objectif</th><th>Version</th><th>Fiabilité</th></tr></thead><tbody>${rows}</tbody></table></div></article>`;
+  const { metrics } = snapshot.analytics;
+  const libraries = snapshot.normalizedData.libraries;
+  const activeComponents = snapshot.normalizedData.components.filter((component) => component.status === 'active');
+  const completedAudits = snapshot.normalizedData.audits.filter((audit) => !['in_progress', 'not_evaluated'].includes(audit.status));
+  const completedByComponent = new Map<string, typeof completedAudits[number]>();
+  for (const audit of completedAudits) completedByComponent.set(audit.componentId, audit);
+  const anomaliesByComponent = new Map<string, typeof snapshot.normalizedData.anomalies>();
+  for (const anomaly of snapshot.normalizedData.anomalies) {
+    const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
+    list.push(anomaly);
+    anomaliesByComponent.set(anomaly.componentId, list);
+  }
+  const repositoriesWithComponents = libraries.map((library) => {
+    const components = activeComponents.filter((component) => component.libraryId === library.libraryId);
+    const audited = components.filter((component) => completedByComponent.has(component.componentId)).length;
+    const conform = components.filter((component) => completedByComponent.get(component.componentId)?.objectiveAuditResult === 'conform').length;
+    const anomalies = components.flatMap((component) => anomaliesByComponent.get(component.componentId) ?? []);
+    const open = anomalies.filter((anomaly) => ['open', 'reopened', 'in_progress'].includes(anomaly.status)).length;
+    return { library, components, audited, conform, anomalies: anomalies.length, open };
+  });
+
+  const coverage = metricOrUnknown(metrics, 'portfolio.auditCoverage');
+  const componentsMetric = metricOrUnknown(metrics, 'portfolio.components');
+  const auditedMetric = metricOrUnknown(metrics, 'portfolio.componentsAudited');
+  const completedMetric = metricOrUnknown(metrics, 'audit.completed');
+  const conformity = metricOrUnknown(metrics, 'audit.conformityRate');
+  const conform = metricOrUnknown(metrics, 'audit.conform');
+  const conditional = metricOrUnknown(metrics, 'audit.conditional');
+  const nonConform = metricOrUnknown(metrics, 'audit.nonConform');
+  const critical = metricOrUnknown(metrics, 'audit.critical');
+
+  const componentRows = activeComponents.map((component) => {
+    const library = libraries.find((item) => item.libraryId === component.libraryId);
+    const audit = completedByComponent.get(component.componentId) ?? snapshot.normalizedData.audits.find((item) => item.componentId === component.componentId);
+    const anomalies = anomaliesByComponent.get(component.componentId) ?? [];
+    return componentAuditRow(snapshot, component, library?.name ?? 'repository inconnu', audit, anomalies, githubUrl);
+  }).join('');
+
+  const auditRows = snapshot.normalizedData.audits.map((audit) => {
+    const component = snapshot.normalizedData.components.find((item) => item.componentId === audit.componentId);
+    const library = libraries.find((item) => item.libraryId === audit.libraryId);
+    const anomalies = anomaliesByComponent.get(audit.componentId) ?? [];
+    return `<tr><td>${repositoryReference(snapshot, library?.name ?? 'repository inconnu', githubUrl)}</td><td><strong>${escapeHtml(component?.name ?? audit.componentId)}</strong><small>${escapeHtml(audit.sourceIssueId)}</small></td><td><span class="state state-${audit.objectiveAuditResult}">${auditStatusLabel(audit.objectiveAuditResult)}</span></td><td>${escapeHtml(audit.version)}</td><td>${anomalies.length}</td><td>${anomalies.filter((item) => ['open','reopened','in_progress'].includes(item.status)).length}</td><td>${qualityLabel(audit.dataQualityStatus)}</td></tr>`;
+  }).join('');
+
+  const repositoryRowsV2 = repositoriesWithComponents.map(({ library, components, audited, conform, anomalies, open }) => {
+    const repositoryCoverage = components.length ? `${audited}/${components.length}` : '0/0';
+    return `<tr><td>${repositoryReference(snapshot, library.name, githubUrl)}<small>${escapeHtml(library.repository)}</small></td><td>${components.length}</td><td>${repositoryCoverage}</td><td>${conform}/${audited || 0}</td><td>${anomalies}</td><td>${open}</td><td><span class="tag tag-${library.dataQualityStatus}">${qualityLabel(library.dataQualityStatus)}</span></td></tr>`;
+  }).join('');
+
+  return `<section class="hero-band synthesis-hero">
+    <div><p class="eyebrow">Périmètre auditable</p><h2>${formatMetricValue(componentsMetric)} composants actifs à couvrir</h2><p>La couverture est calculée sur les composants actifs disposant d’un audit terminé. Un composant non audité n’est jamais assimilé à un composant non conforme.</p></div>
+    <div class="hero-facts"><div><strong>${formatMetricValue(auditedMetric)}</strong><span>composants audités</span></div><div><strong>${formatMetricValue(coverage)}%</strong><span>couverture</span></div><div><strong>${formatMetricValue(conformity)}%</strong><span>conformité des audits terminés</span></div></div>
+  </section>
+
+  <section class="section-heading"><div><p class="eyebrow">Indicateurs</p><h2>Couverture et résultats</h2></div><span class="badge">${qualityLabel(coverage.reliability.status)}</span></section>
+  <section class="kpi-grid synthesis-grid">
+    ${metricCard('Composants actifs', componentsMetric, denominatorLabel(componentsMetric), 'audits.html')}
+    ${metricCard('Composants audités', auditedMetric, ratioLabel(auditedMetric), 'audits.html?scope=audited')}
+    ${metricCard('Couverture', coverage, ratioLabel(coverage), 'audits.html')}
+    ${metricCard('Audits terminés', completedMetric, denominatorLabel(completedMetric), 'audits.html?scope=audited')}
+    ${metricCard('Conformes', conform, ratioLabel(conform), 'audits.html?result=conform')}
+    ${metricCard('Conformité', conformity, ratioLabel(conformity), 'audits.html?result=conform')}
+  </section>
+
+  <section class="content-grid synthesis-two">
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Résultats</p><h2>État des audits terminés</h2></div><span class="badge">${formatMetricValue(completedMetric)} terminés</span></div><div class="bars">${linkedBar('conformes', conform.value, 'audits.html?result=conform')}${linkedBar('conditionnels', conditional.value, 'audits.html?result=conditional')}${linkedBar('non conformes', nonConform.value, 'audits.html?result=non_conform')}${linkedBar('critiques', critical.value, 'audits.html?result=critical')}</div><p class="panel-note">Les résultats portent uniquement sur les audits terminés ; la couverture du patrimoine est présentée séparément.</p></article>
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Lecture d’un composant</p><h2>Composant → audit → anomalies</h2></div><span class="badge">traçabilité</span></div><p class="panel-note">Chaque ligne ci-dessous relie le composant à son audit et aux anomalies qui lui sont rattachées. Les anomalies restent visibles même lorsqu’elles ont une réserve de qualité.</p><div class="chain-legend"><span>Composant</span><span>Audit</span><span>Anomalies</span></div></article>
+  </section>
+
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Patrimoine actif</p><h2>Composant → audit → anomalies</h2></div><span class="badge">${activeComponents.length} composants actifs</span></div><div class="filter-bar"><input class="search" data-component-filter placeholder="Rechercher un composant, repository ou anomalie..."><select data-component-result><option value="">Tous les résultats</option><option value="audited">Audité</option><option value="not_audited">Non audité</option><option value="conform">Conforme</option><option value="conditional">Conditionnel</option><option value="non_conform">Non conforme</option><option value="critical">Critique</option></select><button type="button" class="reset-button" data-reset-component-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Audit</th><th>Résultat</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody data-component-table>${componentRows}</tbody></table></div></article>
+
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits réalisés</p><h2>Traçabilité de chaque audit</h2></div><span class="badge">${snapshot.normalizedData.audits.length} audits</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant / source</th><th>Résultat</th><th>Version</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${auditRows || '<tr><td colspan="7">Aucun audit terminé dans ce snapshot.</td></tr>'}</tbody></table></div></article>
+
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison</p><h2>Couverture par repository</h2></div><span class="badge">${repositoriesWithComponents.length} repositories</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composants actifs</th><th>Audités</th><th>Conformes</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${repositoryRowsV2}</tbody></table></div></article>
+
+  <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves qui affectent les audits ou leur périmètre</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)} · ${severityLabel(issue.severity)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${qualityLabel(issue.action === 'exclude' ? 'partial' : 'reliable')}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>Les audits et leur périmètre ne présentent aucune réserve DQ.</p></div></li>'}</ul></article>`;
+}
+
+function componentAuditRow(snapshot: Snapshot, component: Component, repositoryName: string, audit: Snapshot['normalizedData']['audits'][number] | undefined, anomalies: Snapshot['normalizedData']['anomalies'], githubUrl?: string): string {
+  const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;
+  const result = audit ? auditStatusLabel(audit.objectiveAuditResult) : 'non audité';
+  const resultClass = audit ? audit.objectiveAuditResult : 'unknown';
+  const anomalyLinks = anomalies.length
+    ? anomalies.slice(0, 4).map((item) => `<a class="tag tag-${item.criticality ?? 'warning'}" href="anomalies.html?status=${encodeURIComponent(item.status)}">${escapeHtml(item.provenance.sourceId ?? item.anomalyId)}</a>`).join(' ')
+    : '<span class="muted">Aucune</span>';
+  const extra = anomalies.length > 4 ? ` <span class="muted">+${anomalies.length - 4}</span>` : '';
+  return `<tr data-component-row data-component-result="${audit ? audit.objectiveAuditResult : 'not_audited'}" data-component-audited="${audit ? 'audited' : 'not_audited'}"><td>${repositoryReference(snapshot, repositoryName, githubUrl)}</td><td><strong>${escapeHtml(component.name)}</strong><small>${escapeHtml(component.componentId)}</small></td><td>${audit ? `<span class="state state-${audit.status}">${auditStatusLabel(audit.status)}</span><small>${escapeHtml(audit.version)}</small>` : '<span class="state state-unknown">non audité</span>'}</td><td><span class="state state-${resultClass}">${result}</span></td><td>${anomalyLinks}${extra}</td><td><strong>${open}</strong></td><td><span class="tag tag-${component.dataQualityStatus}">${qualityLabel(component.dataQualityStatus)}</span></td></tr>`;
 }
 
 /** Rend une carte KPI avec sa valeur, son ratio et sa définition. */
@@ -448,6 +533,7 @@ body{background:#06162a;color:var(--text);font-family:Manrope,system-ui,sans-ser
 `;
 
 /** Script client minimal chargé par les pages pour les dates et filtres locaux. */
+
 const clientScript = `const snapshot = window.__SNAPSHOT__; document.querySelector('[data-captured-at]').textContent = new Date(snapshot.capturedAt).toLocaleString('fr-FR'); document.querySelector('[data-rule-version]').textContent = snapshot.ruleVersion; const filter = document.querySelector('[data-filter]'); const params = new URLSearchParams(window.location.search); let selectedCriticality = params.get('criticality'); let selectedCategory = params.get('category'); const criticalityLabels = { blocking: 'bloquante', major: 'majeure', minor: 'mineure' }; if (filter && (selectedCriticality || selectedCategory)) filter.value = criticalityLabels[selectedCriticality] || selectedCategory || ''; const applyFilter = (query) => { const normalizedQuery = query.toLowerCase(); document.querySelectorAll('[data-table] tr').forEach((row) => { const matchesText = !normalizedQuery || row.textContent.toLowerCase().includes(normalizedQuery); const matchesCriticality = !selectedCriticality || row.dataset.criticality === selectedCriticality; const matchesCategory = !selectedCategory || row.dataset.categories.split('|').includes(selectedCategory); row.hidden = !(matchesText && matchesCriticality && matchesCategory); }); }; if (filter) { filter.addEventListener('input', (event) => { selectedCriticality = null; selectedCategory = null; applyFilter(event.target.value); }); applyFilter(filter.value); } document.querySelectorAll('[data-copy-yaml]').forEach((button) => { button.addEventListener('click', async () => { const yaml = decodeURIComponent(button.dataset.copyYaml); const feedback = button.nextElementSibling; try { if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(yaml); } else { const textarea = document.createElement('textarea'); textarea.value = yaml; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); textarea.remove(); } button.textContent = 'YAML copié'; if (feedback) feedback.textContent = 'Prêt à coller dans config/catalogue.yaml'; } catch { if (feedback) feedback.textContent = 'Copie impossible dans ce navigateur'; } }); });`;
 
 /** Script de filtrage avancé de la table des anomalies. */

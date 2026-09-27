@@ -55,3 +55,20 @@ document.querySelectorAll('[data-copy-yaml]').forEach((button) => {
     }
   });
 });
+
+
+const componentRows = [...document.querySelectorAll('[data-component-table] tr[data-component-row]')];
+const componentText = document.querySelector('[data-component-filter]');
+const componentResult = document.querySelector('[data-component-result]');
+const applyComponentFilters = () => {
+  const query = (componentText?.value || '').toLowerCase();
+  const result = componentResult?.value || '';
+  componentRows.forEach((row) => {
+    const textMatch = !query || row.textContent.toLowerCase().includes(query);
+    const resultMatch = !result || row.dataset.componentResult === result || (result === 'audited' && row.dataset.componentAudited === 'audited') || (result === 'not_audited' && row.dataset.componentAudited === 'not_audited');
+    row.hidden = !(textMatch && resultMatch);
+  });
+};
+[componentText, componentResult].filter(Boolean).forEach((control) => control.addEventListener('input', applyComponentFilters));
+document.querySelector('[data-reset-component-filters]')?.addEventListener('click', () => { if (componentText) componentText.value = ''; if (componentResult) componentResult.value = ''; applyComponentFilters(); });
+applyComponentFilters();

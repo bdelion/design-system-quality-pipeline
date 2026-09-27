@@ -1145,3 +1145,77 @@ C’est fait : **Anomalies V2** est intégrée.
 J’ai également tenté une vérification TypeScript complète. L'environnement ne dispose pas des dépendances du projet et `npm ci` a de nouveau dépassé le délai disponible ; je ne peux donc pas honnêtement annoncer une exécution complète de Vitest/TypeScript.
 
 La prochaine évolution logique est **Audits & Composants V2** : rendre visible le véritable périmètre auditable, la couverture par repository/composant, le résultat de chaque audit et surtout le lien **composant → audit → anomalies**, avec les mêmes mécanismes d'explication et de qualité des données.
+
+----------
+
+C’est fait. Audits & Composants V2 est maintenant intégré à la version précédente.
+
+Ce que la page apporte
+
+1. Périmètre auditable
+
+nombre de composants actifs ;
+composants effectivement audités ;
+couverture audités / actifs ;
+distinction explicite entre couverture et conformité.
+
+2. Résultats d’audit
+
+conformes ;
+conditionnels ;
+non conformes ;
+critiques ;
+conformité calculée uniquement sur les audits terminés.
+
+3. Traçabilité complète
+La nouvelle vue permet de suivre :
+
+Repository → Composant → Audit → Anomalies
+
+Pour chaque composant :
+
+état de l’audit ;
+version auditée ;
+résultat objectif ;
+nombre total d’anomalies ;
+nombre d’anomalies ouvertes ;
+état de fiabilité des données.
+
+4. Tous les audits sont visibles
+Même les audits in_progress ou not_evaluated ne disparaissent plus du tableau de traçabilité.
+
+5. Vue par repository
+Pour chaque repository :
+
+composants actifs ;
+composants audités ;
+composants conformes ;
+anomalies ;
+anomalies ouvertes ;
+qualité des données.
+
+6. Filtres
+Sur le patrimoine :
+
+recherche libre ;
+audité / non audité ;
+conforme ;
+conditionnel ;
+non conforme ;
+critique.
+
+Et les liens depuis les indicateurs permettent de naviguer directement vers les sous-ensembles concernés.
+
+7. Qualité des données
+Les réserves DQ restent visibles directement dans la page Audits & Composants, sans faire disparaître les objets concernés.
+
+Archive complète
+
+Télécharger Design System Quality Pipeline – Audits & Composants V2
+
+J’ai également ajouté les assertions correspondantes au test du dashboard et vérifié l’intégrité de l’archive. La compilation TypeScript complète reste non exécutable dans l’environnement actuel faute des dépendances node_modules disponibles ; je n’en déduis donc pas que la suite complète est verte.
+
+La prochaine brique intéressante est maintenant la Cartographie V2 : remplacer la cartographie actuelle essentiellement centrée sur composant → anomalie → PR par une vraie représentation repository → composant → audit → anomalie → PR, avec possibilité d'identifier immédiatement les composants non audités, les audits sans anomalie et les anomalies sans PR.
+
+-----
+

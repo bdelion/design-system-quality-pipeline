@@ -35,6 +35,15 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('class="sidebar"');
   expect(html).toContain('ArchInsight');
   expect(html).toContain('assets/logo.svg');
+  const auditsHtml = await readFile(resolve(output, 'dashboard/audits.html'), 'utf8');
+  expect(auditsHtml).toContain('Périmètre auditable');
+  expect(auditsHtml).toContain('Composant → audit → anomalies');
+  expect(auditsHtml).toContain('Composants actifs');
+  expect(auditsHtml).toContain('Couverture');
+  expect(auditsHtml).toContain('Traçabilité de chaque audit');
+  expect(auditsHtml).toContain('data-component-table');
+  expect(auditsHtml).toContain('data-component-result');
+  expect(auditsHtml).toContain('design-system-react');
   const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
