@@ -2598,3 +2598,103 @@ Puis de tester la chaîne réelle avec **un seul de tes repositories** avant de 
 [1]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens?utm_source=chatgpt.com "Managing your personal access tokens - GitHub Docs"
 
 -----
+
+Oui, et ton doute est justifié : **je ne peux pas encore confirmer que « Data Quality V2 » est bien présente dans `feature/chatgpt-review`**.
+
+J’ai vérifié ce que je peux depuis cet environnement, mais l’accès direct au contenu de ta branche GitHub n’est pas disponible ici : la page de la branche ne se charge pas et l’environnement d’exécution ne peut pas cloner GitHub. Je ne veux donc pas te donner un faux « tout est intégré ». ([GitHub][1])
+
+En revanche, je peux faire **un audit exhaustif et fiable de ta branche** si tu me fournis son contenu sous forme de ZIP.
+
+### Ce que je vais contrôler
+
+Je comparerai ta branche avec **tout ce que nous avons construit ensemble**, notamment :
+
+| Bloc                        | Vérification                                                            |
+| --------------------------- | ----------------------------------------------------------------------- |
+| **Modèle V2 des métriques** | `Metric`, unités, numérateur/dénominateur, scope, période               |
+| **Catalogue des métriques** | `src/analytics/catalog.ts`, contrats et métriques autorisées            |
+| **Analytics V2**            | patrimoine, audits, anomalies, délais                                   |
+| **Data Quality V2**         | DQ-001 → DQ-010, impacts par métrique, `partial`, `reliability`         |
+| **Audit coverage**          | vrais composants auditables, pas `audits/components`                    |
+| **Conformité**              | `conform / completed audits` + couverture                               |
+| **Anomalies**               | stock `total/open/inProgress/done`                                      |
+| **Criticality coverage**    | exclusion des anomalies sans criticité des métriques concernées         |
+| **Délais**                  | average / median / P90 / oldest open                                    |
+| **Flows historiques**       | created / corrected / reopened / cancelled via snapshots                |
+| **Snapshot diff**           | comparaison N → N+1                                                     |
+| **Historique**              | page History et périodes explicites                                     |
+| **Cartographie**            | Repository → Component → Audit → Anomaly → PR                           |
+| **Audits & composants**     | traçabilité et filtres                                                  |
+| **Dashboard**               | consommation exclusive des métriques V2                                 |
+| **Ancien modèle**           | `calculateKpis()` uniquement comme compatibilité, champs deprecated     |
+| **Catalogue**               | absence de métriques V2 produites hors catalogue                        |
+| **Tests**                   | tests V2, DQ, snapshots, flows, dashboard                               |
+| **CI**                      | `npm ci → typecheck → lint → tests → build`                             |
+| **Fixture**                 | fixture analytique et tests associés                                    |
+| **Anonymisation**           | la dernière proposition : `fixture:anonymize`, `fixture:validate`, etc. |
+| **Documentation**           | release-readiness + documentation DQ/metrics/history                    |
+| **Dette restante**          | hardcoding `2026.09`, `portfolio.repositories`, DQ-003/DQ-009, etc.     |
+
+### Et surtout : « Data Quality V2 »
+
+Je vérifierai explicitement que ce n'est **pas seulement le ZIP que nous avions produit**, mais que le contenu correspondant est réellement présent dans ta branche :
+
+```text
+src/
+  data-quality/
+  analytics/
+    catalog.ts
+    metrics.ts
+    ...
+tests/
+  ...
+docs/
+  ...
+```
+
+et surtout que le DQ est **branché au modèle analytique**, avec quelque chose de ce type :
+
+```text
+RawDataset
+    ↓
+NormalizedData
+    ↓
+Data Quality
+    ↓
+Metric calculation
+    ↓
+Metric.reliability
+    ↓
+Dashboard
+```
+
+C'est important parce que nous avions justement corrigé le problème où un `partial: true` global pouvait donner l'impression que **tous** les KPI étaient peu fiables alors qu'une anomalie DQ ne concernait qu'une famille de métriques.
+
+### Ce dont j'ai besoin
+
+Depuis ton repository `feature/chatgpt-review`, fais simplement :
+
+```bash
+git checkout feature/chatgpt-review
+git pull
+```
+
+puis compresse **le projet complet** en ZIP, idéalement sans `node_modules`, `.git` ni `dist`.
+
+Tu peux ensuite **déposer le ZIP ici**.
+
+À partir de celui-ci, je pourrai faire une vraie comparaison **branche actuelle ↔ toutes nos évolutions**, et je te donnerai un tableau du type :
+
+* ✅ intégré correctement
+* ⚠️ partiellement intégré
+* ❌ absent
+* 🔴 régression/incohérence
+* 🔵 amélioration possible
+
+avec **les fichiers et lignes concernés**.
+
+Et je porterai une attention particulière à **Data Quality V2**, puisque c'est précisément le point sur lequel tu as un doute.
+
+[1]: https://github.com/github/docs/blob/main/content/copilot/tutorials/review-ai-generated-code.md?utm_source=chatgpt.com "docs/content/copilot/tutorials/review-ai-generated-code.md at main · github/docs · GitHub"
+
+----
