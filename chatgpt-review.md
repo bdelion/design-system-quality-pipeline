@@ -1219,3 +1219,80 @@ La prochaine brique intéressante est maintenant la Cartographie V2 : remplacer 
 
 -----
 
+C’est fait. Cartographie V2 est maintenant intégrée à la version Audits & Composants.
+
+Nouvelle chaîne de traçabilité
+
+La cartographie représente désormais explicitement :
+
+Repository → Composant → Audit → Anomalie → Pull Request
+
+Chaque niveau apporte ses propres informations :
+
+Repository
+nom et dépôt GitHub
+nombre de composants
+qualité des données
+Composant
+identifiant
+état de découverte
+qualité des données
+présence ou absence d’un audit
+Audit
+version
+état
+résultat objectif
+distinction entre non audité et non conforme
+Anomalie
+issue GitHub
+état
+criticité
+lien direct vers la vue filtrée des anomalies
+PR
+relation avec l’anomalie
+lien direct vers GitHub
+absence de PR explicitement signalée
+Recherche et filtres
+
+La cartographie dispose maintenant de :
+
+recherche par repository ;
+composant ;
+audit ;
+anomalie ;
+PR ;
+filtre par niveau de la chaîne ;
+bouton de réinitialisation.
+
+Cela permet par exemple de demander :
+
+« Montre-moi toutes les anomalies liées au composant X »
+
+ou :
+
+« Quels composants de ce repository n'ont pas d'audit ? »
+
+sans perdre la structure de la chaîne.
+
+Point important
+
+J’ai volontairement abandonné l'ancien modèle « une chaîne par anomalie ». Il pouvait donner l'impression que le composant n'existait qu'à travers ses anomalies.
+
+La nouvelle représentation part du patrimoine réel : un composant sans anomalie reste visible, un composant sans audit reste visible, et une anomalie sans PR reste visible.
+
+C'est beaucoup plus cohérent avec le modèle V2.
+
+Archive
+
+Télécharger Design System Quality Pipeline – Cartographie V2
+
+J’ai également vérifié la syntaxe du nouveau graph.js et corrigé les attentes du test du dashboard. Comme précédemment, l'environnement ne dispose pas des dépendances node_modules, donc je ne peux pas déclarer la suite TypeScript/Vitest entièrement exécutée.
+
+À ce stade, les quatre vues du dashboard ont donc leur modèle V2 :
+
+Synthèse → Anomalies → Audits & Composants → Cartographie
+
+La prochaine étape que je ferais est moins visuelle mais importante : finaliser le contrat analytique V2 et supprimer progressivement les anciens KPI Analytics, afin que le dashboard ne puisse plus mélanger accidentellement les anciennes définitions et les nouvelles métriques.
+
+------
+

@@ -358,18 +358,82 @@ function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): strin
   }[issue.ruleId] ?? issue.message);
 }
 
-/** Construit une vue lisible des liens entre composants, issues et pull requests. */
+/** Construit la cartographie V2 repository → composant → audit → anomalie → PR. */
 function graphContent(snapshot: Snapshot, githubUrl?: string): string {
-  const componentsById = new Map(snapshot.normalizedData.components.map((component) => [component.componentId, component]));
-  const graphRows = snapshot.normalizedData.anomalies.map((anomaly) => {
-    const component = componentsById.get(anomaly.componentId);
-    const issueLabel = anomaly.provenance.sourceId ?? anomaly.anomalyId;
-    const issueNode = `<div class="graph-node issue" data-graph-node><span class="node-dot"></span><div><strong>${escapeHtml(issueLabel)}</strong><small>Issue · ${anomaly.cancelled ? 'annulée' : anomalyStatusLabel(anomaly.status)}</small></div><span class="state state-${anomaly.cancelled ? 'cancelled' : anomaly.status}">${anomaly.cancelled ? 'annulée' : anomalyStatusLabel(anomaly.status)}</span></div>`;
-    const componentNode = component ? `<div class="graph-node" data-graph-node><span class="node-dot"></span><div><strong>${escapeHtml(component.name)}</strong><small>Composant · ${discoveryLabel(component.discoverySource)}</small></div><span class="tag tag-${component.dataQualityStatus}">${qualityLabel(component.dataQualityStatus)}</span></div>` : '';
-    const pullRequestNodes = anomaly.pullRequestRefs.map((reference) => `<div class="graph-node pr" data-graph-node><span class="node-dot"></span><div><strong>${githubReference(snapshot, reference, githubUrl)}</strong><small>Pull request · relation détectée</small></div><span class="state state-merged">liée</span></div>`).join('');
-    return `<div class="graph-lines"><div class="graph-row-title">${escapeHtml(anomaly.anomalyId)} <span class="badge">${criticalityLabel(anomaly.criticality)}</span></div>${componentNode}<div class="graph-edge">comporte l'anomalie</div>${issueNode}${pullRequestNodes ? `<div class="graph-edge">est liée à</div>${pullRequestNodes}` : '<div class="graph-edge">aucune PR liée</div>'}</div>`;
+  const { metrics } = snapshot.analytics;
+  const libraries = snapshot.normalizedData.libraries;
+  const componentsByLibrary = new Map<string, Component[]>();
+  for (const component of snapshot.normalizedData.components.filter((item) => item.status === 'active')) {
+    const list = componentsByLibrary.get(component.libraryId) ?? [];
+    list.push(component);
+    componentsByLibrary.set(component.libraryId, list);
+  }
+  const auditsByComponent = new Map<string, Snapshot['normalizedData']['audits']>();
+  for (const audit of snapshot.normalizedData.audits) {
+    const list = auditsByComponent.get(audit.componentId) ?? [];
+    list.push(audit);
+    auditsByComponent.set(audit.componentId, list);
+  }
+  const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
+  for (const anomaly of snapshot.normalizedData.anomalies) {
+    const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
+    list.push(anomaly);
+    anomaliesByComponent.set(anomaly.componentId, list);
+  }
+
+  const repositoriesMetric = metricOrUnknown(metrics, 'portfolio.repositories');
+  const componentsMetric = metricOrUnknown(metrics, 'portfolio.components');
+  const auditedMetric = metricOrUnknown(metrics, 'portfolio.componentsAudited');
+  const openMetric = metricOrUnknown(metrics, 'anomaly.open');
+
+  const repositorySections = libraries.map((library) => {
+    const components = (componentsByLibrary.get(library.libraryId) ?? []).sort((a, b) => a.name.localeCompare(b.name));
+    const componentSections = components.map((component) => {
+      const audits = (auditsByComponent.get(component.componentId) ?? []).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+      const audit = audits.find((item) => !['in_progress', 'not_evaluated'].includes(item.status)) ?? audits[0];
+      const anomalies = anomaliesByComponent.get(component.componentId) ?? [];
+      const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;
+      const auditNode = audit
+        ? `<div class="map-node audit-node" data-map-node data-map-kind="audit"><span class="node-dot"></span><div><strong>Audit ${escapeHtml(audit.version)}</strong><small>${auditStatusLabel(audit.objectiveAuditResult)} · ${escapeHtml(audit.status)}</small></div><span class="state state-${audit.objectiveAuditResult}">${auditStatusLabel(audit.objectiveAuditResult)}</span></div>`
+        : `<div class="map-node audit-node muted-node" data-map-node data-map-kind="audit"><span class="node-dot"></span><div><strong>Audit</strong><small>Aucun audit disponible</small></div><span class="state state-unknown">non audité</span></div>`;
+      const anomalyNodes = anomalies.map((anomaly) => {
+        const issueLabel = anomaly.provenance.sourceId ?? anomaly.anomalyId;
+        const prs = anomaly.pullRequestRefs.map((reference) => `<a class="map-node pr-node" data-map-node data-map-kind="pr" href="${githubReferenceHref(snapshot, reference, githubUrl)}"><span class="node-dot"></span><div><strong>${githubReference(snapshot, reference, githubUrl)}</strong><small>PR liée à ${escapeHtml(issueLabel)}</small></div><span class="state state-merged">PR</span></a>`).join('');
+        return `<div class="map-branch"><a class="map-node anomaly-node" data-map-node data-map-kind="anomaly" href="anomalies.html?status=${encodeURIComponent(anomaly.cancelled ? 'cancelled' : anomaly.status)}"><span class="node-dot"></span><div><strong>${escapeHtml(issueLabel)}</strong><small>Anomalie · ${anomaly.cancelled ? 'annulée' : anomalyStatusLabel(anomaly.status)} · ${criticalityLabel(anomaly.criticality)}</small></div><span class="state state-${anomaly.cancelled ? 'cancelled' : anomaly.status}">${anomaly.cancelled ? 'annulée' : anomalyStatusLabel(anomaly.status)}</span></a>${prs ? `<div class="map-edge">PR</div>${prs}` : '<div class="map-edge muted">aucune PR liée</div>'}</div>`;
+      }).join('');
+      return `<div class="map-component" data-map-component data-search="${escapeHtml(`${library.name} ${component.name} ${component.componentId}`.toLowerCase())}">
+        <div class="map-node component-node" data-map-node data-map-kind="component"><span class="node-dot"></span><div><strong>${escapeHtml(component.name)}</strong><small>Composant · ${escapeHtml(component.componentId)}</small></div><span class="tag tag-${component.dataQualityStatus}">${qualityLabel(component.dataQualityStatus)}</span></div>
+        <div class="map-edge">Audit</div>${auditNode}
+        <div class="map-edge">${anomalies.length} anomalie${anomalies.length > 1 ? 's' : ''} · ${open} ouverte${open > 1 ? 's' : ''}</div>
+        <div class="map-anomalies">${anomalyNodes || '<p class="muted map-empty">Aucune anomalie issue de cet audit/composant.</p>'}</div>
+      </div>`;
+    }).join('');
+    return `<section class="map-repository" data-map-repository data-search="${escapeHtml(`${library.name} ${library.repository}`.toLowerCase())}">
+      <div class="map-node repository-node" data-map-node data-map-kind="repository"><span class="node-dot"></span><div><strong>${repositoryReference(snapshot, library.name, githubUrl)}</strong><small>${escapeHtml(library.repository)} · ${components.length} composant${components.length > 1 ? 's' : ''}</small></div><span class="tag tag-${library.dataQualityStatus}">${qualityLabel(library.dataQualityStatus)}</span></div>
+      <div class="map-edge">Contient</div>
+      <div class="map-components">${componentSections || '<p class="muted map-empty">Aucun composant actif.</p>'}</div>
+    </section>`;
   }).join('');
-  return `<section class="dashboard-intro"><div><p class="muted">${snapshot.normalizedData.anomalies.length} chaînes de relations · issues, composants et pull requests</p></div><div class="graph-legend"><span>Composant</span><span class="legend-issue">Issue</span><span class="legend-pr">Pull request</span></div></section><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Relations du snapshot</p><h2>Cartographie des dépendances qualité</h2></div><input class="search" data-graph-filter placeholder="Rechercher une issue, un composant ou une PR"></div><div class="graph-canvas">${graphRows || '<p class="muted">Aucune relation disponible.</p>'}</div></article>`;
+
+  return `<section class="hero-band synthesis-hero">
+    <div><p class="eyebrow">Chaîne de traçabilité</p><h2>Repository → composant → audit → anomalie → PR</h2><p>Chaque relation est issue du snapshot courant. Un composant non audité reste visible et une anomalie sans PR n’est pas interprétée comme corrigée.</p></div>
+    <div class="hero-facts"><div><strong>${formatMetricValue(repositoriesMetric)}</strong><span>repositories</span></div><div><strong>${formatMetricValue(componentsMetric)}</strong><span>composants actifs</span></div><div><strong>${formatMetricValue(openMetric)}</strong><span>anomalies ouvertes</span></div></div>
+  </section>
+  <section class="section-heading"><div><p class="eyebrow">Lecture</p><h2>Cartographie exploitable</h2></div><span class="badge">${formatMetricValue(auditedMetric)} composants audités</span></section>
+  <section class="panel graph-toolbar"><input class="search" data-map-filter placeholder="Rechercher un repository, composant, audit, anomalie ou PR"><select data-map-kind-filter><option value="">Tous les niveaux</option><option value="repository">Repositories</option><option value="component">Composants</option><option value="audit">Audits</option><option value="anomaly">Anomalies</option><option value="pr">Pull requests</option></select><button type="button" class="reset-button" data-map-reset>Réinitialiser</button></section>
+  <section class="map-legend"><span class="legend-repository">Repository</span><span class="legend-component">Composant</span><span class="legend-audit">Audit</span><span class="legend-anomaly">Anomalie</span><span class="legend-pr">PR</span></section>
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Relations du snapshot</p><h2>Patrimoine et chaîne de preuve</h2></div><span class="badge">${snapshot.normalizedData.anomalies.length} anomalies</span></div><div class="map-canvas">${repositorySections || '<p class="muted">Aucune relation disponible.</p>'}</div></article>
+  <article class="panel table-panel" id="map-quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves susceptibles d’affecter la cartographie</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${severityLabel(issue.severity)}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>La cartographie ne présente aucune réserve DQ.</p></div></li>'}</ul></article>`;
+}
+
+function githubReferenceHref(snapshot: Snapshot, reference: string, githubUrl?: string): string {
+  if (!githubUrl) return '#';
+  const baseUrl = githubUrl.replace(/\/+$/, '');
+  for (const repository of snapshot.rawData.repositories) {
+    const pullRequest = repository.pullRequests.find((candidate) => candidate.id === reference);
+    if (pullRequest) return `${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/pull/${pullRequest.number}`;
+  }
+  return '#';
 }
 
 /** Construit la page listant les composants, audits et statuts de fiabilité. */
