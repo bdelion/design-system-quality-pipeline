@@ -1853,3 +1853,97 @@ On pourra enfin répondre directement à la question :
 
 -----
 
+C’est fait : la page **Qualité des données V2** est maintenant intégrée.
+
+### Nouvelle vue
+
+Elle est organisée autour de 4 niveaux.
+
+#### 1. État global du snapshot
+
+* `OK`
+* `WARNING`
+* `ERROR`
+* nombre de règles DQ déclenchées
+* nombre d'entités concernées
+
+Le statut global reste informatif : il **ne dégrade pas artificiellement toutes les métriques**.
+
+#### 2. Règles DQ
+
+Chaque règle affiche maintenant :
+
+| Élément             | Exemple                       |
+| ------------------- | ----------------------------- |
+| Règle               | DQ-001                        |
+| Sévérité            | ERROR                         |
+| Entités             | `issue-103`                   |
+| Description         | criticité manquante           |
+| Action              | exclusion / warning / unknown |
+| Métriques affectées | criticité, couverture...      |
+
+#### 3. Impact sur les métriques
+
+C'est le point principal.
+
+La page permet de comprendre :
+
+```text
+DQ-001
+  ↓
+issue-103
+  ↓
+anomaly.byCriticality.*
+anomaly.criticalityCoverage
+  ↓
+certaines données exclues
+```
+
+mais :
+
+```text
+anomaly.total
+anomaly.open
+anomaly.correctionDelay.*
+```
+
+restent fiables.
+
+On évite donc le raisonnement erroné :
+
+> « Il y a une erreur DQ → tout le dashboard est mauvais. »
+
+#### 4. Fiabilité par famille
+
+La page donne également une vision synthétique :
+
+* **Patrimoine**
+* **Audits**
+* **Anomalies**
+* **Délais**
+* **Flux**
+
+avec leur niveau de fiabilité.
+
+Cela permet immédiatement de savoir quelles parties du reporting peuvent être utilisées sans réserve et lesquelles nécessitent une lecture prudente.
+
+### Navigation
+
+Les métriques affectées sont maintenant directement exploitables pour revenir vers :
+
+**Synthèse → Anomalies → Audits → Composants → Qualité des données**
+
+L'objectif est qu'un utilisateur puisse partir d'un chiffre et remonter jusqu'à **la donnée qui explique éventuellement sa fiabilité**.
+
+### Archive
+
+[**Télécharger Design System Quality Pipeline – Data Quality V2**](sandbox:/mnt/data/design-system-quality-pipeline-v2-dq.zip)
+
+Cette version constitue maintenant une étape importante : les six briques principales du dashboard sont cohérentes avec le modèle analytique :
+
+**Synthèse · Anomalies · Audits & Composants · Cartographie · Historique · Qualité des données**
+
+La prochaine étape que je recommande est désormais **la stabilisation finale du pipeline**, plutôt que d'ajouter encore des écrans : tests métier exhaustifs sur les métriques/DQ/snapshots, fixture de référence, CI GitHub et suppression définitive des anciens chemins `Analytics`.
+
+-----
+

@@ -19,8 +19,14 @@ describe('V2 metric contract', () => {
     expect(generatedMetricIds.every((id) => getMetricContract(id))).toBe(true);
   });
 
-  it('keeps flows out of the current snapshot contract', () => {
-    expect(METRIC_CONTRACTS.filter((contract) => contract.kind === 'flow')).toHaveLength(0);
+  it('declares flow metrics explicitly without mixing them into snapshot stocks', () => {
+    const flows = METRIC_CONTRACTS.filter((contract) => contract.kind === 'flow').map((contract) => contract.id);
+    expect(flows).toEqual([
+      'anomaly.flow.created',
+      'anomaly.flow.corrected',
+      'anomaly.flow.reopened',
+      'anomaly.flow.cancelled'
+    ]);
   });
 
   it('resolves concrete category metrics through the wildcard contract', () => {
