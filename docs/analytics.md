@@ -40,3 +40,17 @@ Les vrais flux (`created`, `corrected`, `reopened`, `cancelled`) nécessitent la
 ## Migration
 
 Lorsqu'un écran a besoin d'un indicateur, il doit récupérer `analytics.metrics[metricId]` et utiliser sa `value`, son `numerator`, son `denominator`, sa `definition`, sa `scope`, sa `reliability` et ses `exclusions`. Cela garantit que le rendu ne réimplémente pas la logique métier.
+
+## Catalogue contractuel
+
+Le catalogue déclaratif est défini dans `src/analytics/catalog.ts`. Il décrit pour chaque métrique son unité, son périmètre, sa définition et sa nature analytique (`stock`, `ratio`, `duration` ou `flow`). Le moteur vérifie à chaque calcul que les identifiants produits sont couverts par ce catalogue.
+
+Les métriques `anomaly.byCategory.*` utilisent un contrat générique ; chaque catégorie concrète est une instance de ce contrat.
+
+Aucune métrique `flow` n'est actuellement produite. Lors de l'introduction de l'historique, une métrique de flux devra obligatoirement porter une période explicite.
+
+## Comparaison de snapshots
+
+`src/snapshots/diff.ts` compare deux snapshots ordonnés et produit des faits de transition sans modifier les snapshots sources : entités ajoutées/supprimées, changements d'état d'anomalies, premières corrections observées, entrées en état `reopened` et passages à `cancelled`.
+
+Une transition est toujours rattachée à la période `[capturedAt du snapshot précédent, capturedAt du snapshot courant]`. Les futurs indicateurs de flux devront être construits à partir de ce delta et porter cette période explicitement.

@@ -26,13 +26,33 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
     { pattern: 'anomaly.byCategory.*', action: 'include', reason: 'La classification contient un label explicitement inconnu.' }
   ],
   'DQ-008': [
-    { pattern: 'anomaly.*', action: 'exclude', reason: 'L’issue annulée ne doit contribuer à aucun KPI.' }
+    { pattern: 'anomaly.total', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.open', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.inProgress', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.done', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.byCriticality.*', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.criticalityCoverage', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.byCategory.*', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.correctedEver', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.reopened', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.correctionDelay.*', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' }
   ],
   'DQ-009': [
     { pattern: 'portfolio.release.*', action: 'unknown', reason: 'La preuve de release Nexus est indisponible.' }
   ],
   'DQ-010': [
-    { pattern: 'anomaly.*', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' }
+    { pattern: 'anomaly.total', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.open', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.inProgress', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.done', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.byCriticality.*', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.criticalityCoverage', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.byCategory.*', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.correctedEver', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.reopened', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.correctionDelay.*', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' }
   ]
 };
 

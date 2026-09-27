@@ -1,12 +1,6 @@
-import type { DataQualityIssue, Metric, MetricBreakdown, MetricScope, NormalizedData } from '../domain/types.js';
+import type { DataQualityIssue, Metric, MetricBreakdown, NormalizedData } from '../domain/types.js';
+import { assertMetricContract, getMetricContract } from './catalog.js';
 import { applyMetricImpacts, matchesMetricPattern } from '../lib/metric-impacts.js';
-
-export interface MetricSpec {
-  id: string;
-  unit: Metric['unit'];
-  scope: MetricScope;
-  definition: string;
-}
 
 
 function reliabilityFor(metricId: string, issues: DataQualityIssue[]): { status: Metric['reliability']['status']; issueIds: string[] } {
@@ -17,10 +11,12 @@ function reliabilityFor(metricId: string, issues: DataQualityIssue[]): { status:
   return { status, issueIds: relevant.map((issue) => issue.id).filter(Boolean) };
 }
 
-function metric(spec: MetricSpec, value: number | 'unknown', numerator: number | 'unknown', denominator: number | 'unknown', sourceEntityIds: string[], issues: DataQualityIssue[], breakdowns?: MetricBreakdown[]): Metric {
-  const relevant = issues.filter((issue) => issue.impacts.some((impact) => matchesMetricPattern(impact.metricId, spec.id)));
+function metric(metricId: string, value: number | 'unknown', numerator: number | 'unknown', denominator: number | 'unknown', sourceEntityIds: string[], issues: DataQualityIssue[], breakdowns?: MetricBreakdown[]): Metric {
+  const spec = getMetricContract(metricId);
+  if (!spec) throw new Error(`Missing V2 metric contract: ${metricId}`);
+  const relevant = issues.filter((issue) => issue.impacts.some((impact) => matchesMetricPattern(impact.metricId, metricId)));
   const result: Metric = {
-    id: spec.id,
+    id: metricId,
     value,
     unit: spec.unit,
     numerator,
@@ -28,9 +24,9 @@ function metric(spec: MetricSpec, value: number | 'unknown', numerator: number |
     scope: spec.scope,
     definition: spec.definition,
     sourceEntityIds,
-    reliability: reliabilityFor(spec.id, issues),
+    reliability: reliabilityFor(metricId, issues),
     exclusions: relevant.flatMap((issue) => issue.impacts
-      .filter((impact) => matchesMetricPattern(impact.metricId, spec.id) && impact.action === 'exclude')
+      .filter((impact) => matchesMetricPattern(impact.metricId, metricId) && impact.action === 'exclude')
       .map(() => ({ entityId: issue.entityId, ruleId: issue.ruleId })))
   };
   if (breakdowns !== undefined) result.breakdowns = breakdowns;
@@ -67,6 +63,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     'anomaly.criticalityCoverage', 'anomaly.byCategory.*', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
     'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
   ];
+  assertMetricContract(metricIds);
   const issues = applyMetricImpacts(dqIssues, metricIds);
   const excluded = (metricId: string) => new Set(issues.flatMap((issue) => issue.impacts.filter((impact) => matchesMetricPattern(impact.metricId, metricId) && impact.action === 'exclude').map((impact) => issue.entityId)));
   const activeComponents = data.components.filter((component) => component.status === 'active');
@@ -78,51 +75,51 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   const delays = corrected.flatMap((anomaly) => anomaly.firstDoneAt ? [delayDays(anomaly.createdAt, anomaly.firstDoneAt)] : []);
   const conform = completedAudits.filter((audit) => audit.objectiveAuditResult === 'conform');
   const m: Record<string, Metric> = {};
-  m['portfolio.repositories'] = metric({ id: 'portfolio.repositories', unit: 'count', scope: 'portfolio', definition: 'Nombre de repositories effectivement analysés.' }, data.libraries.length, data.libraries.length, data.libraries.length, data.libraries.map((x) => x.libraryId), issues);
-  m['portfolio.libraries'] = metric({ id: 'portfolio.libraries', unit: 'count', scope: 'portfolio', definition: 'Nombre de bibliothèques analysées.' }, data.libraries.length, data.libraries.length, data.libraries.length, data.libraries.map((x) => x.libraryId), issues);
-  m['portfolio.components'] = metric({ id: 'portfolio.components', unit: 'count', scope: 'portfolio', definition: 'Nombre de composants actifs dans le périmètre du patrimoine.' }, activeComponents.length, activeComponents.length, activeComponents.length, activeComponents.map((x) => x.componentId), issues);
-  m['portfolio.componentsAudited'] = metric({ id: 'portfolio.componentsAudited', unit: 'count', scope: 'portfolio', definition: 'Nombre de composants actifs disposant d’au moins un audit terminé.' }, auditedComponents.size, auditedComponents.size, activeComponents.length, [...auditedComponents], issues);
-  m['portfolio.auditCoverage'] = metric({ id: 'portfolio.auditCoverage', unit: 'percentage', scope: 'portfolio', definition: 'Composants actifs disposant d’un audit terminé / composants actifs du périmètre.' }, activeComponents.length ? Number(((auditedComponents.size / activeComponents.length) * 100).toFixed(1)) : 'unknown', auditedComponents.size, activeComponents.length, [...auditedComponents], issues);
-  m['audit.completed'] = metric({ id: 'audit.completed', unit: 'count', scope: 'audit', definition: 'Nombre d’audits ayant atteint un résultat exploitable.' }, completedAudits.length, completedAudits.length, data.audits.length, completedAudits.map((x) => x.auditId), issues);
-  m['audit.conform'] = metric({ id: 'audit.conform', unit: 'count', scope: 'audit', definition: 'Nombre d’audits dont le résultat objectif est conforme.' }, conform.length, conform.length, completedAudits.length, conform.map((x) => x.auditId), issues);
-  m['audit.conditional'] = metric({ id: 'audit.conditional', unit: 'count', scope: 'audit', definition: 'Nombre d’audits conditionnels.' }, completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').length, completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
-  m['audit.nonConform'] = metric({ id: 'audit.nonConform', unit: 'count', scope: 'audit', definition: 'Nombre d’audits non conformes.' }, completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length, completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
-  m['audit.critical'] = metric({ id: 'audit.critical', unit: 'count', scope: 'audit', definition: 'Nombre d’audits critiques.' }, completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length, completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
-  m['audit.conformityRate'] = metric({ id: 'audit.conformityRate', unit: 'percentage', scope: 'audit', definition: 'Audits conformes / audits terminés.' }, completedAudits.length ? Number(((conform.length / completedAudits.length) * 100).toFixed(1)) : 'unknown', conform.length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
+  m['portfolio.repositories'] = metric('portfolio.repositories', data.libraries.length, data.libraries.length, data.libraries.length, data.libraries.map((x) => x.libraryId), issues);
+  m['portfolio.libraries'] = metric('portfolio.libraries', data.libraries.length, data.libraries.length, data.libraries.length, data.libraries.map((x) => x.libraryId), issues);
+  m['portfolio.components'] = metric('portfolio.components', activeComponents.length, activeComponents.length, activeComponents.length, activeComponents.map((x) => x.componentId), issues);
+  m['portfolio.componentsAudited'] = metric('portfolio.componentsAudited', auditedComponents.size, auditedComponents.size, activeComponents.length, [...auditedComponents], issues);
+  m['portfolio.auditCoverage'] = metric('portfolio.auditCoverage', activeComponents.length ? Number(((auditedComponents.size / activeComponents.length) * 100).toFixed(1)) : 'unknown', auditedComponents.size, activeComponents.length, [...auditedComponents], issues);
+  m['audit.completed'] = metric('audit.completed', completedAudits.length, completedAudits.length, data.audits.length, completedAudits.map((x) => x.auditId), issues);
+  m['audit.conform'] = metric('audit.conform', conform.length, conform.length, completedAudits.length, conform.map((x) => x.auditId), issues);
+  m['audit.conditional'] = metric('audit.conditional', completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').length, completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
+  m['audit.nonConform'] = metric('audit.nonConform', completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length, completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
+  m['audit.critical'] = metric('audit.critical', completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length, completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
+  m['audit.conformityRate'] = metric('audit.conformityRate', completedAudits.length ? Number(((conform.length / completedAudits.length) * 100).toFixed(1)) : 'unknown', conform.length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
   const totalIds = anomalyIds('anomaly.total');
-  m['anomaly.total'] = metric({ id: 'anomaly.total', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies non annulées et conservées dans le périmètre général.' }, totalIds.length, totalIds.length, validAnomalies.length, totalIds, issues);
+  m['anomaly.total'] = metric('anomaly.total', totalIds.length, totalIds.length, validAnomalies.length, totalIds, issues);
   const openIds = validAnomalies.filter((x) => ['open', 'reopened'].includes(x.status) && !excluded('anomaly.open').has(x.anomalyId)).map((x) => x.anomalyId);
-  m['anomaly.open'] = metric({ id: 'anomaly.open', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies actuellement ouvertes ou rouvertes.' }, openIds.length, openIds.length, totalIds.length, openIds, issues);
+  m['anomaly.open'] = metric('anomaly.open', openIds.length, openIds.length, totalIds.length, openIds, issues);
   const inProgressIds = validAnomalies.filter((x) => x.status === 'in_progress' && !excluded('anomaly.inProgress').has(x.anomalyId)).map((x) => x.anomalyId);
-  m['anomaly.inProgress'] = metric({ id: 'anomaly.inProgress', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies actuellement en cours de traitement.' }, inProgressIds.length, inProgressIds.length, totalIds.length, inProgressIds, issues);
+  m['anomaly.inProgress'] = metric('anomaly.inProgress', inProgressIds.length, inProgressIds.length, totalIds.length, inProgressIds, issues);
   const doneIds = validAnomalies.filter((x) => x.status === 'done' && !excluded('anomaly.done').has(x.anomalyId)).map((x) => x.anomalyId);
-  m['anomaly.done'] = metric({ id: 'anomaly.done', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies actuellement terminées.' }, doneIds.length, doneIds.length, totalIds.length, doneIds, issues);
+  m['anomaly.done'] = metric('anomaly.done', doneIds.length, doneIds.length, totalIds.length, doneIds, issues);
   for (const criticality of ['blocking', 'major', 'minor']) {
     const id = `anomaly.byCriticality.${criticality}`;
     const ids = validAnomalies.filter((x) => x.criticality === criticality && !excluded(id).has(x.anomalyId)).map((x) => x.anomalyId);
-    m[id] = metric({ id, unit: 'count', scope: 'anomaly', definition: `Nombre d’anomalies de criticité ${criticality}.` }, ids.length, ids.length, totalIds.length, ids, issues);
+    m[id] = metric(id, ids.length, ids.length, totalIds.length, ids, issues);
   }
   const classifiedIds = validAnomalies.filter((x) => x.criticality && !excluded('anomaly.criticalityCoverage').has(x.anomalyId)).map((x) => x.anomalyId);
-  m['anomaly.criticalityCoverage'] = metric({ id: 'anomaly.criticalityCoverage', unit: 'percentage', scope: 'anomaly', definition: 'Anomalies disposant d’une criticité valide / anomalies nécessitant une criticité.' }, totalIds.length ? Number(((classifiedIds.length / totalIds.length) * 100).toFixed(1)) : 'unknown', classifiedIds.length, totalIds.length, classifiedIds, issues);
+  m['anomaly.criticalityCoverage'] = metric('anomaly.criticalityCoverage', totalIds.length ? Number(((classifiedIds.length / totalIds.length) * 100).toFixed(1)) : 'unknown', classifiedIds.length, totalIds.length, classifiedIds, issues);
   const categories = [...new Set(validAnomalies.flatMap((x) => x.categories))];
   for (const category of categories) {
     const id = `anomaly.byCategory.${category}`;
     const ids = validAnomalies.filter((x) => x.categories.includes(category) && !excluded(id).has(x.anomalyId)).map((x) => x.anomalyId);
-    m[id] = metric({ id, unit: 'count', scope: 'anomaly', definition: `Nombre d’anomalies portant la catégorie ${category}. Les catégories sont multi-étiquettes.` }, ids.length, ids.length, totalIds.length, ids, issues);
+    m[id] = metric(id, ids.length, ids.length, totalIds.length, ids, issues);
   }
-  m['anomaly.correctedEver'] = metric({ id: 'anomaly.correctedEver', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies du stock ayant déjà atteint une première correction métier dans les données disponibles.' }, corrected.length, corrected.length, totalIds.length, corrected.map((x) => x.anomalyId), issues);
+  m['anomaly.correctedEver'] = metric('anomaly.correctedEver', corrected.length, corrected.length, totalIds.length, corrected.map((x) => x.anomalyId), issues);
   const reopened = validAnomalies.filter((x) => x.status === 'reopened' && !excluded('anomaly.reopened').has(x.anomalyId));
-  m['anomaly.reopened'] = metric({ id: 'anomaly.reopened', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies actuellement dans l’état rouvert. Ce n’est pas un flux de réouvertures ; le flux historique sera calculé à partir des snapshots.' }, reopened.length, reopened.length, totalIds.length, reopened.map((x) => x.anomalyId), issues);
+  m['anomaly.reopened'] = metric('anomaly.reopened', reopened.length, reopened.length, totalIds.length, reopened.map((x) => x.anomalyId), issues);
   const cancelled = data.anomalies.filter((x) => x.cancelled);
-  m['anomaly.cancelled'] = metric({ id: 'anomaly.cancelled', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies annulées, conservées uniquement pour traçabilité.' }, cancelled.length, cancelled.length, data.anomalies.length, cancelled.map((x) => x.anomalyId), issues);
-  m['anomaly.correctionDelay.average'] = metric({ id: 'anomaly.correctionDelay.average', unit: 'days', scope: 'anomaly', definition: 'Délai moyen entre la création et la première correction métier, en jours calendaires.' }, delays.length ? Number((delays.reduce((a, b) => a + b, 0) / delays.length).toFixed(1)) : 'unknown', delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);
+  m['anomaly.cancelled'] = metric('anomaly.cancelled', cancelled.length, cancelled.length, data.anomalies.length, cancelled.map((x) => x.anomalyId), issues);
+  m['anomaly.correctionDelay.average'] = metric('anomaly.correctionDelay.average', delays.length ? Number((delays.reduce((a, b) => a + b, 0) / delays.length).toFixed(1)) : 'unknown', delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);
   const med = median(delays);
-  m['anomaly.correctionDelay.median'] = metric({ id: 'anomaly.correctionDelay.median', unit: 'days', scope: 'anomaly', definition: 'Délai médian entre la création et la première correction métier, en jours calendaires.' }, med === undefined ? 'unknown' : Number(med.toFixed(1)), delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);
+  m['anomaly.correctionDelay.median'] = metric('anomaly.correctionDelay.median', med === undefined ? 'unknown' : Number(med.toFixed(1)), delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);
   const p90 = percentile(delays, 0.9);
-  m['anomaly.correctionDelay.p90'] = metric({ id: 'anomaly.correctionDelay.p90', unit: 'days', scope: 'anomaly', definition: '90e percentile du délai entre création et première correction métier.' }, p90 === undefined ? 'unknown' : Number(p90.toFixed(1)), delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);
+  m['anomaly.correctionDelay.p90'] = metric('anomaly.correctionDelay.p90', p90 === undefined ? 'unknown' : Number(p90.toFixed(1)), delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);
   const open = validAnomalies.filter((x) => ['open', 'reopened'].includes(x.status) && !excluded('anomaly.backlog.oldestAge').has(x.anomalyId));
   const now = Date.parse(data.anomalies.reduce((latest, x) => x.createdAt > latest ? x.createdAt : latest, '1970-01-01T00:00:00.000Z'));
   const oldest = open.length ? Math.max(...open.map((x) => now - Date.parse(x.createdAt))) / 86_400_000 : undefined;
-  m['anomaly.backlog.oldestAge'] = metric({ id: 'anomaly.backlog.oldestAge', unit: 'days', scope: 'anomaly', definition: 'Âge du plus ancien élément actuellement ouvert, calculé par rapport à la date la plus récente connue du snapshot.' }, oldest === undefined ? 'unknown' : Number(oldest.toFixed(1)), open.length, open.length, open.map((x) => x.anomalyId), issues);
+  m['anomaly.backlog.oldestAge'] = metric('anomaly.backlog.oldestAge', oldest === undefined ? 'unknown' : Number(oldest.toFixed(1)), open.length, open.length, open.map((x) => x.anomalyId), issues);
   return m;
 }

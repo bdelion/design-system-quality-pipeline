@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20260927062816265-bd842c37",
-  "capturedAt": "2026-09-27T06:28:16.265Z",
+  "snapshotId": "snapshot-20260927064435731-e0875301",
+  "capturedAt": "2026-09-27T06:44:35.731Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-09-08T09:00:00.000Z",
@@ -1053,7 +1053,7 @@
       "value": 7,
       "numerator": 7,
       "denominator": 7,
-      "definition": "Nombre d’anomalies non annulées et conservées dans le périmètre général.",
+      "definition": "Nombre d’anomalies valides dans le périmètre analytique, hors anomalies annulées.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
         "anomaly-36af22bb43d9",
@@ -1069,7 +1069,7 @@
       "value": 4,
       "numerator": 4,
       "denominator": 7,
-      "definition": "Nombre d’anomalies du stock ayant déjà atteint une première correction métier dans les données disponibles.",
+      "definition": "Nombre d’anomalies valides ayant déjà atteint une première correction métier.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
         "anomaly-3b49cceb9117",
@@ -1126,7 +1126,7 @@
       "value": 7.1,
       "numerator": 4,
       "denominator": 4,
-      "definition": "Délai moyen entre la création et la première correction métier, en jours calendaires.",
+      "definition": "Délai moyen entre la création et la première correction métier.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
         "anomaly-3b49cceb9117",
@@ -1139,7 +1139,7 @@
       "value": 6.1,
       "numerator": 4,
       "denominator": 4,
-      "definition": "Délai médian entre la création et la première correction métier, en jours calendaires.",
+      "definition": "Délai médian entre la création et la première correction métier.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
         "anomaly-3b49cceb9117",
@@ -1300,7 +1300,7 @@
         "numerator": 0,
         "denominator": 1,
         "scope": "audit",
-        "definition": "Nombre d’audits conditionnels.",
+        "definition": "Nombre d’audits dont le résultat objectif est conditionnel.",
         "sourceEntityIds": [
           "audit-c839704cca99"
         ],
@@ -1317,7 +1317,7 @@
         "numerator": 0,
         "denominator": 1,
         "scope": "audit",
-        "definition": "Nombre d’audits non conformes.",
+        "definition": "Nombre d’audits dont le résultat objectif est non conforme.",
         "sourceEntityIds": [
           "audit-c839704cca99"
         ],
@@ -1334,7 +1334,7 @@
         "numerator": 0,
         "denominator": 1,
         "scope": "audit",
-        "definition": "Nombre d’audits critiques.",
+        "definition": "Nombre d’audits dont le résultat objectif est critique.",
         "sourceEntityIds": [
           "audit-c839704cca99"
         ],
@@ -1368,7 +1368,7 @@
         "numerator": 7,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies non annulées et conservées dans le périmètre général.",
+        "definition": "Nombre d’anomalies valides dans le périmètre analytique, hors anomalies annulées.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-36af22bb43d9",
@@ -1453,7 +1453,7 @@
         "numerator": 2,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies de criticité blocking.",
+        "definition": "Nombre d’anomalies valides de criticité bloquante.",
         "sourceEntityIds": [
           "anomaly-36af22bb43d9",
           "anomaly-f98e8ca4cfb6"
@@ -1479,7 +1479,7 @@
         "numerator": 2,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies de criticité major.",
+        "definition": "Nombre d’anomalies valides de criticité majeure.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-79ea06e1c5e4"
@@ -1505,7 +1505,7 @@
         "numerator": 2,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies de criticité minor.",
+        "definition": "Nombre d’anomalies valides de criticité mineure.",
         "sourceEntityIds": [
           "anomaly-a0be3ebb1287",
           "anomaly-52867d3fbb31"
@@ -1531,7 +1531,7 @@
         "numerator": 6,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Anomalies disposant d’une criticité valide / anomalies nécessitant une criticité.",
+        "definition": "Anomalies valides disposant d’une criticité exploitable / anomalies valides.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-36af22bb43d9",
@@ -1561,7 +1561,7 @@
         "numerator": 2,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies portant la catégorie focus. Les catégories sont multi-étiquettes.",
+        "definition": "Nombre d’anomalies valides portant la catégorie considérée.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-79ea06e1c5e4"
@@ -1582,7 +1582,7 @@
         "numerator": 1,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies portant la catégorie keyboard. Les catégories sont multi-étiquettes.",
+        "definition": "Nombre d’anomalies valides portant la catégorie considérée.",
         "sourceEntityIds": [
           "anomaly-36af22bb43d9"
         ],
@@ -1602,7 +1602,7 @@
         "numerator": 2,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies portant la catégorie name. Les catégories sont multi-étiquettes.",
+        "definition": "Nombre d’anomalies valides portant la catégorie considérée.",
         "sourceEntityIds": [
           "anomaly-3b49cceb9117",
           "anomaly-a0be3ebb1287"
@@ -1623,7 +1623,7 @@
         "numerator": 1,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies portant la catégorie contrast. Les catégories sont multi-étiquettes.",
+        "definition": "Nombre d’anomalies valides portant la catégorie considérée.",
         "sourceEntityIds": [
           "anomaly-f98e8ca4cfb6"
         ],
@@ -1643,7 +1643,7 @@
         "numerator": 1,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies portant la catégorie structure. Les catégories sont multi-étiquettes.",
+        "definition": "Nombre d’anomalies valides portant la catégorie considérée.",
         "sourceEntityIds": [
           "anomaly-52867d3fbb31"
         ],
@@ -1663,7 +1663,7 @@
         "numerator": 4,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies du stock ayant déjà atteint une première correction métier dans les données disponibles.",
+        "definition": "Nombre d’anomalies valides ayant déjà atteint une première correction métier.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-3b49cceb9117",
@@ -1685,7 +1685,7 @@
         "numerator": 0,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies actuellement dans l’état rouvert. Ce n’est pas un flux de réouvertures ; le flux historique sera calculé à partir des snapshots.",
+        "definition": "Nombre d’anomalies actuellement dans l’état rouvert.",
         "sourceEntityIds": [],
         "reliability": {
           "status": "partial",
@@ -1702,7 +1702,7 @@
         "numerator": 0,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies annulées, conservées uniquement pour traçabilité.",
+        "definition": "Nombre d’anomalies annulées dans les données sources.",
         "sourceEntityIds": [],
         "reliability": {
           "status": "partial",
@@ -1719,7 +1719,7 @@
         "numerator": 4,
         "denominator": 4,
         "scope": "anomaly",
-        "definition": "Délai moyen entre la création et la première correction métier, en jours calendaires.",
+        "definition": "Délai moyen entre la création et la première correction métier.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-3b49cceb9117",
@@ -1741,7 +1741,7 @@
         "numerator": 4,
         "denominator": 4,
         "scope": "anomaly",
-        "definition": "Délai médian entre la création et la première correction métier, en jours calendaires.",
+        "definition": "Délai médian entre la création et la première correction métier.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-3b49cceb9117",
@@ -1763,7 +1763,7 @@
         "numerator": 4,
         "denominator": 4,
         "scope": "anomaly",
-        "definition": "90e percentile du délai entre création et première correction métier.",
+        "definition": "90e percentile du délai entre la création et la première correction métier.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-3b49cceb9117",

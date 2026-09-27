@@ -1599,3 +1599,135 @@ Je ferais plutôt :
 **Mon prochain chantier serait donc le n°1 : le catalogue contractuel complet des métriques V2**, puis immédiatement le moteur de comparaison de snapshots. C'est ce qui va donner une base solide à tout le reste, plutôt que de continuer à embellir le dashboard autour d'un modèle qui pourrait encore changer.
 
 ----
+
+## 1. 🔴 Fiabiliser le modèle analytique
+
+C’est fait.
+
+### Ce qui vient d’être ajouté
+
+**1. Catalogue contractuel V2**
+
+Nouveau fichier :
+
+`src/analytics/catalog.ts`
+
+Chaque métrique possède maintenant un contrat explicite :
+
+* identifiant ;
+* unité ;
+* périmètre ;
+* définition ;
+* nature : `stock`, `ratio`, `duration` ou `flow` ;
+* numérateur / dénominateur lorsqu'ils ont un sens.
+
+Le moteur vérifie désormais qu'une métrique produite appartient au catalogue. Cela évite qu'un nouveau KPI apparaisse dans le code sans définition contractuelle.
+
+**2. Tests du catalogue**
+
+Nouveau :
+
+`tests/metric-catalog.test.ts`
+
+Il vérifie notamment :
+
+* absence de doublons ;
+* couverture de toutes les métriques V2 ;
+* résolution des métriques `anomaly.byCategory.*` ;
+* absence de faux flux dans le contrat actuel.
+
+**3. Premier moteur de comparaison de snapshots**
+
+Nouveau :
+
+`src/snapshots/diff.ts`
+
+Il compare deux snapshots et détecte notamment :
+
+```text
+Snapshot N
+     ↓
+     ├── anomalies créées
+     ├── anomalies corrigées
+     ├── anomalies réouvertes
+     ├── anomalies annulées
+     ├── changements d'état
+     ├── composants ajoutés/supprimés
+     ├── audits ajoutés/supprimés
+     └── PR ajoutées/supprimées
+     ↓
+Snapshot N+1
+```
+
+Chaque delta possède une période explicite :
+
+`capturedAt(N) → capturedAt(N+1)`
+
+C'est le socle nécessaire pour introduire ensuite les **vrais flux temporels**.
+
+**4. Test du delta**
+
+Nouveau :
+
+`tests/snapshot-diff.test.ts`
+
+Il vérifie notamment qu'une anomalie passant :
+
+`open → reopened`
+
+avec apparition de `firstDoneAt` est correctement identifiée comme :
+
+* corrigée ;
+* réouverte ;
+* changement d'état.
+
+**5. Correction DQ**
+
+J'ai également resserré les impacts de `DQ-008` et `DQ-010`. Ils n'utilisent plus un vague `anomaly.*` qui pouvait également toucher des métriques de traçabilité comme `anomaly.cancelled`.
+
+---
+
+### Archive
+
+[**Télécharger Design System Quality Pipeline – Contract + Snapshot History**](sandbox:/mnt/data/design-system-quality-pipeline-v2-contract-history.zip)
+
+### Vérification
+
+L'archive est valide (`unzip -t` OK).
+
+Le `tsc --noEmit` a bien été lancé, mais l'environnement n'a pas les dépendances/types du projet (`@types/node`, `chai`, etc.). Je ne peux donc toujours pas déclarer la suite complète comme exécutée.
+
+---
+
+### Ce que je ferais maintenant
+
+Le socle est suffisamment propre pour passer à l'étape suivante :
+
+**transformer `SnapshotDiff` en vraies métriques de flux V2**, par exemple :
+
+```text
+anomaly.flow.created
+anomaly.flow.corrected
+anomaly.flow.reopened
+anomaly.flow.cancelled
+```
+
+avec pour chacune :
+
+```text
+value
+unit
+period.from
+period.to
+sourceEntityIds
+definition
+reliability
+```
+
+Puis intégrer ces flux dans la page **Historique**, ce qui permettra enfin de distinguer visuellement :
+
+**« combien avons-nous aujourd'hui ? »**
+de
+**« qu'est-ce qui a changé depuis le dernier snapshot ? »**.
+
+--------
