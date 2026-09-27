@@ -81,4 +81,4 @@ Exemples :
 2. Une DQ peut exclure une métrique sans supprimer l'entité du patrimoine.
 3. `100 % de conformité` n'a de sens qu'accompagné de `1/8 composants couverts` dans ce scénario.
 4. Les catégories doivent être affichées comme des ventilations multi-étiquettes.
-5. `anomaly.created` ne doit pas encore être présenté comme un véritable flux tant que le modèle de période/historique n'est pas branché aux snapshots.
+5. les flux `anomaly.created` / `anomaly.corrected` ne doivent pas encore être présentés comme de véritables flux tant que le modèle de période/historique n'est pas branché aux snapshots.

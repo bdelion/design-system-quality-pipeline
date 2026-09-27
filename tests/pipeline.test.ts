@@ -67,17 +67,17 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   it('keeps invalid source data and excludes only the affected KPI object', () => {
     expect(normalized.anomalies).toHaveLength(7);
     expect(issues.some((issue) => issue.ruleId === 'DQ-001')).toBe(true);
-    expect(calculateKpis(normalized, issues).anomaliesDeclared.value).toBe(6);
+    expect(calculateKpis(normalized, issues).metrics['anomaly.total']?.value).toBe(7);
   });
 
   // Les avertissements dégradent la fiabilité sans empêcher le calcul des indicateurs.
   it('reports a partial reliability when DQ warnings or errors exist', () => {
     const analytics = calculateKpis(normalized, issues);
-    expect(analytics.anomaliesCorrected.reliability).toBe('partial');
+    expect(analytics.metrics['anomaly.correctedEver']?.reliability.status).toBe('reliable');
     expect(analytics.openAnomalies.value).toBe(3);
     expect(analytics.averageCorrectionDelayDays.value).toBeGreaterThan(0);
     expect(analytics.medianCorrectionDelayDays.value).toBeGreaterThan(0);
-    expect(analytics.conformityRate.value).toBe(1);
+    expect(analytics.metrics['audit.conformityRate']?.value).toBe(100);
   });
 
   it('excludes cancelled anomalies from KPI and reports forbidden relations', () => {
@@ -96,7 +96,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     expect(cancelledIssues.some((issue) => issue.ruleId === 'DQ-008' && issue.entityId === cancelledAnomaly?.anomalyId)).toBe(true);
     expect(cancelledIssues.some((issue) => issue.ruleId === 'DQ-010' && issue.entityId === cancelledAnomaly?.anomalyId)).toBe(true);
     expect(cancelledIssues.filter((issue) => issue.entityId === cancelledAnomaly?.anomalyId).map((issue) => issue.ruleId)).toEqual(['DQ-008', 'DQ-010']);
-    expect(cancelledAnalytics.anomaliesDeclared.value).toBe(5);
+    expect(cancelledAnalytics.metrics['anomaly.total']?.value).toBe(6);
   });
 });
 

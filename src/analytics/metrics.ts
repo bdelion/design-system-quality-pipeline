@@ -19,7 +19,7 @@ function reliabilityFor(metricId: string, issues: DataQualityIssue[]): { status:
 
 function metric(spec: MetricSpec, value: number | 'unknown', numerator: number | 'unknown', denominator: number | 'unknown', sourceEntityIds: string[], issues: DataQualityIssue[], breakdowns?: MetricBreakdown[]): Metric {
   const relevant = issues.filter((issue) => issue.impacts.some((impact) => matchesMetricPattern(impact.metricId, spec.id)));
-  return {
+  const result: Metric = {
     id: spec.id,
     value,
     unit: spec.unit,
@@ -31,9 +31,10 @@ function metric(spec: MetricSpec, value: number | 'unknown', numerator: number |
     reliability: reliabilityFor(spec.id, issues),
     exclusions: relevant.flatMap((issue) => issue.impacts
       .filter((impact) => matchesMetricPattern(impact.metricId, spec.id) && impact.action === 'exclude')
-      .map(() => ({ entityId: issue.entityId, ruleId: issue.ruleId }))),
-    breakdowns
+      .map(() => ({ entityId: issue.entityId, ruleId: issue.ruleId })))
   };
+  if (breakdowns !== undefined) result.breakdowns = breakdowns;
+  return result;
 }
 
 function median(values: number[]): number | undefined {
@@ -63,7 +64,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     'portfolio.repositories', 'portfolio.libraries', 'portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage',
     'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
-    'anomaly.criticalityCoverage', 'anomaly.byCategory.*', 'anomaly.created', 'anomaly.corrected', 'anomaly.reopened', 'anomaly.cancelled',
+    'anomaly.criticalityCoverage', 'anomaly.byCategory.*', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
     'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
   ];
   const issues = applyMetricImpacts(dqIssues, metricIds);
@@ -109,10 +110,9 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     const ids = validAnomalies.filter((x) => x.categories.includes(category) && !excluded(id).has(x.anomalyId)).map((x) => x.anomalyId);
     m[id] = metric({ id, unit: 'count', scope: 'anomaly', definition: `Nombre d’anomalies portant la catégorie ${category}. Les catégories sont multi-étiquettes.` }, ids.length, ids.length, totalIds.length, ids, issues);
   }
-  m['anomaly.created'] = metric({ id: 'anomaly.created', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies créées dans le périmètre du snapshot. La période sera activée avec les snapshots historiques.' }, totalIds.length, totalIds.length, totalIds.length, totalIds, issues);
-  m['anomaly.corrected'] = metric({ id: 'anomaly.corrected', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies ayant une première correction métier documentée.' }, corrected.length, corrected.length, totalIds.length, corrected.map((x) => x.anomalyId), issues);
+  m['anomaly.correctedEver'] = metric({ id: 'anomaly.correctedEver', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies du stock ayant déjà atteint une première correction métier dans les données disponibles.' }, corrected.length, corrected.length, totalIds.length, corrected.map((x) => x.anomalyId), issues);
   const reopened = validAnomalies.filter((x) => x.status === 'reopened' && !excluded('anomaly.reopened').has(x.anomalyId));
-  m['anomaly.reopened'] = metric({ id: 'anomaly.reopened', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies actuellement rouvertes.' }, reopened.length, reopened.length, totalIds.length, reopened.map((x) => x.anomalyId), issues);
+  m['anomaly.reopened'] = metric({ id: 'anomaly.reopened', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies actuellement dans l’état rouvert. Ce n’est pas un flux de réouvertures ; le flux historique sera calculé à partir des snapshots.' }, reopened.length, reopened.length, totalIds.length, reopened.map((x) => x.anomalyId), issues);
   const cancelled = data.anomalies.filter((x) => x.cancelled);
   m['anomaly.cancelled'] = metric({ id: 'anomaly.cancelled', unit: 'count', scope: 'anomaly', definition: 'Nombre d’anomalies annulées, conservées uniquement pour traçabilité.' }, cancelled.length, cancelled.length, data.anomalies.length, cancelled.map((x) => x.anomalyId), issues);
   m['anomaly.correctionDelay.average'] = metric({ id: 'anomaly.correctionDelay.average', unit: 'days', scope: 'anomaly', definition: 'Délai moyen entre la création et la première correction métier, en jours calendaires.' }, delays.length ? Number((delays.reduce((a, b) => a + b, 0) / delays.length).toFixed(1)) : 'unknown', delays.length, delays.length, corrected.map((x) => x.anomalyId), issues);

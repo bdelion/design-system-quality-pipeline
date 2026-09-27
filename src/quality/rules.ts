@@ -45,7 +45,7 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
     'portfolio.repositories', 'portfolio.libraries', 'portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage',
     'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
-    'anomaly.criticalityCoverage', 'anomaly.created', 'anomaly.corrected', 'anomaly.reopened', 'anomaly.cancelled',
+    'anomaly.criticalityCoverage', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
     'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
   ]);
 }

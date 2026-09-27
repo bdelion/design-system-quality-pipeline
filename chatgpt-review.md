@@ -1296,3 +1296,62 @@ La prochaine étape que je ferais est moins visuelle mais importante : finaliser
 
 ------
 
+C’est fait. J’ai consolidé le contrat analytique V2.
+
+Ce qui est maintenant verrouillé
+analytics.metrics devient l’unique source de vérité.
+calculateKpis() ne recalcule plus les indicateurs : il ne fait qu’exposer temporairement les anciens champs comme adaptateurs de compatibilité.
+Les anciens champs (anomaliesDeclared, auditsCoverage, conformityRate, etc.) sont marqués @deprecated.
+portfolio.auditCoverage reste bien :
+composants actifs audités / composants actifs.
+audit.conformityRate reste :
+audits conformes / audits terminés.
+anomaly.total conserve les anomalies sans criticité : une anomalie DQ ne disparaît donc pas du stock général.
+anomaly.correctedEver remplace l'ancien anomaly.corrected pour lever l'ambiguïté.
+anomaly.reopened signifie désormais explicitement « actuellement rouvert », et non « nombre de réouvertures sur une période ».
+Point important : les vrais flux
+
+J’ai retiré du contrat courant les faux flux anomaly.created / anomaly.corrected.
+
+Pour mesurer réellement :
+
+anomalies créées sur une période ;
+anomalies corrigées sur une période ;
+réouvertures sur une période ;
+annulations sur une période ;
+
+il faudra comparer deux snapshots ou disposer d'un historique d'événements.
+
+Le futur modèle pourra alors porter explicitement :
+
+period.from → period.to
+
+et le dashboard pourra afficher de vrais flux sans ambiguïté.
+
+Documentation
+
+docs/analytics.md explique maintenant :
+
+le contrat de référence ;
+stock vs flux ;
+la stratégie de migration ;
+l'utilisation attendue de value, numerator, denominator, definition, scope, reliability et exclusions.
+
+J’ai également corrigé le dashboard afin qu’il n’attende plus les métriques supprimées.
+
+Vérification
+
+La vérification TypeScript ne remonte désormais plus d'erreur propre au code du projet. Les erreurs restantes sont uniquement liées aux dépendances absentes de l’environnement (node_modules, vitest, yaml, commander, types Node, etc.).
+
+Archive
+
+Télécharger Design System Quality Pipeline – Contrat analytique V2
+
+À ce stade, le projet dispose donc d’une architecture analytique beaucoup plus propre :
+
+RAW → Normalisation → DQ → Metrics V2 → Snapshot → Dashboard
+
+et le dashboard ne doit plus contenir de logique métier concurrente.
+
+--------
+

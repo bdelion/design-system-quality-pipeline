@@ -20,7 +20,7 @@ describe('V2 fixture analytical contract', () => {
     expect(metrics['audit.conformityRate']?.value).toBe(100);
     expect(metrics['anomaly.total']?.value).toBe(7);
     expect(metrics['anomaly.open']?.value).toBe(3);
-    expect(metrics['anomaly.corrected']?.value).toBe(4);
+    expect(metrics['anomaly.correctedEver']?.value).toBe(4);
     expect(metrics['anomaly.correctionDelay.average']?.value).toBe(7.1);
     expect(metrics['anomaly.correctionDelay.median']?.value).toBe(6.1);
     expect(metrics['anomaly.correctionDelay.p90']?.value).toBe(12.4);

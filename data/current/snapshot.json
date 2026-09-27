@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20260927062317665-52390c66",
-  "capturedAt": "2026-09-27T06:23:17.665Z",
+  "snapshotId": "snapshot-20260927062816265-bd842c37",
+  "capturedAt": "2026-09-27T06:28:16.265Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-09-08T09:00:00.000Z",
@@ -909,12 +909,7 @@
             "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
           },
           {
-            "metricId": "anomaly.created",
-            "action": "include",
-            "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
-          },
-          {
-            "metricId": "anomaly.corrected",
+            "metricId": "anomaly.correctedEver",
             "action": "include",
             "reason": "L’anomalie reste comptable, mais la preuve de correction est incomplète."
           },
@@ -1055,13 +1050,14 @@
   },
   "analytics": {
     "anomaliesDeclared": {
-      "value": 6,
-      "numerator": 6,
-      "denominator": 6,
-      "definition": "Nombre d’anomalies conservées après les exclusions de qualité des données.",
+      "value": 7,
+      "numerator": 7,
+      "denominator": 7,
+      "definition": "Nombre d’anomalies non annulées et conservées dans le périmètre général.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
         "anomaly-36af22bb43d9",
+        "anomaly-3b49cceb9117",
         "anomaly-79ea06e1c5e4",
         "anomaly-a0be3ebb1287",
         "anomaly-f98e8ca4cfb6",
@@ -1070,31 +1066,26 @@
       "reliability": "partial"
     },
     "anomaliesCorrected": {
-      "value": 3,
-      "numerator": 3,
-      "denominator": 6,
-      "definition": "Nombre d’anomalies ayant une date de première correction métier.",
+      "value": 4,
+      "numerator": 4,
+      "denominator": 7,
+      "definition": "Nombre d’anomalies du stock ayant déjà atteint une première correction métier dans les données disponibles.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
-        "anomaly-36af22bb43d9",
+        "anomaly-3b49cceb9117",
         "anomaly-79ea06e1c5e4",
-        "anomaly-a0be3ebb1287",
-        "anomaly-f98e8ca4cfb6",
-        "anomaly-52867d3fbb31"
+        "anomaly-f98e8ca4cfb6"
       ],
       "reliability": "partial"
     },
     "openAnomalies": {
       "value": 3,
       "numerator": 3,
-      "denominator": 6,
+      "denominator": 7,
       "definition": "Nombre d’anomalies actuellement ouvertes ou rouvertes.",
       "sourceEntityIds": [
-        "anomaly-58d181a7aa98",
         "anomaly-36af22bb43d9",
-        "anomaly-79ea06e1c5e4",
         "anomaly-a0be3ebb1287",
-        "anomaly-f98e8ca4cfb6",
         "anomaly-52867d3fbb31"
       ],
       "reliability": "partial"
@@ -1107,56 +1098,51 @@
     "anomaliesByCategory": {
       "focus": 2,
       "keyboard": 1,
-      "name": 1,
+      "name": 2,
       "contrast": 1,
       "structure": 1
     },
     "auditsCoverage": {
-      "value": 1,
+      "value": 14.3,
       "numerator": 1,
-      "denominator": 8,
-      "definition": "Nombre d’audits terminés rapporté au nombre de composants découverts.",
+      "denominator": 7,
+      "definition": "Composants actifs disposant d’un audit terminé / composants actifs du périmètre.",
       "sourceEntityIds": [
-        "audit-6bac02171dc7",
-        "audit-23167b7fe75b",
-        "audit-5aca107372b5",
-        "audit-6a98d69d11f2",
-        "audit-b7305b7525ad",
-        "audit-c839704cca99",
-        "audit-3db1963803c1",
-        "audit-d895b3813396"
+        "component-5ca56c189415"
       ],
       "reliability": "partial"
     },
     "conformityRate": {
-      "value": 1,
+      "value": 100,
       "numerator": 1,
       "denominator": 1,
-      "definition": "Nombre de résultats objectifs conformes rapporté au nombre d’audits terminés.",
+      "definition": "Audits conformes / audits terminés.",
       "sourceEntityIds": [
         "audit-c839704cca99"
       ],
-      "reliability": "partial"
+      "reliability": "reliable"
     },
     "averageCorrectionDelayDays": {
-      "value": 8.8,
-      "numerator": 8.8,
-      "denominator": 3,
-      "definition": "Délai moyen entre la création et la première correction métier, en jours.",
+      "value": 7.1,
+      "numerator": 4,
+      "denominator": 4,
+      "definition": "Délai moyen entre la création et la première correction métier, en jours calendaires.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
+        "anomaly-3b49cceb9117",
         "anomaly-79ea06e1c5e4",
         "anomaly-f98e8ca4cfb6"
       ],
       "reliability": "partial"
     },
     "medianCorrectionDelayDays": {
-      "value": 8.3,
-      "numerator": 8.3,
-      "denominator": 3,
-      "definition": "Délai médian entre la création et la première correction métier, en jours.",
+      "value": 6.1,
+      "numerator": 4,
+      "denominator": 4,
+      "definition": "Délai médian entre la création et la première correction métier, en jours calendaires.",
       "sourceEntityIds": [
         "anomaly-58d181a7aa98",
+        "anomaly-3b49cceb9117",
         "anomaly-79ea06e1c5e4",
         "anomaly-f98e8ca4cfb6"
       ],
@@ -1670,39 +1656,14 @@
         },
         "exclusions": []
       },
-      "anomaly.created": {
-        "id": "anomaly.created",
-        "value": 7,
-        "unit": "count",
-        "numerator": 7,
-        "denominator": 7,
-        "scope": "anomaly",
-        "definition": "Nombre d’anomalies créées dans le périmètre du snapshot. La période sera activée avec les snapshots historiques.",
-        "sourceEntityIds": [
-          "anomaly-58d181a7aa98",
-          "anomaly-36af22bb43d9",
-          "anomaly-3b49cceb9117",
-          "anomaly-79ea06e1c5e4",
-          "anomaly-a0be3ebb1287",
-          "anomaly-f98e8ca4cfb6",
-          "anomaly-52867d3fbb31"
-        ],
-        "reliability": {
-          "status": "partial",
-          "issueIds": [
-            "DQ-004:anomaly-3b49cceb9117"
-          ]
-        },
-        "exclusions": []
-      },
-      "anomaly.corrected": {
-        "id": "anomaly.corrected",
+      "anomaly.correctedEver": {
+        "id": "anomaly.correctedEver",
         "value": 4,
         "unit": "count",
         "numerator": 4,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies ayant une première correction métier documentée.",
+        "definition": "Nombre d’anomalies du stock ayant déjà atteint une première correction métier dans les données disponibles.",
         "sourceEntityIds": [
           "anomaly-58d181a7aa98",
           "anomaly-3b49cceb9117",
@@ -1724,7 +1685,7 @@
         "numerator": 0,
         "denominator": 7,
         "scope": "anomaly",
-        "definition": "Nombre d’anomalies actuellement rouvertes.",
+        "definition": "Nombre d’anomalies actuellement dans l’état rouvert. Ce n’est pas un flux de réouvertures ; le flux historique sera calculé à partir des snapshots.",
         "sourceEntityIds": [],
         "reliability": {
           "status": "partial",

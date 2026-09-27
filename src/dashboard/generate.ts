@@ -69,7 +69,7 @@ function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   const completedAudits = metricOrUnknown(metrics, 'audit.completed');
   const open = metricOrUnknown(metrics, 'anomaly.open');
   const total = metricOrUnknown(metrics, 'anomaly.total');
-  const corrected = metricOrUnknown(metrics, 'anomaly.corrected');
+  const corrected = metricOrUnknown(metrics, 'anomaly.correctedEver');
   const median = metricOrUnknown(metrics, 'anomaly.correctionDelay.median');
   const p90 = metricOrUnknown(metrics, 'anomaly.correctionDelay.p90');
   const oldest = metricOrUnknown(metrics, 'anomaly.backlog.oldestAge');
@@ -195,8 +195,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const open = metricOrUnknown(metrics, 'anomaly.open');
   const inProgress = metricOrUnknown(metrics, 'anomaly.inProgress');
   const done = metricOrUnknown(metrics, 'anomaly.done');
-  const corrected = metricOrUnknown(metrics, 'anomaly.corrected');
-  const created = metricOrUnknown(metrics, 'anomaly.created');
+  const corrected = metricOrUnknown(metrics, 'anomaly.correctedEver');
   const reopened = metricOrUnknown(metrics, 'anomaly.reopened');
   const cancelled = metricOrUnknown(metrics, 'anomaly.cancelled');
   const median = metricOrUnknown(metrics, 'anomaly.correctionDelay.median');
@@ -241,11 +240,10 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
     ${metricCard('Corrigées', corrected, ratioLabel(corrected), 'anomalies.html?corrected=true')}
   </section>
 
-  <section class="section-heading"><div><p class="eyebrow">Flux</p><h2>Mouvements observés</h2></div><span class="badge">snapshot courant</span></section>
+  <section class="section-heading"><div><p class="eyebrow">États complémentaires</p><h2>Historique observable dans le snapshot</h2></div><span class="badge">pas un flux temporel</span></section>
   <section class="content-grid synthesis-two">
-    ${flowMetricPanel('Créées', created, 'anomalies.html', 'Stock historique du snapshot ; ce métrique deviendra un flux temporel lorsque l’historique des snapshots sera exploité.')}
-    ${flowMetricPanel('Corrigées', corrected, 'anomalies.html?corrected=true', corrected.definition)}
-    ${flowMetricPanel('Rouverte(s)', reopened, 'anomalies.html?status=reopened', reopened.definition)}
+    ${flowMetricPanel('Déjà corrigées', corrected, 'anomalies.html?corrected=true', corrected.definition)}
+    ${flowMetricPanel('Actuellement rouvertes', reopened, 'anomalies.html?status=reopened', reopened.definition)}
     ${flowMetricPanel('Annulées', cancelled, 'anomalies.html?status=cancelled', cancelled.definition)}
   </section>
 
@@ -271,7 +269,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
 }
 
 function flowMetricPanel(title: string, metric: Metric, href: string, definition: string): string {
-  return `<a class="panel metric-explainer flow-panel" href="${href}"><div class="panel-heading"><div><p class="eyebrow">Flux</p><h2>${title}</h2></div><span class="badge">${qualityLabel(metric.reliability.status)}</span></div><strong class="metric-big">${formatMetricValue(metric)}</strong><p class="metric-ratio">${ratioLabel(metric)}</p><p>${escapeHtml(definition)}</p></a>`;
+  return `<a class="panel metric-explainer flow-panel" href="${href}"><div class="panel-heading"><div><p class="eyebrow">État</p><h2>${title}</h2></div><span class="badge">${qualityLabel(metric.reliability.status)}</span></div><strong class="metric-big">${formatMetricValue(metric)}</strong><p class="metric-ratio">${ratioLabel(metric)}</p><p>${escapeHtml(definition)}</p></a>`;
 }
 
 function delayDays(from: string, to: string): number {
@@ -389,7 +387,7 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   const repositorySections = libraries.map((library) => {
     const components = (componentsByLibrary.get(library.libraryId) ?? []).sort((a, b) => a.name.localeCompare(b.name));
     const componentSections = components.map((component) => {
-      const audits = (auditsByComponent.get(component.componentId) ?? []).sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+      const audits = (auditsByComponent.get(component.componentId) ?? []).sort((a, b) => Date.parse(b.provenance.collectedAt) - Date.parse(a.provenance.collectedAt));
       const audit = audits.find((item) => !['in_progress', 'not_evaluated'].includes(item.status)) ?? audits[0];
       const anomalies = anomaliesByComponent.get(component.componentId) ?? [];
       const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;

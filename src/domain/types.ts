@@ -214,16 +214,24 @@ export interface KpiValue {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  /** V2 contract: all dashboard analytics must consume this map. */
+  metrics: Record<string, Metric>;
+  /** @deprecated Compatibility projection of anomaly.total. */
   anomaliesDeclared: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.correctedEver. */
   anomaliesCorrected: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.open. */
   openAnomalies: KpiValue;
   anomaliesByCriticality: Record<string, number | 'unknown'>;
   anomaliesByCategory: Record<string, number | 'unknown'>;
+  /** @deprecated Compatibility projection of portfolio.auditCoverage. */
   auditsCoverage: KpiValue;
+  /** @deprecated Compatibility projection of audit.conformityRate. */
   conformityRate: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.correctionDelay.average. */
   averageCorrectionDelayDays: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.correctionDelay.median. */
   medianCorrectionDelayDays: KpiValue;
-  metrics: Record<string, Metric>;
 }
 
 /** Données métier après collecte et normalisation. */
