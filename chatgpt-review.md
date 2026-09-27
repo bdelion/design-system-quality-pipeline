@@ -1148,210 +1148,454 @@ La prochaine évolution logique est **Audits & Composants V2** : rendre visible 
 
 ----------
 
-C’est fait. Audits & Composants V2 est maintenant intégré à la version précédente.
+C’est fait. **Audits & Composants V2** est maintenant intégré à la version précédente.
 
-Ce que la page apporte
+### Ce que la page apporte
 
-1. Périmètre auditable
+**1. Périmètre auditable**
 
-nombre de composants actifs ;
-composants effectivement audités ;
-couverture audités / actifs ;
-distinction explicite entre couverture et conformité.
+* nombre de composants actifs ;
+* composants effectivement audités ;
+* couverture `audités / actifs` ;
+* distinction explicite entre couverture et conformité.
 
-2. Résultats d’audit
+**2. Résultats d’audit**
 
-conformes ;
-conditionnels ;
-non conformes ;
-critiques ;
-conformité calculée uniquement sur les audits terminés.
+* conformes ;
+* conditionnels ;
+* non conformes ;
+* critiques ;
+* conformité calculée uniquement sur les audits terminés.
 
-3. Traçabilité complète
+**3. Traçabilité complète**
 La nouvelle vue permet de suivre :
 
-Repository → Composant → Audit → Anomalies
+**Repository → Composant → Audit → Anomalies**
 
 Pour chaque composant :
 
-état de l’audit ;
-version auditée ;
-résultat objectif ;
-nombre total d’anomalies ;
-nombre d’anomalies ouvertes ;
-état de fiabilité des données.
+* état de l’audit ;
+* version auditée ;
+* résultat objectif ;
+* nombre total d’anomalies ;
+* nombre d’anomalies ouvertes ;
+* état de fiabilité des données.
 
-4. Tous les audits sont visibles
-Même les audits in_progress ou not_evaluated ne disparaissent plus du tableau de traçabilité.
+**4. Tous les audits sont visibles**
+Même les audits `in_progress` ou `not_evaluated` ne disparaissent plus du tableau de traçabilité.
 
-5. Vue par repository
+**5. Vue par repository**
 Pour chaque repository :
 
-composants actifs ;
-composants audités ;
-composants conformes ;
-anomalies ;
-anomalies ouvertes ;
-qualité des données.
+* composants actifs ;
+* composants audités ;
+* composants conformes ;
+* anomalies ;
+* anomalies ouvertes ;
+* qualité des données.
 
-6. Filtres
+**6. Filtres**
 Sur le patrimoine :
 
-recherche libre ;
-audité / non audité ;
-conforme ;
-conditionnel ;
-non conforme ;
-critique.
+* recherche libre ;
+* audité / non audité ;
+* conforme ;
+* conditionnel ;
+* non conforme ;
+* critique.
 
 Et les liens depuis les indicateurs permettent de naviguer directement vers les sous-ensembles concernés.
 
-7. Qualité des données
+**7. Qualité des données**
 Les réserves DQ restent visibles directement dans la page Audits & Composants, sans faire disparaître les objets concernés.
 
-Archive complète
+### Archive complète
 
-Télécharger Design System Quality Pipeline – Audits & Composants V2
+[**Télécharger Design System Quality Pipeline – Audits & Composants V2**](sandbox:/mnt/data/design-system-quality-pipeline-v2-audits.zip)
 
-J’ai également ajouté les assertions correspondantes au test du dashboard et vérifié l’intégrité de l’archive. La compilation TypeScript complète reste non exécutable dans l’environnement actuel faute des dépendances node_modules disponibles ; je n’en déduis donc pas que la suite complète est verte.
+J’ai également ajouté les assertions correspondantes au test du dashboard et vérifié l’intégrité de l’archive. La compilation TypeScript complète reste non exécutable dans l’environnement actuel faute des dépendances `node_modules` disponibles ; je n’en déduis donc pas que la suite complète est verte.
 
-La prochaine brique intéressante est maintenant la Cartographie V2 : remplacer la cartographie actuelle essentiellement centrée sur composant → anomalie → PR par une vraie représentation repository → composant → audit → anomalie → PR, avec possibilité d'identifier immédiatement les composants non audités, les audits sans anomalie et les anomalies sans PR.
+La prochaine brique intéressante est maintenant **la Cartographie V2** : remplacer la cartographie actuelle essentiellement centrée sur `composant → anomalie → PR` par une vraie représentation **repository → composant → audit → anomalie → PR**, avec possibilité d'identifier immédiatement les composants non audités, les audits sans anomalie et les anomalies sans PR.
 
 -----
 
-C’est fait. Cartographie V2 est maintenant intégrée à la version Audits & Composants.
+C’est fait. **Cartographie V2** est maintenant intégrée à la version Audits & Composants.
 
-Nouvelle chaîne de traçabilité
+### Nouvelle chaîne de traçabilité
 
 La cartographie représente désormais explicitement :
 
-Repository → Composant → Audit → Anomalie → Pull Request
+**Repository → Composant → Audit → Anomalie → Pull Request**
 
 Chaque niveau apporte ses propres informations :
 
-Repository
-nom et dépôt GitHub
-nombre de composants
-qualité des données
-Composant
-identifiant
-état de découverte
-qualité des données
-présence ou absence d’un audit
-Audit
-version
-état
-résultat objectif
-distinction entre non audité et non conforme
-Anomalie
-issue GitHub
-état
-criticité
-lien direct vers la vue filtrée des anomalies
-PR
-relation avec l’anomalie
-lien direct vers GitHub
-absence de PR explicitement signalée
-Recherche et filtres
+* **Repository**
+
+  * nom et dépôt GitHub
+  * nombre de composants
+  * qualité des données
+
+* **Composant**
+
+  * identifiant
+  * état de découverte
+  * qualité des données
+  * présence ou absence d’un audit
+
+* **Audit**
+
+  * version
+  * état
+  * résultat objectif
+  * distinction entre non audité et non conforme
+
+* **Anomalie**
+
+  * issue GitHub
+  * état
+  * criticité
+  * lien direct vers la vue filtrée des anomalies
+
+* **PR**
+
+  * relation avec l’anomalie
+  * lien direct vers GitHub
+  * absence de PR explicitement signalée
+
+### Recherche et filtres
 
 La cartographie dispose maintenant de :
 
-recherche par repository ;
-composant ;
-audit ;
-anomalie ;
-PR ;
-filtre par niveau de la chaîne ;
-bouton de réinitialisation.
+* recherche par repository ;
+* composant ;
+* audit ;
+* anomalie ;
+* PR ;
+* filtre par niveau de la chaîne ;
+* bouton de réinitialisation.
 
 Cela permet par exemple de demander :
 
-« Montre-moi toutes les anomalies liées au composant X »
+> « Montre-moi toutes les anomalies liées au composant X »
 
 ou :
 
-« Quels composants de ce repository n'ont pas d'audit ? »
+> « Quels composants de ce repository n'ont pas d'audit ? »
 
 sans perdre la structure de la chaîne.
 
-Point important
+### Point important
 
-J’ai volontairement abandonné l'ancien modèle « une chaîne par anomalie ». Il pouvait donner l'impression que le composant n'existait qu'à travers ses anomalies.
+J’ai volontairement abandonné l'ancien modèle **« une chaîne par anomalie »**. Il pouvait donner l'impression que le composant n'existait qu'à travers ses anomalies.
 
-La nouvelle représentation part du patrimoine réel : un composant sans anomalie reste visible, un composant sans audit reste visible, et une anomalie sans PR reste visible.
+La nouvelle représentation part du **patrimoine réel** : un composant sans anomalie reste visible, un composant sans audit reste visible, et une anomalie sans PR reste visible.
 
 C'est beaucoup plus cohérent avec le modèle V2.
 
-Archive
+### Archive
 
-Télécharger Design System Quality Pipeline – Cartographie V2
+[**Télécharger Design System Quality Pipeline – Cartographie V2**](sandbox:/mnt/data/design-system-quality-pipeline-v2-cartographie.zip)
 
-J’ai également vérifié la syntaxe du nouveau graph.js et corrigé les attentes du test du dashboard. Comme précédemment, l'environnement ne dispose pas des dépendances node_modules, donc je ne peux pas déclarer la suite TypeScript/Vitest entièrement exécutée.
+J’ai également vérifié la syntaxe du nouveau `graph.js` et corrigé les attentes du test du dashboard. Comme précédemment, l'environnement ne dispose pas des dépendances `node_modules`, donc je ne peux pas déclarer la suite TypeScript/Vitest entièrement exécutée.
 
 À ce stade, les quatre vues du dashboard ont donc leur modèle V2 :
 
-Synthèse → Anomalies → Audits & Composants → Cartographie
+**Synthèse → Anomalies → Audits & Composants → Cartographie**
 
-La prochaine étape que je ferais est moins visuelle mais importante : finaliser le contrat analytique V2 et supprimer progressivement les anciens KPI Analytics, afin que le dashboard ne puisse plus mélanger accidentellement les anciennes définitions et les nouvelles métriques.
+La prochaine étape que je ferais est moins visuelle mais importante : **finaliser le contrat analytique V2 et supprimer progressivement les anciens KPI `Analytics`**, afin que le dashboard ne puisse plus mélanger accidentellement les anciennes définitions et les nouvelles métriques.
 
 ------
 
-C’est fait. J’ai consolidé le contrat analytique V2.
+C’est fait. J’ai consolidé le **contrat analytique V2**.
 
-Ce qui est maintenant verrouillé
-analytics.metrics devient l’unique source de vérité.
-calculateKpis() ne recalcule plus les indicateurs : il ne fait qu’exposer temporairement les anciens champs comme adaptateurs de compatibilité.
-Les anciens champs (anomaliesDeclared, auditsCoverage, conformityRate, etc.) sont marqués @deprecated.
-portfolio.auditCoverage reste bien :
-composants actifs audités / composants actifs.
-audit.conformityRate reste :
-audits conformes / audits terminés.
-anomaly.total conserve les anomalies sans criticité : une anomalie DQ ne disparaît donc pas du stock général.
-anomaly.correctedEver remplace l'ancien anomaly.corrected pour lever l'ambiguïté.
-anomaly.reopened signifie désormais explicitement « actuellement rouvert », et non « nombre de réouvertures sur une période ».
-Point important : les vrais flux
+### Ce qui est maintenant verrouillé
 
-J’ai retiré du contrat courant les faux flux anomaly.created / anomaly.corrected.
+* `analytics.metrics` devient **l’unique source de vérité**.
+* `calculateKpis()` ne recalcule plus les indicateurs : il ne fait qu’exposer temporairement les anciens champs comme **adaptateurs de compatibilité**.
+* Les anciens champs (`anomaliesDeclared`, `auditsCoverage`, `conformityRate`, etc.) sont marqués `@deprecated`.
+* `portfolio.auditCoverage` reste bien :
+  **composants actifs audités / composants actifs**.
+* `audit.conformityRate` reste :
+  **audits conformes / audits terminés**.
+* `anomaly.total` conserve les anomalies sans criticité : une anomalie DQ ne disparaît donc pas du stock général.
+* `anomaly.correctedEver` remplace l'ancien `anomaly.corrected` pour lever l'ambiguïté.
+* `anomaly.reopened` signifie désormais explicitement **« actuellement rouvert »**, et non « nombre de réouvertures sur une période ».
+
+### Point important : les vrais flux
+
+J’ai retiré du contrat courant les faux flux `anomaly.created` / `anomaly.corrected`.
 
 Pour mesurer réellement :
 
-anomalies créées sur une période ;
-anomalies corrigées sur une période ;
-réouvertures sur une période ;
-annulations sur une période ;
+* anomalies créées sur une période ;
+* anomalies corrigées sur une période ;
+* réouvertures sur une période ;
+* annulations sur une période ;
 
-il faudra comparer deux snapshots ou disposer d'un historique d'événements.
+il faudra comparer **deux snapshots** ou disposer d'un historique d'événements.
 
 Le futur modèle pourra alors porter explicitement :
 
-period.from → period.to
+`period.from → period.to`
 
 et le dashboard pourra afficher de vrais flux sans ambiguïté.
 
-Documentation
+### Documentation
 
-docs/analytics.md explique maintenant :
+`docs/analytics.md` explique maintenant :
 
-le contrat de référence ;
-stock vs flux ;
-la stratégie de migration ;
-l'utilisation attendue de value, numerator, denominator, definition, scope, reliability et exclusions.
+* le contrat de référence ;
+* stock vs flux ;
+* la stratégie de migration ;
+* l'utilisation attendue de `value`, `numerator`, `denominator`, `definition`, `scope`, `reliability` et `exclusions`.
 
 J’ai également corrigé le dashboard afin qu’il n’attende plus les métriques supprimées.
 
-Vérification
+### Vérification
 
-La vérification TypeScript ne remonte désormais plus d'erreur propre au code du projet. Les erreurs restantes sont uniquement liées aux dépendances absentes de l’environnement (node_modules, vitest, yaml, commander, types Node, etc.).
+La vérification TypeScript ne remonte désormais **plus d'erreur propre au code du projet**. Les erreurs restantes sont uniquement liées aux dépendances absentes de l’environnement (`node_modules`, `vitest`, `yaml`, `commander`, types Node, etc.).
 
-Archive
+### Archive
 
-Télécharger Design System Quality Pipeline – Contrat analytique V2
+[**Télécharger Design System Quality Pipeline – Contrat analytique V2**](sandbox:/mnt/data/design-system-quality-pipeline-v2-contract.zip)
 
 À ce stade, le projet dispose donc d’une architecture analytique beaucoup plus propre :
 
-RAW → Normalisation → DQ → Metrics V2 → Snapshot → Dashboard
+**RAW → Normalisation → DQ → Metrics V2 → Snapshot → Dashboard**
 
 et le dashboard ne doit plus contenir de logique métier concurrente.
 
 --------
 
+Je vois encore **6 étapes importantes** avant que je considère le projet V2 comme réellement stabilisé.
+
+### 1. 🔴 Fiabiliser le modèle analytique
+
+C'est la priorité.
+
+Je voudrais passer en revue **chaque métrique V2**, une par une, pour vérifier :
+
+* définition ;
+* formule ;
+* unité ;
+* numérateur / dénominateur ;
+* périmètre ;
+* gestion des données inconnues ;
+* impact des règles DQ ;
+* cohérence avec le modèle métier.
+
+L'objectif est d'obtenir une sorte de **catalogue contractuel des métriques**, par exemple :
+
+| ID                               | Signification      | Formule                     | Périmètre           |
+| -------------------------------- | ------------------ | --------------------------- | ------------------- |
+| `portfolio.components`           | composants actifs  | count                       | catalogue           |
+| `portfolio.auditCoverage`        | couverture d'audit | audités / actifs            | composants          |
+| `audit.conformityRate`           | conformité         | conformes / audits terminés | audits              |
+| `anomaly.total`                  | stock d'anomalies  | count                       | anomalies           |
+| `anomaly.open`                   | anomalies ouvertes | count                       | anomalies           |
+| `anomaly.correctionDelay.median` | délai médian       | médiane des délais          | anomalies corrigées |
+
+Cela permettra ensuite de faire évoluer le projet sans réintroduire d'ambiguïtés.
+
+---
+
+### 2. 🔴 Mettre en place les **vrais flux temporels**
+
+C'est actuellement le principal manque analytique.
+
+Il faut introduire l'idée de :
+
+```text
+Snapshot N
+      ↓
+Snapshot N+1
+      ↓
+Delta
+```
+
+pour pouvoir dire réellement :
+
+* `+5 anomalies créées`
+* `-3 anomalies corrigées`
+* `+1 réouverture`
+* `+2 audits réalisés`
+
+plutôt que de déduire ces valeurs du stock actuel.
+
+Je proposerais un modèle :
+
+```text
+Snapshot
+ ├── date
+ ├── metrics
+ ├── entities
+ └── quality
+
+History
+ ├── snapshot N
+ ├── snapshot N+1
+ └── deltas
+```
+
+Cela permettra ensuite de construire **Historique / Tendances**.
+
+---
+
+### 3. 🟠 Renforcer le modèle DQ
+
+Aujourd'hui on a déjà le bon principe :
+
+> une anomalie de qualité des données affecte certains indicateurs, mais pas nécessairement tous.
+
+Je voudrais aller plus loin.
+
+Pour chaque métrique :
+
+```text
+Metric
+ ├── reliability
+ ├── exclusions[]
+ └── dataQualityImpacts[]
+```
+
+permettrait au dashboard d'expliquer directement :
+
+> **12,5 % de couverture — fiabilité partielle**
+
+puis :
+
+> 1 composant exclu du dénominateur
+> Cause : DQ-006
+> Catalogue incomplet pour Tooltip.
+
+C'est beaucoup plus utile qu'un simple badge « ⚠️ ».
+
+---
+
+### 4. 🟠 Ajouter une vraie page **Qualité des données**
+
+Elle manque encore comme vue de premier niveau.
+
+Je la construirais autour de :
+
+**Qualité du snapshot**
+
+* `OK`
+* `WARNING`
+* `ERROR`
+* nombre de règles déclenchées
+
+Puis :
+
+**Impact métier**
+
+| Règle  | Sévérité | Entités | Métriques affectées   |
+| ------ | -------: | ------: | --------------------- |
+| DQ-001 |    ERROR |       1 | criticité             |
+| DQ-006 |  WARNING |       1 | couverture patrimoine |
+| DQ-007 |  WARNING |       1 | catégories            |
+| DQ-009 |  WARNING |       1 | releases              |
+
+Et surtout :
+
+**« Qu'est-ce que cela change dans les chiffres ? »**
+
+C'est à mon avis une des fonctionnalités qui donnera le plus de valeur au dashboard.
+
+---
+
+### 5. 🟡 Construire l'Historique
+
+Une fois les snapshots comparables, on pourra ajouter :
+
+* évolution du nombre de composants ;
+* évolution de la couverture d'audit ;
+* évolution de la conformité ;
+* anomalies créées / corrigées ;
+* backlog ;
+* délai médian ;
+* évolution par criticité ;
+* évolution par repository.
+
+Et surtout des événements explicatifs :
+
+> **12 septembre**
+> +3 anomalies
+> → nouvelle campagne d'audit `Button 3.4`
+
+> **15 septembre**
+> -4 anomalies ouvertes
+> → 4 PR fusionnées
+
+Cela transformera le dashboard d'un **reporting statique** en véritable outil de pilotage.
+
+---
+
+### 6. 🟢 Dernière étape : tests + documentation + nettoyage
+
+Une fois le modèle terminé :
+
+* tests unitaires des métriques ;
+* tests DQ → impacts métriques ;
+* tests de snapshots ;
+* tests de comparaison de snapshots ;
+* tests du dashboard ;
+* fixture complète servant de référence ;
+* suppression définitive des anciens KPI ;
+* nettoyage des CSS/JS morts ;
+* documentation de l'architecture ;
+* exemple de snapshot ;
+* éventuellement CI GitHub.
+
+Et surtout :
+
+```text
+npm ci
+npm run build
+npm test
+```
+
+doivent être réellement exécutables et verts dans un environnement propre.
+
+---
+
+## L'ordre que je te propose
+
+Je ne continuerais **pas immédiatement à ajouter des pages graphiques**.
+
+Je ferais plutôt :
+
+```text
+          ┌─────────────────────┐
+          │ 1. Catalogue Metrics│
+          └──────────┬──────────┘
+                     ↓
+          ┌─────────────────────┐
+          │ 2. Snapshot History │
+          └──────────┬──────────┘
+                     ↓
+          ┌─────────────────────┐
+          │ 3. Delta / Flux     │
+          └──────────┬──────────┘
+                     ↓
+          ┌─────────────────────┐
+          │ 4. DQ → Metric      │
+          │    impact           │
+          └──────────┬──────────┘
+                     ↓
+          ┌─────────────────────┐
+          │ 5. Page DQ          │
+          └──────────┬──────────┘
+                     ↓
+          ┌─────────────────────┐
+          │ 6. Historique       │
+          └──────────┬──────────┘
+                     ↓
+          ┌─────────────────────┐
+          │ 7. Tests / CI       │
+          └─────────────────────┘
+```
+
+**Mon prochain chantier serait donc le n°1 : le catalogue contractuel complet des métriques V2**, puis immédiatement le moteur de comparaison de snapshots. C'est ce qui va donner une base solide à tout le reste, plutôt que de continuer à embellir le dashboard autour d'un modèle qui pourrait encore changer.
+
+----
