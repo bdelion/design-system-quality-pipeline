@@ -21,6 +21,7 @@ export async function generateDashboard(snapshot: Snapshot, outputRoot: string, 
     writeFile(resolve(dashboardPath, 'anomalies.html'), page(snapshot, 'Anomalies', anomaliesContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'audits.html'), page(snapshot, 'Audits et composants', auditsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'graph.html'), page(snapshot, 'Cartographie', graphContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'history.html'), page(snapshot, 'Historique', historyContent(snapshot), serializedSnapshot), 'utf8'),
     copyDashboardAsset(dashboardPath, 'style.css'),
     copyDashboardAsset(dashboardPath, 'app.js'),
     copyDashboardAsset(dashboardPath, 'graph.js'),
@@ -47,7 +48,7 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 </head>
 <body>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${title === 'Vue d’ensemble' ? 'À SURVEILLER' : 'V2.1'}</span><span class="avatar">CP</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
   <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}
 </body></html>`;
 }
@@ -183,6 +184,26 @@ function metricLabel(id: string): string {
     'anomaly.criticalityCoverage': 'Couverture criticité',
     'anomaly.correctionDelay.median': 'Délai médian'
   } as Record<string, string>)[id] ?? id;
+}
+
+/** Vue temporelle issue de la comparaison entre snapshots. */
+function historyContent(snapshot: Snapshot): string {
+  const flows = snapshot.analytics.flows ?? {};
+  const ids = ['anomaly.flow.created', 'anomaly.flow.corrected', 'anomaly.flow.reopened', 'anomaly.flow.cancelled'] as const;
+  const labels: Record<string, string> = {
+    'anomaly.flow.created': 'Anomalies créées',
+    'anomaly.flow.corrected': 'Anomalies corrigées',
+    'anomaly.flow.reopened': 'Anomalies rouvertes',
+    'anomaly.flow.cancelled': 'Anomalies annulées'
+  };
+  const first = flows[ids[0]];
+  const period = first?.period;
+  const cards = ids.map((id) => {
+    const metric = flows[id];
+    const label = labels[id] ?? id;
+    return metric ? metricCard(label, metric, `${formatDateShort(metric.period?.from ?? '')} → ${formatDateShort(metric.period?.to ?? '')}`, 'anomalies.html') : `<article class="kpi-card"><span class="kpi-label">${label}</span><strong>—</strong><span class="kpi-definition">Disponible après comparaison avec un snapshot précédent.</span></article>`;
+  }).join('');
+  return `<section class="hero-band"><div><p class="eyebrow">Évolution</p><h2>Ce qui a changé depuis le snapshot précédent</h2><p>${period ? `Période : ${formatDateShort(period.from ?? '')} → ${formatDateShort(period.to ?? '')}` : 'Aucun snapshot précédent comparable dans les données courantes.'}</p></div><div class="hero-ring"><strong>${first ? ids.reduce((sum, id) => sum + Number(flows[id]?.value ?? 0), 0) : '—'}</strong><span>événements détectés</span></div></section><section class="kpi-grid">${cards}</section><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Interprétation</p><h2>Stock vs flux</h2></div><span class="badge">snapshot courant</span></div><p class="muted">Les indicateurs de cette page sont des flux observés entre deux snapshots. Ils ne remplacent pas les stocks affichés dans <a class="text-link" href="anomalies.html">Anomalies</a>.</p></article>`;
 }
 
 /** Construit la vue V2 des anomalies : stock, flux, délais, criticité et qualité des données. */

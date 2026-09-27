@@ -39,3 +39,20 @@ describe('snapshot diff', () => {
     expect(diff.period).toEqual({ from: before.capturedAt, to: after.capturedAt });
   });
 });
+
+import { calculateFlowMetrics } from '../src/analytics/flows.js';
+
+describe('snapshot flow metrics', () => {
+  it('exposes period-bound flow metrics', () => {
+    const before = snapshot('s1', '2026-09-10T00:00:00Z', [base]);
+    const after = snapshot('s2', '2026-09-11T00:00:00Z', [
+      { ...base, status: 'reopened', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
+      { ...base, anomalyId: 'a2' }
+    ]);
+    const flows = calculateFlowMetrics(diffSnapshots(before, after));
+    expect(flows['anomaly.flow.created']?.value).toBe(1);
+    expect(flows['anomaly.flow.corrected']?.value).toBe(1);
+    expect(flows['anomaly.flow.reopened']?.value).toBe(1);
+    expect(flows['anomaly.flow.created']?.period).toEqual({ from: before.capturedAt, to: after.capturedAt });
+  });
+});

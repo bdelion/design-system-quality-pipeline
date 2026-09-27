@@ -54,3 +54,9 @@ Aucune métrique `flow` n'est actuellement produite. Lors de l'introduction de l
 `src/snapshots/diff.ts` compare deux snapshots ordonnés et produit des faits de transition sans modifier les snapshots sources : entités ajoutées/supprimées, changements d'état d'anomalies, premières corrections observées, entrées en état `reopened` et passages à `cancelled`.
 
 Une transition est toujours rattachée à la période `[capturedAt du snapshot précédent, capturedAt du snapshot courant]`. Les futurs indicateurs de flux devront être construits à partir de ce delta et porter cette période explicitement.
+
+## Flux temporels
+
+Les flux `anomaly.flow.created`, `anomaly.flow.corrected`, `anomaly.flow.reopened` et `anomaly.flow.cancelled` ne sont calculés que lorsqu'un snapshot précédent est disponible. Leur période est toujours `snapshot précédent → snapshot courant`.
+
+Ils décrivent des événements observables entre deux états et ne doivent pas être confondus avec les stocks (`anomaly.total`, `anomaly.open`, etc.).

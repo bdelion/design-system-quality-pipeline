@@ -1731,3 +1731,125 @@ de
 **« qu'est-ce qui a changé depuis le dernier snapshot ? »**.
 
 --------
+
+C’est fait. J’ai maintenant implémenté le passage **stocks → vrais flux temporels** et la première page **Historique**.
+
+### Ce qui vient d’être ajouté
+
+#### 1. Vrais flux V2
+
+Nouvelles métriques :
+
+* `anomaly.flow.created`
+* `anomaly.flow.corrected`
+* `anomaly.flow.reopened`
+* `anomaly.flow.cancelled`
+
+Elles ne sont plus calculées à partir du stock courant : elles proviennent de la comparaison entre :
+
+**Snapshot N → Snapshot N+1**
+
+Chaque métrique porte maintenant :
+
+* sa valeur ;
+* sa période `from → to` ;
+* les identifiants des anomalies concernées ;
+* sa définition contractuelle ;
+* sa fiabilité.
+
+#### 2. Comparaison automatique des snapshots
+
+Le pipeline recherche le snapshot précédent disponible et construit automatiquement le delta.
+
+On peut donc désormais distinguer :
+
+> **3 anomalies ouvertes aujourd'hui**
+
+de :
+
+> **2 anomalies créées depuis le dernier snapshot**
+
+C'est une distinction importante pour le pilotage.
+
+#### 3. Nouvelle page Historique
+
+Le dashboard dispose maintenant de :
+
+**Historique**
+
+avec :
+
+* anomalies créées ;
+* anomalies corrigées ;
+* anomalies rouvertes ;
+* anomalies annulées ;
+* période analysée ;
+* nombre total d'événements détectés.
+
+La navigation devient donc :
+
+**Synthèse → Anomalies → Composants → Cartographie → Historique**
+
+#### 4. Contrat métrique mis à jour
+
+Les quatre flux sont maintenant déclarés dans le catalogue V2 avec `kind: flow`.
+
+Le principe est donc désormais explicite :
+
+```text
+STOCK
+anomaly.total
+anomaly.open
+anomaly.done
+...
+
+FLUX
+anomaly.flow.created
+anomaly.flow.corrected
+anomaly.flow.reopened
+anomaly.flow.cancelled
+```
+
+#### 5. Tests
+
+J'ai ajouté un test vérifiant notamment qu'un scénario :
+
+```text
+open
+  ↓
+done
+  ↓
+reopened
+```
+
+produit correctement :
+
+* 1 correction ;
+* 1 réouverture ;
+
+et que la période du flux correspond bien aux deux snapshots.
+
+L'archive elle-même a été vérifiée avec `unzip -t` : **aucune erreur**.
+
+### Archive
+
+[**Télécharger Design System Quality Pipeline – Flux & Historique V2**](sandbox:/mnt/data/design-system-quality-pipeline-v2-flows-history.zip)
+
+### Une limite à signaler
+
+Je n'ai toujours pas pu exécuter la suite complète `npm test` : l'environnement ne dispose pas des dépendances installées et `npm ci` refuse ici le lockfile fourni. En revanche, j'ai fait passer le code modifié au compilateur TypeScript disponible et les seules erreurs restantes concernent les modules externes absents (`node:fs`, `yaml`, etc.), pas les nouvelles fonctionnalités V2.
+
+---
+
+**La prochaine étape que je recommande maintenant est la page *Qualité des données V2*.**
+
+C'est celle qui va réellement exploiter tout ce qu'on a construit :
+
+**DQ-001 → entité concernée → métriques affectées → exclusions → conséquence sur les chiffres du dashboard.**
+
+On pourra enfin répondre directement à la question :
+
+> **« Pourquoi ce chiffre est-il partiel et exactement qu'est-ce que cela change ? »**
+
+-----
+

@@ -216,6 +216,8 @@ export interface KpiValue {
 export interface Analytics {
   /** V2 contract: all dashboard analytics must consume this map. */
   metrics: Record<string, Metric>;
+  /** Flux temporels présents lorsque deux snapshots sont comparables. */
+  flows?: Record<string, Metric>;
   /** @deprecated Compatibility projection of anomaly.total. */
   anomaliesDeclared: KpiValue;
   /** @deprecated Compatibility projection of anomaly.correctedEver. */
