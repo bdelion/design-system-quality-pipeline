@@ -2698,3 +2698,512 @@ Et je porterai une attention particulière à **Data Quality V2**, puisque c'est
 [1]: https://github.com/github/docs/blob/main/content/copilot/tutorials/review-ai-generated-code.md?utm_source=chatgpt.com "docs/content/copilot/tutorials/review-ai-generated-code.md at main · github/docs · GitHub"
 
 ----
+
+Oui. Et je pense que tu mets le doigt sur un problème **plus fondamental que l'ajout de quelques DQ-011, DQ-012, etc.**
+
+Le bon objectif serait de transformer les règles de qualité en **spécifications déclaratives**, dont le Markdown serait la source lisible par l'humain et dont le code TypeScript serait une implémentation générique autant que possible.
+
+### Je te proposerais cette architecture
+
+```text
+docs/
+└── quality-rules/
+    ├── README.md
+    ├── conventions.md
+    ├── lifecycle.md
+    ├── relationships.md
+    ├── legacy.md
+    │
+    ├── DQ-001-missing-criticality.md
+    ├── DQ-002-multiple-criticality.md
+    ├── DQ-003-multiple-parents.md
+    ├── ...
+    └── DQ-xxx-...
+```
+
+Chaque règle aurait toujours la même structure :
+
+````markdown
+# DQ-001 — Une anomalie doit avoir une criticité
+
+## Intention
+
+Toute issue de type `Bug` représentant une anomalie RGAA
+doit posséder exactement une criticité.
+
+## Périmètre
+
+### Inclus
+
+- Issue Type = `Bug`
+- label `audit`
+- issue appartenant à un audit
+
+### Exclus
+
+- EPIC
+- Audit
+- Documentation
+- issues historiques avant le modèle cible
+
+## Règle
+
+Une anomalie doit avoir exactement une des valeurs :
+
+- `bloquante`
+- `majeure`
+- `mineure`
+
+## Cas valides
+
+| Situation | Résultat |
+|---|---|
+| Une criticité | ✅ |
+| Aucune criticité | ❌ |
+| Deux criticités | ❌ |
+
+## Cas historiques
+
+Les issues créées avant `2026-09-01`
+peuvent être considérées comme legacy.
+
+## Gravité
+
+ERROR
+
+## Impact
+
+| Métrique | Action |
+|---|---|
+| anomaly.total | conserver |
+| anomaly.open | conserver |
+| anomaly.byCriticality.* | exclure |
+| anomaly.criticalityCoverage | exclure du dénominateur |
+
+## Message
+
+`L'anomalie doit avoir exactement une criticité.`
+
+## Test
+
+Fixture :
+
+`fixtures/quality/dq-001/`
+
+Attendu :
+
+```yaml
+violations: 1
+````
+
+````
+
+L'intérêt est énorme : **la règle devient simultanément documentation, contrat fonctionnel et spécification de test.**
+
+---
+
+## Mais je ferais encore mieux pour ton cas
+
+Tu as en réalité **trois catégories différentes** qu'il ne faut pas mélanger.
+
+### 1. Les règles du modèle cible
+
+Elles disent :
+
+> « Comment une issue correctement créée aujourd'hui doit être structurée ? »
+
+Par exemple :
+
+```text
+Anomalie
+ ├── Issue Type = Bug
+ ├── parent = Audit
+ ├── Component = xxx
+ ├── criticité = exactement 1
+ ├── catégorie = exactement 1
+ ├── Iteration = obligatoire après pesée
+ ├── Milestone = version
+ ├── status = Backlog / Ready / In progress / ...
+ └── PR = obligatoire avant Done
+````
+
+### 2. Les règles de qualité
+
+Elles disent :
+
+> « Comment détecter qu'une donnée existante ne respecte pas le modèle ? »
+
+Par exemple :
+
+```text
+DQ-001
+Bug sans criticité
+
+DQ-002
+Bug avec plusieurs criticités
+
+DQ-003
+Bug avec plusieurs parents
+
+DQ-004
+Done sans PR
+```
+
+### 3. Les règles de migration / legacy
+
+Elles disent :
+
+> « Que fait-on des vieilles issues qui ne respectent pas le modèle actuel ? »
+
+Et ça, je pense que c'est **indispensable dans ton projet**.
+
+Par exemple :
+
+```text
+LEGACY-001
+Issue créée avant le 01/09/2026
+ET issue sans Issue Type
+
+→ ne pas considérer comme violation du modèle cible
+→ classer comme legacy
+→ conserver dans les métriques historiques
+```
+
+---
+
+# Le point clé : ne pas faire de DQ un énorme `rules.ts`
+
+Actuellement, tu as quelque chose qui ressemble conceptuellement à :
+
+```ts
+if (...) {
+   ...
+}
+
+if (...) {
+   ...
+}
+
+if (...) {
+   ...
+}
+```
+
+Ça devient vite difficile à maintenir.
+
+Je voudrais plutôt arriver à quelque chose comme :
+
+```text
+                Modèle cible
+                     │
+                     ▼
+              Règles déclaratives
+                     │
+          ┌──────────┼──────────┐
+          ▼          ▼          ▼
+       Docs       Tests       Engine DQ
+          │          │          │
+          └──────────┼──────────┘
+                     ▼
+               qualityIssues
+```
+
+Et idéalement :
+
+```ts
+evaluateRule(rule, dataset)
+```
+
+plutôt que :
+
+```ts
+evaluateDq001(...)
+evaluateDq002(...)
+evaluateDq003(...)
+...
+```
+
+---
+
+# Et ton problème des anciennes issues devient beaucoup plus simple
+
+Je pense qu'il faut introduire explicitement un **modèle de conformité temporel**.
+
+Par exemple :
+
+```yaml
+model:
+  currentSince: "2026-09-01"
+```
+
+Puis une règle peut dire :
+
+```yaml
+scope:
+  issueTypes:
+    - Bug
+
+  effectiveFrom: "2026-09-01"
+
+legacy:
+  beforeEffectiveFrom: ignore
+```
+
+Mais parfois tu voudras quelque chose de plus fin :
+
+```yaml
+legacy:
+  policy: classify
+
+  classifications:
+    - name: legacy-no-type
+      when:
+        issueType: null
+      action: legacy
+
+    - name: legacy-old-workflow
+      when:
+        status:
+          notIn:
+            - Backlog
+            - Ready
+            - In progress
+            - In review
+            - Done
+            - Blocked
+            - Cancelled
+      action: legacy
+```
+
+Ainsi une vieille issue n'est pas simplement :
+
+> « mauvaise »
+
+mais :
+
+```text
+CURRENT
+LEGACY
+INVALID
+UNKNOWN
+```
+
+C'est beaucoup plus utile pour ton dashboard.
+
+---
+
+# Je séparerais aussi 4 notions
+
+C'est probablement la prochaine évolution importante de ton modèle.
+
+### Conformité
+
+> Est-ce que l'entité respecte le modèle ?
+
+```text
+compliant
+non-compliant
+```
+
+### Applicabilité
+
+> Est-ce que cette règle s'applique à cette entité ?
+
+```text
+applicable
+not-applicable
+```
+
+### Héritage
+
+> Est-ce une donnée créée avant l'entrée en vigueur du modèle ?
+
+```text
+current
+legacy
+```
+
+### Qualité de donnée
+
+> Est-ce que l'information nécessaire est connue ?
+
+```text
+known
+missing
+unknown
+ambiguous
+```
+
+Ça éviterait beaucoup de `if` compliqués.
+
+---
+
+# Je te conseille aussi un fichier central du modèle
+
+En plus des Markdown individuels :
+
+```text
+docs/
+└── quality-rules/
+    ├── model.md
+    ├── lifecycle.md
+    ├── issue-types.md
+    ├── relationships.md
+    ├── labels.md
+    ├── iterations.md
+    ├── milestones.md
+    └── rules/
+```
+
+`model.md` décrirait **le modèle cible**, indépendamment des règles DQ.
+
+Par exemple :
+
+```text
+EPIC
+ └── Audit
+      └── Anomaly
+           └── Pull Request
+```
+
+avec :
+
+```text
+EPIC
+ ├── repository
+ └── version
+
+Audit
+ ├── component
+ ├── auditor
+ ├── iteration
+ └── milestone
+
+Anomaly
+ ├── parent Audit
+ ├── criticity
+ ├── category
+ ├── iteration
+ ├── milestone
+ └── PR
+```
+
+Cela deviendrait **la référence du système**.
+
+---
+
+# Et je pense qu'il faut faire quelque chose de très intéressant avec ton futur fixture
+
+Quand tu me donneras ton **fixture anonymisé beaucoup plus complet**, je te propose de ne pas commencer immédiatement à écrire DQ-011, DQ-012, etc.
+
+On pourrait d'abord faire une **cartographie automatique de l'existant** :
+
+```text
+                     FIXTURE RÉEL
+                          │
+                          ▼
+                 ┌─────────────────┐
+                 │ Inventaire      │
+                 └─────────────────┘
+                          │
+       ┌──────────────────┼──────────────────┐
+       ▼                  ▼                  ▼
+    Issues             Projects          Relations
+       │                  │                  │
+       ▼                  ▼                  ▼
+ Issue Type          Status            Parent
+ Labels              Iteration         Sub-issue
+ Milestone           Fields            PR
+ ...
+```
+
+Puis produire trois vues :
+
+### A. Ce que tu fais réellement aujourd'hui
+
+```text
+Observed model
+```
+
+### B. Ce que tu veux faire
+
+```text
+Target model
+```
+
+### C. Les écarts
+
+```text
+Observed → Target
+
+152 issues
+ ├── 91 conformes
+ ├── 27 legacy
+ ├── 19 non conformes
+ └── 15 indéterminées
+```
+
+Et **c'est seulement à partir de ces écarts qu'on construirait les règles**.
+
+---
+
+## Je pense même que le futur outil devrait générer une partie de sa documentation
+
+À terme :
+
+```bash
+npm run quality:inventory
+```
+
+→ inventaire du fixture.
+
+Puis :
+
+```bash
+npm run quality:validate
+```
+
+→ application du modèle.
+
+Et éventuellement :
+
+```bash
+npm run quality:docs
+```
+
+→ génération du catalogue :
+
+```text
+Quality Rules
+─────────────
+
+DQ-001  Missing criticality       ERROR
+DQ-002  Multiple criticality     ERROR
+DQ-003  Multiple parents         ERROR
+...
+
+Model coverage
+─────────────
+
+Issue Types        8 / 9
+Labels            17 / 19
+Relationships      6 / 7
+Workflow           7 / 7
+```
+
+Cela ferait de la **documentation une sortie du même modèle que le moteur**, plutôt qu'une documentation qu'il faut maintenir à deux endroits.
+
+---
+
+### Donc je ne modifierais pas encore V3
+
+Je garderais **V3 comme base stable**, puis lorsque tu me fournis le fixture anonymisé complet, je ferais d'abord :
+
+**Fixture → inventaire → modèle observé → modèle cible → écarts → catalogue des règles → architecture d'implémentation.**
+
+Et seulement ensuite nous modifierons le moteur DQ.
+
+C'est probablement le meilleur moyen de résoudre tes quatre problèmes simultanément : **règles manquantes, legacy, complexité du code et documentation difficile à maintenir.**
+
+-----
+
