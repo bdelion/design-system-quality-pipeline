@@ -6,7 +6,7 @@ import type { Analytics, AnomalyStatus, AuditStatus, Component, DataQualityStatu
 
 const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.meta.url)));
 
-/** Génère les trois pages statiques et leurs assets depuis un snapshot. */
+/** Génère les cinq pages statiques et leurs assets depuis un snapshot. */
 export async function generateDashboard(snapshot: Snapshot, outputRoot: string, githubUrl?: string): Promise<void> {
   const dashboardPath = resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });

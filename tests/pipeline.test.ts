@@ -8,7 +8,7 @@ import { loadCatalogue, validateCatalogue } from '../src/catalogue.js';
 
 const raw = await collectFixture();
 const config = await loadConfig();
-const normalized = normalizeGithub(raw, config.github);
+const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
 const issues = evaluateDataQuality(raw, normalized, config.github);
 
 // Les scénarios ci-dessous couvrent le flux métier et les réserves de qualité attendues.
@@ -28,10 +28,39 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   });
 
   // Le catalogue enrichit les composants connus sans changer la source des anomalies.
+  it('uses catalogue-only components as portfolio entities when the catalogue maps them to a repository', async () => {
+    const catalogue = await loadCatalogue();
+    const synthetic = structuredClone(raw);
+    synthetic.repositories[1].issues = synthetic.repositories[1].issues.filter((issue) => issue.component !== 'Toast');
+    const normalizedCatalogue = normalizeGithub(synthetic, config.github, catalogue, config.auditVersion);
+    expect(normalizedCatalogue.components.some((component) => component.name === 'Toast' && component.discoverySource === 'catalogue')).toBe(true);
+  });
+
+  it('preserves the repository default branch in the normalized library contract', () => {
+    expect(normalized.libraries.every((library) => library.defaultBranch.length > 0)).toBe(true);
+  });
+
+  it('uses the configured audit version instead of a hard-coded normalizer version', () => {
+    const versioned = normalizeGithub(raw, config.github, undefined, '2099.01');
+    expect(versioned.audits.every((audit) => audit.version === '2099.01')).toBe(true);
+  });
+
+  it('detects multiple parents independently of criticality', () => {
+    const synthetic = structuredClone(raw);
+    const issue = synthetic.repositories[0].issues.find((candidate) => candidate.id === 'issue-101');
+    if (!issue) throw new Error('Fixture issue-101 is required for this test.');
+    issue.parents = ['parent-1', 'parent-2'];
+    issue.criticities = [];
+    const normalizedSynthetic = normalizeGithub(synthetic, config.github, undefined, config.auditVersion);
+    const quality = evaluateDataQuality(synthetic, normalizedSynthetic, config.github);
+    const anomaly = normalizedSynthetic.anomalies.find((candidate) => candidate.provenance.sourceId === 'issue-101');
+    expect(quality.some((item) => item.ruleId === 'DQ-003' && item.entityId === anomaly?.anomalyId)).toBe(true);
+  });
+
   it('loads the catalogue as the reference list of known components', async () => {
     const catalogue = await loadCatalogue();
     const catalogueRaw = { ...raw, catalogueComponents: catalogue.components.map((component) => component.name) };
-    const catalogueNormalized = normalizeGithub(catalogueRaw, config.github, catalogue);
+    const catalogueNormalized = normalizeGithub(catalogueRaw, config.github, catalogue, config.auditVersion);
 
     expect(catalogue.components.map((component) => component.name)).toContain('Button');
     const button = catalogueNormalized.components.find((component) => component.name === 'Button');
@@ -87,7 +116,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     cancelledIssue.projectStatuses = [{ projectId: 'project-1', projectName: 'Quality', status: 'Cancelled' }];
     cancelledIssue.milestone = { id: 1, number: 1, title: 'Release 2.1' };
 
-    const cancelledNormalized = normalizeGithub(cancelledRaw, config.github);
+    const cancelledNormalized = normalizeGithub(cancelledRaw, config.github, undefined, config.auditVersion);
     const cancelledIssues = evaluateDataQuality(cancelledRaw, cancelledNormalized, config.github);
     const cancelledAnomaly = cancelledNormalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101');
     const cancelledAnalytics = calculateKpis(cancelledNormalized, cancelledIssues);

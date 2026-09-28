@@ -4,7 +4,7 @@ import { anonymizeDataset } from '../src/anonymization/anonymizer.js';
 import { assertRelationalIntegrity, validateAnonymizedDataset } from '../src/anonymization/validator.js';
 import type { RawDataset } from '../src/domain/types.js';
 
-const options = { seed: 'test-seed', dateOffsetDays: -100, strictText: true, preserveComponentNames: true, urlBase: 'https://fixture.invalid' };
+const options = { seed: 'test-seed', dateOffsetDays: -100, strictText: true, preserveComponentNames: true };
 
 describe('fixture anonymizer', () => {
   it('is deterministic', () => expect(anonymizeDataset(fixture as RawDataset, options).dataset).toEqual(anonymizeDataset(fixture as RawDataset, options).dataset));
@@ -31,4 +31,5 @@ describe('fixture anonymizer', () => {
     expect(result.dataset.catalogueComponents).not.toContain(fixture.catalogueComponents[0]);
     expect(result.dataset.repositories[0].issues[0].component).not.toBe(fixture.repositories[0].issues[0].component);
   });
+
 });

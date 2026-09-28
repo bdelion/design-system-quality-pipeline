@@ -34,7 +34,7 @@ export async function runPipeline(source: CollectionSource = 'fixture'): Promise
   // Le catalogue est la référence utilisée pour classer les composants découverts.
   raw.catalogueComponents = catalogue.components.map((component) => component.name);
   validateRepositories(config.repositories, raw);
-  const normalized = normalizeGithub(raw, config.github, catalogue);
+  const normalized = normalizeGithub(raw, config.github, catalogue, config.auditVersion);
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);
   const analytics = calculateKpis(normalized, qualityIssues);
   const previousSnapshot = await loadLatestSnapshot();
@@ -72,7 +72,7 @@ function validateRepositories(expected: string[], raw: RawDataset): void {
 }
 
 /** Détermine si le snapshot est complet ou s'il doit être présenté comme partiel. */
-export function pipelineStatus(snapshot: Snapshot): 'COMPLETE' | 'PARTIAL' | 'FAILED' {
+export function pipelineStatus(snapshot: Snapshot): 'COMPLETE' | 'PARTIAL' {
   return snapshot.dataQuality.summary.ERROR > 0 || snapshot.dataQuality.summary.WARNING > 0 ? 'PARTIAL' : 'COMPLETE';
 }
 

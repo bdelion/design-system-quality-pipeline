@@ -24,6 +24,7 @@ export interface GithubProcessingConfig {
 export interface PipelineConfig {
   modelVersion: string;
   ruleVersion: string;
+  auditVersion: string;
   scope: string;
   githubOwner: string;
   repositories: string[];

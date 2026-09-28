@@ -22,7 +22,7 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
       continue;
     }
     if (!anomaly.criticality) add('DQ-001', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has no criticality.');
-    if (anomaly.criticality && anomaly.parentRefs.length > 1) add('DQ-003', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple parents.');
+    if (anomaly.parentRefs.length > 1) add('DQ-003', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple parents.');
     if (anomaly.status === 'done' && anomaly.pullRequestRefs.length === 0) add('DQ-004', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Done issue has no identifiable pull request.');
     if (sourceIssue?.labels.some((label) => label.toLowerCase().startsWith(rules.labels.criticalityPrefix.toLowerCase())) && sourceIssue.criticities.length > 1) add('DQ-002', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple criticalities.');
     if (sourceIssue?.labels.some((label) => label.toLowerCase() === rules.labels.unknown.toLowerCase())) add('DQ-007', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Issue contains an unknown label.');
@@ -46,7 +46,8 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
     'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
     'anomaly.criticalityCoverage', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
-    'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
+    'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge',
+    'anomaly.flow.created', 'anomaly.flow.corrected', 'anomaly.flow.reopened', 'anomaly.flow.cancelled'
   ]);
 }
 

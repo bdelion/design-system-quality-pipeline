@@ -38,7 +38,7 @@ The repository CI executes these checks on pushes to `main`, `master`, `develop`
 4. `npm test`
 5. `npm run build`
 6. `npm run pipeline` with fixture data
-7. Inspect `dist/current/snapshot.json` and the generated dashboard
+7. Inspect `data/current/snapshot.json` and the generated dashboard
 8. Verify that a second pipeline run produces `Analytics.flows` when a previous snapshot is available
 
 ## Known environment limitation

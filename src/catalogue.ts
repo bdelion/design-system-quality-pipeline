@@ -14,6 +14,8 @@ export interface CatalogueAudit {
 /** Métadonnées de référence utilisées pour enrichir un composant normalisé. */
 export interface CatalogueComponent {
     name: string;
+    /** Repository cible du composant quand le catalogue doit matérialiser un composant sans issue GitHub. */
+    repository?: string;
     stream: string;
     owner: string;
     squad: string;
@@ -78,6 +80,7 @@ function validateComponent(value: unknown, index: number): CatalogueComponent {
 
     const component: CatalogueComponent = {
         name: value.name as string,
+        ...(typeof value.repository === 'string' && value.repository.length > 0 ? { repository: value.repository } : {}),
         stream: value.stream as string,
         owner: value.owner as string,
         squad: value.squad as string,

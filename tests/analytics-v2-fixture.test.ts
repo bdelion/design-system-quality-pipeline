@@ -9,10 +9,12 @@ describe('V2 fixture analytical contract', () => {
   it('produces the expected self-explaining metrics', async () => {
     const raw = await collectFixture();
     const config = await loadConfig();
-    const normalized = normalizeGithub(raw, config.github);
+    const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
     const issues = evaluateDataQuality(raw, normalized, config.github);
     const metrics = calculateKpis(normalized, issues).metrics;
 
+    expect(metrics['portfolio.repositories']?.value).toBe(3);
+    expect(metrics['portfolio.libraries']?.value).toBe(3);
     expect(metrics['portfolio.components']?.value).toBe(8);
     expect(metrics['portfolio.componentsAudited']?.value).toBe(1);
     expect(metrics['portfolio.auditCoverage']?.value).toBe(12.5);

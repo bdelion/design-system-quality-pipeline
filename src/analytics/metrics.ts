@@ -68,14 +68,16 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   const excluded = (metricId: string) => new Set(issues.flatMap((issue) => issue.impacts.filter((impact) => matchesMetricPattern(impact.metricId, metricId) && impact.action === 'exclude').map((impact) => issue.entityId)));
   const activeComponents = data.components.filter((component) => component.status === 'active');
   const completedAudits = data.audits.filter((audit) => !['in_progress', 'not_evaluated'].includes(audit.status));
-  const auditedComponents = new Set(completedAudits.map((audit) => audit.componentId));
+  const activeComponentIds = new Set(activeComponents.map((component) => component.componentId));
+  const auditedComponents = new Set(completedAudits.map((audit) => audit.componentId).filter((componentId) => activeComponentIds.has(componentId)));
   const validAnomalies = data.anomalies.filter((anomaly) => !anomaly.cancelled);
   const anomalyIds = (metricId: string) => validAnomalies.filter((anomaly) => !excluded(metricId).has(anomaly.anomalyId)).map((anomaly) => anomaly.anomalyId);
   const corrected = validAnomalies.filter((anomaly) => Boolean(anomaly.firstDoneAt) && !excluded('anomaly.correctionDelay.average').has(anomaly.anomalyId));
   const delays = corrected.flatMap((anomaly) => anomaly.firstDoneAt ? [delayDays(anomaly.createdAt, anomaly.firstDoneAt)] : []);
   const conform = completedAudits.filter((audit) => audit.objectiveAuditResult === 'conform');
   const m: Record<string, Metric> = {};
-  m['portfolio.repositories'] = metric('portfolio.repositories', data.libraries.length, data.libraries.length, data.libraries.length, data.libraries.map((x) => x.libraryId), issues);
+  const repositoryIds = [...new Set(data.libraries.map((library) => library.repository))];
+  m['portfolio.repositories'] = metric('portfolio.repositories', repositoryIds.length, repositoryIds.length, repositoryIds.length, repositoryIds, issues);
   m['portfolio.libraries'] = metric('portfolio.libraries', data.libraries.length, data.libraries.length, data.libraries.length, data.libraries.map((x) => x.libraryId), issues);
   m['portfolio.components'] = metric('portfolio.components', activeComponents.length, activeComponents.length, activeComponents.length, activeComponents.map((x) => x.componentId), issues);
   m['portfolio.componentsAudited'] = metric('portfolio.componentsAudited', auditedComponents.size, auditedComponents.size, activeComponents.length, [...auditedComponents], issues);

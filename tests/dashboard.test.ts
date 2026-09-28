@@ -13,7 +13,7 @@ import { loadConfig } from '../src/config.js';
 it('generates static dashboard pages from the snapshot contract', async () => {
   const raw = await collectFixture();
   const config = await loadConfig();
-  const normalized = normalizeGithub(raw, config.github);
+  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const issues = evaluateDataQuality(raw, normalized, config.github);
   const snapshot = buildSnapshot(raw, normalized, issues, calculateKpis(normalized, issues), '2.1', 'dq-test', 'test');
   const output = resolve(process.cwd(), 'data/test-dashboard');

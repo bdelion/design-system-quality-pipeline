@@ -13,7 +13,7 @@ export interface MetricContract {
 }
 
 export const METRIC_CONTRACTS: readonly MetricContract[] = [
-  { id: 'portfolio.repositories', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de repositories effectivement analysés.' },
+  { id: 'portfolio.repositories', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de repositories distincts effectivement analysés.' },
   { id: 'portfolio.libraries', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de bibliothèques analysées.' },
   { id: 'portfolio.components', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de composants actifs dans le périmètre du patrimoine.' },
   { id: 'portfolio.componentsAudited', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de composants actifs disposant d’au moins un audit terminé.' },

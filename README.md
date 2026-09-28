@@ -70,15 +70,19 @@ La fixture couvre trois repositories (`design-system-core`, `design-system-react
 
 Après `npm run pipeline` ou `npm run dashboard`, ouvrir [data/dashboard/index.html](data/dashboard/index.html) dans un navigateur.
 
-Le dashboard contient trois pages :
+Le dashboard contient cinq pages :
 
 - **Vue d'ensemble** : KPI, criticité des anomalies, synthèse des alertes, comparaison des trois repositories et délais de correction moyens/médians ;
 - **Anomalies** : détail des anomalies par repository, état, criticité, correction et alertes de qualité, avec filtre local ;
 - **Audits** : composants découverts par repository, origine de leur découverte et résultat objectif d'audit, y compris les audits conformes.
+- **Cartographie** : chaîne repository → composant → audit → anomalie → PR.
+- **Historique** : flux créés, corrigés, rouverts et annulés entre deux snapshots comparables.
 
 Les délais sont calculés entre `createdAt` et `firstDoneAt`. Une anomalie sans date de correction n'entre pas dans le calcul : elle reste visible, mais ne transforme pas une information inconnue en durée artificielle.
 
 Le dashboard est statique. Il ne nécessite ni serveur applicatif ni base de données.
+
+La fixture catalogue peut associer explicitement chaque composant à son repository via `repository`. Cela permet de conserver dans le patrimoine les composants sans issue GitHub courante.
 
 ## Commandes
 
@@ -86,8 +90,12 @@ Le dashboard est statique. Il ne nécessite ni serveur applicatif ni base de don
 - `npm run validate` : valide la configuration et la fixture.
 - `npm run analyze` : normalise, contrôle la qualité et calcule les KPI.
 - `npm run snapshot` : produit un snapshot immuable.
-- `npm run dashboard` : génère les pages statiques dans `data/dashboard/`.
-- `npm run pipeline` : exécute toutes les étapes et affiche `COMPLETE`, `PARTIAL` ou `FAILED`.
+- `npm run dashboard` : génère les cinq pages statiques dans `data/dashboard/`.
+- `npm run fixture:anonymize -- --input <raw.json> --output <fixture.json>` : produit une fixture déterministe anonymisée.
+- `npm run fixture:validate -- --input <fixture.json>` : vérifie PII et intégrité relationnelle.
+
+Les métriques `anomaly.flow.*` sont calculées uniquement lorsqu’un snapshot précédent comparable existe. Leur période correspond exactement aux deux dates de capture.
+- `npm run pipeline` : exécute toutes les étapes et affiche `COMPLETE` ou `PARTIAL`; une erreur d’exécution fait échouer la commande.
 
 ## Où trouver les fichiers importants ?
 

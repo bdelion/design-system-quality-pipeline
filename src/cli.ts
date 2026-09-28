@@ -26,10 +26,9 @@ program.command('fixture:anonymize')
   .option('--date-offset-days <days>', 'shift all dates by this number of days', String(DEFAULT_ANONYMIZATION_OPTIONS.dateOffsetDays))
   .option('--keep-text', 'only redact obvious PII instead of replacing free-form text')
   .option('--anonymize-components', 'replace component names as well as repositories/users/IDs')
-  .option('--url-base <url>', 'reserved base URL for future URL-bearing raw sources', DEFAULT_ANONYMIZATION_OPTIONS.urlBase)
-  .action(async (options: { input: string; output: string; seed: string; dateOffsetDays: string; keepText?: boolean; anonymizeComponents?: boolean; urlBase: string }) => {
+  .action(async (options: { input: string; output: string; seed: string; dateOffsetDays: string; keepText?: boolean; anonymizeComponents?: boolean; }) => {
     const input = JSON.parse(await readFile(options.input, 'utf8')) as RawDataset;
-    const config: AnonymizationOptions = { seed: options.seed, dateOffsetDays: Number(options.dateOffsetDays), strictText: !options.keepText, preserveComponentNames: !options.anonymizeComponents, urlBase: options.urlBase };
+    const config: AnonymizationOptions = { seed: options.seed, dateOffsetDays: Number(options.dateOffsetDays), strictText: !options.keepText, preserveComponentNames: !options.anonymizeComponents };
     const result = anonymizeDataset(input, config);
     const validation = validateAnonymizedDataset(result.dataset);
     const integrityErrors = assertRelationalIntegrity(result.dataset);

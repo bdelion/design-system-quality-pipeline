@@ -1,5 +1,6 @@
 modelVersion: "2.1"
 ruleVersion: "dq-2026.09"
+auditVersion: "2026.09"
 scope: "configured-github-repositories"
 githubOwner: "example"
 repositories:

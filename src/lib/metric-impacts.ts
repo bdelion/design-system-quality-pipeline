@@ -14,10 +14,14 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
     { pattern: 'anomaly.correctionDelay.*', action: 'include', reason: 'Le délai reste calculable indépendamment du rattachement.' }
   ],
   'DQ-004': [
-    { pattern: 'anomaly.*', action: 'include', reason: 'L’anomalie reste comptable, mais la preuve de correction est incomplète.' }
+    { pattern: 'anomaly.correctedEver', action: 'include', reason: 'L’anomalie reste comptable, mais la preuve de correction est incomplète.' },
+    { pattern: 'anomaly.correctionDelay.*', action: 'include', reason: 'Le délai reste calculable, mais la preuve de correction est incomplète.' },
+    { pattern: 'anomaly.flow.corrected', action: 'include', reason: 'Le flux de correction reste observable, mais la preuve de correction est incomplète.' }
   ],
   'DQ-005': [
-    { pattern: 'anomaly.*', action: 'include', reason: 'L’anomalie reste comptable, mais le lien issue/PR est incohérent.' }
+    { pattern: 'anomaly.correctedEver', action: 'include', reason: 'L’anomalie reste comptable, mais le lien issue/PR est incohérent.' },
+    { pattern: 'anomaly.correctionDelay.*', action: 'include', reason: 'Le délai reste calculable, mais le lien issue/PR est incohérent.' },
+    { pattern: 'anomaly.flow.corrected', action: 'include', reason: 'Le flux de correction reste observable, mais le lien issue/PR est incohérent.' }
   ],
   'DQ-006': [
     { pattern: 'portfolio.*', action: 'include', reason: 'Le composant reste dans le patrimoine, mais ses métadonnées de référence sont incomplètes.' }
@@ -36,7 +40,8 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
     { pattern: 'anomaly.correctedEver', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
     { pattern: 'anomaly.reopened', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
     { pattern: 'anomaly.correctionDelay.*', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
-    { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' }
+    { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée ne doit contribuer au stock analytique.' },
+    { pattern: 'anomaly.flow.cancelled', action: 'exclude', reason: 'Le flux d’annulation est déjà représenté par la relation d’annulation source.' }
   ],
   'DQ-009': [
     { pattern: 'portfolio.release.*', action: 'unknown', reason: 'La preuve de release Nexus est indisponible.' }
@@ -52,7 +57,8 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
     { pattern: 'anomaly.correctedEver', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
     { pattern: 'anomaly.reopened', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
     { pattern: 'anomaly.correctionDelay.*', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
-    { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' }
+    { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
+    { pattern: 'anomaly.flow.cancelled', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' }
   ]
 };
 
