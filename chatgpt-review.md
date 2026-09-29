@@ -3207,3 +3207,859 @@ C'est probablement le meilleur moyen de résoudre tes quatre problèmes simultan
 
 -----
 
+Oui, tu avais identifié le vrai problème : **l’anonymisation du RAW et la configuration étaient auparavant deux mondes indépendants**.
+
+J’ai corrigé cela dans une **V5**.
+
+### Ce qui change
+
+Lorsque tu exécutes :
+
+```bash
+npm run fixture:anonymize -- \
+  --input data\raw\my-real-dataset.json \
+  --output fixtures/github-real-anonymized.json
+```
+
+l’anonymiseur génère maintenant **trois fichiers cohérents avec le même seed de mapping** :
+
+```text
+fixtures/github-real-anonymized.json
+config/system.fixture.yaml
+config/catalogue.fixture.yaml
+```
+
+Ainsi, si le RAW contient par exemple :
+
+```text
+myorga/ds-react
+```
+
+et que celui-ci devient :
+
+```text
+repo-b7bbfaf1
+```
+
+alors `system.fixture.yaml` contiendra également :
+
+```yaml
+repositories:
+  - repo-...
+  - repo-b7bbfaf1
+  - repo-...
+```
+
+et les références `repository` du catalogue utilisent exactement le même mapping.
+
+### `system.yaml` reste intact
+
+C'est important : **on ne modifie jamais ton vrai `config/system.yaml`**.
+
+Le comportement devient :
+
+```text
+GitHub réel
+    │
+    ├── system.yaml réel
+    │
+    ▼
+collect
+    │
+    ▼
+RawDataset réel
+    │
+    ▼
+anonymisation
+    │
+    ├── fixture anonymisée
+    ├── system.fixture.yaml
+    └── catalogue.fixture.yaml
+             │
+             ▼
+       pipeline --source fixture
+```
+
+Le pipeline GitHub continue donc à utiliser :
+
+```text
+config/system.yaml
+config/catalogue.yaml
+```
+
+tandis que le pipeline fixture utilise automatiquement les fichiers `.fixture.yaml` lorsqu'ils existent.
+
+J'ai également conservé les valeurs que tu avais demandé de ne **jamais anonymiser** :
+
+* `issue.labels`
+* `issue.state`
+* `issue.issueType`
+* `projectStatuses[].status`
+* `milestone.title`
+* `milestone.state`
+
+Les règles fonctionnelles de `system.yaml` (`labels`, `issueTypes`, statuts, etc.) restent également inchangées dans la configuration anonymisée.
+
+### Un autre point important
+
+J'ai ajouté une compatibilité avec les fixtures historiques : si `system.fixture.yaml` ou `catalogue.fixture.yaml` n'existe pas, le pipeline retombe sur les fichiers classiques. Cela évite de casser les tests/fixtures existants.
+
+### V5
+
+[**Télécharger `design-system-quality-pipeline-feature-chatgpt-review-v5.zip`**](sandbox:/mnt/data/v4fix/design-system-quality-pipeline-feature-chatgpt-review-v5.zip)
+
+L'archive est valide : **115 fichiers, aucune erreur ZIP**.
+
+Je n'ai pas déclaré le `typecheck` comme passant, car l'environnement de génération ne dispose toujours pas des dépendances `node_modules`; les erreurs restantes sont principalement des modules manquants. J'ai en revanche corrigé l'erreur TypeScript d'optionalité que mon premier patch avait introduite.
+
+**À noter :** le problème séparé des `1 integrity error` que tu avais obtenu précédemment (`PR ... references missing issue ...`) reste à traiter. Je préfère ne pas le masquer : il faut déterminer pourquoi cette relation existe alors que l'issue correspondante n'est pas présente dans le RAW.
+
+----
+
+Oui. Et les deux nombres ont des significations très différentes.
+
+### 1. Le `1 integrity error`
+
+Celui-ci est parfaitement identifié par le message :
+
+```text
+repo-b7bbfaf1:pr-01047660 references missing issue issue-656bfa0e
+```
+
+Cela signifie :
+
+> Dans le repository anonymisé `repo-b7bbfaf1`, le PR `pr-01047660` contient une référence vers l'issue `issue-656bfa0e`, mais cette issue n'existe pas dans la liste des issues de ce même repository.
+
+Le validateur fait exactement ce contrôle :
+
+```ts
+for (const pr of repo.pullRequests) {
+  for (const id of pr.relatedIssueIds) {
+    if (!issueIds.has(id)) {
+      errors.push(`${repo.name}:${pr.id} references missing issue ${id}`);
+    }
+  }
+}
+```
+
+Donc ce n'est **pas une erreur d'anonymisation au sens "PII"**. C'est une erreur de **cohérence relationnelle**.
+
+Et dans ton cas, il faut surtout comprendre **pourquoi** cette relation existe.
+
+Ton RAW réel contenait :
+
+```json
+{
+  "number": 2871,
+  "relatedIssueIds": [
+    "myorga/ds-react:issue:2860"
+  ]
+}
+```
+
+Alors que l'anonymiseur produit :
+
+```text
+pr-01047660
+    └── issue-656bfa0e
+```
+
+Si `issue-656bfa0e` n'est pas présente dans `repo-b7bbfaf1.issues`, trois possibilités principales existent :
+
+1. l'issue 2860 n'a effectivement pas été collectée ;
+2. elle appartient à un autre repository ;
+3. le collecteur a créé une relation que le périmètre RAW ne permet pas de résoudre.
+
+**Je ne supprimerais surtout pas cette relation pour faire passer la validation.** Elle est justement intéressante pour comprendre la qualité de ton extraction GitHub.
+
+---
+
+# 2. Les `4315 suspicious strings`
+
+C'est un autre problème.
+
+Le validateur parcourt **toutes les chaînes de caractères de toute la fixture** :
+
+```text
+dataset
+ ├── collectedAt
+ ├── repositories
+ │    ├── id
+ │    ├── name
+ │    ├── owner
+ │    ├── issues
+ │    │    ├── title
+ │    │    ├── labels
+ │    │    ├── ...
+ │    │    └── milestone
+ │    └── pullRequests
+ └── catalogueComponents
+```
+
+Et il cherche cinq types de données :
+
+```text
+email
+github-token
+bearer-token
+phone
+url
+```
+
+Le problème est que **4315 ne signifie pas 4315 données personnelles différentes**.
+
+Cela signifie :
+
+> **4315 occurrences détectées par le scanner**, éventuellement plusieurs occurrences dans les mêmes champs.
+
+---
+
+## 3. Pourquoi ton ancienne fixture en contient encore autant ?
+
+Et là, on retrouve exactement le problème que nous avions identifié.
+
+Ton ancienne fixture a été produite avec une version de l'anonymiseur qui laissait passer des objets GitHub riches.
+
+Par exemple ton `milestone` réel contenait :
+
+```json
+{
+  "id": 671,
+  "number": 25,
+  "title": "1.8.0",
+  "description": "... https://github.enterprise.io/...",
+  "creator": {
+    "login": "martin-matin",
+    "avatar_url": "https://avatars.github.enterprise.io/...",
+    "url": "https://github.enterprise.io/api/v3/users/..."
+  },
+  "url": "https://github.enterprise.io/...",
+  "html_url": "https://github.enterprise.io/...",
+  ...
+}
+```
+
+Chaque URL peut être détectée comme une `suspicious string`.
+
+Et avec **1716 issues**, plusieurs champs peuvent contenir plusieurs URLs.
+
+C'est donc parfaitement compatible avec un résultat de plusieurs milliers de détections.
+
+---
+
+# 4. Il y a surtout un problème dans ta commande actuelle
+
+Tu fais :
+
+```bash
+npm run fixture:validate -- --input fixtures\github-real-anonymized-v3.json
+```
+
+Tu valides donc :
+
+```text
+github-real-anonymized-v3.json
+```
+
+et **pas la nouvelle fixture générée par la V5**.
+
+Si `github-real-anonymized-v3.json` a été générée avec l'ancien anonymiseur, elle peut parfaitement contenir les 4315 URLs dont nous avons parlé.
+
+La V5 corrige justement la reconstruction explicite des objets :
+
+```ts
+return {
+  id: ...,
+  number: ...,
+  title: ...,
+  state: ...,
+  ...
+}
+```
+
+au lieu de conserver les propriétés inattendues provenant de l'API GitHub.
+
+---
+
+# 5. Mais il y a un autre problème que je veux corriger
+
+Il y a une faiblesse dans notre validateur actuel.
+
+Il affiche :
+
+```text
+4315 suspicious strings
+```
+
+mais la commande devrait plutôt te montrer **où elles sont** et **de quel type elles sont**.
+
+Le validateur possède déjà cette information :
+
+```ts
+{
+  path,
+  kind
+}
+```
+
+mais le message final ne l'exploite pas suffisamment.
+
+Je voudrais donc faire évoluer `fixture:validate` pour produire quelque chose comme :
+
+```text
+ANONYMIZED FIXTURE VALIDATION
+
+PII / suspicious strings
+-----------------------
+URLs              4315
+emails               0
+GitHub tokens        0
+Bearer tokens        0
+phones               0
+
+Total suspicious strings: 4315
+
+Examples:
+- $.repositories[0].issues[12].milestone.description → url
+- $.repositories[0].issues[12].milestone.creator.url → url
+- $.repositories[0].issues[12].milestone.html_url → url
+...
+
+RELATIONAL INTEGRITY
+--------------------
+ERROR:
+- repo-b7bbfaf1:pr-01047660 → missing issue issue-656bfa0e
+
+Result: INVALID
+```
+
+Ainsi, tu sauras immédiatement si les 4315 détections sont :
+
+* des URLs qui ont fui ;
+* des emails ;
+* des numéros de téléphone ;
+* etc.
+
+### Et surtout
+
+Pour ton projet, je pense qu'il faut **séparer trois concepts** :
+
+| Contrôle          | Question                                                      |
+| ----------------- | ------------------------------------------------------------- |
+| **Schema**        | La fixture ne contient-elle que les champs autorisés du RAW ? |
+| **Anonymisation** | Une donnée sensible/identifiante a-t-elle fui ?               |
+| **Integrity**     | Les relations entre entités sont-elles cohérentes ?           |
+
+Actuellement `fixture:validate` mélange un peu les deux derniers.
+
+Et ton exemple montre que cette distinction va devenir importante pour la suite du projet.
+
+**Je te recommande donc de ne pas considérer ces 4315 comme une nouvelle anomalie métier : c'est avant tout un signal du validateur de fixture.** La première chose à faire est de générer une fixture avec la V5, puis de regarder le détail des éventuelles détections restantes.
+
+-------
+
+Oui. J’ai intégré ce fonctionnement dans une **V6**.
+
+### Nouveau comportement de `fixture:validate`
+
+Ta commande :
+
+```bash
+npm run fixture:validate -- --input fixtures\github-real-anonymized-v3.json
+```
+
+génère maintenant automatiquement :
+
+```text
+fixtures\github-real-anonymized-v3.json.validation.md
+```
+
+Même si la fixture est **invalide**, le rapport est généré avant que la commande retourne l'erreur.
+
+Tu peux aussi choisir explicitement le nom :
+
+```bash
+npm run fixture:validate -- ^
+  --input fixtures\github-real-anonymized-v3.json ^
+  --report reports\anonymized-validation.md
+```
+
+### Le rapport contient
+
+#### 1. Synthèse
+
+```text
+Repositories       3
+Issues             1716
+Pull requests      1463
+Suspicious strings 4315
+Integrity errors   1
+Result             INVALID
+```
+
+#### 2. Répartition des suspicious strings
+
+Par exemple :
+
+| Type         | Nombre |
+| ------------ | -----: |
+| url          |   4315 |
+| email        |      0 |
+| github-token |      0 |
+| bearer-token |      0 |
+| phone        |      0 |
+
+#### 3. Chaque occurrence
+
+Le rapport donne maintenant :
+
+* le numéro de détection ;
+* le type ;
+* **le chemin JSON exact** ;
+* **la valeur qui pose problème**.
+
+Par exemple :
+
+```text
+$.repositories[0].issues[12].milestone.description
+```
+
+avec la valeur réelle détectée :
+
+```text
+- Suite Table : https://github.enterprise.io/...
+```
+
+Tu vas donc pouvoir remonter directement au champ responsable dans la fixture.
+
+#### 4. Les erreurs d'intégrité
+
+Pour ton erreur actuelle :
+
+```text
+repo-b7bbfaf1:pr-01047660 references missing issue issue-656bfa0e
+```
+
+le rapport donnera notamment :
+
+```text
+Repository:    repo-b7bbfaf1
+Source entity: pr-01047660
+Source path:   $.repositories[...].pullRequests[...]
+Referenced ID: issue-656bfa0e
+```
+
+et surtout **l'objet PR complet présent dans la fixture**, dans un bloc JSON :
+
+```json
+{
+  "id": "pr-01047660",
+  "number": ...,
+  "state": "...",
+  "mergedAt": "...",
+  "relatedIssueIds": [
+    "issue-656bfa0e"
+  ]
+}
+```
+
+Cela devrait nous permettre de déterminer précisément pourquoi cette relation est cassée au lieu de simplement afficher le message d'erreur.
+
+### Point important
+
+Je n'ai pas modifié la règle de validation pour faire disparaître artificiellement les erreurs. **Une relation cassée reste une erreur** ; on ajoute simplement suffisamment de contexte pour pouvoir l'analyser.
+
+L'archive V6 est prête :
+
+[**Télécharger `design-system-quality-pipeline-feature-chatgpt-review-v6.zip`**](sandbox:/mnt/data/v5report/design-system-quality-pipeline-feature-chatgpt-review-v6.zip)
+
+L'archive a également été vérifiée comme ZIP valide. Je n'ai pas pu exécuter le `typecheck` complet dans mon environnement de génération, car les dépendances du projet ne sont pas installées.
+
+------
+
+Oui, le rapport permet de voir clairement le problème : **le détecteur `phone` est mal calibré**. Il considère pratiquement tous les timestamps ISO comme des numéros de téléphone, d’où les **4 315 faux positifs**. Le rapport montre par exemple `2025-09-28T09:50:53.739Z` classé `phone`. 
+
+Et tu as raison sur le second point : **l'erreur d'intégrité actuelle ne donne pas assez d'informations pour remonter à la donnée GitHub d'origine**. Elle donne l'objet anonymisé, mais pas la correspondance vers l'élément RAW/source qui permettrait de comprendre pourquoi cette relation existe.
+
+Je propose donc de corriger **le modèle de validation et le rapport**, plutôt que simplement masquer ces erreurs.
+
+### 1. Pourquoi les dates sont détectées comme `phone`
+
+Le problème est très probablement le pattern utilisé par le scanner :
+
+```text
+2025-09-28T09:50:53.739Z
+```
+
+contient suffisamment de groupes numériques séparés par `-`, `:` et `.`, ce qui satisfait le détecteur actuel.
+
+Mais un timestamp ISO est un **format structurel connu du modèle RAW** :
+
+* `collectedAt`
+* `createdAt`
+* `closedAt`
+* `firstDoneAt`
+* `mergedAt`
+
+Il ne faut donc **pas le traiter comme une donnée personnelle suspecte**.
+
+Le résultat attendu devrait être :
+
+```text
+email       → détecté
+GitHub token → détecté
+bearer token → détecté
+URL          → détectée si elle peut contenir une information sensible
+phone       → détecté uniquement dans les champs où un téléphone est plausible
+ISO date     → accepté
+```
+
+Autrement dit, le scanner ne devrait pas appliquer indistinctement la même regex à toutes les chaînes.
+
+---
+
+### 2. Le problème plus important : les relations anonymisées
+
+Ton exemple :
+
+```json
+{
+  "id": "pr-01047660",
+  "number": 947035,
+  "state": "MERGED",
+  "mergedAt": "2022-02-06T14:39:09.000Z",
+  "relatedIssueIds": [
+    "issue-656bfa0e"
+  ]
+}
+```
+
+dit :
+
+> le PR anonymisé `pr-01047660` référence l'issue anonymisée `issue-656bfa0e`.
+
+Mais la validation constate que cette issue **n'existe pas dans le jeu de données anonymisé**.
+
+Le rapport nous dit seulement :
+
+> `$.repositories[0].pullRequests[1061]` → `issue-656bfa0e` manquante
+
+C'est effectivement insuffisant pour analyser la cause.
+
+Il faut pouvoir répondre à :
+
+```text
+PR GitHub original
+       ↓
+PR RAW
+       ↓
+issue référencée originale
+       ↓
+mapping anonymisation
+       ↓
+issue anonymisée
+       ↓
+présente / absente du fixture
+```
+
+---
+
+## 3. Je modifierais donc le rapport pour conserver une traçabilité d'audit
+
+Sans exposer les données personnelles dans le fixture final, on peut ajouter dans le rapport de validation un **contexte de traçabilité anonymisé**.
+
+Par exemple :
+
+```text
+Integrity error #1
+
+Repository
+  repo-b7bbfaf1
+
+Source entity
+  pr-01047660
+
+Source path
+  $.repositories[0].pullRequests[1061]
+
+Referenced entity
+  issue-656bfa0e
+
+Reference type
+  pullRequest.relatedIssueIds → issue
+
+Status
+  MISSING_FROM_FIXTURE
+```
+
+Mais surtout, le rapport devrait indiquer **pourquoi cette référence est absente**, lorsqu'on peut le déterminer :
+
+```text
+Possible cause:
+  - issue not collected
+  - issue belongs to another repository
+  - issue filtered during collection
+  - issue existed in source but was not included in the anonymized fixture
+  - relation produced by collector but target unavailable
+```
+
+---
+
+## 4. Encore mieux : conserver une table de traçabilité séparée
+
+Je pense que c'est la bonne architecture pour ton projet.
+
+Le fixture anonymisé resterait totalement anonymisé :
+
+```text
+fixtures/github-real-anonymized-v6.json
+```
+
+Mais la commande d'anonymisation pourrait produire, **uniquement en environnement local**, un fichier :
+
+```text
+fixtures/github-real-anonymized-v6.trace.json
+```
+
+avec par exemple :
+
+```json
+{
+  "repositories": {
+    "repo-b7bbfaf1": {
+      "sourceRepository": "myorga/ds-react"
+    }
+  },
+  "entities": {
+    "pr-01047660": {
+      "type": "pullRequest",
+      "sourceRepository": "myorga/ds-react",
+      "sourceNumber": 2871
+    }
+  }
+}
+```
+
+et pour la relation :
+
+```json
+{
+  "relation": {
+    "source": "pr-01047660",
+    "field": "relatedIssueIds",
+    "target": "issue-656bfa0e",
+    "targetType": "issue",
+    "targetPresent": false
+  }
+}
+```
+
+**Ce fichier ne doit jamais être utilisé comme fixture partagé ni commité dans Git.**
+
+Il sert uniquement au développeur qui possède les données RAW originales.
+
+---
+
+### 5. Il y a une distinction importante à faire
+
+Je séparerais désormais clairement trois choses :
+
+| Contrôle                 | Signification                                      | Exemple                 |
+| ------------------------ | -------------------------------------------------- | ----------------------- |
+| **Privacy scan**         | Une donnée potentiellement sensible fuit-elle ?    | email, token, téléphone |
+| **Schema validation**    | Le JSON respecte-t-il le modèle RAW ?              | champ inattendu         |
+| **Relational integrity** | Les relations entre objets sont-elles cohérentes ? | PR → issue absente      |
+
+Actuellement, le rapport mélange un peu les deux derniers concepts, ce qui rend le diagnostic difficile.
+
+Et surtout, **4315 suspicious strings ne signifie absolument pas 4315 fuites de données personnelles**. Dans ton cas, le rapport montre que ces 4315 détections sont essentiellement les dates ISO. 
+
+### Ce que je te recommande de changer
+
+Je ferais donc une **V7** avec :
+
+1. **Correction du détecteur `phone`**
+
+   * exclusion explicite des timestamps ISO ;
+   * idéalement validation contextuelle par champ ;
+   * les dates ne doivent plus apparaître comme `phone`.
+
+2. **Rapport de validation enrichi**
+
+   * type de contrôle ;
+   * chemin JSON ;
+   * valeur détectée ;
+   * objet parent ;
+   * cause/explication lorsque déterminable.
+
+3. **Diagnostic des relations**
+
+   * `missing-issue` / `missing-pull-request` ;
+   * préciser si la cible existe dans un autre repository ;
+   * préciser si elle est simplement absente du fixture.
+
+4. **Fichier de traçabilité local**
+
+   * mapping RAW → anonymisé ;
+   * relations RAW → anonymisées ;
+   * jamais inclus dans le fixture anonymisé distribué.
+
+5. **Ne jamais avoir besoin de remettre les données originales dans le rapport Markdown** : le rapport doit rester partageable.
+
+Le point **4** est particulièrement important : il te permettra de prendre `pr-01047660` dans le rapport et de retrouver immédiatement, sur ta machine, **le PR et l'issue GitHub originaux ayant conduit à cette anomalie**, sans compromettre l'anonymisation du fixture.
+
+Si tu veux, je peux directement préparer cette **V7 du ZIP à partir de la V6**, avec ces corrections.
+
+----
+
+C’est fait. **V7** est prête.
+
+### Ce qui change
+
+* **Faux positifs `phone` corrigés** : les timestamps ISO comme `2025-09-28T09:50:53.739Z` ne sont plus considérés comme des téléphones, tout en continuant à détecter les vrais numéros dans les textes libres. Le rapport V6 montrait bien que les premières détections venaient de `collectedAt`, `createdAt` et `closedAt`. 
+* **Traçabilité RAW → fixture** :
+
+  * génération automatique de `*.trace.json` ;
+  * correspondance ID anonymisé ↔ ID RAW ;
+  * `sourcePath` JSON exact ;
+  * traçabilité des relations issue ↔ PR ;
+  * indication si la cible existait réellement dans le RAW.
+* **`fixture:validate --trace ...`** enrichit maintenant le rapport avec cette traçabilité.
+* **Intégrité améliorée** : une référence absente du dépôt courant mais présente dans un autre dépôt est maintenant distinguée comme `cross-repository`, au lieu d’être simplement déclarée « missing ».
+* Les fichiers `*.trace.json` sont ajoutés au `.gitignore` : **le manifeste contenant les identifiants RAW reste local**.
+* Tests ajoutés pour les timestamps, la traçabilité et les relations inter-repositories.
+* Documentation mise à jour.
+
+### Nouveau workflow
+
+```bash
+npm run fixture:anonymize -- \
+  --input data/raw/github-real.json \
+  --output fixtures/github-real-anonymized.json
+```
+
+Cela produit notamment :
+
+```text
+fixtures/github-real-anonymized.json
+fixtures/github-real-anonymized.json.trace.json   ← LOCAL, ne pas partager
+```
+
+Puis :
+
+```bash
+npm run fixture:validate -- \
+  --input fixtures/github-real-anonymized.json \
+  --trace fixtures/github-real-anonymized.json.trace.json
+```
+
+Le rapport pourra alors dire, pour ton exemple `pr-01047660` :
+
+```text
+Fixture
+  repo-b7bbfaf1
+  └── pullRequests[1061]
+      └── relatedIssueIds[0]
+          └── issue-656bfa0e
+
+RAW
+  fichier : data/raw/...
+  chemin  : $.repositories[0].pullRequests[1061]
+  PR      : <ID RAW>
+  issue   : <ID RAW ou "missing-in-source">
+```
+
+Donc tu auras enfin **de quoi ouvrir simultanément le RAW et la fixture et comprendre exactement où la rupture est apparue**.
+
+### Validation de l’archive
+
+L’archive V7 a été créée et son contenu ZIP est valide.
+
+**Typecheck/tests complets :** je n’ai pas pu les exécuter jusqu’au bout dans l’environnement de génération, car l’installation des dépendances npm a expiré puis le cache local était incomplet. Je ne vais donc pas te présenter V7 comme « tests verts » alors que cette vérification reste à faire dans ton environnement.
+
+[**Télécharger design-system-quality-pipeline-feature-chatgpt-review-v7.zip**](sandbox:/mnt/data/v7work/design-system-quality-pipeline-feature-chatgpt-review-v7.zip)
+
+-----
+
+Oui. Le problème venait bien de cette incohérence :
+
+* `loadConfig('fixture')` → `config/system.fixture.yaml`
+* `loadCatalogue('fixture')` → `config/catalogue.fixture.yaml`
+* mais `collectFixture()` → **toujours** `fixtures/github.json`
+
+Donc si ton `system.fixture.yaml` correspondait à une fixture anonymisée contenant `repo-2901ce22`, `repo-f5e51130`, etc., le pipeline lisait malgré tout une autre fixture.
+
+### Correction V8
+
+J'ai corrigé cela proprement :
+
+```bash
+npm run pipeline -- \
+  --source fixture \
+  --fixture fixtures/github-real-anonymized-v6.json
+```
+
+Les commandes suivantes acceptent également `--fixture` :
+
+```text
+collect
+validate
+analyze
+snapshot
+dashboard
+pipeline
+```
+
+Le comportement par défaut reste inchangé :
+
+```bash
+npm run pipeline
+```
+
+→ utilise `fixtures/github.json`.
+
+J'ai également renforcé le message d'erreur. Il indiquera maintenant :
+
+* les repositories attendus ;
+* le fichier fixture réellement utilisé ;
+* les repositories effectivement trouvés ;
+* et surtout l'hypothèse d'un décalage entre fixture et `system.fixture.yaml`.
+
+La documentation `docs/fixture-anonymization.md` a également été mise à jour.
+
+### Pour ton cas précis
+
+Après avoir généré ta fixture anonymisée :
+
+```bash
+npm run fixture:anonymize -- \
+  --input data/raw/my-real-dataset.json \
+  --output fixtures/github-real-anonymized-v6.json
+```
+
+tu peux maintenant lancer directement :
+
+```bash
+npm run fixture:validate -- \
+  --input fixtures/github-real-anonymized-v6.json \
+  --trace fixtures/github-real-anonymized-v6.json.trace.json
+```
+
+puis :
+
+```bash
+npm run pipeline -- \
+  --source fixture \
+  --fixture fixtures/github-real-anonymized-v6.json
+```
+
+**Attention :** la fixture, `config/system.fixture.yaml` et `config/catalogue.fixture.yaml` doivent provenir de la même exécution d'anonymisation / même seed.
+
+### Archive corrigée
+
+[**Télécharger design-system-quality-pipeline-feature-chatgpt-review-v8.zip**](sandbox:/mnt/data/v8work/design-system-quality-pipeline-feature-chatgpt-review-v8.zip)
+
+L'archive ZIP a été vérifiée : elle est valide. Je n'ai pas pu exécuter les tests Vitest dans mon environnement de génération, car `vitest` n'y est pas installé ; je préfère donc ne pas prétendre que la suite est passée.
+
+------
+

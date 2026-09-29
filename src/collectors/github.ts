@@ -12,7 +12,7 @@ interface GithubIssue {
   created_at: string;
   closed_at?: string | null;
   pull_request?: { url?: string };
-  milestone?: { id: number; number: number; title: string } | null;
+  milestone?: { id: number; number: number; title: string; state?: 'open' | 'closed' } | null;
   type?: { name?: string } | null;
 }
 
@@ -176,7 +176,14 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
     ...(issue.closed_at ? { closedAt: issue.closed_at } : {}),
     linkedPullRequestIds,
     projectStatuses,
-    ...(issue.milestone ? { milestone: issue.milestone } : {})
+    ...(issue.milestone ? {
+      milestone: {
+        id: issue.milestone.id,
+        number: issue.milestone.number,
+        title: issue.milestone.title,
+        ...(issue.milestone.state ? { state: issue.milestone.state } : {})
+      }
+    } : {})
   };
 }
 

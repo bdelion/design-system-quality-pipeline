@@ -58,6 +58,7 @@ export interface RawMilestone {
   id: number;
   number: number;
   title: string;
+  state?: 'open' | 'closed';
 }
 
 /** Pull request GitHub conservée dans le modèle RAW. */
