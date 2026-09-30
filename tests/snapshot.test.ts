@@ -11,7 +11,7 @@ import { loadConfig } from '../src/config.js';
   it('preserves RAW, normalized data, DQ and rule versions together', async () => {
     const raw = await collectFixture();
     const config = await loadConfig();
-    const normalized = normalizeGithub(raw, config.github);
+    const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
     const issues = evaluateDataQuality(raw, normalized, config.github);
     const snapshot = buildSnapshot(raw, normalized, issues, calculateKpis(normalized, issues), '2.1', 'dq-test', 'test');
     expect(snapshot.rawData.repositories).toHaveLength(3);

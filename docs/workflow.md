@@ -33,4 +33,4 @@ sequenceDiagram
   Pipeline->>Output: snapshot + dashboard
 ```
 
-Une exécution `PARTIAL` est terminée : elle indique qu'au moins une réserve de qualité existe. `FAILED` est réservé aux erreurs d'exécution qui empêchent la production du snapshot.
+Une exécution `PARTIAL` est terminée : elle indique qu'au moins une réserve de qualité existe. Une erreur d'exécution fait échouer la commande et n'est pas représentée comme un statut de snapshot.

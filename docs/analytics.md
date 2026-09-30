@@ -1,22 +1,62 @@
-# Calculs KPI
+# Modèle analytique V2
 
-Les KPI sont calculés après normalisation et évaluation des règles qualité.
+Les métriques sont calculées après normalisation et contrôle qualité. Une métrique V2 est auto-documentée : valeur, unité, numérateur/dénominateur, périmètre, définition, entités sources, réserves DQ et exclusions sont conservés ensemble dans le snapshot.
 
-## Périmètre
+## Familles
 
-Les anomalies ciblées par une alerte `action: exclude` sont retirées du périmètre des indicateurs concernés. Les alertes `include` conservent l'objet et rendent la fiabilité `partial`.
+- `portfolio.*` : état du patrimoine et couverture des audits ;
+- `audit.*` : volume et résultats des audits ;
+- `anomaly.*` : stock, criticité, catégories et délais de correction.
 
-Les anomalies annulées sont toujours exclues de tous les KPI, même lorsqu'elles ne déclenchent aucune alerte de relation. Elles restent visibles dans le snapshot pour la traçabilité.
+## Couverture
 
-## Indicateurs
+`portfolio.auditCoverage` mesure les composants actifs disposant d'au moins un audit terminé rapportés aux composants actifs du patrimoine. Le nombre d'audits terminés est une métrique distincte (`audit.completed`).
 
-- **Anomalies déclarées** : anomalies conservées après exclusion.
-- **Anomalies corrigées** : anomalies conservées ayant une date de première correction métier.
-- **Anomalies ouvertes** : anomalies `open` ou `reopened`.
-- **Répartition par criticité** : comptage par `blocking`, `major` et `minor`.
-- **Répartition par catégorie** : comptage par catégorie d'accessibilité.
-- **Couverture des audits** : audits terminés rapportés aux composants découverts.
-- **Taux de conformité** : audits conformes rapportés aux audits terminés.
-- **Délai moyen et médian** : durée entre `createdAt` et `firstDoneAt`.
+## Conformité
 
-Une moyenne ou une médiane sans observation est `unknown`. Les dates sont traitées en jours calendaires.
+`audit.conformityRate` mesure les audits conformes rapportés aux audits terminés. Le dashboard doit toujours afficher le numérateur et le dénominateur avec le pourcentage.
+
+## Délais
+
+Les métriques `anomaly.correctionDelay.average`, `.median` et `.p90` utilisent le délai calendaire entre `createdAt` et `firstDoneAt`. Une absence d'observation produit `unknown`.
+
+## Impact des règles DQ
+
+Une règle DQ n'exclut plus implicitement une entité de tous les KPI. Elle déclare ses impacts métrique par métrique : `include`, `exclude` ou `unknown`. La fiabilité d'une métrique dépend uniquement des réserves qui la concernent.
+
+Les données sources et les entités exclues restent conservées dans le snapshot pour permettre l'explication et la correction.
+
+
+## Contrat de référence
+
+`Analytics.metrics` est la seule source de vérité analytique. Les propriétés historiques (`anomaliesDeclared`, `auditsCoverage`, `conformityRate`, etc.) sont des projections de compatibilité et ne doivent plus être utilisées pour implémenter de nouveaux calculs ou écrans.
+
+## Stock et flux
+
+Les métriques actuellement disponibles sont principalement des **stocks** ou des états observables dans un snapshot. En particulier, `anomaly.correctedEver` signifie « déjà corrigée au moins une fois dans les données disponibles » et `anomaly.reopened` signifie « actuellement dans l'état rouvert ». Ce ne sont pas des flux temporels.
+
+Les vrais flux (`created`, `corrected`, `reopened`, `cancelled`) nécessitent la comparaison de deux snapshots ou un historique d'événements. Ils seront introduits avec une période explicite (`period.from` / `period.to`) et un numérateur/dénominateur correspondant. Tant que cet historique n'existe pas, aucun dashboard ne doit présenter ces états comme des flux sur une période.
+
+## Migration
+
+Lorsqu'un écran a besoin d'un indicateur, il doit récupérer `analytics.metrics[metricId]` et utiliser sa `value`, son `numerator`, son `denominator`, sa `definition`, sa `scope`, sa `reliability` et ses `exclusions`. Cela garantit que le rendu ne réimplémente pas la logique métier.
+
+## Catalogue contractuel
+
+Le catalogue déclaratif est défini dans `src/analytics/catalog.ts`. Il décrit pour chaque métrique son unité, son périmètre, sa définition et sa nature analytique (`stock`, `ratio`, `duration` ou `flow`). Le moteur vérifie à chaque calcul que les identifiants produits sont couverts par ce catalogue.
+
+Les métriques `anomaly.byCategory.*` utilisent un contrat générique ; chaque catégorie concrète est une instance de ce contrat.
+
+Aucune métrique `flow` n'est actuellement produite. Lors de l'introduction de l'historique, une métrique de flux devra obligatoirement porter une période explicite.
+
+## Comparaison de snapshots
+
+`src/snapshots/diff.ts` compare deux snapshots ordonnés et produit des faits de transition sans modifier les snapshots sources : entités ajoutées/supprimées, changements d'état d'anomalies, premières corrections observées, entrées en état `reopened` et passages à `cancelled`.
+
+Une transition est toujours rattachée à la période `[capturedAt du snapshot précédent, capturedAt du snapshot courant]`. Les futurs indicateurs de flux devront être construits à partir de ce delta et porter cette période explicitement.
+
+## Flux temporels
+
+Les flux `anomaly.flow.created`, `anomaly.flow.corrected`, `anomaly.flow.reopened` et `anomaly.flow.cancelled` ne sont calculés que lorsqu'un snapshot précédent est disponible. Leur période est toujours `snapshot précédent → snapshot courant`.
+
+Ils décrivent des événements observables entre deux états et ne doivent pas être confondus avec les stocks (`anomaly.total`, `anomaly.open`, etc.).

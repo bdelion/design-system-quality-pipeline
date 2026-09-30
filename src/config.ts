@@ -1,14 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import 'dotenv/config';
 import { parse } from 'yaml';
-import { configPath } from './lib/paths.js';
+import { configPath, fixtureConfigPaths } from './lib/paths.js';
 
 /** Paramètres de lecture des issues et pull requests GitHub. */
 export interface GithubProcessingConfig {
   labels: {
     componentPrefix: string;
-    criticalityPrefix: string;
-    categoryPrefix: string;
+    accessibilityCriticalityPrefix: string;
+    accessibilityCategoryPrefix: string;
     unknown: string;
     criticalityValues: Record<string, 'blocking' | 'major' | 'minor'>;
   };
@@ -24,6 +24,7 @@ export interface GithubProcessingConfig {
 export interface PipelineConfig {
   modelVersion: string;
   ruleVersion: string;
+  auditVersion: string;
   scope: string;
   githubOwner: string;
   repositories: string[];
@@ -34,8 +35,19 @@ export interface PipelineConfig {
 }
 
 /** Charge la configuration YAML et complète les URLs avec l'environnement. */
-export async function loadConfig(): Promise<PipelineConfig> {
-  const content = await readFile(`${configPath}/system.yaml`, 'utf8');
+export async function loadConfig(source: 'fixture' | 'github' = 'github', fixtureFile?: string): Promise<PipelineConfig> {
+  const filename = source === 'fixture'
+    ? (fixtureFile ? fixtureConfigPaths(fixtureFile).system.split(/[/\\]/).pop()! : 'system.fixture.yaml')
+    : 'system.yaml';
+  let content: string;
+  try {
+    content = await readFile(`${configPath}/${filename}`, 'utf8');
+  } catch (error) {
+    if (source !== 'fixture' || (error as { code?: string }).code !== 'ENOENT') throw error;
+    // Legacy fallback kept for the default fixture workflow. Never silently
+    // switch a fixture to the real GitHub repository configuration first.
+    content = await readFile(`${configPath}/system.fixture.yaml`, 'utf8');
+  }
   const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
   return {
     ...systemConfig,

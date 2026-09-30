@@ -18,7 +18,8 @@ const collectedStatus: DataQualityStatus = 'reliable';
 export function normalizeGithub(
   raw: RawDataset,
   rules: GithubProcessingConfig,
-  catalogue?: Catalogue
+  catalogue?: Catalogue,
+  auditVersion?: string
 ): NormalizedData {
   const libraries: Library[] = raw.repositories.map((repository) => ({
     libraryId: stableId('lib', repository.name),
@@ -37,9 +38,32 @@ export function normalizeGithub(
   const audits: Audit[] = [];
   const anomalies: Anomaly[] = [];
   const pullRequests: PullRequest[] = [];
-  const catalogueByName = new Map(
-    catalogue?.components.map((component) => [component.name, component])
+  const catalogueByRepositoryAndName = new Map(
+    catalogue?.components
+      .filter((component) => component.repository)
+      .map((component) => [`${component.repository}:${component.name}`, component])
   );
+  const resolvedAuditVersion = auditVersion ?? catalogue?.version ?? 'unknown';
+
+  // Le catalogue peut matérialiser un composant même lorsqu'aucune issue GitHub ne le mentionne.
+  for (const catalogueComponent of catalogue?.components ?? []) {
+    if (!catalogueComponent.repository) continue;
+    const library = libraryByRepository.get(catalogueComponent.repository);
+    if (!library) continue;
+    const key = `${library.libraryId}:${catalogueComponent.name}`;
+    componentsByName.set(key, {
+      componentId: stableId('component', key),
+      name: catalogueComponent.name,
+      libraryId: library.libraryId,
+      status: catalogueComponent.status === 'stable' ? 'active' : catalogueComponent.status,
+      aliases: [],
+      discoverySource: 'catalogue',
+      tags: catalogueComponent.tags,
+      ...catalogueMetadata(catalogueComponent),
+      provenance: { source: 'catalogue', sourceId: catalogueComponent.name, collectedAt: raw.collectedAt },
+      dataQualityStatus: 'reliable'
+    });
+  }
 
   // Les composants sont indexés par bibliothèque pour éviter les collisions entre repositories.
   for (const repository of raw.repositories) {
@@ -50,8 +74,8 @@ export function normalizeGithub(
       const cancelledProjectStatuses = (issue.projectStatuses ?? [])
         .filter((projectStatus) => rules.cancelledProjectStatuses.some((cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()));
       if (!componentsByName.has(`${library.libraryId}:${componentName}`)) {
-        const inCatalogue = raw.catalogueComponents.includes(componentName);
-        const catalogueComponent = catalogueByName.get(componentName);
+        const catalogueComponent = catalogueByRepositoryAndName.get(`${repository.name}:${componentName}`);
+        const inCatalogue = Boolean(catalogueComponent) || raw.catalogueComponents.includes(componentName);
         componentsByName.set(`${library.libraryId}:${componentName}`, {
           componentId,
           name: componentName,
@@ -71,14 +95,14 @@ export function normalizeGithub(
       }
       const auditId = stableId(
         'audit',
-        `${library.libraryId}:${componentName}:2026.09`
+        `${library.libraryId}:${componentName}:${resolvedAuditVersion}`
       );
       if (!audits.some((audit) => audit.auditId === auditId)) {
         audits.push({
           auditId,
           libraryId: library.libraryId,
           componentId,
-          version: '2026.09',
+          version: resolvedAuditVersion,
           status: issue.auditStatus ?? 'in_progress',
           sourceIssueId: issue.parents[0] ?? issue.id,
           objectiveAuditResult: issue.auditResult ?? 'in_progress',
@@ -98,8 +122,8 @@ export function normalizeGithub(
         componentId,
         criticality: criticalityValue(issue.criticities[0], rules),
         categories: issue.labels
-          .filter((label) => label.toLowerCase().startsWith(rules.labels.categoryPrefix.toLowerCase()))
-          .map((label) => label.slice(rules.labels.categoryPrefix.length)),
+          .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase()))
+          .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length)),
         status: issue.state === 'OPEN' ? 'open' : 'done',
         createdAt: issue.createdAt,
         firstDoneAt: issue.firstDoneAt,

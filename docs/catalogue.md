@@ -20,8 +20,8 @@ Exemple minimal complet :
 ```yaml
 	- name: Tooltip
 		stream: React
-		owner: Communs du Dev
-		squad: Plume
+		owner: Front
+		squad: eventail
 		status: stable
 		rgaaLevel: AA
 		tags:
@@ -34,12 +34,12 @@ Exemple avec liens et audit :
 ```yaml
 	- name: Select
 		stream: React
-		owner: Communs du Dev
-		squad: Plume
+		owner: Front
+		squad: eventail
 		status: stable
 		rgaaLevel: AA
 		figmaUrl: https://figma.example.com/select
-		documentationUrl: https://plume.example.com/select
+		documentationUrl: https://eventail.example.com/select
 		tags:
 			- form
 			- selection
