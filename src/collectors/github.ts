@@ -170,7 +170,7 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
     issueType: issueType as RawIssue['issueType'],
     labels,
     ...(componentLabel ? { component: componentLabel.slice(rules.labels.componentPrefix.length) } : {}),
-    criticities: labels.filter((label) => label.toLowerCase().startsWith(rules.labels.criticalityPrefix.toLowerCase())).map((label) => label.slice(rules.labels.criticalityPrefix.length).toLowerCase()),
+    criticities: labels.filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())).map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).toLowerCase()),
     parents: [],
     createdAt: issue.created_at,
     ...(issue.closed_at ? { closedAt: issue.closed_at } : {}),
@@ -472,7 +472,7 @@ async function githubRequest<T>(url: string, options: GithubCollectorOptions): P
           Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${options.token}`,
           'X-GitHub-Api-Version': apiVersion,
-          'User-Agent': 'plume-ds-quality-board'
+          'User-Agent': 'eventail-ds-quality-board'
         }
       });
 

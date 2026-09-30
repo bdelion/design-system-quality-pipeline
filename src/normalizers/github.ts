@@ -122,8 +122,8 @@ export function normalizeGithub(
         componentId,
         criticality: criticalityValue(issue.criticities[0], rules),
         categories: issue.labels
-          .filter((label) => label.toLowerCase().startsWith(rules.labels.categoryPrefix.toLowerCase()))
-          .map((label) => label.slice(rules.labels.categoryPrefix.length)),
+          .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase()))
+          .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length)),
         status: issue.state === 'OPEN' ? 'open' : 'done',
         createdAt: issue.createdAt,
         firstDoneAt: issue.firstDoneAt,

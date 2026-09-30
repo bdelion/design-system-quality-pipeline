@@ -7,8 +7,8 @@ import { configPath, fixtureConfigPaths } from './lib/paths.js';
 export interface GithubProcessingConfig {
   labels: {
     componentPrefix: string;
-    criticalityPrefix: string;
-    categoryPrefix: string;
+    accessibilityCriticalityPrefix: string;
+    accessibilityCategoryPrefix: string;
     unknown: string;
     criticalityValues: Record<string, 'blocking' | 'major' | 'minor'>;
   };

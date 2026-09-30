@@ -4,14 +4,14 @@ components:
   - name: Button
     repository: design-system-core
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: stable
     rgaaLevel: AA
 
     figmaUrl: https://figma.example.com/button
-    documentationUrl: https://plume.example.com/button
+    documentationUrl: https://eventail.example.com/button
 
     tags:
       - form
@@ -24,14 +24,14 @@ components:
   - name: Modal
     repository: design-system-core
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: stable
     rgaaLevel: AA
 
     figmaUrl: https://figma.example.com/modal
-    documentationUrl: https://plume.example.com/modal
+    documentationUrl: https://eventail.example.com/modal
 
     tags:
       - overlay
@@ -44,14 +44,14 @@ components:
   - name: DatePicker
     repository: design-system-react
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: stable
     rgaaLevel: AA
 
     figmaUrl: https://figma.example.com/datepicker
-    documentationUrl: https://plume.example.com/datepicker
+    documentationUrl: https://eventail.example.com/datepicker
 
     tags:
       - form
@@ -64,8 +64,8 @@ components:
   - name: Alert
     repository: design-system-docs
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: stable
     rgaaLevel: AA
@@ -79,8 +79,8 @@ components:
   - name: Card
     repository: design-system-docs
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: stable
     rgaaLevel: AA
@@ -91,8 +91,8 @@ components:
   - name: Toast
     repository: design-system-react
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: experimental
     rgaaLevel: AA
@@ -103,8 +103,8 @@ components:
   - name: Tabs
     repository: design-system-react
     stream: React
-    owner: Communs du Dev
-    squad: Plume
+    owner: Front
+    squad: eventail
 
     status: stable
     rgaaLevel: AA

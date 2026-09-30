@@ -66,12 +66,12 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     const button = catalogueNormalized.components.find((component) => component.name === 'Button');
     expect(button?.discoverySource).toBe('catalogue');
     expect(button).toMatchObject({
-      owner: 'Communs du Dev',
-      squad: 'Plume',
+      owner: 'Front',
+      squad: 'eventail',
       tags: ['form', 'action'],
       rgaaLevel: 'AA',
       figmaUrl: 'https://figma.example.com/button',
-      documentationUrl: 'https://plume.example.com/button',
+      documentationUrl: 'https://eventail.example.com/button',
       audit: { frequency: 'quarterly', lastAuditDate: '2026-08-12' }
     });
   });
@@ -83,8 +83,8 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
       components: [{
         name: 'Button',
         stream: 'React',
-        owner: 'Communs du Dev',
-        squad: 'Plume',
+        owner: 'Front',
+        squad: 'eventail',
         status: 'unknown',
         rgaaLevel: 'AA',
         tags: []

@@ -24,7 +24,7 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
     if (!anomaly.criticality) add('DQ-001', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has no criticality.');
     if (anomaly.parentRefs.length > 1) add('DQ-003', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple parents.');
     if (anomaly.status === 'done' && anomaly.pullRequestRefs.length === 0) add('DQ-004', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Done issue has no identifiable pull request.');
-    if (sourceIssue?.labels.some((label) => label.toLowerCase().startsWith(rules.labels.criticalityPrefix.toLowerCase())) && sourceIssue.criticities.length > 1) add('DQ-002', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple criticalities.');
+    if (sourceIssue?.labels.some((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())) && sourceIssue.criticities.length > 1) add('DQ-002', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple criticalities.');
     if (sourceIssue?.labels.some((label) => label.toLowerCase() === rules.labels.unknown.toLowerCase())) add('DQ-007', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Issue contains an unknown label.');
   }
 
