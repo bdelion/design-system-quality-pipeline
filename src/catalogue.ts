@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { parse } from 'yaml';
-import { cataloguePath } from './lib/paths.js';
+import { cataloguePath, fixtureConfigPaths } from './lib/paths.js';
 
 /** Statut de cycle de vie déclaré dans le catalogue de référence. */
 export type CatalogueStatus = 'stable' | 'experimental' | 'deprecated' | 'removed';
@@ -14,6 +14,8 @@ export interface CatalogueAudit {
 /** Métadonnées de référence utilisées pour enrichir un composant normalisé. */
 export interface CatalogueComponent {
     name: string;
+    /** Repository cible du composant quand le catalogue doit matérialiser un composant sans issue GitHub. */
+    repository?: string;
     stream: string;
     owner: string;
     squad: string;
@@ -40,8 +42,17 @@ const catalogueStatuses = new Set<CatalogueStatus>([
 const auditFrequencies = new Set<CatalogueAudit['frequency']>(['monthly', 'quarterly', 'yearly']);
 
 /** Charge puis valide le catalogue avant de le rendre disponible au pipeline. */
-export async function loadCatalogue(): Promise<Catalogue> {
-    const yaml = await readFile(cataloguePath, 'utf8');
+export async function loadCatalogue(source: 'fixture' | 'github' = 'github', fixtureFile?: string): Promise<Catalogue> {
+    const path = source === 'fixture'
+        ? (fixtureFile ? fixtureConfigPaths(fixtureFile).catalogue : cataloguePath.replace(/catalogue\.yaml$/, 'catalogue.fixture.yaml'))
+        : cataloguePath;
+    let yaml: string;
+    try {
+        yaml = await readFile(path, 'utf8');
+    } catch (error) {
+        if (source !== 'fixture' || (error as { code?: string }).code !== 'ENOENT') throw error;
+        yaml = await readFile(cataloguePath.replace(/catalogue\.yaml$/, 'catalogue.fixture.yaml'), 'utf8');
+    }
     return validateCatalogue(parse(yaml));
 }
 
@@ -78,6 +89,7 @@ function validateComponent(value: unknown, index: number): CatalogueComponent {
 
     const component: CatalogueComponent = {
         name: value.name as string,
+        ...(typeof value.repository === 'string' && value.repository.length > 0 ? { repository: value.repository } : {}),
         stream: value.stream as string,
         owner: value.owner as string,
         squad: value.squad as string,

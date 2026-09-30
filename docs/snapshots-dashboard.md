@@ -21,3 +21,16 @@ Les assets sont maintenus séparément dans `src/dashboard/assets/`, puis copié
 Les liens GitHub sont construits uniquement si `GITHUB_URL` est défini. Les valeurs injectées dans le HTML sont échappées afin de limiter les risques d'injection.
 
 Le dashboard est statique : il se consulte directement sans serveur applicatif ni base de données.
+
+## Historique V2
+
+La page `history.html` affiche les flux détectés entre le snapshot précédent et le snapshot courant. Les flux sont calculés uniquement lorsque les deux snapshots sont ordonnés dans le temps. Sans snapshot précédent comparable, la page indique que les flux ne sont pas disponibles.
+
+Les flux actuels sont :
+
+- `anomaly.flow.created`
+- `anomaly.flow.corrected`
+- `anomaly.flow.reopened`
+- `anomaly.flow.cancelled`
+
+Chaque flux porte sa période et les identifiants des entités ayant produit le delta.

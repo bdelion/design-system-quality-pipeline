@@ -1,5 +1,6 @@
 modelVersion: "2.1"
 ruleVersion: "dq-2026.09"
+auditVersion: "2026.09"
 scope: "configured-github-repositories"
 githubOwner: "example"
 repositories:
@@ -8,9 +9,9 @@ repositories:
   - "design-system-docs"
 github:
   labels:
-    componentPrefix: "Component:"
-    criticalityPrefix: "rgaa:"
-    categoryPrefix: "a11y:"
+    componentPrefix: "🧩 Component:"
+    accessibilityCriticalityPrefix: "🚦 rgaa:"
+    accessibilityCategoryPrefix: "♿ a11y:"
     unknown: "label:unknown"
     criticalityValues:
       bloquante: "blocking"

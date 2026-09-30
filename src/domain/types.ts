@@ -3,6 +3,9 @@ export type Source = 'github' | 'catalogue' | 'manual' | 'suggested';
 export type DataQualityStatus = 'reliable' | 'partial' | 'unknown' | 'invalid';
 export type Severity = 'INFO' | 'WARNING' | 'ERROR';
 export type DqAction = 'include' | 'exclude' | 'block';
+export type MetricUnit = 'count' | 'percentage' | 'days';
+export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
+export type MetricReliabilityStatus = DataQualityStatus;
 export type AuditStatus = 'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
 
@@ -55,6 +58,7 @@ export interface RawMilestone {
   id: number;
   number: number;
   title: string;
+  state?: 'open' | 'closed';
 }
 
 /** Pull request GitHub conservée dans le modèle RAW. */
@@ -158,6 +162,45 @@ export interface DataQualityIssue {
   entityId: string;
   message: string;
   detectedAt: string;
+  impacts: DataQualityImpact[];
+}
+
+/** Décrit l'effet d'une réserve DQ sur une métrique précise. */
+export interface DataQualityImpact {
+  metricId: string;
+  action: 'include' | 'exclude' | 'unknown';
+  reason: string;
+}
+
+export interface MetricPeriod {
+  from?: string;
+  to?: string;
+}
+
+export interface MetricReliability {
+  status: MetricReliabilityStatus;
+  issueIds: string[];
+}
+
+export interface MetricBreakdown {
+  dimension: string;
+  values: Record<string, number>;
+}
+
+/** Métrique auto-documentée utilisée par le dashboard V2. */
+export interface Metric {
+  id: string;
+  value: number | 'unknown';
+  unit: MetricUnit;
+  numerator?: number | 'unknown';
+  denominator?: number | 'unknown';
+  scope: MetricScope;
+  period?: MetricPeriod;
+  definition: string;
+  sourceEntityIds: string[];
+  reliability: MetricReliability;
+  exclusions: { entityId: string; ruleId: string }[];
+  breakdowns?: MetricBreakdown[];
 }
 
 /** Valeur d'un KPI avec son périmètre et son niveau de fiabilité. */
@@ -172,14 +215,25 @@ export interface KpiValue {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  /** V2 contract: all dashboard analytics must consume this map. */
+  metrics: Record<string, Metric>;
+  /** Flux temporels présents lorsque deux snapshots sont comparables. */
+  flows?: Record<string, Metric>;
+  /** @deprecated Compatibility projection of anomaly.total. */
   anomaliesDeclared: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.correctedEver. */
   anomaliesCorrected: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.open. */
   openAnomalies: KpiValue;
   anomaliesByCriticality: Record<string, number | 'unknown'>;
   anomaliesByCategory: Record<string, number | 'unknown'>;
+  /** @deprecated Compatibility projection of portfolio.auditCoverage. */
   auditsCoverage: KpiValue;
+  /** @deprecated Compatibility projection of audit.conformityRate. */
   conformityRate: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.correctionDelay.average. */
   averageCorrectionDelayDays: KpiValue;
+  /** @deprecated Compatibility projection of anomaly.correctionDelay.median. */
   medianCorrectionDelayDays: KpiValue;
 }
 

@@ -1,3 +1,6 @@
+*.trace.json
+raw/
+
 # Created by https://www.toptal.com/developers/gitignore/api/git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
 
@@ -333,7 +336,6 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/

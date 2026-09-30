@@ -23,6 +23,10 @@ function applyFilters() {
     row.hidden = !matches;
   });
 }
+const params = new URLSearchParams(window.location.search);
+if (controls.criticality && params.get('criticality')) controls.criticality.value = params.get('criticality');
+if (controls.category && params.get('category')) controls.category.value = params.get('category');
+if (controls.status && params.get('status')) controls.status.value = params.get('status');
 Object.values(controls).filter(Boolean).forEach((control) => control.addEventListener('input', applyFilters));
 document.querySelector('[data-reset-filters]')?.addEventListener('click', () => {
   Object.values(controls).forEach((control) => { if (control) control.value = ''; });
@@ -51,3 +55,20 @@ document.querySelectorAll('[data-copy-yaml]').forEach((button) => {
     }
   });
 });
+
+
+const componentRows = [...document.querySelectorAll('[data-component-table] tr[data-component-row]')];
+const componentText = document.querySelector('[data-component-filter]');
+const componentResult = document.querySelector('[data-component-result]');
+const applyComponentFilters = () => {
+  const query = (componentText?.value || '').toLowerCase();
+  const result = componentResult?.value || '';
+  componentRows.forEach((row) => {
+    const textMatch = !query || row.textContent.toLowerCase().includes(query);
+    const resultMatch = !result || row.dataset.componentResult === result || (result === 'audited' && row.dataset.componentAudited === 'audited') || (result === 'not_audited' && row.dataset.componentAudited === 'not_audited');
+    row.hidden = !(textMatch && resultMatch);
+  });
+};
+[componentText, componentResult].filter(Boolean).forEach((control) => control.addEventListener('input', applyComponentFilters));
+document.querySelector('[data-reset-component-filters]')?.addEventListener('click', () => { if (componentText) componentText.value = ''; if (componentResult) componentResult.value = ''; applyComponentFilters(); });
+applyComponentFilters();

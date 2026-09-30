@@ -12,7 +12,7 @@ interface GithubIssue {
   created_at: string;
   closed_at?: string | null;
   pull_request?: { url?: string };
-  milestone?: { id: number; number: number; title: string } | null;
+  milestone?: { id: number; number: number; title: string; state?: 'open' | 'closed' } | null;
   type?: { name?: string } | null;
 }
 
@@ -170,13 +170,20 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
     issueType: issueType as RawIssue['issueType'],
     labels,
     ...(componentLabel ? { component: componentLabel.slice(rules.labels.componentPrefix.length) } : {}),
-    criticities: labels.filter((label) => label.toLowerCase().startsWith(rules.labels.criticalityPrefix.toLowerCase())).map((label) => label.slice(rules.labels.criticalityPrefix.length).toLowerCase()),
+    criticities: labels.filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())).map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).toLowerCase()),
     parents: [],
     createdAt: issue.created_at,
     ...(issue.closed_at ? { closedAt: issue.closed_at } : {}),
     linkedPullRequestIds,
     projectStatuses,
-    ...(issue.milestone ? { milestone: issue.milestone } : {})
+    ...(issue.milestone ? {
+      milestone: {
+        id: issue.milestone.id,
+        number: issue.milestone.number,
+        title: issue.milestone.title,
+        ...(issue.milestone.state ? { state: issue.milestone.state } : {})
+      }
+    } : {})
   };
 }
 
@@ -465,7 +472,7 @@ async function githubRequest<T>(url: string, options: GithubCollectorOptions): P
           Accept: 'application/vnd.github+json',
           Authorization: `Bearer ${options.token}`,
           'X-GitHub-Api-Version': apiVersion,
-          'User-Agent': 'plume-ds-quality-board'
+          'User-Agent': 'eventail-ds-quality-board'
         }
       });
 
