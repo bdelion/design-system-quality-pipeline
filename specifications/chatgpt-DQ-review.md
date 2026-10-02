@@ -1629,6 +1629,278 @@ Réponds-moi simplement à ces **5 questions** :
 
 --------------------------------------------
 
+Oui — **je préfère nettement que tu me transmettes un ZIP à jour du repository avant que nous redéfinissions les anomalies**. Cela me permettra de repartir de l'état réellement actuel du code, plutôt que de raisonner sur V10 alors que tu as peut-être déjà modifié plusieurs éléments.
 
+Et oui, **les précisions sur votre workflow GitHub sont même plus importantes que le ZIP pour définir correctement les nouvelles règles DQ**.
+
+### Ce que je te propose
+
+**1. Envoie-moi le ZIP actuel du repository**
+
+Je vérifierai notamment :
+
+* le modèle RAW et le modèle normalisé ;
+* la collecte GitHub ;
+* la détection/classification actuelle des anomalies ;
+* les règles DQ et leur implémentation réelle ;
+* les KPI et leurs dépendances aux DQ ;
+* les Projects, Iterations, Milestones, labels et issue types ;
+* les relations Issue ↔ PR ↔ Audit ↔ Component ;
+* les tests existants ;
+* la configuration YAML actuelle.
+
+Je comparerai aussi mentalement avec les problèmes que nous avons déjà identifiés, mais **le nouveau ZIP deviendra notre référence technique**.
+
+**2. Donne-moi ensuite les règles de fonctionnement GitHub de votre équipe**
+
+Je te conseille de ne pas essayer de les formaliser toi-même dans un premier temps. Tu peux simplement me les décrire en langage naturel.
+
+Les informations qui m'intéressent particulièrement sont :
+
+#### A. Comment vous créez une anomalie
+
+Par exemple :
+
+> Un utilisateur signale un problème → une Issue est créée → elle reçoit tel Issue Type → tel label → elle est associée à un composant...
+
+Et surtout : **qu'est-ce qui fait qu'une Issue est réellement une anomalie métier ?**
+
+#### B. Votre utilisation des GitHub Projects
+
+J'aurais besoin de savoir précisément :
+
+* quels Projects existent ;
+* quels champs vous utilisez ;
+* les valeurs possibles du champ Status ;
+* les valeurs possibles du champ Vélocité ;
+* comment fonctionne votre Iteration ;
+* comment vous utilisez Milestone ;
+* quels champs sont obligatoires ou facultatifs ;
+* à quel moment une Issue entre dans un Project.
+
+Je connais déjà une partie de ton workflow, notamment le passage **Backlog → Grooming → pesée/Vélocité → Ready → Iteration/Milestone**, mais je préfère que tu me confirmes le fonctionnement actuel plutôt que de le considérer comme figé.
+
+#### C. Votre workflow de traitement
+
+Par exemple :
+
+```text
+Création
+   ↓
+Backlog + Grooming
+   ↓
+Grooming / pesée
+   ↓
+Vélocité > 0
+   ↓
+Ready
+   ↓
+Iteration + Milestone
+   ↓
+In progress
+   ↓
+In review
+   ↓
+Done
+```
+
+Mais j'aimerais que tu me précises les **règles métier**, notamment :
+
+* qui change quoi ;
+* quels changements sont automatiques/manuels ;
+* quelles transitions sont autorisées ;
+* ce que signifie réellement `Done` ;
+* ce que signifie `Cancelled` ;
+* comment vous gérez `Blocked` ;
+* comment une anomalie réouverte est traitée.
+
+#### D. Comment vous utilisez les Pull Requests
+
+C'est particulièrement important pour nos DQ.
+
+Par exemple :
+
+* une anomalie doit-elle obligatoirement avoir une PR ?
+* une PR doit-elle être liée par `Closes #123`, ou utilisez-vous aussi les relations GitHub ?
+* une PR peut-elle corriger plusieurs anomalies ?
+* une anomalie peut-elle être corrigée par plusieurs PR ?
+* que signifie une PR `MERGED` pour vous ?
+* que se passe-t-il si l'Issue passe à `Done` sans PR ?
+* que se passe-t-il si une PR est mergée mais que l'Issue reste ouverte ?
+
+#### E. Comment vous utilisez les audits
+
+C'est probablement **le point le plus important après la définition d'une anomalie**.
+
+J'aimerais comprendre :
+
+```text
+Component
+   ↓
+Audit RGAA
+   ↓
+Anomalies découvertes
+```
+
+et notamment :
+
+* comment un audit est identifié ;
+* comment on sait qu'une Issue est un audit ;
+* comment une anomalie est rattachée à un audit ;
+* comment une anomalie est rattachée au composant ;
+* si un audit peut exister sans anomalie ;
+* si une anomalie peut exister sans audit ;
+* comment vous déterminez qu'un audit est terminé ;
+* comment vous déterminez qu'un audit est conforme/non conforme.
+
+#### F. Labels et Issue Types
+
+J'aimerais également avoir la signification **métier** de vos labels, pas seulement leur nom.
+
+Par exemple :
+
+```text
+Component:Button
+Criticité:majeure
+Catégorie:Clavier
+Grooming
+...
+```
+
+Pour chacun :
+
+> « Ce label signifie que... »
+
+C'est important parce que notre future DQ ne doit pas simplement dire *« le label existe »*. Elle doit savoir **ce que sa présence ou son absence signifie réellement**.
+
+---
+
+### Surtout : ne commençons pas encore par DQ-001
+
+Je te propose une démarche légèrement différente de celle que nous avions envisagée.
+
+Nous allons d'abord construire ensemble **le modèle métier réel de votre GitHub** :
+
+```text
+                    ┌──────────────┐
+                    │   Component  │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │     Audit    │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │   Anomalie   │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              ▼            ▼            ▼
+          Criticité     Workflow        PR
+              │            │            │
+              ▼            ▼            ▼
+          Catégorie     Project      Correction
+```
+
+Puis seulement après, nous déterminerons :
+
+> **« Quelles données doivent être présentes et cohérentes pour considérer chaque objet comme exploitable ? »**
+
+Et cela donnera naturellement les règles DQ.
+
+### Donc, dans l'ordre
+
+**Étape 1 — toi :**
+➡️ envoie-moi le **ZIP actuel**.
+
+**Étape 2 — toi :**
+➡️ donne-moi les précisions sur votre **workflow GitHub**, même de façon très libre.
+
+**Étape 3 — moi :**
+➡️ je reconstruis le fonctionnement réel de votre modèle GitHub et je te le présente sous forme de **schémas + règles métier**, sans encore modifier le code.
+
+**Étape 4 — ensemble :**
+➡️ nous validons ce modèle.
+
+**Étape 5 :**
+➡️ seulement ensuite, nous reprenons les DQ une par une et décidons lesquelles conserver, modifier, fusionner ou créer.
+
+C'est, à mon avis, la façon la plus sûre d'éviter que le code de la pipeline **impose implicitement son propre modèle de fonctionnement à votre organisation**, alors que c'est normalement l'inverse qui doit se produire.
 
 --------------------------------------------
+
+Oui. J’ai bien pris **ce ZIP comme nouvelle base de référence avant la refonte des DQ**.
+
+Il confirme notamment plusieurs points importants :
+
+* le modèle RAW conserve explicitement les **labels, Issue Type, statut GitHub, statuts de Project et Milestone** ;
+* les Projects sont actuellement réduits à `projectId / projectName / status` ;
+* les PR sont collectées séparément et leurs relations avec les Issues sont reconstruites à partir des références de fermeture et des données GitHub ;
+* une anomalie est actuellement créée lorsqu’une Issue a `issueType === BUG` ;
+* l’anomalie normalisée possède aujourd’hui obligatoirement `auditId` et `componentId`, même si ces rattachements peuvent être construits à partir des données disponibles ;
+* `Cancelled` est actuellement déterminé à partir des statuts de Project configurés ;
+* les DQ sont encore **partagées entre YAML, code de détection et une table séparée d'impacts métriques**. C’est un point que je recommande de revoir après avoir défini le métier.
+
+J’ai aussi relevé une chose importante dans le code actuel : **la définition de l’anomalie est déjà une décision métier codée dans le normalizer** :
+
+```text
+Issue GitHub
+     │
+     └── issueType == BUG
+              │
+              ▼
+          Anomalie
+```
+
+Donc si nous voulons maintenant déterminer précisément ce qu’est une anomalie dans votre organisation, il faut effectivement partir de **votre fonctionnement GitHub réel**, et non des DQ actuelles.
+
+### Ce dont j'ai besoin de ta part maintenant
+
+Oui, donne-moi les précisions sur votre workflow. Tu peux complètement le faire **en vrac**, sans chercher à utiliser mon modèle de questions.
+
+Je te conseille simplement de couvrir ces 6 domaines :
+
+1. **Création d'une Issue**
+
+   * qui la crée ;
+   * quels champs/labels sont utilisés ;
+   * comment elle est qualifiée comme anomalie, audit, évolution, etc.
+
+2. **Issue Types**
+
+   * signification de `BUG`, `AUDIT`, `EPIC`, `NEW_COMPONENT`, `FEATURE`, `OTHER`, etc. ;
+   * lesquels sont réellement utilisés aujourd'hui.
+
+3. **Labels**
+
+   * notamment `🧩 Component:`, `🚦 rgaa:`, `♿ a11y:`, `Grooming`, etc. ;
+   * lesquels ont une valeur métier obligatoire.
+
+4. **GitHub Projects**
+
+   * Projects utilisés ;
+   * champs ;
+   * statuts ;
+   * rôle de `Backlog`, `Ready`, `In progress`, `In review`, `Done`, `Blocked`, `Cancelled` ;
+   * fonctionnement de la Vélocité et des Iterations.
+
+5. **Audits / composants / anomalies**
+
+   * comment vous reliez réellement ces trois objets ;
+   * ce qui est obligatoire ou facultatif ;
+   * comment vous savez qu'un audit est terminé et conforme.
+
+6. **Pull Requests**
+
+   * comment une PR est reliée à une Issue ;
+   * ce que signifie une PR mergée ;
+   * ce qui se passe lorsqu'une Issue est `Done` sans PR ou lorsqu'une PR est mergée alors que l'Issue reste ouverte.
+
+Tu peux par exemple simplement me raconter **« voilà comment on travaille, de la création d'une Issue jusqu'à sa clôture »**. Je transformerai ensuite ton explication en un schéma du workflow et en règles métier explicites.
+
+**Je ne modifierai pas encore le code ni les DQ à cette étape.** L'objectif sera d'abord de valider ensemble le modèle métier réel.
+
+--------------------------------------------
+
