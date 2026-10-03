@@ -1,5 +1,16 @@
 # Indicateurs souhaités et contraintes associées
 
+## Idées de représentations
+
+Utiliser Mermaid et par exemple :
+
+- [Sankey](https://mermaid.js.org/syntax/sankey.html)
+- [Kanban](https://mermaid.js.org/syntax/kanban.html)
+- [Radar](https://mermaid.js.org/syntax/radar.html)
+- [Event Modeling](https://mermaid.js.org/syntax/eventmodeling.html)
+- [TreeMap](https://mermaid.js.org/syntax/treemap.html)
+- [TreeView](https://mermaid.js.org/syntax/treeView.html)
+
 ## Indicateurs suivs par librairie
 
 - nombres d'issues par composant
@@ -149,7 +160,8 @@
   - d'itération/sprint associé
   - de vélocité
   - de milestone/version associé
-- 
+
+> 🚧 TODO A continuer
 
 ## Configuration
 
@@ -163,19 +175,22 @@
 ### Responsables des audits d'accessibilité
 
 J'aurais besoin des undicateurs :
+
 - Ratio de tickets déclaré versus corrigés (au global + à détailler par niveau de criticité ?)
-- Délai moyen entre détection anomalie et sa correction (au global + détailler par niveau de criticité ?)    
+- Délai moyen entre détection anomalie et sa correction (au global + détailler par niveau de criticité ?)
 - Nombre d'anomalie réparti par criticité (bloquant, majeur, mineur)
 - Ratio de composant audité versus nombre total de composants dans les lib (il y a t'il un intérêt à dissocier par lib ou tout confondu ?)
 - Ratio de composant 100% conforme versus nombre total de composants dans les libs (voir si on inclu ceux pas encore audité comme étant non conforme ou si on les exclu)
-- Nombre d'anomalie par type/catégorise (contraste, navigation clavier, sémantique, etc.
-- Nombre d'applications qui utile le DS, par version. Celle qui ne l'utilise pas et qui "devrait".    
+- Nombre d'anomalie par type/catégorise (contraste, navigation clavier, sémantique, etc.)
+- Nombre d'applications qui utile le DS, par version. Celle qui ne l'utilise pas et qui "devrait".
 - Nombre d'anomalie pour chaque composant, à rapprocher avec fréquence d'utilisation du composant
 
-Pour après : 
+Pour après :
+
 - Taux de nouveaux composants ayant été audité dès la maquette Design
 - Nombre d'anomalie dans maquette Design par répartition de criticité (Bloquant, Majeur, Mineur)
 - Taux de conformité globale d'une version quand elle sort (est-ce qu'on pourra vraiment définir juste avant MEP vu que ça sera au fil de l'eau ?)
 
-Questionnement : 
+Questionnement :
+
 - possible de faire des "photos" des indicateurs à des instants précis (historique) ou sera qu'à l'instant T ?

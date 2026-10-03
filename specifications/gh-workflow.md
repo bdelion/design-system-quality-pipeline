@@ -131,7 +131,7 @@ Les status actuels :
 - Blocked
 - Cancelled
 
-#### Une issues avec le status `Backlog` :
+#### Une issues avec le status `Backlog`
 
 - doit avoir un label `🔎 Grooming` et un ou plusieurs labels pour classifier/caractériser
 - doit avoir une Velocity vide
@@ -142,7 +142,7 @@ Les status actuels :
 - ne doit pas être close
 - ne doit pas avoir d'assignees
 
-#### Une issue avec le status `Ready` :
+#### Une issue avec le status `Ready`
 
 - ne peut pas avoir de Velocity vide ou <= à 0 sauf si il s'agit d'une issue parent qui a une issue type `🚀Epic` ... à voir pour le "0" si on l'accepte quand il s'agit de ticket d'audit, de R&D, de POC, ...
 - ne peut plus avoir de label `🔎 Grooming`
@@ -154,7 +154,7 @@ Les status actuels :
 - ne doit pas être close
 - peut avoir un assigne si elle est dans une itération/sprint
 
-#### Une issue avec le status `In progress` :
+#### Une issue avec le status `In progress`
 
 - ne peut pas avoir de Velocity vide ou <= à 0 sauf si il s'agit d'une issue parent qui a une issue type `🚀Epic` ... à voir pour le "0" si on l'accepte quand il s'agit de ticket d'audit, de R&D, de POC, ...
 - ne peut plus avoir de label `🔎 Grooming`
@@ -166,7 +166,7 @@ Les status actuels :
 - ne doit pas être close
 - doit avoir au moins un assignee de la Squad et peut avoir un assignee en dehors de la Squad pour identifier les contributeurs
 
-#### Une issue avec le status `In review` :
+#### Une issue avec le status `In review`
 
 - ne peut pas avoir de Velocity vide ou <= à 0 sauf si il s'agit d'une issue parent qui a une issue type `🚀Epic` ... à voir pour le "0" si on l'accepte quand il s'agit de ticket d'audit, de R&D, de POC, ...
 - ne peut plus avoir de label `🔎 Grooming`
@@ -178,7 +178,7 @@ Les status actuels :
 - ne doit pas être close
 - doit avoir au moins un assignee de la Squad et peut avoir un assignee en dehors de la Squad pour identifier les contributeurs
 
-#### Une issue avec le status `Done` :
+#### Une issue avec le status `Done`
 
 - ne peut pas avoir de Velocity vide ou <= à 0 sauf si il s'agit d'une issue parent qui a une issue type `🚀Epic` ... à voir pour le "0" si on l'accepte quand il s'agit de ticket d'audit, de R&D, de POC, ...
 - ne peut plus avoir de label `🔎 Grooming`
@@ -190,7 +190,7 @@ Les status actuels :
 - doit être close
 - doit avoir au moins un assignee de la Squad et peut avoir un assignee en dehors de la Squad pour identifier les contributeurs
 
-#### Une issue avec le status `Blocked` :
+#### Une issue avec le status `Blocked`
 
 - ne peut pas avoir de Velocity vide ou <= à 0 sauf si il s'agit d'une issue parent qui a une issue type `🚀Epic` ... à voir pour le "0" si on l'accepte quand il s'agit de ticket d'audit, de R&D, de POC, ...
 - ne peut plus avoir de label `🔎 Grooming`
@@ -202,7 +202,7 @@ Les status actuels :
 - ne doit pas être close
 - doit avoir au moins un assignee de la Squad et peut avoir un assignee en dehors de la Squad pour identifier les contributeurs
 
-#### Une issue avec le status `Cancelled` :
+#### Une issue avec le status `Cancelled`
 
 - doit avoir un label `🚫 resolution:xxx`
 - doit avoir une issue type et au moins un label pour classifier/caractériser
@@ -264,7 +264,7 @@ Les milestones peuvent être de différentes forme :
 - Elle est assignée au porteur du sujet, par défaut le PO de la Squad ?
 - Elle passe de `Backlog` à `Ready` quand toutes les sub issues sont `Reday` **(:rotating_light: à déterminer)**
 - Elle doit passé en `In progress` quand la 1ère sub issue passe en `In progress`
-- Elle pourrait passé à l'état `In review` quand 
+- Elle pourrait passé à l'état `In review` quand
   - toutes les issues sont `Done` ou `Cancelled`
   - la branche `release/M.m.r` est ouverte et correspond à la milesonte/version `M.m.r` de rattachement des issues et de l'EPIC
   - une version Release Candidate est disponible pour des tests par les clients à l'origine de la demande
@@ -416,26 +416,31 @@ Elle doit avoir plus spécifiquement :
 
 ### Conception
 
-DO/DONT
-DOR/DOD
+> :question: Doit on doubler ici tout ou partie des informations présentes dans l'EPIC ?
 
-Une checklist des points à contrôler, réunion à faire, audit de maquette réalisé (ou il s'agit d'une autre issue :smile:), ...
+La création d'un nouveau composant ou l'évolution d'un composant se fait en plusieurs étapes.
+La 1ère est la phase de conception côté Designer via la Guilde Design.
+Une issue de type `🧠Conception` doit permettre de suivre les travaux de la Guilde Designer et permettre d'afficher au plus tôt une liste d'attendus de la Squad de réalisation des implémentations.
+Cette issue doit avoir :
 
-Bloque les issues de réalisation
-
-et on pourrait avoir
-
-EPIC
-|-Conception
-|-Audit maquette
-|-issues de réal
-
-et obligatoirement un truc bloquant du style : Conception --> Audit maquette --> issues de réal et il faudrait le reporter dans ### Création d'un nouveau composant et ### Evolution d'un composant existant.
-
+- un issue type `🧠Conception`
+- un label `🔎 Grooming`
+- un label `🧩 Component:xxx` pour le nouveau composant à mettre en place ou pour les évolutions d'un composant existant
+- un label `New component` ou `New enhancement` **:rotating_light: si ils sont mis en place, voir questionnement dans la section Labels**
+- un titre **:rotating_light:à revoir** `🧠 Nouveau composant xxx - v0` ou `🧠 Nouveau composant xxx - MVP` / `🧠 Nouveau composant xxx - v1` ou `🧠 composant xxx - Evolution [descriptif court]`
+- une description avec :
+  - les liens vers la documentation Figma, Zeroheight et tout autre source d'infomation pertinente pour la conception et l'accessibilité **🚨 Doublon avec l'EPIC ?**
+  - les porteurs côté Designers **🚨 Doublon avec l'EPIC ?**
+  - Definition of Ready
+  - Definition of Done
+    - :bulb: avec prise en compte des éléments nécessaires à minima pour le Dev
+    - liens
+    - DO et DONT
+- Une checklist des points à contrôler, réunion à faire, audit de maquette réalisé (ou il s'agit d'une autre issue :smile:), ... **🚨 ou il s'agit d'issues bien distinctes**
 
 ### Autres
 
-**🚨 TODO : toutes les issue type devrait avoir une description, un template et des règles associées**
+> **🚧 TODO toutes les issue type devrait avoir une description, un template et des règles associées**
 
 ## Workflow
 
@@ -454,6 +459,35 @@ Si une issue A est à une relation avec une issue B de type `Blocked by` et que 
 Une issue peut passer à l'état `Cancelled` si nous l'abandonnons.
 
 Une issue peut-être **réouverte (:rotating_light: ? ou on en crée une nouvelle et on référence elle qui est close ?)** mais elle doit repasser le worklfow complet et donc revenir à l'état `Backlog` avec le lanel `Grooming` et tout ce qui a déjà été indiqué sur le sujet.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Backlog
+  Backlog --> Ready : Refinement
+  Backlog --> Cancelled : Refinement
+  Ready --> Inscription
+  Ready --> Blocked
+  Blocked --> Ready
+  state Inscription {
+    [*] --> Milestone
+    Milestone --> Iteration
+  }
+  Inscription : Ajout de l'issue pour réalisation
+  Inscription --> InProgress : Issue assignée au Porteur
+  InProgress --> InReview : PR ouverte pour revue
+  InProgress --> Blocked
+  Blocked --> InProgress
+  InReview --> InProgress : PR avec retours
+  InReview --> Finalisation : PR approuvée
+  state Finalisation {
+    [*] --> PRMerged
+    PRMerged: PR mergée
+    PRMerged --> IssueClosed
+    IssueClosed: Issue clôturée
+  }
+  Finalisation --> Done
+  Done --> [*]
+```
 
 ### Création d'un nouveau composant
 
@@ -475,7 +509,7 @@ Une création de composant se caractérise d'abord par une issue EPIC (qui perme
   - une description
   - les porteurs côté Designers
   - éventuellement les contributeurs côté Développeurs
-  - la liste des applications qui attendent le composant avec 
+  - la liste des applications qui attendent le composant avec
     - la Tribu/Squad associée
     - le Designer et le Lead Dev de la Squad
     - les versions des libriairies utilisées
@@ -490,7 +524,7 @@ Dans ses sub issues rattachées, on trouvera au moins une sub issue de conceptio
 
 Une évolution de composant se caractérise d'abord par une issue EPIC (qui permettra de rattacher des sub issues) et qui doit avoir :
 
-- un issue type 🚀Epic
+- un issue type `🚀Epic`
 - un label `🔎 Grooming`
 - un label `🧩 Component:xxx` pour le nouveau composant à mettre en place
 - un label `New component` **:rotating_light: si il est mis en place, voir questionnement dans la section Labels**
@@ -501,7 +535,7 @@ Une évolution de composant se caractérise d'abord par une issue EPIC (qui perm
   - une description
   - les porteurs côté Designers
   - éventuellement les contributeurs côté Développeurs
-  - la liste des applications qui attendent le composant avec 
+  - la liste des applications qui attendent le composant avec
     - la Tribu/Squad associée
     - le Designer et le Lead Dev de la Squad
     - les versions des libriairies utilisées
@@ -514,4 +548,50 @@ Dans ses sub issues rattachées, on trouvera au moins une sub issue de conceptio
 
 Si il s'agit d'une évolution de composant (`✨ Nouveau composant xxx - v1`) qui fait suite à un MVP (`✨ Nouveau composant xxx - v0`) dans ce cas, en plus de la sub issue de `✨ Nouveau composant xxx - v1` qui bloque l'EPIC, l'EPIC `✨ Nouveau composant xxx - v0` bloque l'EPIC `✨ Nouveau composant xxx - v1`.
 
+### Création et évolution d'un composant
+
+```mermaid
+stateDiagram-v2
+  [*] --> CompV0
+  CompV0 : 🧩 Nouveau Composant xxx v0
+  CompV0 --> EPICCompV0
+  state EPICCompV0 {
+    [*] --> Conception
+    Conception --> AuditM
+    AuditM : Audit de Maquette
+    Conception --> PresDev
+    AuditM --> PresDev
+    PresDev --> Conception : Retours
+    PresDev : Partage 🎨Designer/👨‍💻Développeur
+    PresDev --> Issue1
+    PresDev --> Issue2
+    PresDev --> Issue3
+    PresDev --> Issue4
+    Issue2 --> Issue4 : Blocked
+  }
+  CompV1 : 🧩 Evolutions Composant xxx v1
+  CompV1 --> EPICCompV1
+  state EPICCompV1 {
+    [*] --> ConceptionV1
+    ConceptionV1 --> AuditMV1
+    AuditMV1 : Audit de Maquette
+    ConceptionV1 --> PresDevV1
+    AuditMV1 --> PresDevV1
+    PresDevV1 --> ConceptionV1 : Retours
+    ConceptionV1 : Partage 🎨Designer/👨‍💻Développeur
+    PresDevV1 --> Issue1V1
+    PresDevV1 --> Issue2V1
+    PresDevV1 --> Issue3V1
+    PresDevV1 --> Issue4V1
+    Issue2V1 --> Issue3V1 : Blocked
+  }
+  CompV0 --> CompV1 : Bloque la réalisation
+  EPICCompV0 --> Issue1V1 : Blocked
+  EPICCompV0 --> Issue2V1 : Blocked
+  EPICCompV0 --> Issue3V1 : Blocked
+  EPICCompV0 --> Issue4V1 : Blocked
+```
+
 ### Décommissionnement
+
+> **🚧 TODO**
