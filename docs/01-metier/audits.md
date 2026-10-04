@@ -340,6 +340,8 @@ Issue d'Audit
 AUDITÉ & CONFORME
 ```
 
+Les sub-Issues d'Amélioration, y compris ouvertes, n'affectent pas ce verdict : elles sont suivies séparément des Anomalies.
+
 Lorsque l'Audit est réalisé et qu'au moins une sub-Issue est classée comme Anomalie :
 
 ```text

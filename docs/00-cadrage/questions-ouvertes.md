@@ -661,6 +661,28 @@ Les caractéristiques actuellement établies d'une Amélioration d'Audit restent
 
 ---
 
+## D-035 — Absence d'impact des Améliorations sur la conformité
+
+Une sub-Issue d'Amélioration issue d'un Audit n'est pas une non-conformité.
+
+Lorsqu'une Issue d'Audit est `Done` et `Closed`, le composant est considéré `AUDITÉ & CONFORME` dès lors qu'aucune sub-Issue classée comme Anomalie n'est liée à l'Audit, même si une ou plusieurs sub-Issues d'Amélioration existent encore et sont ouvertes.
+
+La conformité est donc déterminée par la présence d'Anomalies, et non par la présence de toutes les sub-Issues :
+
+```text
+Audit Done + Closed
+AND
+0 Anomalie
+=
+AUDITÉ & CONFORME
+```
+
+Les Améliorations doivent être suivies séparément et ne doivent pas être comptabilisées comme des Anomalies dans le calcul de conformité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -839,6 +861,10 @@ La conformité est donc actuellement déduite des relations de l'Issue d'Audit e
 Une sub-Issue d'Anomalie issue d'un Audit d'Accessibilité est reconnue par l'Issue Type `🐛 Bug`, sa criticité RGAA, son label `♿ a11y:xxx` et son label Component identique à celui de l'Audit parent.
 
 Les sub-Issues d'Amélioration ne sont pas comptées comme Anomalies dans cette règle de conformité.
+
+Une ou plusieurs sub-Issues d'Amélioration, y compris encore ouvertes, n'empêchent pas le composant d'être `AUDITÉ & CONFORME` si aucune Anomalie n'est présente.
+
+Les Améliorations sont donc exclues du calcul du verdict de conformité.
 
 **Statut : Établi pour le fonctionnement actuel**
 
