@@ -535,22 +535,34 @@ Un Composant non audité ne doit pas être comptabilisé comme non conforme.
 
 ## 25. Revalidation après correction des Anomalies
 
-Le workflow de correction et de revalidation n'est pas encore définitivement acté.
+Après correction des Anomalies détectées lors d'un Audit, le modèle cible retenu est de créer une nouvelle Issue d'Audit du Composant.
 
-L'orientation actuelle est que la Definition of Done d'une Anomalie doit inclure une revue par l'auditeur avant le passage de l'Issue à `Done` puis `Closed`.
+La fermeture des Anomalies ne suffit pas à elle seule à faire évoluer le Composant vers `AUDITÉ & CONFORME`.
 
-Le responsable de cette transition n'est pas encore acté. L'hypothèse actuelle est que le développeur ou la squad effectue le passage à `Done` puis `Closed` au moment où la Pull Request de correction est mergée sur la branche cible, après validation de l'auditeur.
+Le cycle cible est :
 
-Le merge de la Pull Request et la validation de l'auditeur sont deux faits distincts : le premier est un événement technique de livraison de la correction, le second une condition métier de la Definition of Done. Le seul merge ne doit donc pas être interprété comme une validation de l'auditeur.
+```text
+Issue d'Audit initiale
+        ↓
+Anomalie(s)
+        ↓
+Correction
+        ↓
+Nouvelle Issue d'Audit du Composant
+        ↓
+Revalidation par l'auditeur
+        ↓
+Nouveau verdict de conformité
+```
 
-Deux modèles restent possibles pour déterminer le retour global du Composant à l'état `AUDITÉ & CONFORME` :
+Cette nouvelle Issue d'Audit a deux fonctions :
 
-1. **revalidation portée par les Anomalies** : chaque correction est revue par l'auditeur et la fermeture de toutes les Anomalies pourrait suffire à rétablir la conformité ;
-2. **nouvel Audit de revalidation** : une nouvelle Issue d'Audit du Composant est créée après les corrections afin de vérifier globalement sa conformité.
+1. **métier** : porter explicitement le nouvel état de conformité du Composant après correction ;
+2. **pilotage** : matérialiser l'activité de revalidation de l'auditeur afin qu'elle puisse être suivie dans les Sprints et Milestones comme les autres activités.
 
-Le second modèle pourrait notamment être pertinent lorsqu'un Audit a produit plusieurs Anomalies.
+La clôture d'une Anomalie et le verdict de conformité du Composant deviennent ainsi deux événements distincts.
 
-Aucun de ces deux modèles n'est encore retenu. Le calcul de conformité après correction ne doit donc pas être figé avant cet arbitrage.
+Le déclenchement exact de l'Issue d'Audit de revalidation reste à préciser : notamment, il faut déterminer si elle est créée après chaque correction ou après la correction de l'ensemble des Anomalies issues de l'Audit précédent.
 
 ---
 

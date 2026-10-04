@@ -713,6 +713,34 @@ Le merge de la Pull Request constitue un événement technique de fin de correct
 
 ---
 
+## D-038 — Revalidation de conformité par une nouvelle Issue d'Audit
+
+Après correction des Anomalies détectées lors d'un Audit, la conformité globale du Composant doit être réévaluée au moyen d'une nouvelle Issue d'Audit du Composant.
+
+La fermeture des Issues d'Anomalie ne suffit donc pas, à elle seule, à faire passer automatiquement le Composant à l'état `AUDITÉ & CONFORME`.
+
+Le cycle cible est :
+
+```text
+Issue d'Audit initiale
+        ↓
+Anomalie(s) détectée(s)
+        ↓
+Correction des Anomalies
+        ↓
+Nouvelle Issue d'Audit du Composant
+        ↓
+Revalidation du Composant
+        ↓
+Nouveau verdict de conformité
+```
+
+Cette nouvelle Issue d'Audit permet également de matérialiser l'activité de revalidation de l'auditeur dans le suivi opérationnel des Sprints et Milestones.
+
+**Statut : Établi comme modèle cible**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1433,27 +1461,20 @@ Aucune définition fonctionnelle de `bloquante`, `majeure` ou `mineure` ne doit 
 
 ## Q-060 — Revalidation d'un Composant après correction des Anomalies
 
-Lorsqu'un Audit a détecté une ou plusieurs Anomalies, le mécanisme de retour à l'état `AUDITÉ & CONFORME` n'est pas encore acté.
+Le modèle cible retenu est la création d'une nouvelle Issue d'Audit du Composant après correction des Anomalies.
 
-Deux modèles sont envisagés.
+La fermeture de toutes les Anomalies ne suffit pas à rétablir automatiquement l'état `AUDITÉ & CONFORME`.
 
-### Modèle A — Revalidation portée par chaque Anomalie
+La nouvelle Issue d'Audit :
 
-La Definition of Done de chaque Anomalie inclut une revue par l'auditeur.
+- matérialise la revalidation du Composant ;
+- permet à l'auditeur de produire un nouveau verdict de conformité ;
+- permet de suivre explicitement l'activité de revalidation dans les Sprints et Milestones ;
+- conserve une trace distincte entre l'Audit initial et la revalidation après correction.
 
-L'Anomalie ne peut passer à `Done` puis être `Closed` qu'après cette revue.
+Il reste à préciser le déclenchement exact de cette nouvelle Issue d'Audit et son rattachement aux Iterations/Milestones.
 
-Il reste à déterminer si la fermeture de toutes les Anomalies suffit alors à faire évoluer le Composant vers `AUDITÉ & CONFORME`.
-
-### Modèle B — Nouvel Audit de revalidation
-
-Après correction des Anomalies, une nouvelle Issue d'Audit est ouverte sur le Composant afin que l'auditeur réalise une revalidation globale.
-
-Ce modèle pourrait être plus pertinent lorsqu'un Audit a généré plusieurs Anomalies.
-
-Il reste à arbitrer le modèle retenu et, éventuellement, les conditions dans lesquelles chacun des deux modèles s'applique.
-
-**Statut : À arbitrer**
+**Statut : Modèle cible établi ; modalités opérationnelles à préciser**
 
 ---
 
@@ -1469,7 +1490,24 @@ Il reste à confirmer :
 - que le merge sur la branche cible constitue bien le déclencheur opérationnel ;
 - comment la validation de l'auditeur est matérialisée et contrôlée avant la clôture.
 
+
+La clôture de l'Anomalie ne rétablit pas automatiquement la conformité du Composant. Celle-ci sera réévaluée dans une nouvelle Issue d'Audit.
+
 **Statut : À confirmer**
+
+---
+
+## Q-062 — Déclenchement de l'Audit de revalidation
+
+Après correction des Anomalies d'un Composant, une nouvelle Issue d'Audit doit être créée afin de revalider globalement sa conformité.
+
+Il reste à déterminer à quel moment cette nouvelle Issue d'Audit doit être créée, notamment si elle doit être déclenchée :
+
+- après la correction de chaque Anomalie ;
+- lorsque toutes les Anomalies issues de l'Audit initial sont corrigées ;
+- ou selon une autre règle de regroupement.
+
+**Statut : À instruire**
 
 ---
 
