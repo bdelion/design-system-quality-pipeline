@@ -1109,3 +1109,189 @@ Je pense qu'il vaut mieux **ne pas créer cette arborescence à la main**. Si tu
 * et surtout **aucune modification fonctionnelle du code**.
 
 On aurait ainsi une base documentaire propre avant d'attaquer la refonte des règles métier et du DQ.
+
+----
+
+Oui. Je te propose de procéder comme une **instruction de conception progressive**, avant de toucher à l’implémentation.
+
+Je vais respecter trois règles :
+
+1. **Une question à la fois**, ou un tout petit groupe de questions lorsqu’elles sont indissociables.
+2. Des réponses **fermées ou semi-fermées** autant que possible : choix, oui/non, liste courte, exemple concret.
+3. Après chaque réponse, je te dirai :
+
+   * ce que ta réponse permet d’établir ;
+   * **quel document de référence mettre à jour** ;
+   * si nécessaire, **quelle modification faire dans le repository** ;
+   * les points restant explicitement **« À instruire »**, sans les inventer.
+
+Je prendrai comme base le projet V11 et les documents déjà présents dans le ZIP, ainsi que les deux spécifications que nous avons déjà étudiées. Si une information n’est pas suffisamment établie par ces sources ou par ta réponse, je ne la déduirai pas.
+
+### Ordre de travail proposé
+
+On va avancer dans cet ordre :
+
+1. **Périmètre et finalité du produit**
+2. **Objets métier** : bibliothèque, composant, issue, anomalie, audit, version…
+3. **Définition exacte d’une anomalie**
+4. **Criticités et catégories**
+5. **Workflow et profils d’issues**
+6. **Relations entre objets**
+7. **Audits et accessibilité**
+8. **Versions / releases / milestones**
+9. **Sprints / iterations / vélocité**
+10. **Indicateurs et définitions mathématiques**
+11. **Règles de qualité des données**
+12. **Sources externes**
+13. **Snapshots et historique**
+14. **Architecture cible et évolution API/backend**
+15. **Priorisation de l’implémentation**
+
+Cela nous permettra ensuite de revoir les DQ actuelles **à partir du modèle métier validé**, plutôt que d'essayer de corriger DQ-001 à DQ-010 à l'aveugle.
+
+---
+
+## Question 1 — Quel est le rôle principal du dashboard ?
+
+Aujourd’hui, plusieurs usages apparaissent dans les documents. Lequel correspond au **rôle principal** du produit ?
+
+**A. Pilotage opérationnel du Design System**
+Suivre les travaux en cours, les anomalies, les audits, les sprints, les délais, les versions.
+
+**B. Mesure de la qualité du Design System**
+Mesurer conformité, anomalies, criticités, couverture d’audit, qualité des composants.
+
+**C. Les deux, avec un même niveau d’importance**
+Le dashboard doit être à la fois un outil de pilotage opérationnel et un outil de mesure de qualité.
+
+**D. Autre**
+Tu précises en une ou deux phrases.
+
+👉 Réponds simplement par **A, B, C ou D + précision éventuelle**.
+
+À partir de ta réponse, je te proposerai immédiatement la première mise à jour concrète de `docs/00-cadrage/` avant de passer à la question 2.
+
+-----
+
+Oui. Cette précision change sensiblement le **périmètre cible** du produit. Je ne vais pas réduire le projet à un simple outil d'audit GitHub.
+
+### Ce que je retiens à ce stade
+
+Le produit doit progressivement couvrir **trois domaines complémentaires** :
+
+| Domaine                          | Objectif                                                                                                              | Horizon                    |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **Qualité des librairies**       | Conformité, anomalies, criticités, audits, qualité des composants                                                     | **Immédiat / prioritaire** |
+| **Pilotage des librairies**      | Travaux, workflow, sprints, délais, versions, activité                                                                | **Immédiat / parallèle**   |
+| **Consommateurs des librairies** | Versions utilisées, composants réellement utilisés, dette de version, alertes, qualité RGAA/WAI-ARIA des applications | **Futur**                  |
+
+Pour le troisième domaine, je comprends notamment que tu souhaites pouvoir arriver à quelque chose comme :
+
+```text
+Application A
+ ├── Design System React 1.8.0
+ │    ├── Button       × 37
+ │    ├── Modal        × 12
+ │    └── DatePicker   × 4
+ │
+ ├── Version attendue : 1.9.x
+ ├── Dette de version : OUI
+ └── Qualité RGAA/WAI-ARIA :
+       badge / note calculé(e) à partir
+       des composants utilisés + de leur état qualité
+```
+
+**Mais je ne considère pas encore ce calcul comme défini.** Nous devrons notamment décider plus tard comment une qualité de composant se transforme — ou non — en qualité d'application. Je le marque donc **« À instruire »**, plutôt que de supposer une formule.
+
+De même, ta formulation **« pour les composants les pros utilisées »** n'est pas suffisamment claire pour que je l'interprète sans risque. Nous la traiterons dans une question dédiée.
+
+---
+
+## Mise à jour documentaire à faire maintenant
+
+Dans `docs/00-cadrage/vision.md`, le positionnement devrait évoluer pour faire apparaître ces trois dimensions.
+
+Dans `docs/00-cadrage/objectifs.md`, il faudra distinguer :
+
+* **Objectifs immédiats**
+
+  * mesure de la qualité des librairies ;
+  * pilotage opérationnel des librairies.
+* **Objectifs futurs**
+
+  * connaissance des consommateurs ;
+  * suivi des versions consommées ;
+  * analyse de l'utilisation des composants ;
+  * suivi de la dette de version ;
+  * rapprochement entre qualité du Design System et qualité des applications consommatrices.
+
+Et dans `docs/00-cadrage/perimetre.md`, il faudra explicitement séparer :
+
+```text
+Périmètre actuel
+    GitHub / librairies / composants / audits / anomalies / workflow
+
+Périmètre futur
+    Applications consommatrices / analyse de code / versions utilisées /
+    composants utilisés / dette / qualité applicative
+```
+
+**Je ne te conseille pas encore de modifier le code.** Le modèle actuel doit d'abord être suffisamment précis pour éviter de construire aujourd'hui une architecture qui empêcherait cette extension demain.
+
+---
+
+# Question 2 — Les trois domaines doivent-ils être dans le même produit ?
+
+Je veux maintenant trancher un point architectural important.
+
+À terme, souhaites-tu **un seul dashboard / produit** avec plusieurs espaces ?
+
+### A
+
+**Oui, un seul produit**
+
+Par exemple :
+
+```text
+Dashboard Design System
+│
+├── Vue globale
+├── Qualité des librairies
+├── Pilotage des librairies
+├── Audits & accessibilité
+└── Consommateurs
+     ├── Applications
+     ├── Versions utilisées
+     ├── Composants utilisés
+     └── Dette / alertes
+```
+
+### B
+
+**Oui, mais avec deux produits fonctionnels distincts**
+
+Par exemple :
+
+```text
+Design System Quality & Operations
+        +
+Design System Consumers
+```
+
+Ils partageraient les mêmes référentiels de librairies/composants/versions.
+
+### C
+
+**Je ne sais pas encore**
+
+Dans ce cas, on conserve simplement la possibilité technique de l'un ou l'autre et **on reporte cette décision**.
+
+### D
+
+Autre organisation — précise-la.
+
+👉 **Réponds simplement A, B, C ou D.**
+
+Cette réponse nous permettra ensuite de déterminer si le futur modèle doit être pensé dès maintenant comme un **modèle de données centré sur le Design System**, plutôt que comme un modèle centré uniquement sur GitHub.
+
+----------------
