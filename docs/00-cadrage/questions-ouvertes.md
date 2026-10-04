@@ -1090,6 +1090,30 @@ Cette distinction est particulièrement importante en pré-PROD : une Milestone 
 
 ---
 
+## D-055 — Milestone obligatoire et bloquante pour la conformité
+
+Toute Issue d'Audit doit être rattachée à une Milestone exploitable.
+
+La Milestone constitue la référence principale permettant d'identifier la Version de référence et le contexte de l'Audit. Son absence constitue donc une anomalie bloquante pour l'analyse de conformité, même lorsque le champ `Version auditée :` est renseigné.
+
+Exemple :
+
+```text
+Milestone       : <absente>
+Version auditée : 1.8.0
+```
+
+Dans ce cas, le pipeline ne doit pas utiliser le seul champ `Version auditée :` comme substitut à la Milestone pour produire un verdict de conformité `Composant × Version`.
+
+La règle est asymétrique :
+
+- Milestone valide + `Version auditée :` absente : Audit exploitable avec une donnée partielle non bloquante ;
+- Milestone absente + `Version auditée :` renseignée : anomalie bloquante pour l'analyse de conformité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2049,6 +2073,16 @@ Lorsqu'une Milestone valide permet de poursuivre l'analyse mais que le champ `Ve
 Il reste à définir comment cette information manquante sera représentée dans le dashboard et dans les métadonnées de fiabilité : avertissement, indicateur de complétude, annotation sur l'Audit, ou autre représentation.
 
 **Statut : À instruire lors de la définition de la qualité des données et de l'UX**
+
+---
+
+## Q-075 — Traitement d'un Audit bloqué par l'absence de Milestone
+
+Une Issue d'Audit sans Milestone ne peut pas contribuer au calcul de conformité, même si `Version auditée :` est renseignée.
+
+Il reste à définir comment cet Audit doit apparaître dans les autres indicateurs et écrans qui ne calculent pas directement la conformité : activité d'Audit, volumes, listes d'Issues, pilotage opérationnel, etc.
+
+**Statut : À instruire**
 
 ---
 

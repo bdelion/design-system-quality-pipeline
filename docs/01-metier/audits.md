@@ -755,6 +755,33 @@ Le pipeline ne doit pas inventer la Version effectivement testée. En particulie
 
 Cette absence doit être signalée comme information manquante non bloquante. Sa représentation exacte dans le dashboard et dans les métadonnées de fiabilité reste à définir.
 
+
+### Milestone absente : anomalie bloquante
+
+La Milestone est obligatoire pour qu'une Issue d'Audit puisse contribuer à l'analyse de conformité.
+
+Même si le template contient une `Version auditée :`, cette valeur ne remplace pas la Milestone :
+
+```text
+Milestone       : <absente>
+Version auditée : 1.8.0
+
+Analyse de conformité : BLOQUÉE
+```
+
+La règle est donc volontairement asymétrique :
+
+| Milestone | `Version auditée :` | Analyse de conformité |
+| --- | --- | --- |
+| présente et valide | présente | exploitable |
+| présente et valide | absente | exploitable avec donnée partielle |
+| absente | présente | bloquée |
+| absente | absente | bloquée |
+
+Un Audit bloqué par l'absence de Milestone ne doit pas produire de verdict de conformité `Composant × Version`.
+
+Son éventuelle prise en compte dans les indicateurs d'activité d'Audit qui ne calculent pas la conformité reste à définir.
+
 ---
 
 ## 26. Historisation
