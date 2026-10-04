@@ -291,10 +291,10 @@ Elles n'ont pas vocation à être déployées en production.
 
 ### 9.2. Release Candidate
 
-Depuis :
+Depuis une branche :
 
 ```text
-release/****
+release/***
 ```
 
 Jenkins produit :
@@ -305,10 +305,10 @@ M.m.r-rc.[numéro de build Jenkins]
 
 ### 9.3. Hotfix Candidate
 
-Depuis :
+Depuis une branche :
 
 ```text
-hotfix/****
+hotfix/***
 ```
 
 Jenkins produit :
@@ -327,36 +327,39 @@ Une Version PROD :
 - doit disposer d'une Milestone portant exactement son numéro ;
 - possède normalement une Release correspondante.
 
-Pour une release standard, la Version PROD est produite lors du merge de la branche `release/M.m.r` vers `master`.
-
-Exemple :
+Deux chemins de mise en production sont désormais établis :
 
 ```text
-release/1.8.0
-    │
-    │ merge
-    ▼
-master
-    │
-    ▼
-Jenkins
-    │
-    ├── stages de build / validation
-    │
-    └── si tous les stages précédents sont OK
-          ├── création du tag Git 1.8.0
-          └── publication du Package 1.8.0 dans Nexus PROD
+release/M.m.r ──merge──> master
+                         │
+                         ▼
+                      Jenkins
+                         │
+                         └── succès
+                              ├── tag Git M.m.r
+                              └── Nexus PROD M.m.r
 ```
 
-La création du tag et la publication Nexus n'interviennent donc qu'après succès des stages Jenkins qui les précèdent.
+et :
 
-La création éventuelle de la Release GitHub n'est pas documentée à ce stade.
+```text
+hotfix/xxx ─────merge──> master
+                         │
+                         ▼
+                      Jenkins
+                         │
+                         └── succès
+                              ├── tag Git M.m.r
+                              └── Nexus PROD M.m.r
+```
+
+Dans les deux cas, le merge vers `master` déclenche le job Jenkins responsable de la production des éléments de la Version PROD.
 
 ---
 
 ## 10. Cycle de production des Versions
 
-Le fonctionnement actuellement établi peut être représenté ainsi :
+Le fonctionnement actuellement établi est :
 
 ```text
 Version de base M.m.r
@@ -369,23 +372,26 @@ Version de base M.m.r
         │     └── Jenkins
         │           └── M.m.r-SNAPSHOT
         │
-        ├── release/M.m.r
+        ├── release/***
         │     ├── Jenkins
         │     │     └── M.m.r-rc.[build Jenkins]
         │     │
         │     └── merge vers master
         │           └── Jenkins automatique
-        │                 ├── stages de build / validation
         │                 └── si succès
         │                       ├── tag Git M.m.r
-        │                       └── publication Nexus PROD M.m.r
+        │                       └── Nexus PROD M.m.r
         │
-        └── hotfix/****
-              └── Jenkins
-                    └── M.m.r-hc.[build Jenkins]
+        └── hotfix/***
+              ├── Jenkins
+              │     └── M.m.r-hc.[build Jenkins]
+              │
+              └── merge vers master
+                    └── Jenkins automatique
+                          └── si succès
+                                ├── tag Git M.m.r
+                                └── Nexus PROD M.m.r
 ```
-
-Le passage exact d'une branche `hotfix/****` vers une Version PROD reste à préciser.
 
 ---
 
@@ -473,7 +479,7 @@ AUDITÉ & CONFORME
 AUDITÉ & NON CONFORME
 ```
 
-Il faut notamment distinguer :
+Il faut distinguer :
 
 ```text
 Couverture d'audit
@@ -494,8 +500,6 @@ Taux de conformité
 Une **Application consommatrice** utilise une ou plusieurs Librairies du Design System.
 
 Une Application utilise un Package dans une Version donnée.
-
-Le contexte de Version est important.
 
 Une Version publiée dans Nexus peut notamment être :
 
@@ -535,21 +539,12 @@ Plusieurs types de Versions peuvent être publiés dans Nexus.
 
 ### 17.4. La production PROD est un processus traçable
 
-Pour une release standard :
+Les deux chemins établis sont :
 
 ```text
-release/M.m.r
-    ↓ merge
-master
-    ↓
-Jenkins
-    ↓ succès
-Tag Git M.m.r
-    +
-Publication Nexus PROD M.m.r
+release/*** → master → Jenkins → tag + Nexus PROD
+hotfix/***  → master → Jenkins → tag + Nexus PROD
 ```
-
-Cette chaîne constitue une information importante pour la future traçabilité des Versions.
 
 ### 17.5. Conserver la traçabilité
 

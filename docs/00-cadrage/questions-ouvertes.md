@@ -34,8 +34,6 @@ Le modèle doit permettre à terme :
 
 ## D-002 — Librairie et Package
 
-Une Librairie est aujourd'hui distribuée sous la forme d'un Package.
-
 Aujourd'hui :
 
 ```text
@@ -95,7 +93,7 @@ Ces Versions sont destinées aux tests d'intégration et non au déploiement en 
 Depuis :
 
 ```text
-release/****
+release/***
 ```
 
 Jenkins produit :
@@ -111,7 +109,7 @@ M.m.r-rc.[numéro de build Jenkins]
 Depuis :
 
 ```text
-hotfix/****
+hotfix/***
 ```
 
 Jenkins produit :
@@ -122,41 +120,59 @@ M.m.r-hc.[numéro de build Jenkins]
 
 ---
 
-## D-008 — Production d'une Version PROD standard
+## D-008 — Production PROD depuis une release
 
-Pour une release standard, la Version PROD `M.m.r` est produite lors du merge de :
-
-```text
-release/M.m.r
-```
-
-vers :
+Une release devient PROD lors du merge :
 
 ```text
-master
+release/*** → master
 ```
 
 Ce merge déclenche automatiquement Jenkins.
 
-Si les stages précédents du pipeline sont réussis, Jenkins :
-
-1. crée le Tag Git `M.m.r` ;
-2. publie le Package `M.m.r` dans Nexus PROD.
+Après succès des stages nécessaires, Jenkins produit notamment :
 
 ```text
-release/M.m.r
-    ↓ merge
-master
-    ↓
-Jenkins
-    ↓ succès
-    ├── Tag Git M.m.r
-    └── Nexus PROD M.m.r
+Tag Git M.m.r
++
+Publication Nexus PROD M.m.r
 ```
+
+**Statut : Établi**
 
 ---
 
-## D-009 — Caractéristiques d'une Version PROD
+## D-009 — Production PROD depuis un hotfix
+
+Un hotfix devient PROD lors du merge :
+
+```text
+hotfix/*** → master
+```
+
+Ce merge déclenche Jenkins.
+
+Jenkins produit alors les éléments de la Version PROD, notamment :
+
+```text
+Tag Git M.m.r
++
+Publication Nexus PROD M.m.r
+```
+
+Le mécanisme final de mise en production est donc commun aux branches release et hotfix :
+
+```text
+release/*** ─┐
+             ├──> master → Jenkins → PROD
+hotfix/*** ──┘
+```
+
+**Statut : Établi**
+
+---
+
+## D-010 — Caractéristiques d'une Version PROD
 
 Une Version PROD :
 
@@ -170,7 +186,7 @@ Le caractère obligatoire de la Release n'est pas encore confirmé.
 
 ---
 
-## D-010 — Nexus ne contient pas uniquement des Versions PROD
+## D-011 — Nexus ne contient pas uniquement des Versions PROD
 
 Nexus peut notamment contenir :
 
@@ -185,7 +201,7 @@ La présence dans Nexus ne suffit donc pas à qualifier une Version de PROD.
 
 ---
 
-## D-011 — Composant non audité
+## D-012 — Composant non audité
 
 Un Composant non audité ne doit pas être automatiquement considéré comme non conforme.
 
@@ -199,7 +215,7 @@ AUDITÉ & NON CONFORME
 
 ---
 
-## D-012 — Vélocité vide et vélocité zéro
+## D-013 — Vélocité vide et vélocité zéro
 
 Les valeurs suivantes sont différentes :
 
@@ -211,7 +227,7 @@ velocity > 0
 
 ---
 
-## D-013 — Criticité
+## D-014 — Criticité
 
 La Criticité doit être associée à un domaine.
 
@@ -226,7 +242,7 @@ Il faut notamment pouvoir distinguer :
 
 ---
 
-## D-014 — Anomalie et amélioration
+## D-015 — Anomalie et amélioration
 
 Une Anomalie et une proposition d'Amélioration sont deux notions différentes.
 
@@ -279,53 +295,36 @@ Dans le cas futur où une Librairie possède plusieurs Packages, un Composant ap
 
 # 4. Questions ouvertes — Versions et Releases
 
-## Q-005 — Release Candidate vers PROD
+## Q-005 — Cycle release vers PROD
 
-### Réponse établie pour une release standard
-
-Le passage à PROD se produit lors du merge :
+Le passage :
 
 ```text
-release/M.m.r → master
+release/*** → master → Jenkins → PROD
 ```
 
-Jenkins est déclenché automatiquement.
+est établi.
 
-Après succès des stages nécessaires :
-
-```text
-Tag Git M.m.r
-+
-Publication Nexus PROD M.m.r
-```
-
-**Statut : Établi pour le cycle release standard**
+**Statut : Établi**
 
 ---
 
-## Q-006 — Hotfix Candidate vers PROD
+## Q-006 — Cycle hotfix vers PROD
 
-Quel est le processus exact permettant de passer de :
-
-```text
-M.m.r-hc.[build]
-```
-
-à :
+Le passage :
 
 ```text
-M.m.r
+hotfix/*** → master → Jenkins → PROD
 ```
 
-Il reste notamment à préciser :
+est établi.
 
-- la branche cible ;
-- l'événement déclencheur ;
-- le rôle de Jenkins ;
-- la création du Tag ;
-- la publication Nexus PROD.
+Jenkins produit notamment :
 
-**Statut : À instruire**
+- le Tag Git ;
+- le Package dans Nexus PROD.
+
+**Statut : Établi**
 
 ---
 
@@ -651,8 +650,10 @@ Jenkins intervient dans :
 - la génération des Versions SNAPSHOT ;
 - la génération des Release Candidates ;
 - la génération des Hotfix Candidates ;
-- la création du Tag d'une Version PROD standard ;
-- la publication de la Version PROD dans Nexus.
+- la production des éléments de Version PROD après merge d'une release vers `master` ;
+- la production des éléments de Version PROD après merge d'un hotfix vers `master` ;
+- la création du Tag Git ;
+- la publication du Package dans Nexus PROD.
 
 Il reste à déterminer si le pipeline doit interroger directement Jenkins ou si GitHub et Nexus fournissent les informations nécessaires aux indicateurs.
 

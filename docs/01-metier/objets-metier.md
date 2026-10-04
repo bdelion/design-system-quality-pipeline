@@ -28,8 +28,6 @@ Une **Librairie** est une unité métier du Design System mise à disposition de
 
 ### Situation actuelle
 
-Aujourd'hui :
-
 ```text
 1 Repository = 1 Librairie
 1 Librairie = 1 Package
@@ -44,8 +42,6 @@ Exemples :
 | Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
 
 ### Cible
-
-Le modèle doit permettre :
 
 ```text
 1 Repository = 1..n Librairies
@@ -84,15 +80,6 @@ Le Package :
 - est publié dans Nexus ;
 - peut être utilisé par une Application dans une Version donnée.
 
-Exemple :
-
-```text
-Design System React
-    └── @my-enterprise/design-system-react
-          ├── PROD : 1.7.1
-          └── develop : 1.8.0-SNAPSHOT
-```
-
 À terme, une Librairie pourra être distribuée par plusieurs Packages.
 
 ---
@@ -101,23 +88,16 @@ Design System React
 
 Une **Version** identifie un état versionné d'un Package.
 
-### Version de base
-
-Le cycle de construction utilise une Version de base :
-
-```text
-M.m.r
-```
-
 ### Types actuellement établis
 
 | Contexte / branche | Version produite |
 |---|---|
 | `develop` | `M.m.r-SNAPSHOT` |
 | `project/***` | `M.m.r-SNAPSHOT` |
-| `release/****` | `M.m.r-rc.[build Jenkins]` |
-| `hotfix/****` | `M.m.r-hc.[build Jenkins]` |
-| PROD | `M.m.r` |
+| `release/***` | `M.m.r-rc.[build Jenkins]` |
+| `hotfix/***` | `M.m.r-hc.[build Jenkins]` |
+| merge `release/***` → `master` | `M.m.r` PROD |
+| merge `hotfix/***` → `master` | `M.m.r` PROD |
 
 ### Version PROD
 
@@ -125,28 +105,16 @@ Une Version PROD :
 
 - ne possède pas de suffixe ;
 - est publiée dans un espace Nexus spécifique ;
-- possède un tag Git correspondant ;
+- possède un Tag Git correspondant ;
 - doit posséder une Milestone portant son numéro ;
 - possède normalement une Release correspondante.
 
-Pour une release standard, elle est produite à la suite du merge de :
+Pour une release ou un hotfix, le merge vers `master` déclenche automatiquement Jenkins.
 
-```text
-release/M.m.r
-```
+À l'issue du job Jenkins, si les stages nécessaires sont réussis, Jenkins produit notamment :
 
-vers :
-
-```text
-master
-```
-
-Ce merge déclenche automatiquement Jenkins.
-
-Si les stages Jenkins précédant la publication sont tous réussis, Jenkins :
-
-1. crée le tag Git `M.m.r` ;
-2. publie le Package `M.m.r` dans Nexus PROD.
+- le Tag Git ;
+- le Package publié dans Nexus PROD.
 
 ---
 
@@ -154,20 +122,26 @@ Si les stages Jenkins précédant la publication sont tous réussis, Jenkins :
 
 Le **Build Jenkins** est une exécution de la CI participant à la construction et à la publication des Versions.
 
-Selon le type de branche, Jenkins produit notamment :
+Selon le contexte :
 
 ```text
 develop / project/***
     → M.m.r-SNAPSHOT
 
-release/****
+release/***
     → M.m.r-rc.[build]
 
-hotfix/****
+hotfix/***
     → M.m.r-hc.[build]
+
+release/*** → master
+    → M.m.r PROD
+
+hotfix/*** → master
+    → M.m.r PROD
 ```
 
-Pour une release standard, le merge de `release/M.m.r` vers `master` déclenche un Build Jenkins qui peut produire la Version PROD.
+Pour les Versions PROD, Jenkins produit les éléments de publication après le merge vers `master`.
 
 Le numéro de build Jenkins participe directement au numéro des Versions `rc` et `hc`.
 
@@ -362,14 +336,7 @@ Les usages identifiés comprennent notamment :
 - horizons de planification ;
 - lots de conception.
 
-### Version PROD
-
 Une Version PROD doit disposer d'une Milestone portant exactement son numéro.
-
-```text
-Version PROD : 1.8.0
-Milestone : 1.8.0
-```
 
 Cela ne signifie pas que toute Milestone représente une Version PROD.
 
@@ -379,16 +346,14 @@ Cela ne signifie pas que toute Milestone représente une Version PROD.
 
 Un **Tag Git** identifie un point du Repository.
 
-Une Version PROD possède un Tag correspondant exactement à son numéro.
+Une Version PROD possède un Tag correspondant à son numéro.
 
-Pour une release standard, ce Tag est créé par Jenkins après le merge de `release/M.m.r` vers `master`, à condition que les stages Jenkins précédents soient réussis.
+Pour une release standard ou un hotfix, ce Tag est produit par Jenkins après le merge de la branche vers `master`.
 
 ```text
-release/1.8.0
-    ↓ merge master
-Jenkins
-    ↓ succès
-tag 1.8.0
+release/*** ─┐
+             ├──> master → Jenkins → Tag Git M.m.r
+hotfix/*** ──┘
 ```
 
 ---
@@ -411,9 +376,11 @@ Une **Publication Nexus** correspond à la mise à disposition d'une Version d'u
 
 Plusieurs types de Versions peuvent être publiés.
 
-Pour une release standard, après le merge de `release/M.m.r` vers `master`, Jenkins publie la Version `M.m.r` dans l'espace Nexus PROD si les stages précédents sont réussis.
+Pour une Version PROD issue d'une release ou d'un hotfix :
 
 ```text
+branche release/*** ou hotfix/***
+    ↓ merge
 master
     ↓
 Jenkins
@@ -496,18 +463,11 @@ Repository
           └── Composants
 ```
 
-Pour une release standard :
+Les chemins de production établis sont :
 
 ```text
-release/M.m.r
-    ↓
-merge master
-    ↓
-Build Jenkins automatique
-    ↓
-stages réussis
-    ├── Tag Git M.m.r
-    └── Publication Nexus PROD M.m.r
+release/*** → master → Jenkins → Tag Git + Nexus PROD
+hotfix/***  → master → Jenkins → Tag Git + Nexus PROD
 ```
 
 Cette chaîne doit rester traçable dans le futur modèle de données.
