@@ -1037,6 +1037,39 @@ La Milestone constitue donc le pivot de rattachement à la Version de référenc
 
 ---
 
+## D-053 — Cohérence entre Milestone et Version auditée
+
+La `Version auditée` renseignée dans l'Issue d'Audit doit être cohérente avec la Version de référence portée par la Milestone.
+
+La Version de référence est obtenue à partir de la Milestone, notamment en normalisant le suffixe de contexte d'Audit lorsqu'il existe.
+
+Exemples cohérents :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.8.0-rc.42
+```
+
+```text
+Milestone       : 1.8.0-Audit
+Version auditée : 1.8.0
+```
+
+Exemple incohérent :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.9.0-rc.3
+```
+
+Une incohérence de Version entre ces deux informations constitue une anomalie de données à signaler.
+
+La sévérité de cette future règle de qualité reste à définir.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1955,18 +1988,37 @@ Version auditée : 1.8.0-rc.42
 
 ## Q-072 — Cohérence entre Milestone et champ Version auditée
 
-La Milestone et le champ `Version auditée :` portent deux informations complémentaires mais liées.
+La `Version auditée` doit appartenir à la Version de référence portée par la Milestone.
 
-Il reste à définir la règle de cohérence à appliquer lorsqu'elles sont contradictoires, par exemple :
+Exemples :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.8.0-rc.42
+→ cohérent
+```
 
 ```text
 Milestone       : 1.8.0
 Version auditée : 1.9.0-rc.3
+→ incohérent
 ```
 
-Cette situation devra être distinguée des cas normaux où la Version auditée est une déclinaison de la Version de référence portée par la Milestone.
+Pour une Milestone de rattrapage telle que `1.8.0-Audit`, la Version de référence normalisée est `1.8.0`.
 
-**Statut : À instruire**
+Une incohérence constitue une anomalie de données à signaler.
+
+**Statut : Établi**
+
+---
+
+## Q-073 — Sévérité d'une incohérence de Version d'Audit
+
+Une incohérence entre la Version de référence portée par la Milestone et le champ `Version auditée :` constitue une anomalie de données.
+
+Il reste à déterminer la sévérité de cette anomalie dans le futur moteur de qualité et son impact éventuel sur le calcul de conformité.
+
+**Statut : À instruire lors de la définition des règles de qualité**
 
 ---
 

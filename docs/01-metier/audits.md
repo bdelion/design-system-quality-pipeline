@@ -728,7 +728,11 @@ Version auditée : 1.8.0
 
 La Milestone sert donc de pivot vers la Version de référence, tandis que le champ `Version auditée :` conserve la précision sur l'artefact réellement audité.
 
-La règle à appliquer en cas d'incohérence entre ces deux informations reste à définir.
+La `Version auditée` doit rester cohérente avec la Version de référence portée par la Milestone.
+
+Ainsi, `1.8.0-rc.42` est cohérent avec une Milestone `1.8.0`, alors que `1.9.0-rc.3` ne l'est pas. Pour `1.8.0-Audit`, la Version de référence normalisée reste `1.8.0`.
+
+Une incohérence constitue une anomalie de données à signaler. Sa sévérité et son impact éventuel sur les calculs restent à définir.
 
 ---
 
