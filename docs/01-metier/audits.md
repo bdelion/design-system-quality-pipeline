@@ -639,6 +639,20 @@ Le modèle doit donc permettre de distinguer :
 
 La donnée permettant de déterminer sans ambiguïté quel Audit est le dernier reste à préciser.
 
+
+### Date de réalisation et ordonnancement des Audits
+
+Un Audit est réalisé lorsque son Issue satisfait simultanément :
+
+- `Project Status = Done` ;
+- `GitHub Issue State = Closed`.
+
+La date de réalisation correspond à l'instant où la seconde de ces deux conditions est satisfaite. `Done` et `Closed` ne sont donc pas supposés intervenir simultanément.
+
+Cette date est utilisée pour ordonner plusieurs Audits d'un même couple `Composant × Version`. L'Audit ayant la date de réalisation la plus récente détermine le verdict de conformité courant.
+
+La disponibilité technique de la date de transition du Project vers `Done` dans les données collectées reste à vérifier.
+
 ---
 
 ## 26. Historisation

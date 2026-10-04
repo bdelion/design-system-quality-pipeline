@@ -899,6 +899,23 @@ Le dashboard doit donc distinguer le verdict de chaque Audit du verdict courant 
 
 ---
 
+## D-047 — Date de réalisation d'un Audit
+
+Un Audit est terminé lorsque les deux conditions suivantes sont satisfaites :
+
+- `Project Status = Done` ;
+- `GitHub Issue State = Closed`.
+
+La date de réalisation de l'Audit correspond à l'instant où la seconde de ces deux conditions est satisfaite, c'est-à-dire au moment où l'Issue devient effectivement `Done + Closed`.
+
+Cette date permet notamment d'ordonner plusieurs Audits portant sur le même couple `Composant × Version`.
+
+Pour déterminer l'état de conformité courant, l'Audit ayant la date de réalisation la plus récente est considéré comme le dernier Audit réalisé.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1739,11 +1756,21 @@ Il reste à définir son nom, ses états, ses conditions de calcul, le rattachem
 
 Le dernier Audit réalisé détermine l'état de conformité courant du couple `Composant × Version`.
 
-Il reste à préciser quelle donnée fait foi pour ordonner plusieurs Audits portant sur le même couple : date de clôture de l'Issue, date de passage au statut `Done`, autre date métier, ou combinaison de plusieurs informations.
+Un Audit étant considéré comme terminé uniquement lorsque `Project Status = Done` et `GitHub Issue State = Closed`, sa date de réalisation correspond à l'instant où la seconde de ces deux conditions est satisfaite.
 
-Cette question est liée à la définition encore ouverte de la date exacte de fin d'un Audit.
+Plusieurs Audits portant sur le même couple sont donc ordonnés selon cette date de réalisation. Celui dont la date de réalisation est la plus récente porte le verdict de conformité courant.
 
-**Statut : À instruire**
+**Statut : Établi**
+
+---
+
+## Q-068 — Disponibilité de la date de passage au statut Done
+
+La date de réalisation d'un Audit nécessite de connaître l'instant où l'Issue est devenue `Done` ainsi que sa date de fermeture, afin de retenir l'instant où la seconde condition `Done + Closed` a été satisfaite.
+
+Il reste à vérifier que la source GitHub collectée permet d'obtenir de manière fiable l'historique ou la date de transition du Project vers `Done`.
+
+**Statut : À vérifier techniquement**
 
 ---
 
