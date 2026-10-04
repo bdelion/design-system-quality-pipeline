@@ -848,6 +848,31 @@ Le pipeline doit donc conserver séparément l'identité du Composant et la Vers
 
 ---
 
+## D-044 — Conformité historisée par Composant et Version
+
+Le verdict de conformité issu d'un Audit s'applique au Composant dans la Version effectivement auditée. Un Audit ultérieur sur une autre Version ne modifie pas rétroactivement ce verdict.
+
+```text
+Button@1.7.1 → NON CONFORME
+Button@1.8.0 → CONFORME
+```
+
+`Button@1.7.1` conserve donc historiquement son verdict `NON CONFORME`.
+
+**Statut : Établi**
+
+---
+
+## D-045 — Séparer le verdict d'Audit et l'état des corrections
+
+Un verdict `NON CONFORME` ne devient pas `CONFORME` au seul motif que les Anomalies ont été corrigées dans une Version ultérieure.
+
+Une annotation complémentaire pourra indiquer que les Anomalies connues sont corrigées dans une Version ultérieure en attente d'un nouvel Audit. Cette annotation reste distincte du verdict de conformité et son libellé ainsi que ses règles restent à définir.
+
+**Statut : Principe établi ; représentation à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1669,6 +1694,18 @@ Il reste à préciser ultérieurement si le dashboard doit :
 - ou appliquer une autre règle de pilotage sans bloquer le workflow.
 
 **Statut : Fait établi ; règle de pilotage à instruire**
+
+---
+
+## Q-066 — Annotation d'une Version non conforme dont les Anomalies sont corrigées
+
+Une Version peut conserver un verdict historique `NON CONFORME` alors que ses Anomalies ont été corrigées dans une Version ultérieure qui n'a pas encore obtenu de verdict `CONFORME`.
+
+Une annotation distincte du verdict pourrait permettre de représenter cette situation.
+
+Il reste à définir son nom, ses états, ses conditions de calcul, le rattachement des corrections à la Version qui les contient et sa représentation dans le dashboard.
+
+**Statut : À instruire**
 
 ---
 

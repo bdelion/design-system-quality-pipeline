@@ -602,6 +602,20 @@ Audit B : Component X + Version V1 ou V2
 
 Une éventuelle alerte ou règle de pilotage sur le changement de Version reste à définir séparément.
 
+
+### Conformité par Version
+
+Le verdict de conformité est conservé pour le couple `Composant × Version` effectivement audité. Un Audit ultérieur sur une autre Version ne réécrit pas le verdict historique précédent.
+
+```text
+Button@1.7.1 → NON CONFORME
+Button@1.8.0 → CONFORME
+```
+
+Il faut distinguer ce verdict de l'état des corrections. Des Anomalies peuvent être corrigées dans une Version ultérieure sans que le dashboard puisse déclarer cette Version conforme avant un nouveau jugement de l'auditeur.
+
+Une annotation complémentaire pourra être étudiée pour signaler que les Anomalies connues sont corrigées dans une Version ultérieure en attente d'un Audit conforme. Son nom et ses règles ne sont pas encore définis.
+
 ---
 
 ## 26. Historisation
