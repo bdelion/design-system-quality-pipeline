@@ -1114,6 +1114,28 @@ La règle est asymétrique :
 
 ---
 
+## D-056 — Audit sans Milestone comptabilisé dans l'activité
+
+Une Issue d'Audit `Done + Closed` sans Milestone reste comptabilisée dans les indicateurs d'activité d'Audit qui ne nécessitent pas de rattachement à une Version.
+
+Elle reste en revanche exclue des calculs qui nécessitent un rattachement fiable au couple `Composant × Version`, notamment les calculs de conformité.
+
+Exemple :
+
+```text
+Audit             : Done + Closed
+Milestone         : <absente>
+
+Activité d'Audit  : comptabilisée
+Conformité        : exclue / bloquée
+```
+
+La validité d'une Issue d'Audit doit donc être appréciée en fonction de la métrique calculée et non comme une validité globale binaire de l'entité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2078,9 +2100,21 @@ Il reste à définir comment cette information manquante sera représentée dans
 
 ## Q-075 — Traitement d'un Audit bloqué par l'absence de Milestone
 
-Une Issue d'Audit sans Milestone ne peut pas contribuer au calcul de conformité, même si `Version auditée :` est renseignée.
+Une Issue d'Audit `Done + Closed` sans Milestone reste comptabilisée dans l'activité d'Audit.
 
-Il reste à définir comment cet Audit doit apparaître dans les autres indicateurs et écrans qui ne calculent pas directement la conformité : activité d'Audit, volumes, listes d'Issues, pilotage opérationnel, etc.
+Elle est en revanche exclue des calculs nécessitant un rattachement fiable à `Composant × Version`, notamment la conformité.
+
+Cette décision implique une appréciation de la qualité des données spécifique à chaque métrique.
+
+**Statut : Établi**
+
+---
+
+## Q-076 — Dénominateur de la couverture d'Audit
+
+La distinction entre activité d'Audit et conformité est désormais établie.
+
+Il reste à préciser quels Audits peuvent contribuer au calcul de la couverture d'Audit d'une Version, notamment lorsqu'un Audit réalisé est dépourvu de Milestone et ne peut donc pas être rattaché de manière fiable à cette Version.
 
 **Statut : À instruire**
 

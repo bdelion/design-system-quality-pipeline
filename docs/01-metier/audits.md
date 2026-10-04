@@ -782,6 +782,23 @@ Un Audit bloqué par l'absence de Milestone ne doit pas produire de verdict de c
 
 Son éventuelle prise en compte dans les indicateurs d'activité d'Audit qui ne calculent pas la conformité reste à définir.
 
+
+### Audit sans Milestone et indicateurs d'activité
+
+Une Issue d'Audit `Done + Closed` sans Milestone reste un Audit réalisé et doit être comptabilisée dans les indicateurs d'activité qui ne nécessitent pas de rattachement à une Version.
+
+Elle ne peut en revanche pas contribuer aux calculs qui nécessitent un rattachement fiable à `Composant × Version`, notamment au verdict et au taux de conformité.
+
+```text
+Audit             : Done + Closed
+Milestone         : <absente>
+
+Nombre d'Audits réalisés : comptabilisé
+Conformité               : exclue / bloquée
+```
+
+La qualité des données doit donc être évaluée au regard des besoins de chaque métrique. Une donnée incomplète pour un calcul peut rester exploitable pour un autre.
+
 ---
 
 ## 26. Historisation
