@@ -53,11 +53,13 @@ Repository
 
 Exemples observés :
 
-| Librairie | Package | Version actuelle déclarée |
+| Librairie | Package | Dernière version PROD déclarée |
 |---|---|---|
 | Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
 | Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
 | Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
+
+Pour Design System React, une version `1.8.0-SNAPSHOT` existe également actuellement sur `develop` et dans Nexus pour les tests d'intégration.
 
 ### Cible future
 
@@ -127,6 +129,7 @@ Le package :
 
 - possède un nom permettant de l'identifier ;
 - possède plusieurs versions au cours de son cycle de vie ;
+- est publié dans Nexus ;
 - peut être utilisé par une application dans une version donnée.
 
 ```text
@@ -142,16 +145,19 @@ Les exemples réels actuellement identifiés sont :
 ```text
 Design System React
     └── @my-enterprise/design-system-react
-          └── version actuelle déclarée : 1.7.1
+          ├── PROD : 1.7.1
+          └── develop / intégration : 1.8.0-SNAPSHOT
 
 Enterprise Assets
     └── @my-enterprise/enterprise-assets
-          └── version actuelle déclarée : 2.1.0
+          └── PROD : 2.1.0
 
 Design System Metier React
     └── @my-enterprise/design-system-metier-react
-          └── version actuelle déclarée : 0.14.0
+          └── PROD : 0.14.0
 ```
+
+Aucune information n'est encore établie ici concernant d'éventuelles versions SNAPSHOT des deux derniers Packages.
 
 ### Cible future
 
@@ -188,33 +194,47 @@ Identification d'un état versionné d'un Package.
 
 ### Situation actuelle établie
 
-Une application utilise un Package dans une Version donnée.
+Un même Package peut avoir plusieurs Versions disponibles avec des finalités différentes.
+
+Pour `@my-enterprise/design-system-react`, deux situations sont actuellement observées :
+
+| Version | Contexte | Nexus | Usage |
+|---|---|---|---|
+| `1.7.1` | PROD | publiée | disponible pour les clients et destinée à la production |
+| `1.8.0-SNAPSHOT` | develop / intégration | publiée | destinée aux tests d'intégration, pas au déploiement en production |
+
+La présence dans Nexus n'est donc pas suffisante pour qualifier une Version comme version de production.
+
+### Version PROD
+
+Une Version PROD est une version publiée et disponible pour les clients avec vocation à être utilisée en production.
+
+Pour Design System React, la dernière Version PROD déclarée est actuellement :
 
 ```text
-Application
-    └── utilise
-          ├── Package
-          └── Version du Package
+1.7.1
 ```
 
-Les versions actuelles déclarées dans les exemples fournis sont :
+### Version SNAPSHOT
 
-- `@my-enterprise/design-system-react` : `1.7.1` ;
-- `@my-enterprise/enterprise-assets` : `2.1.0` ;
-- `@my-enterprise/design-system-metier-react` : `0.14.0`.
+Une Version SNAPSHOT peut être publiée dans Nexus sans être destinée à la production.
 
-La signification exacte de **version actuelle** reste à préciser.
+Pour Design System React, la branche `develop` contient actuellement dans son `package.json` :
+
+```text
+1.8.0-SNAPSHOT
+```
+
+Cette version est disponible dans Nexus pour les tests d'intégration.
 
 ### À préciser
 
-Il reste également à déterminer précisément la relation entre :
+Il reste notamment à déterminer :
 
-- version de package ;
-- release ;
-- milestone GitHub ;
-- version métier de la librairie.
-
-Aucune équivalence définitive entre ces notions ne doit être introduite tant qu'elle n'a pas été validée.
+- la règle générique permettant de classifier les versions ;
+- la relation entre branche et Version ;
+- la relation entre Version et Release ;
+- la relation entre Version et Milestone GitHub.
 
 ---
 
@@ -532,13 +552,16 @@ Application
           └── Version du Package
 ```
 
+Toutes les Versions publiées dans Nexus ne sont pas nécessairement destinées à être utilisées en production.
+
 ### Cible future
 
 Le système devra pouvoir enrichir cette relation avec notamment :
 
+- le contexte de la Version utilisée ;
 - les composants réellement utilisés ;
 - leur fréquence d'utilisation ;
-- la version attendue ;
+- la Version PROD attendue ;
 - la dette de mise à niveau ;
 - la qualité associée aux composants consommés.
 
@@ -600,7 +623,8 @@ Design System
                 │
                 ├── Package
                 │     │
-                │     └── Versions
+                │     ├── Versions PROD
+                │     └── Versions SNAPSHOT
                 │
                 └── Composants
                       │
@@ -632,6 +656,7 @@ Design System
           └── Consommations
                 ├── Package
                 ├── Version
+                ├── contexte de Version
                 └── Composants utilisés
 ```
 

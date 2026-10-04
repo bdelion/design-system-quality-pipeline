@@ -4,11 +4,13 @@
 
 Ce document décrit les notions de Package, Version et Release utilisées ou envisagées par le Design System Quality Pipeline.
 
-L'objectif est notamment d'éviter de confondre plusieurs notions actuellement représentées dans différents systèmes :
+L'objectif est notamment d'éviter de confondre plusieurs notions :
 
-- librairie ;
-- package ;
-- version de package ;
+- Librairie ;
+- Package ;
+- Version de Package ;
+- Version de production ;
+- Version SNAPSHOT ;
 - Milestone GitHub ;
 - Release ;
 - version d'audit.
@@ -17,15 +19,16 @@ L'objectif est notamment d'éviter de confondre plusieurs notions actuellement r
 
 ## 2. Situation actuelle établie
 
-Une librairie du Design System est aujourd'hui distribuée sous la forme d'un package pouvant être directement utilisé par les applications.
+Une Librairie du Design System est aujourd'hui distribuée sous la forme d'un Package pouvant être directement utilisé par les Applications.
 
-Ce package :
+Ce Package :
 
 - possède un nom ;
-- possède plusieurs versions au cours de son cycle de vie ;
-- est utilisé par les applications dans une version donnée.
+- possède plusieurs Versions au cours de son cycle de vie ;
+- est publié dans Nexus ;
+- peut avoir simultanément plusieurs Versions disponibles avec des finalités différentes.
 
-La relation actuellement établie est donc :
+La relation générale est :
 
 ```text
 Librairie
@@ -34,13 +37,10 @@ Librairie
     ▼
 Package
     │
-    ├── Version 1
-    ├── Version 2
-    └── Version N
-             ▲
-             │ version utilisée
-             │
-        Application
+    └── Versions
+          │
+          ├── PROD
+          └── SNAPSHOT
 ```
 
 Dans la situation actuelle :
@@ -64,82 +64,71 @@ Trois couples Librairie / Package ont été identifiés.
 ```text
 Librairie : Design System React
 Package : @my-enterprise/design-system-react
-Version actuelle déclarée : 1.7.1
+
+Dernière version PROD déclarée :
+1.7.1
+
+Version actuelle sur develop :
+1.8.0-SNAPSHOT
 ```
+
+La Version `1.7.1` :
+
+- est publiée dans Nexus ;
+- est disponible pour les clients ;
+- constitue actuellement la dernière Version PROD déclarée.
+
+La Version `1.8.0-SNAPSHOT` :
+
+- est déclarée dans le `package.json` de la branche `develop` ;
+- est également disponible dans Nexus ;
+- est destinée aux tests d'intégration ;
+- n'a pas vocation à être déployée comme Version PROD.
 
 ### Enterprise Assets
 
 ```text
 Librairie : Enterprise Assets
 Package : @my-enterprise/enterprise-assets
-Version actuelle déclarée : 2.1.0
+Dernière version PROD déclarée : 2.1.0
 ```
+
+Aucune information supplémentaire n'est encore établie ici concernant une éventuelle Version SNAPSHOT.
 
 ### Design System Metier React
 
 ```text
 Librairie : Design System Metier React
 Package : @my-enterprise/design-system-metier-react
-Version actuelle déclarée : 0.14.0
+Dernière version PROD déclarée : 0.14.0
 ```
 
-Ces exemples confirment la relation actuellement observée :
-
-```text
-Librairie
-    │
-    │ 1:1 actuellement
-    ▼
-Package
-```
-
-Ils confirment également que chaque Package possède une information de Version.
-
-La signification exacte de **version actuelle** reste cependant à préciser.
+Aucune information supplémentaire n'est encore établie ici concernant une éventuelle Version SNAPSHOT.
 
 ---
 
 ## 4. Package
 
-Le **Package** est l'unité technique distribuable correspondant actuellement à une librairie et pouvant être référencée comme dépendance par une application.
+Le **Package** est l'unité technique distribuable correspondant actuellement à une Librairie et pouvant être référencée comme dépendance par une Application.
 
-Il constitue donc un élément important pour relier :
+Il constitue un élément important pour relier :
 
 - le Design System produit ;
-- les versions ;
-- les applications consommatrices.
+- les Versions publiées ;
+- les Applications consommatrices.
 
-Exemple conceptuel :
+Exemple :
 
 ```text
-Librairie
+Design System React
     │
-    └── Package
-          ├── Version A
-          ├── Version B
-          └── Version C
-```
-
-### Nom du Package
-
-Les exemples observés montrent que le Package possède un nom permettant de l'identifier :
-
-```text
-@my-enterprise/design-system-react
-@my-enterprise/enterprise-assets
-@my-enterprise/design-system-metier-react
+    └── @my-enterprise/design-system-react
+          │
+          ├── 1.7.1
+          └── 1.8.0-SNAPSHOT
 ```
 
 Le nom du Package doit être distingué du nom métier de la Librairie.
-
-Par exemple :
-
-```text
-Librairie : Design System React
-Package : @my-enterprise/design-system-react
-```
-
-Les propriétés techniques exactes du Package restent à préciser.
 
 ---
 
@@ -147,48 +136,130 @@ Les propriétés techniques exactes du Package restent à préciser.
 
 Une **Version** identifie un état versionné d'un Package.
 
-Une application utilise donc un Package dans une Version donnée.
+La Version seule ne suffit pas nécessairement à déterminer sa finalité.
 
-Conceptuellement :
+Le modèle doit distinguer le numéro de Version de son contexte d'utilisation.
+
+Exemple :
 
 ```text
-Application
+Package
     │
-    └── utilise
-          │
-          ├── Package X
-          └── Version Y
+    ├── 1.7.1
+    │     └── PROD
+    │
+    └── 1.8.0-SNAPSHOT
+          └── tests d'intégration
 ```
-
-ou, sous une forme compacte :
-
-```text
-Package X @ Version Y
-```
-
-Les exemples actuellement connus sont :
-
-```text
-@my-enterprise/design-system-react @ 1.7.1
-@my-enterprise/enterprise-assets @ 2.1.0
-@my-enterprise/design-system-metier-react @ 0.14.0
-```
-
-À ce stade, les valeurs `1.7.1`, `2.1.0` et `0.14.0` sont qualifiées de **versions actuelles déclarées**.
-
-Il reste à déterminer précisément ce que signifie « version actuelle ».
 
 ---
 
-## 6. Utilisation d'un Package par une Application
+## 6. Version PROD
 
-La relation entre une Application, un Package et sa Version doit être représentée sans considérer la Version comme un élément consommé indépendamment du Package.
+### Définition actuellement établie
 
-La formulation métier retenue à ce stade est :
+Une **Version PROD** est une Version du Package :
 
-> Une application utilise un Package dans une Version donnée.
+- publiée dans Nexus ;
+- disponible pour les clients ;
+- destinée à être utilisée en production.
 
-La représentation correspondante est :
+Pour Design System React :
+
+```text
+Package : @my-enterprise/design-system-react
+Version PROD actuelle : 1.7.1
+```
+
+L'expression **version actuelle**, lorsqu'elle est utilisée dans un contexte de pilotage des consommateurs, doit donc être évitée lorsqu'elle est ambiguë.
+
+Il est préférable de parler explicitement de :
+
+```text
+dernière Version PROD
+```
+
+lorsque c'est cette information qui est recherchée.
+
+---
+
+## 7. Version SNAPSHOT
+
+### Définition actuellement établie
+
+Une **Version SNAPSHOT** peut être publiée dans Nexus tout en n'étant pas destinée à la production.
+
+Pour Design System React :
+
+```text
+Branche : develop
+Version package.json : 1.8.0-SNAPSHOT
+Publication Nexus : oui
+Usage : tests d'intégration
+Déploiement PROD : non
+```
+
+La disponibilité dans Nexus ne constitue donc pas à elle seule une preuve qu'une Version peut être utilisée en production.
+
+---
+
+## 8. Nexus
+
+Nexus est actuellement utilisé comme source de publication des Packages.
+
+L'exemple de Design System React montre que Nexus peut contenir simultanément :
+
+```text
+@my-enterprise/design-system-react
+    │
+    ├── 1.7.1
+    │     └── PROD
+    │
+    └── 1.8.0-SNAPSHOT
+          └── intégration
+```
+
+Il faut donc distinguer :
+
+```text
+Version publiée
+```
+
+de :
+
+```text
+Version destinée à la production
+```
+
+Cette distinction sera importante lorsque Nexus sera utilisé comme source du pipeline.
+
+---
+
+## 9. Branche et Version
+
+Il est actuellement établi pour Design System React que :
+
+```text
+develop
+    │
+    └── package.json
+          │
+          └── 1.8.0-SNAPSHOT
+```
+
+Cette relation est un fait observé pour cet exemple.
+
+Il reste à déterminer si cette convention est systématique pour les différentes Librairies et comment les Versions PROD sont associées aux branches Git.
+
+Aucune règle générique supplémentaire ne doit être déduite à ce stade.
+
+---
+
+## 10. Utilisation d'un Package par une Application
+
+Une Application utilise un Package dans une Version donnée.
+
+La représentation est :
 
 ```text
 Application
@@ -199,25 +270,26 @@ Application
           └── Version du Package
 ```
 
-À terme, cette relation pourra éventuellement être représentée par un objet métier spécifique, par exemple une **Consommation** :
+Pour le pilotage des consommateurs, il faudra pouvoir distinguer le contexte de cette Version.
+
+Par exemple :
 
 ```text
 Application
     │
-    └── Consommation
-          ├── Package
-          └── Version
+    └── @my-enterprise/design-system-react
+          │
+          └── 1.7.1
+                └── PROD
 ```
 
-Cette représentation n'est cependant **pas encore validée comme objet métier définitif**.
-
-Elle ne doit donc pas encore imposer de choix d'implémentation.
+Le système devra à terme permettre d'identifier les Applications utilisant une Version PROD ancienne par rapport à la dernière Version PROD disponible.
 
 ---
 
-## 7. Cible future : plusieurs packages par librairie
+## 11. Cible future : plusieurs Packages par Librairie
 
-Le modèle doit conserver la possibilité qu'une librairie soit distribuée par plusieurs packages.
+Le modèle doit conserver la possibilité qu'une Librairie soit distribuée par plusieurs Packages.
 
 La cible pourrait alors devenir :
 
@@ -237,13 +309,11 @@ Cette représentation est une **capacité cible**.
 
 Elle ne correspond pas à la situation actuelle établie.
 
-Il ne faut donc pas introduire aujourd'hui des règles métier reposant sur l'existence effective de plusieurs packages par librairie.
-
 ---
 
-## 8. Repository et Version
+## 12. Repository et Version
 
-Aujourd'hui, un repository correspond à une librairie.
+Aujourd'hui, un Repository correspond à une Librairie.
 
 La chaîne actuellement observée est donc :
 
@@ -257,13 +327,13 @@ Repository
                 └── Versions
 ```
 
-À terme, le repository pourra contenir plusieurs librairies.
+À terme, le Repository pourra contenir plusieurs Librairies.
 
 Le modèle devra donc éviter de déduire définitivement la Version d'une Librairie à partir du seul Repository.
 
 ---
 
-## 9. Milestone GitHub
+## 13. Milestone GitHub
 
 Les Milestones GitHub sont actuellement utilisés dans plusieurs contextes.
 
@@ -283,7 +353,7 @@ Le pipeline doit conserver :
 
 ---
 
-## 10. Version et audit
+## 14. Version et audit
 
 Les conventions actuelles peuvent utiliser des Milestones tels que :
 
@@ -316,17 +386,9 @@ La règle de normalisation doit permettre de distinguer :
 - la version normalisée ;
 - le type ou contexte du Milestone.
 
-Exemple :
-
-```text
-Milestone source : 1.1.0-Audit
-Version normalisée : 1.1.0
-Contexte : audit
-```
-
 ---
 
-## 11. Release
+## 15. Release
 
 La notion de **Release** doit être distinguée de la Version tant que leur relation exacte n'a pas été validée.
 
@@ -340,33 +402,16 @@ Package
 Version
 Release
 Milestone
+Publication Nexus
 ```
 
 Aucune équivalence automatique ne doit être introduite à ce stade.
 
 ---
 
-## 12. Version utilisée par une Application
+## 16. Version et composants utilisés
 
-Il est établi qu'une application utilise un Package dans une Version donnée.
-
-Cette relation constitue le point de départ du futur domaine d'analyse des consommateurs.
-
-À terme, elle doit permettre d'identifier notamment :
-
-- les applications utilisant un Package donné ;
-- les versions utilisées par ces applications ;
-- les applications utilisant une version considérée comme ancienne ;
-- les applications devant effectuer une montée de version ;
-- la dette de mise à niveau du Design System.
-
-La source permettant de déterminer cette information reste à définir.
-
----
-
-## 13. Version et composants utilisés
-
-À terme, l'analyse du code des applications doit également permettre d'identifier les composants effectivement utilisés.
+À terme, l'analyse du code des Applications doit également permettre d'identifier les Composants effectivement utilisés.
 
 Le modèle cible pourra donc relier :
 
@@ -380,15 +425,15 @@ Application
 
 Cela permettra notamment :
 
-- de connaître les composants les plus utilisés ;
-- de mesurer le nombre d'utilisations par composant ;
-- de rapprocher l'usage d'un composant de son niveau de qualité.
+- de connaître les Composants les plus utilisés ;
+- de mesurer le nombre d'utilisations par Composant ;
+- de rapprocher l'usage d'un Composant de son niveau de qualité.
 
 ---
 
-## 14. Version et qualité
+## 17. Version et qualité
 
-La qualité doit pouvoir être analysée dans le contexte d'une version.
+La qualité doit pouvoir être analysée dans le contexte d'une Version.
 
 L'objectif futur est notamment de pouvoir croiser :
 
@@ -401,18 +446,16 @@ Version utilisée
     ↓
 Composants utilisés
     ↓
-Qualité connue de ces composants pour cette version
+Qualité connue de ces Composants pour cette Version
 ```
 
-Ce croisement pourra contribuer à fournir une information de qualité associée à une application consommatrice.
+Ce croisement pourra contribuer à fournir une information de qualité associée à une Application consommatrice.
 
 La méthode exacte de calcul d'une éventuelle note ou d'un badge de qualité n'est pas encore définie.
 
-Elle ne doit pas être introduite avant la définition d'un modèle de scoring explicite.
-
 ---
 
-## 15. Historisation
+## 18. Historisation
 
 La notion de Version doit être compatible avec l'historisation du pipeline.
 
@@ -441,7 +484,7 @@ Ces notions ont des responsabilités différentes.
 
 ---
 
-## 16. Principes retenus
+## 19. Principes retenus
 
 ### Principe 1 — Package et Librairie ne doivent pas être confondus définitivement
 
@@ -463,30 +506,42 @@ Une Version identifie un état versionné d'un Package.
 
 ### Principe 3 — Une Application utilise un Package dans une Version donnée
 
-La Version ne doit pas être considérée comme consommée indépendamment du Package.
+La Version ne doit pas être considérée indépendamment du Package.
 
-### Principe 4 — Milestone et Version sont des notions distinctes
+### Principe 4 — Publication et production sont deux notions différentes
+
+Une Version présente dans Nexus n'est pas nécessairement une Version PROD.
+
+### Principe 5 — PROD et SNAPSHOT doivent être distingués
+
+Pour Design System React, les contextes actuellement observés sont :
+
+- PROD ;
+- SNAPSHOT pour tests d'intégration.
+
+### Principe 6 — Milestone et Version sont des notions distinctes
 
 Un Milestone peut permettre d'identifier une Version, mais il peut également avoir d'autres significations.
 
-### Principe 5 — Release et Version restent distinctes
+### Principe 7 — Release et Version restent distinctes
 
 Leur relation exacte doit être précisée avant d'être intégrée au modèle métier définitif.
 
-### Principe 6 — Conserver la valeur source
+### Principe 8 — Conserver la valeur source
 
 Toute normalisation de Version ou de Milestone doit conserver la valeur source afin de garantir la traçabilité.
 
 ---
 
-## 17. Points restant à préciser
+## 20. Points restant à préciser
 
 Les éléments suivants restent volontairement ouverts :
 
-- signification exacte de « version actuelle » ;
-- source de référence permettant de connaître cette version ;
+- règle générique permettant d'identifier une Version PROD ;
+- règle générique permettant d'identifier une Version SNAPSHOT ;
+- conventions utilisées par les autres Librairies ;
+- relation exacte entre branche Git et Version ;
 - quelles propriétés définissent exactement un Package ;
-- où est définie la version d'un Package ;
 - comment les Packages sont publiés ;
 - comment une Release est créée ;
 - relation exacte entre Version et Release ;
@@ -494,7 +549,7 @@ Les éléments suivants restent volontairement ouverts :
 - possibilité et organisation future de plusieurs Packages par Librairie ;
 - comportement des Versions dans un futur Repository contenant plusieurs Librairies ;
 - source permettant d'identifier les Versions réellement utilisées par les Applications ;
-- stratégie de détection des Versions obsolètes ;
+- stratégie de détection des Versions PROD obsolètes ;
 - définition de la dette de montée de Version.
 
 Ces points doivent être instruits progressivement à partir du fonctionnement réel du Design System.

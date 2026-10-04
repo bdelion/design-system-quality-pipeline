@@ -78,7 +78,7 @@ Les besoins envisagés comprennent notamment :
 - identifier les composants utilisés ;
 - mesurer le nombre d'utilisations de chaque composant ;
 - identifier les composants les plus utilisés ;
-- détecter les applications utilisant des versions anciennes ;
+- détecter les applications utilisant des versions de production anciennes ;
 - suivre la dette liée aux montées de version ;
 - alerter les Squads responsables ;
 - croiser la qualité d'une version du Design System avec son utilisation dans les applications ;
@@ -180,8 +180,8 @@ Aujourd'hui :
 - un repository correspond à une librairie ;
 - une librairie est distribuée sous la forme d'un package ;
 - ce package possède un nom ;
-- ce package possède des versions ;
-- les applications utilisent ce package dans une version donnée.
+- ce package possède plusieurs versions au cours de son cycle de vie ;
+- les applications utilisent le package dans une version donnée.
 
 La relation actuelle peut donc être représentée ainsi :
 
@@ -192,26 +192,35 @@ Repository
           │
           └── Package
                 │
-                └── Version
+                └── Versions
 ```
 
 Dans la situation actuelle, la relation entre **Librairie** et **Package** est une relation 1:1.
 
 ### Exemples réels observés
 
-| Librairie | Package | Version actuelle déclarée |
+| Librairie | Package | Dernière version PROD déclarée |
 |---|---|---|
 | Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
 | Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
 | Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
 
-Ces exemples confirment la correspondance actuellement observée entre une librairie et un package distribué.
+Pour Design System React, une autre version existe actuellement dans le contexte de développement :
 
-La signification exacte de **version actuelle** reste à préciser.
+```text
+@my-enterprise/design-system-react
+├── 1.7.1
+│   └── dernière version PROD déclarée
+│
+└── 1.8.0-SNAPSHOT
+    └── version de develop destinée aux tests d'intégration
+```
+
+Ces exemples confirment la nécessité de distinguer la Version du Package de son contexte d'utilisation.
 
 ### Cible future
 
-Le modèle ne doit cependant pas dépendre définitivement de cette correspondance.
+Le modèle ne doit pas dépendre définitivement de la correspondance actuelle entre Repository, Librairie et Package.
 
 Il doit pouvoir évoluer vers :
 
@@ -278,6 +287,7 @@ Le package :
 
 - possède un nom permettant de l'identifier ;
 - possède plusieurs versions au cours de son cycle de vie ;
+- est publié dans Nexus ;
 - peut être utilisé par une application dans une version donnée.
 
 La relation actuellement établie est :
@@ -297,16 +307,19 @@ Exemples observés :
 ```text
 Design System React
     └── @my-enterprise/design-system-react
-          └── version actuelle déclarée : 1.7.1
+          ├── PROD : 1.7.1
+          └── develop : 1.8.0-SNAPSHOT
 
 Enterprise Assets
     └── @my-enterprise/enterprise-assets
-          └── version actuelle déclarée : 2.1.0
+          └── PROD : 2.1.0
 
 Design System Metier React
     └── @my-enterprise/design-system-metier-react
-          └── version actuelle déclarée : 0.14.0
+          └── PROD : 0.14.0
 ```
+
+Pour les deux derniers packages, aucune information n'est encore établie ici concernant une éventuelle version SNAPSHOT.
 
 ### Cible future
 
@@ -314,53 +327,59 @@ Une librairie pourra potentiellement être distribuée par plusieurs packages.
 
 Cette possibilité doit être conservée dans le modèle cible sans être considérée comme une situation actuelle.
 
-Les propriétés exactes du Package et son articulation définitive avec Librairie et Version restent à préciser.
+Les propriétés exactes du Package et son articulation définitive avec Librairie, Version et Release restent à préciser.
 
 ---
 
 ## 9. Version
 
-Une **version** identifie un état versionné d'un package.
+Une **Version** identifie un état versionné d'un Package.
 
-Dans la situation actuelle :
+Une même Package peut avoir simultanément plusieurs versions disponibles avec des finalités différentes.
+
+### Version de production
+
+Pour Design System React, `1.7.1` est actuellement la dernière version de production publiée dans Nexus et disponible pour les clients.
+
+Elle a vocation à être utilisée par les applications hors contexte spécifique de tests d'intégration.
+
+### Version SNAPSHOT
+
+Sur la branche `develop` de Design System React, le `package.json` contient actuellement :
 
 ```text
-Package
-    │
-    ├── Version 1
-    ├── Version 2
-    └── Version N
+1.8.0-SNAPSHOT
 ```
 
-Une application utilise un package dans une version donnée.
+Cette version est également publiée et disponible dans Nexus.
+
+Elle est cependant destinée aux tests d'intégration et n'a pas vocation à être déployée comme version de production.
+
+### Conséquence métier
+
+La présence d'une version dans Nexus ne suffit donc pas à déterminer son usage.
+
+Il faut distinguer au minimum :
 
 ```text
-Application
+Version du Package
     │
-    └── utilise
-          │
-          ├── Package
-          └── Version du Package
+    ├── version PROD
+    │     └── destinée aux clients / à la production
+    │
+    └── version SNAPSHOT
+          └── destinée aux tests d'intégration
 ```
-
-Les exemples fournis identifient actuellement :
-
-- `1.7.1` pour `@my-enterprise/design-system-react` ;
-- `2.1.0` pour `@my-enterprise/enterprise-assets` ;
-- `0.14.0` pour `@my-enterprise/design-system-metier-react`.
-
-À ce stade, ces valeurs sont qualifiées de **versions actuelles déclarées**.
-
-La signification exacte de « version actuelle » doit encore être établie.
 
 Le modèle détaillé permettant d'articuler :
 
 - Version ;
+- branche ;
 - Release ;
 - Milestone GitHub ;
-- package publié ;
+- publication Nexus ;
 
-reste également à préciser.
+reste à préciser.
 
 ---
 
@@ -506,7 +525,7 @@ Une **application consommatrice** est une application utilisant une ou plusieurs
 
 Ce domaine appartient à la cible future du projet.
 
-Dans la situation actuelle établie, une application utilise un package dans une version donnée :
+Une application utilise un Package dans une Version donnée.
 
 ```text
 Application
@@ -517,11 +536,14 @@ Application
           └── Version du Package
 ```
 
+Pour le pilotage des consommateurs, il faudra notamment pouvoir distinguer si la version utilisée est une version destinée à la production ou une version destinée à un autre contexte, comme les tests d'intégration.
+
 À terme, le système devra pouvoir déterminer :
 
 - quelle librairie est utilisée ;
 - quel package est utilisé ;
 - quelle version est utilisée ;
+- le contexte de cette version ;
 - quels composants sont utilisés ;
 - combien de fois ils sont utilisés ;
 - quelle dette de mise à niveau existe ;
