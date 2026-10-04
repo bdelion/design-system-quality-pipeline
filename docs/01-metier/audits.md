@@ -533,7 +533,24 @@ Un Composant non audité ne doit pas être comptabilisé comme non conforme.
 
 ---
 
-## 25. Historisation
+## 25. Revalidation après correction des Anomalies
+
+Le workflow de correction et de revalidation n'est pas encore définitivement acté.
+
+L'orientation actuelle est que la Definition of Done d'une Anomalie doit inclure une revue par l'auditeur avant le passage de l'Issue à `Done` puis `Closed`.
+
+Deux modèles restent possibles pour déterminer le retour global du Composant à l'état `AUDITÉ & CONFORME` :
+
+1. **revalidation portée par les Anomalies** : chaque correction est revue par l'auditeur et la fermeture de toutes les Anomalies pourrait suffire à rétablir la conformité ;
+2. **nouvel Audit de revalidation** : une nouvelle Issue d'Audit du Composant est créée après les corrections afin de vérifier globalement sa conformité.
+
+Le second modèle pourrait notamment être pertinent lorsqu'un Audit a produit plusieurs Anomalies.
+
+Aucun de ces deux modèles n'est encore retenu. Le calcul de conformité après correction ne doit donc pas être figé avant cet arbitrage.
+
+---
+
+## 26. Historisation
 
 L'historisation doit permettre de distinguer :
 
@@ -552,7 +569,7 @@ Le résultat connu à un instant donné ne doit pas être réécrit rétroactive
 
 ---
 
-## 26. Principes retenus
+## 27. Principes retenus
 
 1. Une Issue d'Audit correspond à un Composant à auditer.
 2. Aujourd'hui, une Issue d'Audit d'Accessibilité est identifiée par `Audit RGAA`.
@@ -575,7 +592,7 @@ Le résultat connu à un instant donné ne doit pas être réécrit rétroactive
 
 ---
 
-## 27. Points restant à préciser
+## 28. Points restant à préciser
 
 Les points suivants restent à instruire :
 

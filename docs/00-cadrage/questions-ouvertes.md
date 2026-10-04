@@ -683,6 +683,20 @@ Les Améliorations doivent être suivies séparément et ne doivent pas être co
 
 ---
 
+## D-036 — Revue de l'auditeur dans la Definition of Done d'une Anomalie
+
+Le workflow de correction des Anomalies d'Audit n'est pas encore définitivement acté.
+
+L'orientation métier actuelle est néanmoins que la Definition of Done d'une Anomalie doit inclure une revue par l'auditeur avant que l'Issue puisse passer à `Done` puis être `Closed`.
+
+Cette revue vise à éviter qu'une correction soit considérée terminée sans validation de l'auditeur.
+
+Le mécanisme permettant ensuite de considérer globalement le Composant comme conforme n'est pas encore tranché.
+
+**Statut : Orientation forte à formaliser dans le workflow**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1398,6 +1412,32 @@ Il reste à déterminer la définition précise de chacun de ces niveaux et les 
 Aucune définition fonctionnelle de `bloquante`, `majeure` ou `mineure` ne doit être inventée tant que cette information n'a pas été confirmée.
 
 **Statut : À confirmer avec l'auditeur**
+
+---
+
+## Q-060 — Revalidation d'un Composant après correction des Anomalies
+
+Lorsqu'un Audit a détecté une ou plusieurs Anomalies, le mécanisme de retour à l'état `AUDITÉ & CONFORME` n'est pas encore acté.
+
+Deux modèles sont envisagés.
+
+### Modèle A — Revalidation portée par chaque Anomalie
+
+La Definition of Done de chaque Anomalie inclut une revue par l'auditeur.
+
+L'Anomalie ne peut passer à `Done` puis être `Closed` qu'après cette revue.
+
+Il reste à déterminer si la fermeture de toutes les Anomalies suffit alors à faire évoluer le Composant vers `AUDITÉ & CONFORME`.
+
+### Modèle B — Nouvel Audit de revalidation
+
+Après correction des Anomalies, une nouvelle Issue d'Audit est ouverte sur le Composant afin que l'auditeur réalise une revalidation globale.
+
+Ce modèle pourrait être plus pertinent lorsqu'un Audit a généré plusieurs Anomalies.
+
+Il reste à arbitrer le modèle retenu et, éventuellement, les conditions dans lesquelles chacun des deux modèles s'applique.
+
+**Statut : À arbitrer**
 
 ---
 
