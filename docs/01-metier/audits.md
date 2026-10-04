@@ -294,7 +294,29 @@ Issue d'Audit
 
 ---
 
-## 14. Résultat de conformité
+## 14. Criticité RGAA des Anomalies d'Audit
+
+Une Anomalie issue d'un Audit d'Accessibilité doit actuellement porter exactement un label de criticité RGAA parmi :
+
+```text
+🚦 rgaa:bloquante
+🚦 rgaa:majeure
+🚦 rgaa:mineure
+```
+
+La cardinalité métier actuelle est :
+
+```text
+1 Anomalie d'Audit = exactement 1 criticité RGAA
+```
+
+Cette cardinalité est établie pour le fonctionnement actuel. En revanche, ces trois valeurs ne constituent pas une enum technique définitive : le modèle doit permettre l'évolution du référentiel de criticité.
+
+La configuration et la gouvernance futures de ce référentiel restent à définir.
+
+---
+
+## 15. Résultat de conformité
 
 Le résultat de conformité n'est actuellement pas déclaré explicitement par l'auditeur dans un champ dédié.
 
@@ -328,7 +350,7 @@ Une ou plusieurs sub-Issues d'Amélioration ne rendent donc pas, à elles seules
 
 ---
 
-## 15. États de conformité
+## 16. États de conformité
 
 Les états minimaux sont :
 
@@ -353,7 +375,7 @@ Des états incohérents pourront ultérieurement être signalés par le moteur d
 
 ---
 
-## 16. Cohérence du Composant entre parent et sub-Issues
+## 17. Cohérence du Composant entre parent et sub-Issues
 
 Une Anomalie ou une Amélioration issue d'un Audit doit porter le même label :
 
@@ -380,7 +402,7 @@ Une différence entre le Composant du parent et celui d'une sub-Issue constitue 
 
 ---
 
-## 17. Fonctionnement cible des Audits
+## 18. Fonctionnement cible des Audits
 
 Le comportement cible est de réaliser les Audits avant la création de la Version PROD finale.
 
@@ -405,7 +427,7 @@ Version PROD 1.1.0
 
 ---
 
-## 18. Audit pré-PROD
+## 19. Audit pré-PROD
 
 Un Audit pré-PROD est réalisé sur une Release Candidate avant la publication de la Version PROD finale.
 
@@ -417,7 +439,7 @@ Milestone       : M.m.r
 
 ---
 
-## 19. Audit de rattrapage
+## 20. Audit de rattrapage
 
 Une Milestone :
 
@@ -431,7 +453,7 @@ correspond à un mécanisme de rattrapage lorsque les Audits n'ont pas été ré
 
 ---
 
-## 20. Traitement des Anomalies découvertes pendant un Audit
+## 21. Traitement des Anomalies découvertes pendant un Audit
 
 Les Anomalies découvertes sont des sub-Issues de l'Issue d'Audit puis suivent leur propre cycle :
 
@@ -453,7 +475,7 @@ La relation de sub-Issue permet de conserver l'origine de l'Anomalie même lorsq
 
 ---
 
-## 21. Version auditée et Version cible
+## 22. Version auditée et Version cible
 
 Dans un Audit pré-PROD :
 
@@ -471,7 +493,7 @@ Version PROD concernée         : M.m.r
 
 ---
 
-## 22. Couverture d'Audit
+## 23. Couverture d'Audit
 
 ```text
 Couverture d'Audit
@@ -487,7 +509,7 @@ Le périmètre exact du dénominateur reste à définir.
 
 ---
 
-## 23. Taux de conformité
+## 24. Taux de conformité
 
 ```text
 Taux de conformité
@@ -503,7 +525,7 @@ Un Composant non audité ne doit pas être comptabilisé comme non conforme.
 
 ---
 
-## 24. Historisation
+## 25. Historisation
 
 L'historisation doit permettre de distinguer :
 
@@ -522,7 +544,7 @@ Le résultat connu à un instant donné ne doit pas être réécrit rétroactive
 
 ---
 
-## 25. Principes retenus
+## 26. Principes retenus
 
 1. Une Issue d'Audit correspond à un Composant à auditer.
 2. Aujourd'hui, une Issue d'Audit d'Accessibilité est identifiée par `Audit RGAA`.
@@ -545,7 +567,7 @@ Le résultat connu à un instant donné ne doit pas être réécrit rétroactive
 
 ---
 
-## 26. Points restant à préciser
+## 27. Points restant à préciser
 
 Les points suivants restent à instruire :
 

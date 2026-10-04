@@ -600,6 +600,28 @@ Les catégories `navigation clavier` et `contrastes` ont été citées plusieurs
 
 ---
 
+## D-032 — Criticité RGAA d'une Anomalie d'Audit
+
+Dans le fonctionnement actuel, une Anomalie issue d'un Audit d'Accessibilité doit porter exactement un label de criticité RGAA parmi :
+
+```text
+🚦 rgaa:bloquante
+🚦 rgaa:majeure
+🚦 rgaa:mineure
+```
+
+La cardinalité métier actuelle est donc :
+
+```text
+1 Anomalie d'Audit = exactement 1 criticité RGAA
+```
+
+Ces trois valeurs constituent le référentiel actuel, mais le modèle doit permettre son évolution si les pratiques changent.
+
+**Statut : Établi pour le fonctionnement actuel**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1264,6 +1286,24 @@ exactement 1 catégorie ♿ a11y:xxx
 ```
 
 **Statut : Hypothèse à confirmer**
+
+---
+
+## Q-058 — Évolution du référentiel de criticité RGAA
+
+Dans le fonctionnement actuel, une Anomalie d'Audit doit porter exactement une criticité parmi :
+
+```text
+🚦 rgaa:bloquante
+🚦 rgaa:majeure
+🚦 rgaa:mineure
+```
+
+La cardinalité `exactement 1` est établie. Le référentiel doit cependant pouvoir évoluer si les pratiques d'Audit changent.
+
+Il reste à déterminer ultérieurement comment ce référentiel sera configuré et gouverné sans figer ces trois valeurs dans l'implémentation.
+
+**Statut : Règle actuelle établie ; extensibilité à instruire ultérieurement**
 
 ---
 
