@@ -1136,6 +1136,28 @@ La validité d'une Issue d'Audit doit donc être appréciée en fonction de la m
 
 ---
 
+## D-057 — Un Audit n'est pas nécessairement requis à chaque Version
+
+La publication d'une nouvelle Version de Librairie n'implique pas nécessairement qu'un nouvel Audit soit réalisé pour chacun de ses Composants.
+
+Un Composant peut ne pas nécessiter de nouvel Audit lorsqu'il a déjà été audité sur une Version antérieure et qu'il n'a pas évolué depuis d'une manière nécessitant une nouvelle validation.
+
+Par conséquent, la couverture d'Audit d'une Version ne doit pas être calculée naïvement comme :
+
+```text
+nombre de Composants audités directement sur la Version
+/
+nombre total de Composants de la Version
+```
+
+Exemple : si une Version `1.8.0` contient 20 Composants et que seuls 15 sont audités dans le cadre de `1.8.0`, il n'est pas possible de conclure automatiquement à une couverture de 75 %. Les 5 autres peuvent disposer d'un Audit antérieur encore pertinent.
+
+Les règles permettant de déterminer qu'un Audit antérieur reste applicable à une Version ultérieure restent à définir.
+
+**Statut : Établi sur le principe ; règle d'applicabilité à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2110,11 +2132,17 @@ Cette décision implique une appréciation de la qualité des données spécifiq
 
 ---
 
-## Q-076 — Dénominateur de la couverture d'Audit
+## Q-076 — Dénominateur et héritage de la couverture d'Audit
 
-La distinction entre activité d'Audit et conformité est désormais établie.
+La couverture d'Audit d'une Version ne peut pas être calculée uniquement à partir des Audits réalisés directement dans cette Version.
 
-Il reste à préciser quels Audits peuvent contribuer au calcul de la couverture d'Audit d'une Version, notamment lorsqu'un Audit réalisé est dépourvu de Milestone et ne peut donc pas être rattaché de manière fiable à cette Version.
+Un Composant peut avoir été audité sur une Version antérieure et ne pas nécessiter de nouvel Audit s'il n'a pas évolué depuis d'une manière nécessitant une nouvelle validation.
+
+Il reste à définir :
+
+- comment déterminer qu'un Audit antérieur reste applicable à une Version ultérieure ;
+- quels changements d'un Composant invalident cette applicabilité ;
+- comment distinguer, dans la couverture, un Composant audité sur la Version courante d'un Composant couvert par un Audit antérieur encore applicable.
 
 **Statut : À instruire**
 

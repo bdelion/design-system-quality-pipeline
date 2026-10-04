@@ -859,3 +859,23 @@ Les points suivants restent à instruire :
 - comment traiter les incohérences entre `Done` et `Closed` ;
 - comment gérer plusieurs Audits successifs du même Composant ;
 - comment la correction ultérieure des Anomalies influence l'état de conformité historique ou courant du Composant.
+
+
+### Audit nécessaire selon l'évolution du Composant
+
+Une nouvelle Version de Librairie n'impose pas automatiquement un nouvel Audit de tous ses Composants.
+
+Un Composant peut avoir été audité sur une Version antérieure et ne pas nécessiter de nouvel Audit s'il n'a pas évolué depuis d'une manière nécessitant une nouvelle validation.
+
+Ainsi, pour une Version `1.8.0` contenant 20 Composants, le fait que 15 Composants seulement disposent d'un Audit réalisé dans le cadre de `1.8.0` ne permet pas de conclure automatiquement que la couverture d'Audit est de 75 %.
+
+Les 5 autres Composants peuvent éventuellement être couverts par un Audit antérieur encore applicable.
+
+Il faut donc distinguer au minimum :
+
+- Audit réalisé dans le cadre de la Version courante ;
+- Audit antérieur potentiellement encore applicable ;
+- Composant nécessitant un nouvel Audit ;
+- Composant dont la situation ne peut pas être déterminée.
+
+La règle permettant de décider si l'Audit antérieur reste applicable après le passage à une nouvelle Version n'est pas encore définie.
