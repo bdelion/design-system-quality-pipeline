@@ -683,6 +683,17 @@ audit en cours       = existence d'un nouvel Audit non terminé
 
 L'information `audit en cours` doit être visible dans le dashboard sans être interprétée comme un nouveau verdict de conformité. La représentation UX exacte reste à définir.
 
+
+### Unicité de l'Audit non terminé
+
+Pour un même couple `Composant × Version`, une seule Issue d'Audit non terminée doit exister à la fois.
+
+La notion d'Audit non terminé suit la définition métier générale : tant que l'Issue ne satisfait pas simultanément `Project Status = Done` et `GitHub Issue State = Closed`, elle reste un Audit non terminé.
+
+Ainsi, deux Audits simultanément ouverts, `Ready`, `In progress`, ou plus généralement non `Done + Closed`, pour le même couple `Composant × Version`, constituent une situation anormale à signaler.
+
+La sévérité de cette future règle de qualité reste à définir.
+
 ---
 
 ## 26. Historisation

@@ -967,6 +967,23 @@ L'information indiquant qu'un Audit est en cours doit être visible quelque part
 
 ---
 
+## D-050 — Unicité de l'Audit non terminé par Composant et Version
+
+Pour un même couple `Composant × Version`, il ne doit exister qu'une seule Issue d'Audit non terminée à la fois.
+
+Un Audit est considéré comme terminé uniquement lorsque :
+
+- `Project Status = Done` ;
+- `GitHub Issue State = Closed`.
+
+Par conséquent, la présence simultanée de plusieurs Issues d'Audit non terminées pour le même couple `Composant × Version` constitue une situation anormale à signaler.
+
+La règle porte sur l'ensemble des Audits non terminés et pas uniquement sur ceux dont le statut est `In progress`.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1844,6 +1861,16 @@ Le principe métier est établi : ces deux informations sont distinctes et doive
 Il reste uniquement à définir leur représentation UX exacte dans le dashboard : badge séparé, statut secondaire, lien vers l'Issue d'Audit, date du dernier verdict, ou combinaison de ces éléments.
 
 **Statut : Principe établi ; représentation UX à instruire**
+
+---
+
+## Q-070 — Sévérité de plusieurs Audits non terminés pour un même Composant et une même Version
+
+La présence de plusieurs Issues d'Audit non terminées pour le même couple `Composant × Version` est désormais considérée comme une situation anormale.
+
+Il reste à déterminer comment cette anomalie de données/workflow devra être classée dans le futur moteur de règles : information, avertissement, erreur bloquante, ou autre niveau de sévérité.
+
+**Statut : À instruire lors de la définition des règles de qualité**
 
 ---
 
