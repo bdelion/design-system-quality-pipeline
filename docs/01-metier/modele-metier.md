@@ -157,15 +157,7 @@ Le **Design System** est l'ensemble cohérent de ressources mises à disposition
 
 Dans le périmètre actuel du projet, le système s'intéresse principalement aux librairies techniques contenant des composants réutilisables.
 
-Le Design System peut contenir plusieurs librairies.
-
-```text
-Design System
-    │
-    ├── Librairie A
-    ├── Librairie B
-    └── Librairie C
-```
+Le Design System peut contenir plusieurs Librairies.
 
 ---
 
@@ -183,7 +175,12 @@ Aujourd'hui :
 - ce Package possède plusieurs Versions au cours de son cycle de vie ;
 - les Applications utilisent le Package dans une Version donnée.
 
-Dans la situation actuelle, la relation entre **Librairie** et **Package** est une relation 1:1.
+Dans la situation actuelle :
+
+```text
+1 Repository = 1 Librairie
+1 Librairie = 1 Package
+```
 
 ### Exemples réels observés
 
@@ -192,17 +189,6 @@ Dans la situation actuelle, la relation entre **Librairie** et **Package** est u
 | Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
 | Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
 | Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
-
-Pour Design System React :
-
-```text
-@my-enterprise/design-system-react
-├── 1.7.1
-│   └── PROD
-│
-└── 1.8.0-SNAPSHOT
-    └── develop / tests d'intégration
-```
 
 ### Cible future
 
@@ -219,12 +205,12 @@ Repository
           └── Package B1
 ```
 
-Deux évolutions sont donc à anticiper :
+Le modèle doit donc permettre à terme :
 
-- un Repository pourra contenir plusieurs Librairies ;
-- une Librairie pourra être distribuée par plusieurs Packages.
-
-Ces possibilités constituent des capacités cibles et non une description de la situation actuelle.
+```text
+1 Repository = 1..n Librairies
+1 Librairie = 1..n Packages
+```
 
 ---
 
@@ -232,30 +218,17 @@ Ces possibilités constituent des capacités cibles et non une description de la
 
 Le **Repository** est un objet technique provenant du système de gestion de sources, actuellement GitHub.
 
-Il contient notamment :
+Il contient ou expose notamment :
 
 - les Issues ;
 - les Pull Requests ;
 - les Milestones ;
 - les branches ;
 - les tags ;
+- les Releases ;
 - les informations de projets nécessaires au pipeline.
 
 Le Repository ne doit pas devenir l'unité métier fondamentale du modèle.
-
-### Situation actuelle
-
-```text
-1 Repository = 1 Librairie
-```
-
-### Cible
-
-```text
-1 Repository = 1..n Librairies
-```
-
-Cette évolution permet notamment de préparer la prise en charge future de monorepos.
 
 ---
 
@@ -265,8 +238,8 @@ Le **Package** est l'unité technique distribuable correspondant actuellement à
 
 Le Package :
 
-- possède un nom permettant de l'identifier ;
-- possède une Version de base dans son `package.json` ;
+- possède un nom ;
+- possède une Version de base ;
 - peut donner lieu à plusieurs types de Versions produites par la CI ;
 - est publié dans Nexus ;
 - peut être utilisé par une Application dans une Version donnée.
@@ -284,12 +257,6 @@ Design System React
           └── develop
                 └── 1.8.0-SNAPSHOT
 ```
-
-### Cible future
-
-Une Librairie pourra potentiellement être distribuée par plusieurs Packages.
-
-Cette possibilité doit être conservée dans le modèle cible sans être considérée comme une situation actuelle.
 
 ---
 
@@ -309,32 +276,22 @@ M.m.r
 
 Depuis :
 
-- la branche `develop` ;
-- les branches `project/***` ;
+- `develop` ;
+- `project/***` ;
 
-Jenkins produit une Version :
+Jenkins produit :
 
 ```text
 M.m.r-SNAPSHOT
 ```
 
-Exemple actuellement observé :
-
-```text
-develop
-└── package.json : 1.8.0
-    └── publication : 1.8.0-SNAPSHOT
-```
-
-Dans le cas réel précédemment observé, la Version disponible dans le contexte de `develop` est `1.8.0-SNAPSHOT`.
-
 Ces Versions sont disponibles dans Nexus et destinées notamment aux tests d'intégration.
 
 Elles n'ont pas vocation à être déployées en production.
 
-### 9.2. Version Release Candidate
+### 9.2. Release Candidate
 
-Depuis une branche :
+Depuis :
 
 ```text
 release/****
@@ -346,17 +303,9 @@ Jenkins produit :
 M.m.r-rc.[numéro de build Jenkins]
 ```
 
-Exemple de forme :
+### 9.3. Hotfix Candidate
 
-```text
-1.8.0-rc.123
-```
-
-Le numéro final provient du numéro de build du job Jenkins.
-
-### 9.3. Version Hotfix Candidate
-
-Depuis une branche :
+Depuis :
 
 ```text
 hotfix/****
@@ -368,36 +317,40 @@ Jenkins produit :
 M.m.r-hc.[numéro de build Jenkins]
 ```
 
-Exemple de forme :
-
-```text
-1.7.2-hc.42
-```
-
-Le numéro final provient du numéro de build du job Jenkins.
-
 ### 9.4. Version PROD
 
 Une Version PROD :
 
-- ne possède pas de suffixe ;
-- est disponible dans un espace / Repository Nexus spécifique à la production ;
-- existe sous forme de tag Git ;
-- doit disposer d'une Milestone portant son numéro ;
-- existe normalement également sous forme de Release.
+- possède la forme `M.m.r` sans suffixe ;
+- est disponible dans un Repository / espace Nexus spécifique à la production ;
+- possède un tag Git correspondant ;
+- doit disposer d'une Milestone portant exactement son numéro ;
+- possède normalement une Release correspondante.
+
+Pour une release standard, la Version PROD est produite lors du merge de la branche `release/M.m.r` vers `master`.
 
 Exemple :
 
 ```text
-Version : 1.7.1
-Nexus PROD : oui
-Tag Git : 1.7.1
-Milestone : 1.7.1
-Release : normalement présente
-Suffixe : aucun
+release/1.8.0
+    │
+    │ merge
+    ▼
+master
+    │
+    ▼
+Jenkins
+    │
+    ├── stages de build / validation
+    │
+    └── si tous les stages précédents sont OK
+          ├── création du tag Git 1.8.0
+          └── publication du Package 1.8.0 dans Nexus PROD
 ```
 
-La Release n'est pas considérée à ce stade comme une condition obligatoire, puisque son existence a été qualifiée de normale et non de systématique.
+La création du tag et la publication Nexus n'interviennent donc qu'après succès des stages Jenkins qui les précèdent.
+
+La création éventuelle de la Release GitHub n'est pas documentée à ce stade.
 
 ---
 
@@ -409,26 +362,30 @@ Le fonctionnement actuellement établi peut être représenté ainsi :
 Version de base M.m.r
         │
         ├── develop
-        │     └── M.m.r-SNAPSHOT
+        │     └── Jenkins
+        │           └── M.m.r-SNAPSHOT
         │
         ├── project/***
-        │     └── M.m.r-SNAPSHOT
+        │     └── Jenkins
+        │           └── M.m.r-SNAPSHOT
         │
-        ├── release/****
-        │     └── M.m.r-rc.[build Jenkins]
+        ├── release/M.m.r
+        │     ├── Jenkins
+        │     │     └── M.m.r-rc.[build Jenkins]
+        │     │
+        │     └── merge vers master
+        │           └── Jenkins automatique
+        │                 ├── stages de build / validation
+        │                 └── si succès
+        │                       ├── tag Git M.m.r
+        │                       └── publication Nexus PROD M.m.r
         │
-        ├── hotfix/****
-        │     └── M.m.r-hc.[build Jenkins]
-        │
-        └── PROD
-              └── M.m.r
-                    ├── Nexus PROD
-                    ├── Tag Git
-                    ├── Milestone M.m.r
-                    └── Release normalement présente
+        └── hotfix/****
+              └── Jenkins
+                    └── M.m.r-hc.[build Jenkins]
 ```
 
-La branche ou le mécanisme exact produisant la Version PROD reste à préciser.
+Le passage exact d'une branche `hotfix/****` vers une Version PROD reste à préciser.
 
 ---
 
@@ -438,15 +395,15 @@ Le **Composant** est une unité fonctionnelle du Design System.
 
 Il appartient à une Librairie.
 
-```text
-Librairie
-    │
-    ├── Composant A
-    ├── Composant B
-    └── Composant C
-```
+Le catalogue des Composants constitue la référence permettant d'identifier les Composants connus.
 
-Le catalogue des composants constitue la référence permettant d'identifier les composants connus.
+Les Composants peuvent être associés à :
+
+- des Issues ;
+- des Anomalies ;
+- des Audits ;
+- des Versions ;
+- des informations de qualité.
 
 ---
 
@@ -462,7 +419,7 @@ Son sens métier dépend notamment :
 - de ses relations ;
 - du workflow auquel elle appartient.
 
-Une Issue ne doit pas être assimilée directement à une anomalie.
+Une Issue ne doit pas être assimilée directement à une Anomalie.
 
 ---
 
@@ -470,7 +427,7 @@ Une Issue ne doit pas être assimilée directement à une anomalie.
 
 Une **Anomalie** représente un problème identifié sur le Design System.
 
-La définition exacte permettant de déterminer qu'une Issue est une Anomalie doit être configurable.
+La définition permettant de déterminer qu'une Issue est une Anomalie doit être configurable.
 
 Une Anomalie peut être caractérisée par :
 
@@ -516,14 +473,14 @@ AUDITÉ & CONFORME
 AUDITÉ & NON CONFORME
 ```
 
-Deux indicateurs différents doivent donc pouvoir être calculés :
+Il faut notamment distinguer :
 
 ```text
 Couverture d'audit
 = composants audités / composants du périmètre
 ```
 
-et :
+de :
 
 ```text
 Taux de conformité
@@ -534,22 +491,13 @@ Taux de conformité
 
 ## 16. Application consommatrice
 
-Une **Application consommatrice** est une Application utilisant une ou plusieurs Librairies du Design System.
+Une **Application consommatrice** utilise une ou plusieurs Librairies du Design System.
 
 Une Application utilise un Package dans une Version donnée.
 
-```text
-Application
-    │
-    └── utilise
-          │
-          ├── Package
-          └── Version du Package
-```
-
 Le contexte de Version est important.
 
-Une Version publiée dans Nexus peut être :
+Une Version publiée dans Nexus peut notamment être :
 
 - une Version PROD ;
 - une Version SNAPSHOT ;
@@ -573,43 +521,45 @@ Une Version publiée dans Nexus peut être :
 
 ### 17.1. Séparer métier et représentation technique
 
-GitHub, Jenkins et Nexus sont des sources ou systèmes techniques.
+GitHub, Jenkins et Nexus sont des systèmes techniques.
 
-Leurs objets ne doivent pas dicter seuls le modèle métier.
+Leurs objets doivent alimenter le modèle métier sans le définir implicitement.
 
 ### 17.2. Ne pas déduire PROD du seul numéro de Version
 
-L'absence de suffixe est une caractéristique d'une Version PROD, mais la qualification PROD repose également sur d'autres éléments du cycle de livraison.
+L'absence de suffixe est une caractéristique d'une Version PROD, mais sa qualification repose également sur le processus de livraison.
 
 ### 17.3. Publication Nexus et qualification PROD sont distinctes
 
 Plusieurs types de Versions peuvent être publiés dans Nexus.
 
-La présence dans Nexus ne suffit donc pas à identifier une Version PROD.
+### 17.4. La production PROD est un processus traçable
 
-### 17.4. Conserver la traçabilité
-
-Tout indicateur doit pouvoir être expliqué.
-
-Il doit être possible de remonter :
+Pour une release standard :
 
 ```text
-Indicateur
+release/M.m.r
+    ↓ merge
+master
     ↓
-Calcul
-    ↓
-Entités métier
-    ↓
-Données normalisées
-    ↓
-Données sources
+Jenkins
+    ↓ succès
+Tag Git M.m.r
+    +
+Publication Nexus PROD M.m.r
 ```
+
+Cette chaîne constitue une information importante pour la future traçabilité des Versions.
+
+### 17.5. Conserver la traçabilité
+
+Tout indicateur doit pouvoir être expliqué depuis les données sources jusqu'à sa valeur calculée.
 
 ---
 
 ## 18. Évolution attendue du modèle
 
-Le modèle doit pouvoir évoluer sans remettre en cause ses fondations vers :
+Le modèle doit pouvoir évoluer vers :
 
 ```text
 Entreprise
@@ -634,4 +584,4 @@ Entreprise
           └── Dette / qualité associée
 ```
 
-Les cardinalités et responsabilités qui ne sont pas encore établies doivent rester explicitement à confirmer.
+Les éléments qui ne sont pas encore établis doivent rester explicitement à confirmer.

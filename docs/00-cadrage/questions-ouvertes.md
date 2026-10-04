@@ -36,13 +36,13 @@ Le modèle doit permettre à terme :
 
 Une Librairie est aujourd'hui distribuée sous la forme d'un Package.
 
-Dans la situation actuelle :
+Aujourd'hui :
 
 ```text
 1 Librairie = 1 Package
 ```
 
-La cible doit permettre :
+Cible :
 
 ```text
 1 Librairie = 1..n Packages
@@ -63,13 +63,11 @@ Application
 
 ## D-004 — Version de base
 
-Le `package.json` contient une Version de base de forme :
+Le cycle de construction utilise une Version de base de forme :
 
 ```text
 M.m.r
 ```
-
-Cette Version sert de base à la CI Jenkins pour produire différentes formes de Versions.
 
 ---
 
@@ -88,11 +86,7 @@ Jenkins produit :
 M.m.r-SNAPSHOT
 ```
 
-Ces Versions :
-
-- peuvent être publiées dans Nexus ;
-- sont destinées aux tests d'intégration ;
-- ne sont pas destinées au déploiement en production.
+Ces Versions sont destinées aux tests d'intégration et non au déploiement en production.
 
 ---
 
@@ -128,32 +122,55 @@ M.m.r-hc.[numéro de build Jenkins]
 
 ---
 
-## D-008 — Version PROD
+## D-008 — Production d'une Version PROD standard
 
-Une Version PROD :
-
-- possède une Version `M.m.r` sans suffixe ;
-- est disponible dans un Repository / espace Nexus spécifique ;
-- possède un tag Git correspondant ;
-- doit posséder une Milestone portant son numéro ;
-- possède normalement une Release correspondante.
-
-Exemple :
+Pour une release standard, la Version PROD `M.m.r` est produite lors du merge de :
 
 ```text
-Version PROD : 1.7.1
-Tag : 1.7.1
-Milestone : 1.7.1
-Release : normalement présente
+release/M.m.r
 ```
 
-L'existence de la Release n'est pas encore considérée comme un invariant obligatoire.
+vers :
+
+```text
+master
+```
+
+Ce merge déclenche automatiquement Jenkins.
+
+Si les stages précédents du pipeline sont réussis, Jenkins :
+
+1. crée le Tag Git `M.m.r` ;
+2. publie le Package `M.m.r` dans Nexus PROD.
+
+```text
+release/M.m.r
+    ↓ merge
+master
+    ↓
+Jenkins
+    ↓ succès
+    ├── Tag Git M.m.r
+    └── Nexus PROD M.m.r
+```
 
 ---
 
-## D-009 — Nexus ne contient pas uniquement des Versions PROD
+## D-009 — Caractéristiques d'une Version PROD
 
-La présence d'une Version dans Nexus ne permet pas à elle seule de la qualifier de PROD.
+Une Version PROD :
+
+- ne possède pas de suffixe ;
+- est disponible dans un espace Nexus spécifique ;
+- possède un Tag Git correspondant ;
+- doit posséder une Milestone portant son numéro ;
+- possède normalement une Release correspondante.
+
+Le caractère obligatoire de la Release n'est pas encore confirmé.
+
+---
+
+## D-010 — Nexus ne contient pas uniquement des Versions PROD
 
 Nexus peut notamment contenir :
 
@@ -164,9 +181,11 @@ M.m.r-rc.[build]
 M.m.r-hc.[build]
 ```
 
+La présence dans Nexus ne suffit donc pas à qualifier une Version de PROD.
+
 ---
 
-## D-010 — Composant non audité
+## D-011 — Composant non audité
 
 Un Composant non audité ne doit pas être automatiquement considéré comme non conforme.
 
@@ -180,7 +199,7 @@ AUDITÉ & NON CONFORME
 
 ---
 
-## D-011 — Vélocité vide et vélocité zéro
+## D-012 — Vélocité vide et vélocité zéro
 
 Les valeurs suivantes sont différentes :
 
@@ -192,7 +211,7 @@ velocity > 0
 
 ---
 
-## D-012 — Criticité
+## D-013 — Criticité
 
 La Criticité doit être associée à un domaine.
 
@@ -207,9 +226,9 @@ Il faut notamment pouvoir distinguer :
 
 ---
 
-## D-013 — Anomalie et amélioration
+## D-014 — Anomalie et amélioration
 
-Une Anomalie et une proposition d'amélioration sont deux notions différentes.
+Une Anomalie et une proposition d'Amélioration sont deux notions différentes.
 
 ---
 
@@ -260,33 +279,36 @@ Dans le cas futur où une Librairie possède plusieurs Packages, un Composant ap
 
 # 4. Questions ouvertes — Versions et Releases
 
-## Q-005 — Production d'une Version PROD
+## Q-005 — Release Candidate vers PROD
 
-Quel est le mécanisme exact permettant de passer des Versions intermédiaires à :
+### Réponse établie pour une release standard
+
+Le passage à PROD se produit lors du merge :
 
 ```text
-M.m.r
+release/M.m.r → master
 ```
 
-et de publier cette Version dans l'espace Nexus PROD ?
+Jenkins est déclenché automatiquement.
 
-Il reste notamment à préciser :
+Après succès des stages nécessaires :
 
-- la branche source ;
-- l'événement déclencheur ;
-- le rôle de Jenkins ;
-- le rôle éventuel d'une fusion vers une branche stable.
+```text
+Tag Git M.m.r
++
+Publication Nexus PROD M.m.r
+```
 
-**Statut : À instruire**
+**Statut : Établi pour le cycle release standard**
 
 ---
 
-## Q-006 — Release Candidate vers PROD
+## Q-006 — Hotfix Candidate vers PROD
 
 Quel est le processus exact permettant de passer de :
 
 ```text
-M.m.r-rc.[build]
+M.m.r-hc.[build]
 ```
 
 à :
@@ -295,57 +317,53 @@ M.m.r-rc.[build]
 M.m.r
 ```
 
-**Statut : À instruire**
+Il reste notamment à préciser :
 
----
-
-## Q-007 — Hotfix Candidate vers PROD
-
-Quel est le processus exact permettant de passer de :
-
-```text
-M.m.r-hc.[build]
-```
-
-à une Version PROD ?
+- la branche cible ;
+- l'événement déclencheur ;
+- le rôle de Jenkins ;
+- la création du Tag ;
+- la publication Nexus PROD.
 
 **Statut : À instruire**
 
 ---
 
-## Q-008 — Release GitHub
+## Q-007 — Release GitHub
 
 Une Release GitHub doit-elle systématiquement exister pour toute Version PROD ?
 
-Il est actuellement établi qu'elle existe normalement, mais son caractère obligatoire n'est pas confirmé.
+Il est actuellement établi qu'elle existe normalement, mais :
+
+- son caractère obligatoire n'est pas confirmé ;
+- son mécanisme de création n'est pas documenté ;
+- il n'est pas établi que Jenkins la crée.
 
 **Statut : À confirmer**
 
 ---
 
-## Q-009 — Milestone manquante
+## Q-008 — Milestone manquante
 
 Une Version PROD doit avoir une Milestone portant exactement son numéro.
 
 Comment le système doit-il traiter une Version PROD pour laquelle cette Milestone serait absente ?
 
-Cette situation pourrait notamment constituer une incohérence de données ou de processus.
+**Statut : À instruire ultérieurement dans les règles**
+
+---
+
+## Q-009 — Tag Git manquant
+
+Une Version PROD doit posséder un Tag Git correspondant.
+
+Comment le système doit-il traiter une Version PROD publiée dans Nexus lorsque le Tag attendu est absent ?
 
 **Statut : À instruire ultérieurement dans les règles**
 
 ---
 
-## Q-010 — Tag Git manquant
-
-Une Version PROD doit posséder un tag Git correspondant.
-
-Comment le système doit-il traiter une Version PROD publiée dans Nexus lorsque le tag attendu est absent ?
-
-**Statut : À instruire ultérieurement dans les règles**
-
----
-
-## Q-011 — Version d'audit
+## Q-010 — Version d'Audit
 
 La convention :
 
@@ -362,7 +380,7 @@ doit-elle toujours être interprétée comme une même Version de référence av
 
 # 5. Questions ouvertes — Anomalies
 
-## Q-012 — Définition d'une Anomalie
+## Q-011 — Définition d'une Anomalie
 
 Quelle règle doit déterminer qu'une Issue représente une Anomalie ?
 
@@ -370,7 +388,7 @@ Quelle règle doit déterminer qu'une Issue représente une Anomalie ?
 
 ---
 
-## Q-013 — Origine d'une Anomalie
+## Q-012 — Origine d'une Anomalie
 
 Quelles origines doivent être distinguées ?
 
@@ -378,7 +396,7 @@ Quelles origines doivent être distinguées ?
 
 ---
 
-## Q-014 — Date de détection
+## Q-013 — Date de détection
 
 Quelle date représente la détection d'une Anomalie ?
 
@@ -386,7 +404,7 @@ Quelle date représente la détection d'une Anomalie ?
 
 ---
 
-## Q-015 — Date de correction
+## Q-014 — Date de correction
 
 Quelle date représente la correction effective d'une Anomalie ?
 
@@ -396,7 +414,7 @@ Quelle date représente la correction effective d'une Anomalie ?
 
 # 6. Questions ouvertes — Audits
 
-## Q-016 — Objet Audit
+## Q-015 — Objet Audit
 
 L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHub qui peut actuellement le représenter ?
 
@@ -404,7 +422,7 @@ L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHu
 
 ---
 
-## Q-017 — Campagne d'Audit
+## Q-016 — Campagne d'Audit
 
 Comment une Campagne d'Audit est-elle identifiée ?
 
@@ -412,7 +430,7 @@ Comment une Campagne d'Audit est-elle identifiée ?
 
 ---
 
-## Q-018 — Résultat d'un Audit
+## Q-017 — Résultat d'un Audit
 
 Quelles informations déterminent qu'un Composant audité est conforme ou non conforme ?
 
@@ -420,7 +438,7 @@ Quelles informations déterminent qu'un Composant audité est conforme ou non co
 
 ---
 
-## Q-019 — Version auditée
+## Q-018 — Version auditée
 
 Comment déterminer précisément la Version du Composant ou de la Librairie faisant l'objet d'un Audit ?
 
@@ -430,7 +448,7 @@ Comment déterminer précisément la Version du Composant ou de la Librairie fai
 
 # 7. Questions ouvertes — Workflow
 
-## Q-020 — Profils de workflow
+## Q-019 — Profils de workflow
 
 Les profils suivants doivent-ils être formalisés comme des profils métier distincts ?
 
@@ -444,7 +462,7 @@ Les profils suivants doivent-ils être formalisés comme des profils métier dis
 
 ---
 
-## Q-021 — Exceptions aux règles de Pull Request
+## Q-020 — Exceptions aux règles de Pull Request
 
 Pour quels profils une Pull Request n'est-elle pas obligatoire avant le statut Done ?
 
@@ -452,7 +470,7 @@ Pour quels profils une Pull Request n'est-elle pas obligatoire avant le statut D
 
 ---
 
-## Q-022 — Statut Cancelled
+## Q-021 — Statut Cancelled
 
 Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled ?
 
@@ -462,7 +480,7 @@ Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled
 
 # 8. Questions ouvertes — Applications consommatrices
 
-## Q-023 — Identification des Applications
+## Q-022 — Identification des Applications
 
 Quelle source permet de connaître les Applications qui utilisent ou devraient utiliser le Design System ?
 
@@ -470,7 +488,7 @@ Quelle source permet de connaître les Applications qui utilisent ou devraient u
 
 ---
 
-## Q-024 — Détection des Packages utilisés
+## Q-023 — Détection des Packages utilisés
 
 Comment déterminer qu'une Application utilise un Package donné ?
 
@@ -478,7 +496,7 @@ Comment déterminer qu'une Application utilise un Package donné ?
 
 ---
 
-## Q-025 — Détection de la Version utilisée
+## Q-024 — Détection de la Version utilisée
 
 Comment déterminer la Version effectivement utilisée par une Application ?
 
@@ -486,7 +504,7 @@ Comment déterminer la Version effectivement utilisée par une Application ?
 
 ---
 
-## Q-026 — Versions non-PROD utilisées par les consommateurs
+## Q-025 — Versions non-PROD utilisées par les consommateurs
 
 Comment traiter une Application utilisant :
 
@@ -502,7 +520,7 @@ notamment selon qu'il s'agit d'un environnement de test ou de production ?
 
 ---
 
-## Q-027 — Détection des Composants utilisés
+## Q-026 — Détection des Composants utilisés
 
 Comment analyser le code d'une Application afin d'identifier :
 
@@ -513,7 +531,7 @@ Comment analyser le code d'une Application afin d'identifier :
 
 ---
 
-## Q-028 — Dette de montée de Version
+## Q-027 — Dette de montée de Version
 
 Comment définir la dette liée à l'utilisation d'une ancienne Version PROD ?
 
@@ -530,7 +548,7 @@ Il faudra notamment définir :
 
 ---
 
-## Q-029 — Alertes aux Squads
+## Q-028 — Alertes aux Squads
 
 Quelles situations doivent provoquer une alerte à destination d'une Squad responsable d'une Application ?
 
@@ -540,7 +558,7 @@ Quelles situations doivent provoquer une alerte à destination d'une Squad respo
 
 # 9. Questions ouvertes — Qualité des Applications consommatrices
 
-## Q-030 — Qualité d'une Version
+## Q-029 — Qualité d'une Version
 
 Comment calculer la qualité d'une Version d'une Librairie ?
 
@@ -548,7 +566,7 @@ Comment calculer la qualité d'une Version d'une Librairie ?
 
 ---
 
-## Q-031 — Qualité d'un Composant
+## Q-030 — Qualité d'un Composant
 
 Comment calculer la qualité d'un Composant pour une Version donnée ?
 
@@ -556,7 +574,7 @@ Comment calculer la qualité d'un Composant pour une Version donnée ?
 
 ---
 
-## Q-032 — Badge ou note d'une Application
+## Q-031 — Badge ou note d'une Application
 
 Comment construire une information synthétique de qualité pour une Application en croisant :
 
@@ -574,7 +592,7 @@ Qualité des Composants
 
 ---
 
-## Q-033 — RGAA / WAI-ARIA d'une Application
+## Q-032 — RGAA / WAI-ARIA d'une Application
 
 Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA calculé à partir des Composants du Design System utilisés par une Application ?
 
@@ -584,7 +602,7 @@ Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA ca
 
 # 10. Questions ouvertes — Historisation
 
-## Q-034 — Granularité historique
+## Q-033 — Granularité historique
 
 Quels événements doivent provoquer la création d'un Snapshot ?
 
@@ -600,7 +618,7 @@ Exemples à étudier :
 
 ---
 
-## Q-035 — Conservation
+## Q-034 — Conservation
 
 Quelle durée d'historique doit être conservée ?
 
@@ -610,7 +628,7 @@ Quelle durée d'historique doit être conservée ?
 
 # 11. Questions ouvertes — Sources externes
 
-## Q-036 — Nexus
+## Q-035 — Nexus
 
 Nexus est identifié comme source de publication des Packages et Versions.
 
@@ -626,17 +644,23 @@ Il faudra déterminer les informations nécessaires au pipeline pour identifier 
 
 ---
 
-## Q-037 — Jenkins
+## Q-036 — Jenkins
 
-Jenkins produit les Versions à partir du type de branche et de la Version de base.
+Jenkins intervient dans :
 
-Il faudra déterminer si le pipeline doit interroger directement Jenkins ou si les informations disponibles dans GitHub et Nexus sont suffisantes.
+- la génération des Versions SNAPSHOT ;
+- la génération des Release Candidates ;
+- la génération des Hotfix Candidates ;
+- la création du Tag d'une Version PROD standard ;
+- la publication de la Version PROD dans Nexus.
+
+Il reste à déterminer si le pipeline doit interroger directement Jenkins ou si GitHub et Nexus fournissent les informations nécessaires aux indicateurs.
 
 **Statut : À instruire techniquement**
 
 ---
 
-## Q-038 — Applications consommatrices
+## Q-037 — Applications consommatrices
 
 Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
@@ -644,7 +668,7 @@ Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
 ---
 
-## Q-039 — Usage des Composants
+## Q-038 — Usage des Composants
 
 Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des Composants dans les Applications ?
 
@@ -654,7 +678,7 @@ Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des 
 
 # 12. Questions ouvertes — Architecture
 
-## Q-040 — Backend
+## Q-039 — Backend
 
 À quel moment le dashboard statique actuel devra-t-il évoluer vers une architecture avec backend ?
 
@@ -662,7 +686,7 @@ Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des 
 
 ---
 
-## Q-041 — Stockage historique
+## Q-040 — Stockage historique
 
 Quel système doit conserver les Snapshots à terme ?
 
@@ -670,7 +694,7 @@ Quel système doit conserver les Snapshots à terme ?
 
 ---
 
-## Q-042 — Multi-source
+## Q-041 — Multi-source
 
 Comment orchestrer à terme les différentes sources nécessaires ?
 

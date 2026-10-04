@@ -13,7 +13,7 @@ Il vise notamment à distinguer :
 - les Hotfix Candidates ;
 - les Versions PROD ;
 - les publications Nexus ;
-- les tags Git ;
+- les Tags Git ;
 - les Milestones ;
 - les Releases.
 
@@ -45,25 +45,19 @@ Plusieurs Versions d'un même Package peuvent être disponibles simultanément d
 | Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
 | Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
 
-Pour Design System React, il existe actuellement également :
-
-```text
-1.8.0-SNAPSHOT
-```
-
-dans le contexte de la branche `develop`.
+Pour Design System React, une Version `1.8.0-SNAPSHOT` est également disponible dans le contexte de la branche `develop`.
 
 ---
 
 ## 4. Version de base
 
-Le `package.json` contient une Version de base de forme :
+Le cycle de construction utilise une Version de base de forme :
 
 ```text
 M.m.r
 ```
 
-Cette Version sert de base à la génération des Versions publiées par la CI Jenkins.
+Cette Version sert de base à la génération des Versions publiées par Jenkins.
 
 Le type de Version effectivement produit dépend notamment du type de branche.
 
@@ -79,14 +73,13 @@ La CI Jenkins produit différentes formes de Versions à partir :
 
 Le fonctionnement établi est :
 
-| Branche | Version produite |
+| Branche / événement | Version produite |
 |---|---|
 | `develop` | `M.m.r-SNAPSHOT` |
 | `project/***` | `M.m.r-SNAPSHOT` |
 | `release/****` | `M.m.r-rc.[numéro de build]` |
 | `hotfix/****` | `M.m.r-hc.[numéro de build]` |
-
-Le mécanisme exact de production de la Version PROD reste à préciser.
+| merge `release/M.m.r` → `master` | `M.m.r` PROD |
 
 ---
 
@@ -110,21 +103,11 @@ ou :
 project/***
 ```
 
-### Exemple
+Ces Versions :
 
-Pour Design System React :
-
-```text
-Version de base : 1.8.0
-Branche : develop
-Version publiée : 1.8.0-SNAPSHOT
-```
-
-Cette Version :
-
-- est disponible dans Nexus ;
-- est destinée aux tests d'intégration ;
-- n'a pas vocation à être déployée en production.
+- sont disponibles dans Nexus ;
+- sont destinées aux tests d'intégration ;
+- n'ont pas vocation à être déployées en production.
 
 ---
 
@@ -142,17 +125,13 @@ Sa forme est :
 M.m.r-rc.[numéro de build Jenkins]
 ```
 
-Exemple de forme :
+Exemple :
 
 ```text
 1.8.0-rc.123
 ```
 
 Le numéro situé après `rc` correspond au numéro du build Jenkins.
-
-Cette convention permet d'identifier plusieurs builds candidats pour une même Version de base.
-
-L'usage fonctionnel précis de ces Versions dans le processus de validation reste à documenter.
 
 ---
 
@@ -170,7 +149,7 @@ Sa forme est :
 M.m.r-hc.[numéro de build Jenkins]
 ```
 
-Exemple de forme :
+Exemple :
 
 ```text
 1.7.2-hc.42
@@ -178,111 +157,135 @@ Exemple de forme :
 
 Le numéro situé après `hc` correspond au numéro du build Jenkins.
 
-L'usage fonctionnel précis de ces Versions dans le processus de validation reste à documenter.
+---
+
+## 9. Production d'une Version PROD
+
+Pour une release standard, une Version PROD est produite au moment du merge de :
+
+```text
+release/M.m.r
+```
+
+vers :
+
+```text
+master
+```
+
+### Exemple : production de 1.8.0
+
+```text
+release/1.8.0
+    │
+    │ merge
+    ▼
+master
+    │
+    │ déclenchement automatique
+    ▼
+Jenkins
+    │
+    ├── stages du pipeline
+    │
+    └── si tous les stages précédents sont OK
+          │
+          ├── création du tag Git 1.8.0
+          │
+          └── publication du Package 1.8.0
+                    │
+                    ▼
+                Nexus PROD
+```
+
+Le merge sur `master` est donc l'événement qui déclenche le processus de production de la Version PROD.
+
+La publication effective n'est réalisée que si les stages Jenkins nécessaires ont réussi.
 
 ---
 
-## 9. Version PROD
-
-Une **Version PROD** est une Version destinée aux clients et à une utilisation en production.
-
-### Caractéristiques établies
+## 10. Caractéristiques d'une Version PROD
 
 Une Version PROD :
 
-- possède une Version sans suffixe ;
-- est disponible dans un Repository / espace Nexus spécifique ;
-- existe sous forme de tag Git ;
+- possède la forme `M.m.r` ;
+- ne possède pas de suffixe ;
+- est publiée dans un Repository / espace Nexus spécifique ;
+- possède un Tag Git correspondant ;
 - doit posséder une Milestone portant exactement son numéro ;
 - possède normalement une Release correspondante.
 
-### Exemple
-
-Pour Design System React :
+Exemple :
 
 ```text
-Version PROD : 1.7.1
+Version PROD : 1.8.0
+Nexus PROD : 1.8.0
+Tag Git : 1.8.0
+Milestone : 1.8.0
+Release : normalement présente
 ```
 
-Les éléments associés sont :
-
-```text
-Package
-└── @my-enterprise/design-system-react
-      │
-      └── Version PROD 1.7.1
-            ├── Nexus PROD
-            ├── tag Git 1.7.1
-            ├── Milestone 1.7.1
-            └── Release normalement présente
-```
-
-### Absence de suffixe
-
-Une Version PROD ne possède pas les suffixes utilisés par les Versions intermédiaires :
-
-```text
--SNAPSHOT
--rc.[build]
--hc.[build]
-```
-
-L'absence de suffixe constitue une caractéristique d'une Version PROD, mais ne doit pas être utilisée seule pour qualifier la Version.
+L'absence de suffixe constitue une caractéristique nécessaire mais ne doit pas être utilisée seule pour qualifier une Version PROD.
 
 ---
 
-## 10. Nexus
+## 11. Nexus
 
 Nexus contient plusieurs catégories de Versions.
-
-Le système doit donc distinguer au minimum :
 
 ```text
 Nexus
     │
-    ├── espace / Repository PROD
+    ├── PROD
     │     └── M.m.r
     │
-    └── autres Versions publiées
+    └── Versions non-PROD
           ├── M.m.r-SNAPSHOT
           ├── M.m.r-rc.[build]
           └── M.m.r-hc.[build]
 ```
 
-La présence d'une Version dans Nexus ne suffit donc pas à déterminer qu'il s'agit d'une Version PROD.
+Une Version PROD est publiée dans un espace / Repository Nexus spécifique.
 
-L'espace Nexus dans lequel elle est publiée constitue une information métier importante.
+Pour une release standard, Jenkins effectue cette publication après le merge de `release/M.m.r` vers `master`, sous réserve du succès des stages précédents.
 
 ---
 
-## 11. Tag Git
+## 12. Tag Git
 
-Une Version PROD existe sous forme de tag Git.
+Une Version PROD possède un Tag Git correspondant.
 
-La correspondance attendue est :
+Pour une release standard, le Tag est créé par Jenkins.
 
 ```text
-Version PROD M.m.r
-        │
-        └── Tag Git M.m.r
+release/M.m.r
+    ↓ merge
+master
+    ↓
+Jenkins
+    ↓ succès des stages précédents
+Tag Git M.m.r
 ```
 
 Exemple :
 
 ```text
-Version PROD : 1.7.1
-Tag Git : 1.7.1
+release/1.8.0
+    ↓
+master
+    ↓
+Jenkins
+    ↓
+Tag Git 1.8.0
 ```
 
-Cette information fournit un élément de traçabilité entre la Version distribuée et le code source.
+Le Tag fournit un lien traçable entre la Version publiée et le code source correspondant.
 
 ---
 
-## 12. Milestone
+## 13. Milestone
 
-Une Version PROD doit posséder une Milestone portant son nom.
-
-La correspondance attendue est :
+Une Version PROD doit posséder une Milestone portant exactement son numéro.
 
 ```text
 Version PROD M.m.r
@@ -293,23 +296,19 @@ Version PROD M.m.r
 Exemple :
 
 ```text
-Version PROD : 1.7.1
-Milestone : 1.7.1
+Version PROD : 1.8.0
+Milestone : 1.8.0
 ```
 
 Cette règle ne doit pas être inversée automatiquement.
 
-L'existence d'une Milestone `M.m.r` ne suffit pas à elle seule à prouver que la Version PROD correspondante a été publiée.
-
-Les Milestones peuvent avoir d'autres usages dans le projet.
+L'existence d'une Milestone `M.m.r` ne prouve pas à elle seule que la Version PROD a été publiée.
 
 ---
 
-## 13. Release
+## 14. Release
 
 Une Version PROD possède normalement une Release correspondante.
-
-La relation observée est donc généralement :
 
 ```text
 Version PROD M.m.r
@@ -317,86 +316,101 @@ Version PROD M.m.r
         └── Release M.m.r
 ```
 
-Cependant, le terme « normalement » signifie que l'existence de la Release n'est pas encore établie comme invariant obligatoire.
+Cependant :
 
-La présence ou l'absence d'une Release pourra ultérieurement devenir :
+- son caractère obligatoire n'est pas encore confirmé ;
+- le mécanisme qui crée cette Release n'est pas encore documenté ;
+- il n'est pas établi que Jenkins la crée.
 
-- une information de cohérence ;
-- une règle de workflow ;
-- ou une règle de qualité des données ;
-
-mais cette décision n'est pas encore prise.
+La Release ne doit donc pas encore être utilisée comme invariant obligatoire du modèle.
 
 ---
 
-## 14. Synthèse du cycle de Versions
+## 15. Cycle complet d'une release standard
 
-Le cycle actuellement établi est :
+Le cycle désormais établi est :
 
 ```text
 package.json
 Version de base M.m.r
         │
+        ▼
+release/M.m.r
         │
-        ├── develop
-        │     │
-        │     └── Jenkins
-        │           └── M.m.r-SNAPSHOT
+        ├── builds Jenkins
+        │     └── M.m.r-rc.[build]
         │
-        ├── project/***
-        │     │
-        │     └── Jenkins
-        │           └── M.m.r-SNAPSHOT
+        │ validation de la release
+        ▼
+merge release/M.m.r → master
         │
-        ├── release/****
-        │     │
-        │     └── Jenkins
-        │           └── M.m.r-rc.[build]
+        ▼
+Jenkins déclenché automatiquement
         │
-        ├── hotfix/****
-        │     │
-        │     └── Jenkins
-        │           └── M.m.r-hc.[build]
+        ├── stages de build / validation
         │
-        └── PROD
+        └── si succès
               │
-              └── M.m.r
-                    ├── Nexus PROD
-                    ├── Tag Git M.m.r
-                    ├── Milestone M.m.r
-                    └── Release normalement présente
+              ├── Tag Git M.m.r
+              │
+              └── Publication Nexus PROD
+                    └── Package M.m.r
 ```
 
-Le passage exact permettant de produire la Version PROD reste à préciser.
+Exemple :
+
+```text
+1.8.0
+  │
+  ├── release/1.8.0
+  │     ├── 1.8.0-rc.101
+  │     ├── 1.8.0-rc.102
+  │     └── ...
+  │
+  └── merge vers master
+        │
+        └── Jenkins
+              ├── tag 1.8.0
+              └── Nexus PROD : 1.8.0
+```
+
+Les numéros de build ci-dessus sont uniquement illustratifs ; ils ne décrivent pas des builds réels.
 
 ---
 
-## 15. Classification des Versions
+## 16. Cycle Hotfix
 
-Les catégories actuellement établies sont :
+Le fonctionnement établi jusqu'ici est :
 
-| Catégorie | Forme | Origine établie | PROD |
-|---|---|---|---|
-| SNAPSHOT | `M.m.r-SNAPSHOT` | `develop`, `project/***` | Non |
-| Release Candidate | `M.m.r-rc.[build]` | `release/****` | Non établie comme PROD |
-| Hotfix Candidate | `M.m.r-hc.[build]` | `hotfix/****` | Non établie comme PROD |
-| PROD | `M.m.r` | à préciser | Oui |
+```text
+hotfix/****
+    │
+    └── Jenkins
+          └── M.m.r-hc.[build]
+```
+
+Le mécanisme exact permettant de passer de cette Hotfix Candidate à une Version PROD reste à préciser.
+
+Il ne doit pas être déduit du workflow des branches `release/***` sans validation.
+
+---
+
+## 17. Classification des Versions
+
+| Catégorie | Forme | Origine / déclencheur |
+|---|---|---|
+| SNAPSHOT | `M.m.r-SNAPSHOT` | `develop` ou `project/***` |
+| Release Candidate | `M.m.r-rc.[build]` | build de `release/****` |
+| Hotfix Candidate | `M.m.r-hc.[build]` | build de `hotfix/****` |
+| PROD | `M.m.r` | merge de `release/M.m.r` vers `master`, puis succès Jenkins |
 
 Cette classification doit être conservée indépendamment de la simple présence de la Version dans Nexus.
 
 ---
 
-## 16. Application consommatrice
+## 18. Application consommatrice
 
 Une Application utilise un Package dans une Version donnée.
-
-```text
-Application
-    │
-    └── utilise
-          ├── Package
-          └── Version
-```
 
 Pour le futur pilotage des consommateurs, il faudra pouvoir déterminer :
 
@@ -410,7 +424,7 @@ Cette distinction sera nécessaire pour mesurer correctement la dette de montée
 
 ---
 
-## 17. Version et Audit
+## 19. Version et Audit
 
 Les conventions actuelles peuvent utiliser des Milestones telles que :
 
@@ -419,13 +433,7 @@ Les conventions actuelles peuvent utiliser des Milestones telles que :
 1.1.0-Audit
 ```
 
-Ces deux valeurs peuvent se rapporter à une même Version de référence :
-
-```text
-1.1.0
-```
-
-avec des contextes différents.
+Ces valeurs peuvent se rapporter à une même Version de référence avec des contextes différents.
 
 Le suffixe utilisé pour identifier le contexte d'Audit doit être configurable.
 
@@ -437,54 +445,20 @@ Il faut conserver :
 
 ---
 
-## 18. Version et qualité
-
-La qualité doit pouvoir être analysée dans le contexte d'une Version.
-
-À terme :
-
-```text
-Application
-    ↓
-Package utilisé
-    ↓
-Version utilisée
-    ↓
-Composants utilisés
-    ↓
-Qualité connue des Composants pour cette Version
-```
-
-La méthode exacte de calcul d'une éventuelle note ou d'un badge de qualité n'est pas encore définie.
-
----
-
-## 19. Historisation
+## 20. Historisation
 
 Il faut distinguer :
 
-```text
-Version du Package analysé
-```
-
-de :
-
-```text
-Date du Snapshot
-```
-
-et de :
-
-```text
-Version du modèle analytique
-Version des règles
-```
+- la Version du Package analysé ;
+- la date du Snapshot ;
+- la version du modèle analytique ;
+- la version des règles.
 
 Ces notions ont des responsabilités différentes.
 
 ---
 
-## 20. Principes retenus
+## 21. Principes retenus
 
 ### Principe 1 — La Version est rattachée au Package
 
@@ -492,7 +466,7 @@ Une Version identifie un état versionné d'un Package.
 
 ### Principe 2 — La Version de base ne suffit pas à décrire l'artefact publié
 
-La CI peut transformer `M.m.r` en :
+La CI peut produire :
 
 ```text
 M.m.r-SNAPSHOT
@@ -500,8 +474,6 @@ M.m.r-rc.[build]
 M.m.r-hc.[build]
 M.m.r
 ```
-
-selon le contexte.
 
 ### Principe 3 — Le type de branche participe à la classification
 
@@ -511,42 +483,46 @@ Le type de branche est une donnée importante du processus de génération de Ve
 
 Publication dans Nexus et qualification PROD sont deux notions différentes.
 
-### Principe 5 — Une Version PROD est corroborée par plusieurs éléments
+### Principe 5 — Une release standard devient PROD par merge vers master
 
-Les éléments établis sont :
+Le processus établi est :
 
-- absence de suffixe ;
-- espace Nexus PROD ;
-- tag Git correspondant ;
-- Milestone correspondante ;
-- Release normalement correspondante.
+```text
+release/M.m.r
+    ↓
+master
+    ↓
+Jenkins
+    ↓ succès
+Tag Git M.m.r
++
+Publication Nexus PROD M.m.r
+```
 
 ### Principe 6 — La Milestone est obligatoire pour une PROD
 
 Une Version PROD `M.m.r` doit avoir une Milestone `M.m.r`.
 
-### Principe 7 — La Release n'est pas encore considérée comme obligatoire
+### Principe 7 — La Release GitHub n'est pas encore considérée comme obligatoire
 
-Elle existe normalement mais cette propriété n'est pas encore établie comme invariant.
+Elle existe normalement, mais son mécanisme de création et son caractère obligatoire restent à confirmer.
 
 ### Principe 8 — Conserver les valeurs sources
 
-Le pipeline doit conserver les informations sources nécessaires à l'explication de la classification d'une Version.
+Le pipeline doit conserver les informations nécessaires à l'explication de la classification et de la publication d'une Version.
 
 ---
 
-## 21. Points restant à préciser
+## 22. Points restant à préciser
 
 Les éléments suivants restent ouverts :
 
-- mécanisme exact permettant de produire une Version PROD ;
-- branche à partir de laquelle une Version PROD est produite ;
-- événement déclenchant la publication PROD ;
-- rôle exact des branches `release/****` dans le passage de RC à PROD ;
-- rôle exact des branches `hotfix/****` dans le passage de HC à PROD ;
-- caractère réellement obligatoire ou non d'une Release GitHub ;
-- comportement lorsque la Milestone attendue est absente ;
-- comportement lorsque le tag attendu est absent ;
+- mécanisme de création de la Release GitHub ;
+- caractère obligatoire ou non de cette Release ;
+- cycle exact de passage d'une Hotfix Candidate à une Version PROD ;
+- branche ou branches impliquées dans ce passage ;
+- comportement attendu lorsque la Milestone PROD est absente ;
+- comportement attendu lorsque le Tag Git est absent ;
 - conventions exactes appliquées aux autres Librairies ;
 - source permettant d'identifier les Versions utilisées par les Applications ;
 - définition de la dette de montée de Version.
