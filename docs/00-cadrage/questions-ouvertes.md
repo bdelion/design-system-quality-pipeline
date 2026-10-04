@@ -1247,6 +1247,26 @@ Aucune valeur n'est définie à ce stade.
 
 ---
 
+## Q-057 — Cardinalité des catégories Accessibilité d’une Anomalie
+
+L’hypothèse métier actuelle est qu’une Anomalie issue d’un Audit d’Accessibilité ne porte qu’un seul label de catégorie `♿ a11y:xxx`.
+
+Cette hypothèse n’est toutefois pas suffisamment confirmée par l’observation des Audits déjà réalisés pour devenir une règle métier.
+
+Tant que cette cardinalité n’est pas vérifiée, le modèle ne doit pas rejeter une Anomalie uniquement parce qu’elle porte plusieurs labels `♿ a11y:xxx`.
+
+Il reste à vérifier sur les Audits réels si la cardinalité attendue est bien :
+
+```text
+1 Anomalie d’Audit
+=
+exactement 1 catégorie ♿ a11y:xxx
+```
+
+**Statut : Hypothèse à confirmer**
+
+---
+
 # 15. Méthode de traitement des questions
 
 Les questions ne doivent pas être résolues toutes en même temps.

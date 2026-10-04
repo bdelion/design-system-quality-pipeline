@@ -259,6 +259,14 @@ Cette règle est établie pour les Anomalies issues d'un Audit d'Accessibilité.
 
 Elle ne doit pas être généralisée automatiquement à toutes les Anomalies du Design System, dont la définition doit rester configurable.
 
+### Cardinalité de la catégorie Accessibilité
+
+L’hypothèse métier actuelle est qu’une Anomalie ne porte qu’un seul label `♿ a11y:xxx`.
+
+Cette hypothèse n’est pas encore suffisamment confirmée par l’expérience des Audits réalisés. Elle ne doit donc pas devenir, à ce stade, une règle de validation bloquante.
+
+Le modèle doit temporairement tolérer plusieurs catégories `♿ a11y:xxx` jusqu’à confirmation de la cardinalité métier attendue.
+
 ---
 
 ## 13. Identification d'une Amélioration issue d'un Audit
@@ -545,6 +553,7 @@ Les points suivants restent à instruire :
 - le minimum d'informations du futur template ;
 - le mécanisme de représentation de la famille d'Audit ;
 - la gouvernance et la liste complète des catégories `♿ a11y:xxx` ;
+- la cardinalité des catégories `♿ a11y:xxx` : l’hypothèse actuelle est une seule catégorie par Anomalie, mais elle doit être confirmée sur les Audits réels ;
 - le label, champ ou autre mécanisme permettant de catégoriser une Amélioration ;
 - si une Issue d'Audit doit obligatoirement avoir exactement un Composant ;
 - comment identifier la Release Candidate auditée ;
