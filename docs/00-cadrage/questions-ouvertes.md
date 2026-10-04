@@ -873,6 +873,32 @@ Une annotation complémentaire pourra indiquer que les Anomalies connues sont co
 
 ---
 
+## D-046 — Dernier Audit comme état de conformité courant
+
+Pour un même couple `Composant × Version`, plusieurs Audits peuvent exister successivement.
+
+Tous les résultats d'Audit doivent être conservés dans l'historique, mais le dernier Audit réalisé détermine l'état de conformité courant du couple `Composant × Version`.
+
+Exemple :
+
+```text
+Button@1.7.1
+├── Audit A → NON CONFORME
+└── Audit B → CONFORME
+```
+
+Dans cet exemple :
+
+- l'historique conserve `Audit A → NON CONFORME` ;
+- l'historique conserve `Audit B → CONFORME` ;
+- l'état de conformité courant de `Button@1.7.1` est `CONFORME`.
+
+Le dashboard doit donc distinguer le verdict de chaque Audit du verdict courant calculé pour le couple `Composant × Version`.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1704,6 +1730,18 @@ Une Version peut conserver un verdict historique `NON CONFORME` alors que ses An
 Une annotation distincte du verdict pourrait permettre de représenter cette situation.
 
 Il reste à définir son nom, ses états, ses conditions de calcul, le rattachement des corrections à la Version qui les contient et sa représentation dans le dashboard.
+
+**Statut : À instruire**
+
+---
+
+## Q-067 — Ordonnancement de plusieurs Audits d'un même Composant et d'une même Version
+
+Le dernier Audit réalisé détermine l'état de conformité courant du couple `Composant × Version`.
+
+Il reste à préciser quelle donnée fait foi pour ordonner plusieurs Audits portant sur le même couple : date de clôture de l'Issue, date de passage au statut `Done`, autre date métier, ou combinaison de plusieurs informations.
+
+Cette question est liée à la définition encore ouverte de la date exacte de fin d'un Audit.
 
 **Statut : À instruire**
 

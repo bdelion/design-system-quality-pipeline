@@ -616,6 +616,29 @@ Il faut distinguer ce verdict de l'état des corrections. Des Anomalies peuvent 
 
 Une annotation complémentaire pourra être étudiée pour signaler que les Anomalies connues sont corrigées dans une Version ultérieure en attente d'un Audit conforme. Son nom et ses règles ne sont pas encore définis.
 
+
+### Plusieurs Audits pour un même Composant et une même Version
+
+Plusieurs Audits peuvent porter successivement sur le même couple `Composant × Version`.
+
+Tous les Audits et leurs verdicts restent conservés dans l'historique. En revanche, le dernier Audit réalisé donne l'état de conformité courant de ce couple.
+
+```text
+Button@1.7.1
+├── Audit A → NON CONFORME
+└── Audit B → CONFORME
+```
+
+L'état courant de `Button@1.7.1` est alors `CONFORME`, sans supprimer ni modifier le verdict historique de l'Audit A.
+
+Le modèle doit donc permettre de distinguer :
+
+- le verdict propre à chaque Audit ;
+- l'historique des Audits ;
+- le verdict de conformité courant du couple `Composant × Version`.
+
+La donnée permettant de déterminer sans ambiguïté quel Audit est le dernier reste à préciser.
+
 ---
 
 ## 26. Historisation
