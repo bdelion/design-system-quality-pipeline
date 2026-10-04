@@ -1221,6 +1221,49 @@ La responsabilité de décider d'ouvrir ou non une Issue d'Audit reste à la Squ
 
 ---
 
+## D-061 — Comparaison des Composants reportée à une évolution ultérieure
+
+La fonctionnalité de comparaison des Composants entre deux Versions est conservée dans l'architecture cible mais n'est pas à réaliser dans le périmètre immédiat.
+
+L'architecture des repositories de Librairies n'est actuellement ni suffisamment stable ni suffisamment homogène pour retenir une convention de répertoires comme règle commune d'identification des Composants.
+
+Une approche existante s'appuie sur la notion d'export. Cette approche constitue une piste pour la future fonctionnalité mais n'est pas encore érigée en règle du modèle.
+
+**Statut : Établi**
+
+---
+
+## D-062 — Cible d'automatisation de la comparaison entre tags
+
+À terme, le projet devra proposer un script ou traitement automatisé déclenché lors de la création d'un tag Git correspondant à une publication issue de `master` ou d'une branche `support/xxx`.
+
+Le traitement cible devra :
+
+- identifier le tag nouvellement créé ;
+- déterminer le tag précédent pertinent selon les règles SemVer ;
+- comparer les deux Versions afin d'établir l'état des lieux des Composants ;
+- vérifier que cette comparaison n'a pas déjà été réalisée ;
+- éviter de recalculer inutilement une comparaison déjà disponible ;
+- permettre de forcer explicitement une nouvelle comparaison.
+
+Les modalités techniques exactes du déclenchement GitHub, du stockage des résultats, de l'idempotence et du forçage restent à définir lors de l'implémentation de cette fonctionnalité.
+
+**Statut : Cible établie ; implémentation ultérieure**
+
+---
+
+## D-063 — Restitution future des évolutions de Composants dans le Dashboard
+
+Lorsque la comparaison entre Versions sera disponible, le Dashboard devra restituer les états des Composants (`NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ`, `DÉCOMMISSIONNÉ`) et faire ressortir les Composants pour lesquels un Audit devrait être envisagé.
+
+Cette restitution constitue une aide à la décision de la Squad.
+
+Elle ne remet pas en cause D-060 : la décision d'ouvrir effectivement une Issue d'Audit reste de la responsabilité de la Squad.
+
+**Statut : Cible établie ; implémentation ultérieure**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2223,13 +2266,25 @@ La manière exacte d'associer les fichiers du repository aux Composants reste à
 
 ---
 
-## Q-078 — Référentiel permettant d'associer les fichiers aux Composants
+## Q-078 — Référentiel permettant d'identifier les Composants entre deux Versions
 
-Pour comparer deux Versions et déterminer qu'un Composant est `ÉVOLUÉ` ou `INCHANGÉ`, le pipeline doit savoir quels fichiers ou répertoires appartiennent à chaque Composant.
+Les repositories de Librairies n'ont pas actuellement une architecture suffisamment stable et homogène pour utiliser une convention commune de répertoires.
 
-Il reste à déterminer quelle source fera foi pour cette association : structure conventionnelle du repository, configuration explicite, catalogue de Composants, ou autre mécanisme.
+Une analyse existante s'appuie sur la notion d'export pour identifier les Composants et leurs évolutions.
 
-**Statut : À instruire**
+Cette piste devra être réétudiée lors de l'intégration future de la fonctionnalité de comparaison entre Versions. La règle exacte d'identification des Composants et de leurs fichiers ou exports n'est donc pas figée à ce stade.
+
+**Statut : Reporté à l'évolution de comparaison entre Versions**
+
+---
+
+## Q-079 — Règle SemVer de sélection du tag précédent
+
+Le traitement cible doit comparer le tag nouvellement créé au tag précédent pertinent selon les règles SemVer.
+
+Il reste à préciser la règle exacte de sélection lorsque plusieurs lignes de Versions coexistent, notamment avec `master` et plusieurs branches `support/xxx`.
+
+**Statut : À instruire lors de la conception de la comparaison entre Versions**
 
 ---
 

@@ -947,3 +947,56 @@ Le pipeline ne décide pas automatiquement qu'un nouvel Audit est nécessaire et
 La décision reste de la responsabilité de la Squad.
 
 La source permettant d'associer précisément les fichiers Git aux Composants reste à définir.
+
+
+### Fonctionnalité reportée et architecture cible
+
+La comparaison automatique des Composants entre deux Versions doit être conservée dans la cible du projet, mais sa réalisation est reportée.
+
+Les repositories de Librairies n'ont pas aujourd'hui une architecture suffisamment stable et homogène pour utiliser une convention de répertoires comme règle commune. Une analyse existante s'appuie sur la notion d'export ; cette approche devra être réétudiée au moment de concevoir la fonctionnalité.
+
+La cible fonctionnelle est la suivante :
+
+```text
+Création d'un tag Git
+        │
+        ├── publication issue de master
+        │
+        └── publication issue de support/xxx
+        ↓
+Identification du tag précédent pertinent
+selon les règles SemVer
+        ↓
+Vérification qu'une comparaison
+n'existe pas déjà
+        ↓
+Comparaison des deux Versions
+        ↓
+NOUVEAU / ÉVOLUÉ / INCHANGÉ / DÉCOMMISSIONNÉ
+        ↓
+Résultat exploitable par le Dashboard
+```
+
+Le traitement doit être idempotent : une comparaison déjà réalisée ne doit pas être recalculée inutilement.
+
+Un mécanisme explicite doit néanmoins permettre de forcer une nouvelle comparaison.
+
+La règle exacte de sélection du tag précédent, en particulier lorsque plusieurs lignes de Versions coexistent, reste à définir.
+
+### Restitution future dans le Dashboard
+
+Lorsque cette capacité sera disponible, le Dashboard devra afficher les résultats de comparaison et faire ressortir les Composants pour lesquels un Audit devrait être envisagé.
+
+Cette information reste une aide à la décision :
+
+```text
+Composant NOUVEAU ou ÉVOLUÉ
+        ↓
+Signal dans le Dashboard
+        ↓
+Analyse par la Squad
+        ↓
+Décision éventuelle d'ouvrir un Audit
+```
+
+Le Dashboard ne doit pas transformer automatiquement ce signal en obligation d'Audit et le pipeline ne doit pas créer automatiquement l'Issue correspondante.
