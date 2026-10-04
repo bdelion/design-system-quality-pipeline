@@ -1326,6 +1326,33 @@ Les Composants non audités ne doivent donc pas être comptabilisés comme non c
 
 ---
 
+## D-066 — Catalogue historique propre à chaque Version
+
+Les indicateurs historiques d'une Version doivent utiliser le Catalogue de Composants applicable à cette Version et non le Catalogue courant.
+
+L'ajout ou le retrait ultérieur d'un Composant ne doit donc pas modifier rétroactivement le dénominateur d'une couverture d'Audit historique.
+
+Exemple :
+
+```text
+Version 1.7.0
+Catalogue : 20 Composants
+
+Version 1.8.0
++ DatePicker
+Catalogue : 21 Composants
+```
+
+La couverture d'Audit de `1.7.0` continue d'être calculée sur 20 Composants, tandis que celle de `1.8.0` est calculée sur 21 Composants.
+
+Le modèle doit donc pouvoir disposer conceptuellement d'une photographie du Catalogue applicable à chaque Version.
+
+La manière de construire, stocker ou reconstituer techniquement cette photographie reste à définir.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2358,9 +2385,21 @@ Il reste à préciser la règle exacte de sélection lorsque plusieurs lignes de
 
 ## Q-080 — Version du Catalogue utilisée comme dénominateur
 
-La couverture d'Audit utilise le nombre de Composants du Catalogue comme dénominateur.
+Le Catalogue utilisé comme dénominateur doit correspondre à la Version analysée.
 
-Il reste à préciser si le Catalogue est versionné et, dans ce cas, quelle photographie du Catalogue doit être utilisée pour calculer la couverture d'une Version donnée de Librairie.
+Ainsi, une Version historique conserve le nombre de Composants qui lui était applicable et les évolutions ultérieures du Catalogue ne modifient pas rétroactivement ses indicateurs.
+
+**Statut : Établi**
+
+---
+
+## Q-081 — Construction de la photographie historique du Catalogue
+
+Chaque Version doit disposer conceptuellement de la photographie du Catalogue de Composants qui lui est applicable.
+
+Il reste à définir comment cette photographie sera obtenue : donnée persistée au moment de la Version, reconstruction depuis Git ou les exports, snapshot du pipeline, ou autre mécanisme.
+
+Cette question est liée à la future fonctionnalité de comparaison entre Versions mais ne doit pas être résolue prématurément.
 
 **Statut : À instruire**
 

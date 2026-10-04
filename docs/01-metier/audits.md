@@ -1044,3 +1044,31 @@ Dans le fonctionnement actuel, il n'est pas nécessaire de savoir si ces 3 Compo
 À terme, la comparaison entre Versions enrichira l'explication de la couverture en qualifiant les Composants et en faisant ressortir ceux pour lesquels un nouvel Audit devrait être envisagé.
 
 La décision d'ouvrir effectivement une Issue d'Audit reste à la Squad.
+
+
+### Catalogue historique par Version
+
+La couverture d'Audit d'une Version doit utiliser le Catalogue de Composants applicable à cette Version.
+
+Une évolution ultérieure du Catalogue ne modifie pas rétroactivement les indicateurs historiques.
+
+```text
+1.7.0
+Catalogue : 20 Composants
+Couverture : Audits applicables / 20
+
+1.8.0
++ DatePicker
+Catalogue : 21 Composants
+Couverture : Audits applicables / 21
+```
+
+Le modèle doit donc pouvoir représenter une photographie du Catalogue par Version.
+
+Cette photographie permet notamment de préserver la cohérence historique :
+
+- un Composant ajouté en `1.8.0` n'entre pas dans le dénominateur de `1.7.0` ;
+- un Composant décommissionné dans une Version ultérieure reste présent dans le Catalogue des Versions où il existait ;
+- les indicateurs historiques ne sont pas recalculés avec la composition actuelle du Catalogue.
+
+Le mécanisme technique permettant de construire ou de reconstituer cette photographie reste à définir.
