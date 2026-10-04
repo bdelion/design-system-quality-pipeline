@@ -2,367 +2,424 @@
 
 ## 1. Objectif
 
-Ce document décrit les notions de Package, Version et Release utilisées ou envisagées par le Design System Quality Pipeline.
+Ce document décrit le cycle de Version des Packages du Design System.
 
-L'objectif est notamment d'éviter de confondre plusieurs notions :
+Il vise notamment à distinguer :
 
-- Librairie ;
-- Package ;
-- Version de Package ;
-- Version de production ;
-- Version SNAPSHOT ;
-- Milestone GitHub ;
-- Release ;
-- version d'audit.
+- la Version de base du Package ;
+- les Versions générées par la CI ;
+- les Versions SNAPSHOT ;
+- les Release Candidates ;
+- les Hotfix Candidates ;
+- les Versions PROD ;
+- les publications Nexus ;
+- les tags Git ;
+- les Milestones ;
+- les Releases.
 
 ---
 
-## 2. Situation actuelle établie
+## 2. Situation actuelle
 
-Une Librairie du Design System est aujourd'hui distribuée sous la forme d'un Package pouvant être directement utilisé par les Applications.
-
-Ce Package :
-
-- possède un nom ;
-- possède plusieurs Versions au cours de son cycle de vie ;
-- est publié dans Nexus ;
-- peut avoir simultanément plusieurs Versions disponibles avec des finalités différentes.
-
-La relation générale est :
+Une Librairie est actuellement distribuée sous la forme d'un Package.
 
 ```text
 Librairie
     │
-    │ correspond actuellement à
-    ▼
-Package
-    │
-    └── Versions
+    └── Package
           │
-          ├── PROD
-          └── SNAPSHOT
+          └── Versions
 ```
 
-Dans la situation actuelle :
+Les Applications utilisent un Package dans une Version donnée.
 
-```text
-1 Librairie = 1 Package
-```
-
-Cette correspondance décrit la situation observée aujourd'hui.
-
-Elle ne doit pas devenir une contrainte structurelle définitive du modèle.
+Plusieurs Versions d'un même Package peuvent être disponibles simultanément dans Nexus avec des finalités différentes.
 
 ---
 
-## 3. Exemples réels
+## 3. Exemples de Packages
 
-Trois couples Librairie / Package ont été identifiés.
+| Librairie | Package | Dernière Version PROD déclarée |
+|---|---|---|
+| Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
+| Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
+| Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
 
-### Design System React
+Pour Design System React, il existe actuellement également :
 
 ```text
-Librairie : Design System React
-Package : @my-enterprise/design-system-react
-
-Dernière version PROD déclarée :
-1.7.1
-
-Version actuelle sur develop :
 1.8.0-SNAPSHOT
 ```
 
-La Version `1.7.1` :
-
-- est publiée dans Nexus ;
-- est disponible pour les clients ;
-- constitue actuellement la dernière Version PROD déclarée.
-
-La Version `1.8.0-SNAPSHOT` :
-
-- est déclarée dans le `package.json` de la branche `develop` ;
-- est également disponible dans Nexus ;
-- est destinée aux tests d'intégration ;
-- n'a pas vocation à être déployée comme Version PROD.
-
-### Enterprise Assets
-
-```text
-Librairie : Enterprise Assets
-Package : @my-enterprise/enterprise-assets
-Dernière version PROD déclarée : 2.1.0
-```
-
-Aucune information supplémentaire n'est encore établie ici concernant une éventuelle Version SNAPSHOT.
-
-### Design System Metier React
-
-```text
-Librairie : Design System Metier React
-Package : @my-enterprise/design-system-metier-react
-Dernière version PROD déclarée : 0.14.0
-```
-
-Aucune information supplémentaire n'est encore établie ici concernant une éventuelle Version SNAPSHOT.
+dans le contexte de la branche `develop`.
 
 ---
 
-## 4. Package
+## 4. Version de base
 
-Le **Package** est l'unité technique distribuable correspondant actuellement à une Librairie et pouvant être référencée comme dépendance par une Application.
-
-Il constitue un élément important pour relier :
-
-- le Design System produit ;
-- les Versions publiées ;
-- les Applications consommatrices.
-
-Exemple :
+Le `package.json` contient une Version de base de forme :
 
 ```text
-Design System React
-    │
-    └── @my-enterprise/design-system-react
-          │
-          ├── 1.7.1
-          └── 1.8.0-SNAPSHOT
+M.m.r
 ```
 
-Le nom du Package doit être distingué du nom métier de la Librairie.
+Cette Version sert de base à la génération des Versions publiées par la CI Jenkins.
+
+Le type de Version effectivement produit dépend notamment du type de branche.
 
 ---
 
-## 5. Version
+## 5. Jenkins
 
-Une **Version** identifie un état versionné d'un Package.
+La CI Jenkins produit différentes formes de Versions à partir :
 
-La Version seule ne suffit pas nécessairement à déterminer sa finalité.
+- de la Version `M.m.r` ;
+- du type de branche ;
+- et, pour certains types de Versions, du numéro de build Jenkins.
 
-Le modèle doit distinguer le numéro de Version de son contexte d'utilisation.
+Le fonctionnement établi est :
 
-Exemple :
+| Branche | Version produite |
+|---|---|
+| `develop` | `M.m.r-SNAPSHOT` |
+| `project/***` | `M.m.r-SNAPSHOT` |
+| `release/****` | `M.m.r-rc.[numéro de build]` |
+| `hotfix/****` | `M.m.r-hc.[numéro de build]` |
 
-```text
-Package
-    │
-    ├── 1.7.1
-    │     └── PROD
-    │
-    └── 1.8.0-SNAPSHOT
-          └── tests d'intégration
-```
-
----
-
-## 6. Version PROD
-
-### Définition actuellement établie
-
-Une **Version PROD** est une Version du Package :
-
-- publiée dans Nexus ;
-- disponible pour les clients ;
-- destinée à être utilisée en production.
-
-Pour Design System React :
-
-```text
-Package : @my-enterprise/design-system-react
-Version PROD actuelle : 1.7.1
-```
-
-L'expression **version actuelle**, lorsqu'elle est utilisée dans un contexte de pilotage des consommateurs, doit donc être évitée lorsqu'elle est ambiguë.
-
-Il est préférable de parler explicitement de :
-
-```text
-dernière Version PROD
-```
-
-lorsque c'est cette information qui est recherchée.
+Le mécanisme exact de production de la Version PROD reste à préciser.
 
 ---
 
-## 7. Version SNAPSHOT
+## 6. Version SNAPSHOT
 
-### Définition actuellement établie
-
-Une **Version SNAPSHOT** peut être publiée dans Nexus tout en n'étant pas destinée à la production.
-
-Pour Design System React :
+Une Version SNAPSHOT possède la forme :
 
 ```text
-Branche : develop
-Version package.json : 1.8.0-SNAPSHOT
-Publication Nexus : oui
-Usage : tests d'intégration
-Déploiement PROD : non
+M.m.r-SNAPSHOT
 ```
 
-La disponibilité dans Nexus ne constitue donc pas à elle seule une preuve qu'une Version peut être utilisée en production.
-
----
-
-## 8. Nexus
-
-Nexus est actuellement utilisé comme source de publication des Packages.
-
-L'exemple de Design System React montre que Nexus peut contenir simultanément :
-
-```text
-@my-enterprise/design-system-react
-    │
-    ├── 1.7.1
-    │     └── PROD
-    │
-    └── 1.8.0-SNAPSHOT
-          └── intégration
-```
-
-Il faut donc distinguer :
-
-```text
-Version publiée
-```
-
-de :
-
-```text
-Version destinée à la production
-```
-
-Cette distinction sera importante lorsque Nexus sera utilisé comme source du pipeline.
-
----
-
-## 9. Branche et Version
-
-Il est actuellement établi pour Design System React que :
+Elle est produite depuis :
 
 ```text
 develop
-    │
-    └── package.json
-          │
-          └── 1.8.0-SNAPSHOT
 ```
 
-Cette relation est un fait observé pour cet exemple.
+ou :
 
-Il reste à déterminer si cette convention est systématique pour les différentes Librairies et comment les Versions PROD sont associées aux branches Git.
+```text
+project/***
+```
 
-Aucune règle générique supplémentaire ne doit être déduite à ce stade.
+### Exemple
+
+Pour Design System React :
+
+```text
+Version de base : 1.8.0
+Branche : develop
+Version publiée : 1.8.0-SNAPSHOT
+```
+
+Cette Version :
+
+- est disponible dans Nexus ;
+- est destinée aux tests d'intégration ;
+- n'a pas vocation à être déployée en production.
 
 ---
 
-## 10. Utilisation d'un Package par une Application
+## 7. Release Candidate
+
+Une **Release Candidate** est produite depuis une branche :
+
+```text
+release/****
+```
+
+Sa forme est :
+
+```text
+M.m.r-rc.[numéro de build Jenkins]
+```
+
+Exemple de forme :
+
+```text
+1.8.0-rc.123
+```
+
+Le numéro situé après `rc` correspond au numéro du build Jenkins.
+
+Cette convention permet d'identifier plusieurs builds candidats pour une même Version de base.
+
+L'usage fonctionnel précis de ces Versions dans le processus de validation reste à documenter.
+
+---
+
+## 8. Hotfix Candidate
+
+Une **Hotfix Candidate** est produite depuis une branche :
+
+```text
+hotfix/****
+```
+
+Sa forme est :
+
+```text
+M.m.r-hc.[numéro de build Jenkins]
+```
+
+Exemple de forme :
+
+```text
+1.7.2-hc.42
+```
+
+Le numéro situé après `hc` correspond au numéro du build Jenkins.
+
+L'usage fonctionnel précis de ces Versions dans le processus de validation reste à documenter.
+
+---
+
+## 9. Version PROD
+
+Une **Version PROD** est une Version destinée aux clients et à une utilisation en production.
+
+### Caractéristiques établies
+
+Une Version PROD :
+
+- possède une Version sans suffixe ;
+- est disponible dans un Repository / espace Nexus spécifique ;
+- existe sous forme de tag Git ;
+- doit posséder une Milestone portant exactement son numéro ;
+- possède normalement une Release correspondante.
+
+### Exemple
+
+Pour Design System React :
+
+```text
+Version PROD : 1.7.1
+```
+
+Les éléments associés sont :
+
+```text
+Package
+└── @my-enterprise/design-system-react
+      │
+      └── Version PROD 1.7.1
+            ├── Nexus PROD
+            ├── tag Git 1.7.1
+            ├── Milestone 1.7.1
+            └── Release normalement présente
+```
+
+### Absence de suffixe
+
+Une Version PROD ne possède pas les suffixes utilisés par les Versions intermédiaires :
+
+```text
+-SNAPSHOT
+-rc.[build]
+-hc.[build]
+```
+
+L'absence de suffixe constitue une caractéristique d'une Version PROD, mais ne doit pas être utilisée seule pour qualifier la Version.
+
+---
+
+## 10. Nexus
+
+Nexus contient plusieurs catégories de Versions.
+
+Le système doit donc distinguer au minimum :
+
+```text
+Nexus
+    │
+    ├── espace / Repository PROD
+    │     └── M.m.r
+    │
+    └── autres Versions publiées
+          ├── M.m.r-SNAPSHOT
+          ├── M.m.r-rc.[build]
+          └── M.m.r-hc.[build]
+```
+
+La présence d'une Version dans Nexus ne suffit donc pas à déterminer qu'il s'agit d'une Version PROD.
+
+L'espace Nexus dans lequel elle est publiée constitue une information métier importante.
+
+---
+
+## 11. Tag Git
+
+Une Version PROD existe sous forme de tag Git.
+
+La correspondance attendue est :
+
+```text
+Version PROD M.m.r
+        │
+        └── Tag Git M.m.r
+```
+
+Exemple :
+
+```text
+Version PROD : 1.7.1
+Tag Git : 1.7.1
+```
+
+Cette information fournit un élément de traçabilité entre la Version distribuée et le code source.
+
+---
+
+## 12. Milestone
+
+Une Version PROD doit posséder une Milestone portant son nom.
+
+La correspondance attendue est :
+
+```text
+Version PROD M.m.r
+        │
+        └── Milestone M.m.r
+```
+
+Exemple :
+
+```text
+Version PROD : 1.7.1
+Milestone : 1.7.1
+```
+
+Cette règle ne doit pas être inversée automatiquement.
+
+L'existence d'une Milestone `M.m.r` ne suffit pas à elle seule à prouver que la Version PROD correspondante a été publiée.
+
+Les Milestones peuvent avoir d'autres usages dans le projet.
+
+---
+
+## 13. Release
+
+Une Version PROD possède normalement une Release correspondante.
+
+La relation observée est donc généralement :
+
+```text
+Version PROD M.m.r
+        │
+        └── Release M.m.r
+```
+
+Cependant, le terme « normalement » signifie que l'existence de la Release n'est pas encore établie comme invariant obligatoire.
+
+La présence ou l'absence d'une Release pourra ultérieurement devenir :
+
+- une information de cohérence ;
+- une règle de workflow ;
+- ou une règle de qualité des données ;
+
+mais cette décision n'est pas encore prise.
+
+---
+
+## 14. Synthèse du cycle de Versions
+
+Le cycle actuellement établi est :
+
+```text
+package.json
+Version de base M.m.r
+        │
+        │
+        ├── develop
+        │     │
+        │     └── Jenkins
+        │           └── M.m.r-SNAPSHOT
+        │
+        ├── project/***
+        │     │
+        │     └── Jenkins
+        │           └── M.m.r-SNAPSHOT
+        │
+        ├── release/****
+        │     │
+        │     └── Jenkins
+        │           └── M.m.r-rc.[build]
+        │
+        ├── hotfix/****
+        │     │
+        │     └── Jenkins
+        │           └── M.m.r-hc.[build]
+        │
+        └── PROD
+              │
+              └── M.m.r
+                    ├── Nexus PROD
+                    ├── Tag Git M.m.r
+                    ├── Milestone M.m.r
+                    └── Release normalement présente
+```
+
+Le passage exact permettant de produire la Version PROD reste à préciser.
+
+---
+
+## 15. Classification des Versions
+
+Les catégories actuellement établies sont :
+
+| Catégorie | Forme | Origine établie | PROD |
+|---|---|---|---|
+| SNAPSHOT | `M.m.r-SNAPSHOT` | `develop`, `project/***` | Non |
+| Release Candidate | `M.m.r-rc.[build]` | `release/****` | Non établie comme PROD |
+| Hotfix Candidate | `M.m.r-hc.[build]` | `hotfix/****` | Non établie comme PROD |
+| PROD | `M.m.r` | à préciser | Oui |
+
+Cette classification doit être conservée indépendamment de la simple présence de la Version dans Nexus.
+
+---
+
+## 16. Application consommatrice
 
 Une Application utilise un Package dans une Version donnée.
-
-La représentation est :
 
 ```text
 Application
     │
     └── utilise
-          │
           ├── Package
-          └── Version du Package
+          └── Version
 ```
 
-Pour le pilotage des consommateurs, il faudra pouvoir distinguer le contexte de cette Version.
+Pour le futur pilotage des consommateurs, il faudra pouvoir déterminer :
 
-Par exemple :
+- le Package utilisé ;
+- la Version utilisée ;
+- la catégorie de cette Version ;
+- la dernière Version PROD disponible ;
+- l'écart éventuel entre Version utilisée et Version PROD attendue.
 
-```text
-Application
-    │
-    └── @my-enterprise/design-system-react
-          │
-          └── 1.7.1
-                └── PROD
-```
-
-Le système devra à terme permettre d'identifier les Applications utilisant une Version PROD ancienne par rapport à la dernière Version PROD disponible.
+Cette distinction sera nécessaire pour mesurer correctement la dette de montée de Version.
 
 ---
 
-## 11. Cible future : plusieurs Packages par Librairie
+## 17. Version et Audit
 
-Le modèle doit conserver la possibilité qu'une Librairie soit distribuée par plusieurs Packages.
-
-La cible pourrait alors devenir :
-
-```text
-Librairie
-    │
-    ├── Package A
-    │     ├── Version A1
-    │     └── Version A2
-    │
-    └── Package B
-          ├── Version B1
-          └── Version B2
-```
-
-Cette représentation est une **capacité cible**.
-
-Elle ne correspond pas à la situation actuelle établie.
-
----
-
-## 12. Repository et Version
-
-Aujourd'hui, un Repository correspond à une Librairie.
-
-La chaîne actuellement observée est donc :
-
-```text
-Repository
-    │
-    └── Librairie
-          │
-          └── Package
-                │
-                └── Versions
-```
-
-À terme, le Repository pourra contenir plusieurs Librairies.
-
-Le modèle devra donc éviter de déduire définitivement la Version d'une Librairie à partir du seul Repository.
-
----
-
-## 13. Milestone GitHub
-
-Les Milestones GitHub sont actuellement utilisés dans plusieurs contextes.
-
-Ils peuvent notamment représenter :
-
-- une version ;
-- une version d'audit ;
-- un horizon de planification ;
-- un lot de conception.
-
-Un Milestone GitHub ne doit donc pas être assimilé automatiquement à une Version.
-
-Le pipeline doit conserver :
-
-- la valeur source du Milestone ;
-- son interprétation métier éventuelle.
-
----
-
-## 14. Version et audit
-
-Les conventions actuelles peuvent utiliser des Milestones tels que :
+Les conventions actuelles peuvent utiliser des Milestones telles que :
 
 ```text
 1.1.0
 1.1.0-Audit
 ```
 
-Ces deux valeurs peuvent se rapporter à une même version de référence :
+Ces deux valeurs peuvent se rapporter à une même Version de référence :
 
 ```text
 1.1.0
@@ -370,72 +427,21 @@ Ces deux valeurs peuvent se rapporter à une même version de référence :
 
 avec des contextes différents.
 
-Conceptuellement :
+Le suffixe utilisé pour identifier le contexte d'Audit doit être configurable.
 
-```text
-1.1.0
-    ├── contexte standard
-    └── contexte audit
-```
+Il faut conserver :
 
-Le suffixe utilisé pour identifier le contexte d'audit doit être configurable.
-
-La règle de normalisation doit permettre de distinguer :
-
-- la valeur source ;
-- la version normalisée ;
-- le type ou contexte du Milestone.
+- la valeur source de la Milestone ;
+- la Version normalisée ;
+- le contexte de la Milestone.
 
 ---
 
-## 15. Release
-
-La notion de **Release** doit être distinguée de la Version tant que leur relation exacte n'a pas été validée.
-
-Une Release pourrait représenter un événement de publication d'une Version.
-
-Cependant, le modèle définitif doit encore déterminer précisément la relation entre :
-
-```text
-Librairie
-Package
-Version
-Release
-Milestone
-Publication Nexus
-```
-
-Aucune équivalence automatique ne doit être introduite à ce stade.
-
----
-
-## 16. Version et composants utilisés
-
-À terme, l'analyse du code des Applications doit également permettre d'identifier les Composants effectivement utilisés.
-
-Le modèle cible pourra donc relier :
-
-```text
-Application
-    │
-    ├── Package @ Version
-    │
-    └── Composants utilisés
-```
-
-Cela permettra notamment :
-
-- de connaître les Composants les plus utilisés ;
-- de mesurer le nombre d'utilisations par Composant ;
-- de rapprocher l'usage d'un Composant de son niveau de qualité.
-
----
-
-## 17. Version et qualité
+## 18. Version et qualité
 
 La qualité doit pouvoir être analysée dans le contexte d'une Version.
 
-L'objectif futur est notamment de pouvoir croiser :
+À terme :
 
 ```text
 Application
@@ -446,20 +452,14 @@ Version utilisée
     ↓
 Composants utilisés
     ↓
-Qualité connue de ces Composants pour cette Version
+Qualité connue des Composants pour cette Version
 ```
-
-Ce croisement pourra contribuer à fournir une information de qualité associée à une Application consommatrice.
 
 La méthode exacte de calcul d'une éventuelle note ou d'un badge de qualité n'est pas encore définie.
 
 ---
 
-## 18. Historisation
-
-La notion de Version doit être compatible avec l'historisation du pipeline.
-
-Les Snapshots doivent permettre d'observer l'évolution des indicateurs dans le temps.
+## 19. Historisation
 
 Il faut distinguer :
 
@@ -484,72 +484,71 @@ Ces notions ont des responsabilités différentes.
 
 ---
 
-## 19. Principes retenus
+## 20. Principes retenus
 
-### Principe 1 — Package et Librairie ne doivent pas être confondus définitivement
-
-Aujourd'hui :
-
-```text
-1 Librairie = 1 Package
-```
-
-mais la cible doit permettre :
-
-```text
-1 Librairie = 1..n Packages
-```
-
-### Principe 2 — La Version est rattachée au Package
+### Principe 1 — La Version est rattachée au Package
 
 Une Version identifie un état versionné d'un Package.
 
-### Principe 3 — Une Application utilise un Package dans une Version donnée
+### Principe 2 — La Version de base ne suffit pas à décrire l'artefact publié
 
-La Version ne doit pas être considérée indépendamment du Package.
+La CI peut transformer `M.m.r` en :
 
-### Principe 4 — Publication et production sont deux notions différentes
+```text
+M.m.r-SNAPSHOT
+M.m.r-rc.[build]
+M.m.r-hc.[build]
+M.m.r
+```
 
-Une Version présente dans Nexus n'est pas nécessairement une Version PROD.
+selon le contexte.
 
-### Principe 5 — PROD et SNAPSHOT doivent être distingués
+### Principe 3 — Le type de branche participe à la classification
 
-Pour Design System React, les contextes actuellement observés sont :
+Le type de branche est une donnée importante du processus de génération de Version.
 
-- PROD ;
-- SNAPSHOT pour tests d'intégration.
+### Principe 4 — Nexus contient plusieurs catégories de Versions
 
-### Principe 6 — Milestone et Version sont des notions distinctes
+Publication dans Nexus et qualification PROD sont deux notions différentes.
 
-Un Milestone peut permettre d'identifier une Version, mais il peut également avoir d'autres significations.
+### Principe 5 — Une Version PROD est corroborée par plusieurs éléments
 
-### Principe 7 — Release et Version restent distinctes
+Les éléments établis sont :
 
-Leur relation exacte doit être précisée avant d'être intégrée au modèle métier définitif.
+- absence de suffixe ;
+- espace Nexus PROD ;
+- tag Git correspondant ;
+- Milestone correspondante ;
+- Release normalement correspondante.
 
-### Principe 8 — Conserver la valeur source
+### Principe 6 — La Milestone est obligatoire pour une PROD
 
-Toute normalisation de Version ou de Milestone doit conserver la valeur source afin de garantir la traçabilité.
+Une Version PROD `M.m.r` doit avoir une Milestone `M.m.r`.
+
+### Principe 7 — La Release n'est pas encore considérée comme obligatoire
+
+Elle existe normalement mais cette propriété n'est pas encore établie comme invariant.
+
+### Principe 8 — Conserver les valeurs sources
+
+Le pipeline doit conserver les informations sources nécessaires à l'explication de la classification d'une Version.
 
 ---
 
-## 20. Points restant à préciser
+## 21. Points restant à préciser
 
-Les éléments suivants restent volontairement ouverts :
+Les éléments suivants restent ouverts :
 
-- règle générique permettant d'identifier une Version PROD ;
-- règle générique permettant d'identifier une Version SNAPSHOT ;
-- conventions utilisées par les autres Librairies ;
-- relation exacte entre branche Git et Version ;
-- quelles propriétés définissent exactement un Package ;
-- comment les Packages sont publiés ;
-- comment une Release est créée ;
-- relation exacte entre Version et Release ;
-- relation exacte entre Version et Milestone ;
-- possibilité et organisation future de plusieurs Packages par Librairie ;
-- comportement des Versions dans un futur Repository contenant plusieurs Librairies ;
-- source permettant d'identifier les Versions réellement utilisées par les Applications ;
-- stratégie de détection des Versions PROD obsolètes ;
+- mécanisme exact permettant de produire une Version PROD ;
+- branche à partir de laquelle une Version PROD est produite ;
+- événement déclenchant la publication PROD ;
+- rôle exact des branches `release/****` dans le passage de RC à PROD ;
+- rôle exact des branches `hotfix/****` dans le passage de HC à PROD ;
+- caractère réellement obligatoire ou non d'une Release GitHub ;
+- comportement lorsque la Milestone attendue est absente ;
+- comportement lorsque le tag attendu est absent ;
+- conventions exactes appliquées aux autres Librairies ;
+- source permettant d'identifier les Versions utilisées par les Applications ;
 - définition de la dette de montée de Version.
 
-Ces points doivent être instruits progressivement à partir du fonctionnement réel du Design System.
+Ces points doivent être instruits progressivement à partir du fonctionnement réel du processus de livraison.

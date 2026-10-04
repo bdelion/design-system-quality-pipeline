@@ -10,8 +10,6 @@ L'objectif est d'éviter :
 - de transformer une situation actuelle en contrainte définitive ;
 - de coder des règles métier qui n'ont pas encore été validées.
 
-Les questions doivent être traitées progressivement.
-
 Lorsqu'une réponse est établie, elle doit être reportée dans les documents de référence concernés.
 
 ---
@@ -20,15 +18,11 @@ Lorsqu'une réponse est établie, elle doit être reportée dans les documents d
 
 ## D-001 — Repository et Librairie
 
-### Décision actuelle
-
 Aujourd'hui :
 
 ```text
 1 Repository = 1 Librairie
 ```
-
-### Cible
 
 Le modèle doit permettre à terme :
 
@@ -36,28 +30,11 @@ Le modèle doit permettre à terme :
 1 Repository = 1..n Librairies
 ```
 
-afin de supporter notamment les monorepos.
-
 ---
 
 ## D-002 — Librairie et Package
 
-### Fait actuel établi
-
-Une Librairie est aujourd'hui distribuée sous la forme d'un Package pouvant être directement utilisé par les Applications.
-
-Le Package possède :
-
-- un nom ;
-- plusieurs Versions au cours de son cycle de vie.
-
-La relation actuelle est :
-
-```text
-Librairie
-    │
-    └── Package
-```
+Une Librairie est aujourd'hui distribuée sous la forme d'un Package.
 
 Dans la situation actuelle :
 
@@ -65,75 +42,131 @@ Dans la situation actuelle :
 1 Librairie = 1 Package
 ```
 
-### Cible
-
-Le modèle doit conserver la possibilité :
+La cible doit permettre :
 
 ```text
 1 Librairie = 1..n Packages
 ```
 
-Cette cardinalité est une capacité cible et non une situation actuelle observée.
-
 ---
 
 ## D-003 — Package et Version
-
-### Fait actuel établi
 
 Une Application utilise un Package dans une Version donnée.
 
 ```text
 Application
-    │
-    └── utilise
-          ├── Package
-          └── Version du Package
+    └── Package @ Version
 ```
-
-La Version est donc rattachée au Package.
 
 ---
 
-## D-004 — Versions PROD et SNAPSHOT
+## D-004 — Version de base
 
-### Fait actuel établi
+Le `package.json` contient une Version de base de forme :
 
-Pour Design System React, plusieurs Versions d'un même Package peuvent être disponibles simultanément dans Nexus avec des finalités différentes.
+```text
+M.m.r
+```
+
+Cette Version sert de base à la CI Jenkins pour produire différentes formes de Versions.
+
+---
+
+## D-005 — Version SNAPSHOT
+
+Depuis :
+
+```text
+develop
+project/***
+```
+
+Jenkins produit :
+
+```text
+M.m.r-SNAPSHOT
+```
+
+Ces Versions :
+
+- peuvent être publiées dans Nexus ;
+- sont destinées aux tests d'intégration ;
+- ne sont pas destinées au déploiement en production.
+
+---
+
+## D-006 — Release Candidate
+
+Depuis :
+
+```text
+release/****
+```
+
+Jenkins produit :
+
+```text
+M.m.r-rc.[numéro de build Jenkins]
+```
+
+---
+
+## D-007 — Hotfix Candidate
+
+Depuis :
+
+```text
+hotfix/****
+```
+
+Jenkins produit :
+
+```text
+M.m.r-hc.[numéro de build Jenkins]
+```
+
+---
+
+## D-008 — Version PROD
+
+Une Version PROD :
+
+- possède une Version `M.m.r` sans suffixe ;
+- est disponible dans un Repository / espace Nexus spécifique ;
+- possède un tag Git correspondant ;
+- doit posséder une Milestone portant son numéro ;
+- possède normalement une Release correspondante.
 
 Exemple :
 
 ```text
-@my-enterprise/design-system-react
-    │
-    ├── 1.7.1
-    │     └── PROD
-    │
-    └── 1.8.0-SNAPSHOT
-          └── tests d'intégration
+Version PROD : 1.7.1
+Tag : 1.7.1
+Milestone : 1.7.1
+Release : normalement présente
 ```
 
-`1.7.1` est actuellement la dernière Version PROD déclarée :
+L'existence de la Release n'est pas encore considérée comme un invariant obligatoire.
 
-- publiée dans Nexus ;
-- disponible pour les clients ;
-- destinée à la production.
+---
 
-`1.8.0-SNAPSHOT` est actuellement la Version présente dans le `package.json` de `develop` :
+## D-009 — Nexus ne contient pas uniquement des Versions PROD
 
-- publiée dans Nexus ;
-- destinée aux tests d'intégration ;
-- non destinée à être déployée en production.
+La présence d'une Version dans Nexus ne permet pas à elle seule de la qualifier de PROD.
 
-### Conséquence
+Nexus peut notamment contenir :
 
 ```text
-Version publiée dans Nexus ≠ nécessairement Version PROD
+M.m.r
+M.m.r-SNAPSHOT
+M.m.r-rc.[build]
+M.m.r-hc.[build]
 ```
 
 ---
 
-## D-005 — Composant non audité
+## D-010 — Composant non audité
 
 Un Composant non audité ne doit pas être automatiquement considéré comme non conforme.
 
@@ -145,25 +178,11 @@ AUDITÉ & CONFORME
 AUDITÉ & NON CONFORME
 ```
 
-Cela permet notamment de séparer :
-
-```text
-Couverture d'audit
-= audités / périmètre
-```
-
-de :
-
-```text
-Taux de conformité
-= conformes / audités
-```
-
 ---
 
-## D-006 — Vélocité vide et vélocité zéro
+## D-011 — Vélocité vide et vélocité zéro
 
-Les valeurs suivantes sont sémantiquement différentes :
+Les valeurs suivantes sont différentes :
 
 ```text
 velocity = null
@@ -171,13 +190,11 @@ velocity = 0
 velocity > 0
 ```
 
-Elles ne doivent pas être normalisées comme une même situation.
-
 ---
 
-## D-007 — Criticité
+## D-012 — Criticité
 
-La criticité doit être associée à un domaine.
+La Criticité doit être associée à un domaine.
 
 Il faut notamment pouvoir distinguer :
 
@@ -188,23 +205,11 @@ Il faut notamment pouvoir distinguer :
 - Developer Experience ;
 - Designer Experience.
 
-Une criticité générique telle que `major` ne suffit pas à elle seule.
-
 ---
 
-## D-008 — Anomalie et amélioration
+## D-013 — Anomalie et amélioration
 
-Une anomalie et une proposition d'amélioration sont deux notions différentes.
-
-Un audit peut produire :
-
-```text
-Audit
-    ├── Anomalies / non-conformités
-    └── Propositions d'amélioration
-```
-
-Ces objets ne doivent pas être automatiquement agrégés dans les mêmes indicateurs.
+Une Anomalie et une proposition d'amélioration sont deux notions différentes.
 
 ---
 
@@ -216,16 +221,10 @@ Quelles propriétés doivent définir un Package dans le modèle métier ?
 
 Éléments déjà établis :
 
-- il possède un nom ;
-- il possède des Versions ;
-- il est publié dans Nexus.
-
-Autres propriétés éventuelles à instruire :
-
-- identifiant ;
-- repository source ;
-- librairie associée ;
-- autres métadonnées de publication.
+- nom ;
+- Version de base ;
+- Versions publiées ;
+- publication dans Nexus.
 
 **Statut : À instruire**
 
@@ -235,8 +234,6 @@ Autres propriétés éventuelles à instruire :
 
 Dans quels cas une Librairie pourrait-elle être distribuée par plusieurs Packages ?
 
-Cette possibilité est une cible du modèle mais aucun cas actuel n'est encore établi.
-
 **Statut : À instruire**
 
 ---
@@ -244,13 +241,6 @@ Cette possibilité est une cible du modèle mais aucun cas actuel n'est encore �
 ## Q-003 — Plusieurs Librairies dans un Repository
 
 Comment les Librairies devront-elles être identifiées dans un futur monorepo ?
-
-Exemples de possibilités à étudier ultérieurement :
-
-- configuration explicite ;
-- répertoires ;
-- Packages ;
-- métadonnées de publication.
 
 **Statut : À instruire**
 
@@ -270,82 +260,92 @@ Dans le cas futur où une Librairie possède plusieurs Packages, un Composant ap
 
 # 4. Questions ouvertes — Versions et Releases
 
-## Q-005 — Classification des Versions
+## Q-005 — Production d'une Version PROD
 
-Quelle règle générique permet de déterminer le contexte d'une Version ?
-
-Pour Design System React, deux contextes sont établis :
-
-- PROD ;
-- SNAPSHOT pour tests d'intégration.
-
-Il reste à déterminer si cette convention s'applique de la même manière aux autres Librairies et si d'autres contextes existent.
-
-**Statut : À instruire**
-
----
-
-## Q-006 — Source de référence d'une Version PROD
-
-Quelle information doit être utilisée comme source de référence pour déterminer la dernière Version PROD d'un Package ?
-
-L'exemple de Design System React établit que `1.7.1` est publiée dans Nexus et disponible pour les clients.
-
-Il reste à déterminer la règle permettant au pipeline de l'identifier automatiquement comme dernière Version PROD.
-
-**Statut : À instruire**
-
----
-
-## Q-007 — Branche et Version
-
-Quelle est la relation exacte entre les branches Git et les Versions ?
-
-Pour Design System React, il est établi que :
+Quel est le mécanisme exact permettant de passer des Versions intermédiaires à :
 
 ```text
-develop
-    └── package.json
-          └── 1.8.0-SNAPSHOT
+M.m.r
 ```
 
-Il reste à déterminer les conventions appliquées aux Versions PROD et aux autres Librairies.
+et de publier cette Version dans l'espace Nexus PROD ?
+
+Il reste notamment à préciser :
+
+- la branche source ;
+- l'événement déclencheur ;
+- le rôle de Jenkins ;
+- le rôle éventuel d'une fusion vers une branche stable.
 
 **Statut : À instruire**
 
 ---
 
-## Q-008 — Version et Release
+## Q-006 — Release Candidate vers PROD
 
-Quelle est la relation exacte entre :
+Quel est le processus exact permettant de passer de :
 
 ```text
-Version
-Release
+M.m.r-rc.[build]
 ```
 
-Une Release représente-t-elle systématiquement la publication d'une Version ?
-
-**Statut : À instruire**
-
----
-
-## Q-009 — Version et Milestone
-
-Quelle relation doit être établie entre :
+à :
 
 ```text
-Version du Package
-Milestone GitHub
+M.m.r
 ```
-
-Un Milestone peut actuellement représenter plusieurs notions et ne peut donc pas être assimilé automatiquement à une Version.
 
 **Statut : À instruire**
 
 ---
 
-## Q-010 — Version d'audit
+## Q-007 — Hotfix Candidate vers PROD
+
+Quel est le processus exact permettant de passer de :
+
+```text
+M.m.r-hc.[build]
+```
+
+à une Version PROD ?
+
+**Statut : À instruire**
+
+---
+
+## Q-008 — Release GitHub
+
+Une Release GitHub doit-elle systématiquement exister pour toute Version PROD ?
+
+Il est actuellement établi qu'elle existe normalement, mais son caractère obligatoire n'est pas confirmé.
+
+**Statut : À confirmer**
+
+---
+
+## Q-009 — Milestone manquante
+
+Une Version PROD doit avoir une Milestone portant exactement son numéro.
+
+Comment le système doit-il traiter une Version PROD pour laquelle cette Milestone serait absente ?
+
+Cette situation pourrait notamment constituer une incohérence de données ou de processus.
+
+**Statut : À instruire ultérieurement dans les règles**
+
+---
+
+## Q-010 — Tag Git manquant
+
+Une Version PROD doit posséder un tag Git correspondant.
+
+Comment le système doit-il traiter une Version PROD publiée dans Nexus lorsque le tag attendu est absent ?
+
+**Statut : À instruire ultérieurement dans les règles**
+
+---
+
+## Q-011 — Version d'audit
 
 La convention :
 
@@ -356,68 +356,39 @@ La convention :
 
 doit-elle toujours être interprétée comme une même Version de référence avec deux contextes différents ?
 
-Le suffixe doit être configurable.
-
 **Statut : À confirmer**
 
 ---
 
 # 5. Questions ouvertes — Anomalies
 
-## Q-011 — Définition d'une anomalie
+## Q-012 — Définition d'une Anomalie
 
-Quelle règle doit déterminer qu'une Issue représente une anomalie ?
-
-Le modèle doit pouvoir supporter :
-
-- Issue Type ;
-- label ;
-- combinaison de critères ;
-- configuration spécifique par Repository ou organisation.
+Quelle règle doit déterminer qu'une Issue représente une Anomalie ?
 
 **Statut : À instruire**
 
 ---
 
-## Q-012 — Origine d'une anomalie
+## Q-013 — Origine d'une Anomalie
 
 Quelles origines doivent être distinguées ?
 
-Exemples déjà identifiés :
+**Statut : À instruire**
 
-- audit ;
-- utilisateur ;
-- équipe ;
-- autre processus.
+---
+
+## Q-014 — Date de détection
+
+Quelle date représente la détection d'une Anomalie ?
 
 **Statut : À instruire**
 
 ---
 
-## Q-013 — Date de détection
+## Q-015 — Date de correction
 
-Quelle date représente la détection d'une anomalie ?
-
-Exemples possibles :
-
-- création de l'Issue ;
-- date d'un audit ;
-- autre événement.
-
-**Statut : À instruire**
-
----
-
-## Q-014 — Date de correction
-
-Quelle date représente la correction effective d'une anomalie ?
-
-Exemples possibles :
-
-- fermeture de l'Issue ;
-- merge de la Pull Request ;
-- publication d'une Version ;
-- autre événement.
+Quelle date représente la correction effective d'une Anomalie ?
 
 **Statut : À instruire**
 
@@ -425,7 +396,7 @@ Exemples possibles :
 
 # 6. Questions ouvertes — Audits
 
-## Q-015 — Objet Audit
+## Q-016 — Objet Audit
 
 L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHub qui peut actuellement le représenter ?
 
@@ -433,28 +404,23 @@ L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHu
 
 ---
 
-## Q-016 — Campagne d'audit
+## Q-017 — Campagne d'Audit
 
-Comment une campagne d'audit est-elle identifiée ?
-
-**Statut : À instruire**
-
----
-
-## Q-017 — Résultat d'un audit
-
-Quelles informations déterminent qu'un Composant audité est :
-
-```text
-CONFORME
-NON CONFORME
-```
+Comment une Campagne d'Audit est-elle identifiée ?
 
 **Statut : À instruire**
 
 ---
 
-## Q-018 — Version auditée
+## Q-018 — Résultat d'un Audit
+
+Quelles informations déterminent qu'un Composant audité est conforme ou non conforme ?
+
+**Statut : À instruire**
+
+---
+
+## Q-019 — Version auditée
 
 Comment déterminer précisément la Version du Composant ou de la Librairie faisant l'objet d'un Audit ?
 
@@ -464,7 +430,7 @@ Comment déterminer précisément la Version du Composant ou de la Librairie fai
 
 # 7. Questions ouvertes — Workflow
 
-## Q-019 — Profils de workflow
+## Q-020 — Profils de workflow
 
 Les profils suivants doivent-ils être formalisés comme des profils métier distincts ?
 
@@ -478,21 +444,17 @@ Les profils suivants doivent-ils être formalisés comme des profils métier dis
 
 ---
 
-## Q-020 — Exceptions aux règles de Pull Request
+## Q-021 — Exceptions aux règles de Pull Request
 
 Pour quels profils une Pull Request n'est-elle pas obligatoire avant le statut Done ?
-
-Les Audits et Epics constituent des cas déjà identifiés à étudier.
 
 **Statut : À formaliser**
 
 ---
 
-## Q-021 — Statut Cancelled
+## Q-022 — Statut Cancelled
 
 Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled ?
-
-Les règles actuelles concernant les Pull Requests et Milestones devront être réévaluées dans le modèle de workflow complet.
 
 **Statut : À formaliser**
 
@@ -500,15 +462,15 @@ Les règles actuelles concernant les Pull Requests et Milestones devront être r
 
 # 8. Questions ouvertes — Applications consommatrices
 
-## Q-022 — Identification des Applications
+## Q-023 — Identification des Applications
 
-Quelle source permet de connaître la liste des Applications qui utilisent ou devraient utiliser le Design System ?
+Quelle source permet de connaître les Applications qui utilisent ou devraient utiliser le Design System ?
 
 **Statut : Futur**
 
 ---
 
-## Q-023 — Détection des Packages utilisés
+## Q-024 — Détection des Packages utilisés
 
 Comment déterminer qu'une Application utilise un Package donné ?
 
@@ -516,33 +478,31 @@ Comment déterminer qu'une Application utilise un Package donné ?
 
 ---
 
-## Q-024 — Détection de la Version utilisée
+## Q-025 — Détection de la Version utilisée
 
-Comment déterminer la Version du Package effectivement utilisée par une Application ?
-
-Le fait qu'une Application utilise un Package dans une Version donnée est établi.
-
-La source permettant de récupérer cette information reste à déterminer.
+Comment déterminer la Version effectivement utilisée par une Application ?
 
 **Statut : Futur**
 
 ---
 
-## Q-025 — Versions autorisées pour les consommateurs
+## Q-026 — Versions non-PROD utilisées par les consommateurs
 
-Comment le système doit-il traiter une Application utilisant une Version qui n'est pas destinée à la production, par exemple une Version SNAPSHOT ?
+Comment traiter une Application utilisant :
 
-Faut-il :
+```text
+M.m.r-SNAPSHOT
+M.m.r-rc.[build]
+M.m.r-hc.[build]
+```
 
-- l'identifier comme contexte de test attendu ;
-- la signaler si elle apparaît dans un contexte de production ;
-- appliquer d'autres règles ?
+notamment selon qu'il s'agit d'un environnement de test ou de production ?
 
 **Statut : Futur**
 
 ---
 
-## Q-026 — Détection des Composants utilisés
+## Q-027 — Détection des Composants utilisés
 
 Comment analyser le code d'une Application afin d'identifier :
 
@@ -553,9 +513,9 @@ Comment analyser le code d'une Application afin d'identifier :
 
 ---
 
-## Q-027 — Dette de montée de Version
+## Q-028 — Dette de montée de Version
 
-Comment définir la dette liée à l'utilisation d'une ancienne Version PROD du Design System ?
+Comment définir la dette liée à l'utilisation d'une ancienne Version PROD ?
 
 Il faudra notamment définir :
 
@@ -570,7 +530,7 @@ Il faudra notamment définir :
 
 ---
 
-## Q-028 — Alertes aux Squads
+## Q-029 — Alertes aux Squads
 
 Quelles situations doivent provoquer une alerte à destination d'une Squad responsable d'une Application ?
 
@@ -580,7 +540,7 @@ Quelles situations doivent provoquer une alerte à destination d'une Squad respo
 
 # 9. Questions ouvertes — Qualité des Applications consommatrices
 
-## Q-029 — Qualité d'une Version
+## Q-030 — Qualité d'une Version
 
 Comment calculer la qualité d'une Version d'une Librairie ?
 
@@ -588,7 +548,7 @@ Comment calculer la qualité d'une Version d'une Librairie ?
 
 ---
 
-## Q-030 — Qualité d'un Composant
+## Q-031 — Qualité d'un Composant
 
 Comment calculer la qualité d'un Composant pour une Version donnée ?
 
@@ -596,7 +556,7 @@ Comment calculer la qualité d'un Composant pour une Version donnée ?
 
 ---
 
-## Q-031 — Badge ou note d'une Application
+## Q-032 — Badge ou note d'une Application
 
 Comment construire une information synthétique de qualité pour une Application en croisant :
 
@@ -610,26 +570,13 @@ Composants utilisés
 Qualité des Composants
 ```
 
-Le besoin est identifié mais le modèle de scoring n'est pas défini.
-
-Aucune formule ne doit être introduite avant validation de ce modèle.
-
 **Statut : Futur**
 
 ---
 
-## Q-032 — RGAA / WAI-ARIA d'une Application
+## Q-033 — RGAA / WAI-ARIA d'une Application
 
 Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA calculé à partir des Composants du Design System utilisés par une Application ?
-
-Il faudra notamment déterminer :
-
-- le périmètre évalué ;
-- les limites de responsabilité du Design System ;
-- la prise en compte des Composants utilisés ;
-- la Version utilisée ;
-- les Composants non audités ;
-- les anomalies ouvertes.
 
 **Statut : Futur**
 
@@ -637,7 +584,7 @@ Il faudra notamment déterminer :
 
 # 10. Questions ouvertes — Historisation
 
-## Q-033 — Granularité historique
+## Q-034 — Granularité historique
 
 Quels événements doivent provoquer la création d'un Snapshot ?
 
@@ -653,7 +600,7 @@ Exemples à étudier :
 
 ---
 
-## Q-034 — Conservation
+## Q-035 — Conservation
 
 Quelle durée d'historique doit être conservée ?
 
@@ -663,21 +610,33 @@ Quelle durée d'historique doit être conservée ?
 
 # 11. Questions ouvertes — Sources externes
 
-## Q-035 — Publication des Packages
+## Q-036 — Nexus
 
-Nexus est identifié comme source de publication des Packages.
+Nexus est identifié comme source de publication des Packages et Versions.
 
-Il reste à déterminer comment le pipeline doit l'interroger et quelles métadonnées permettent de distinguer notamment :
+Il faudra déterminer les informations nécessaires au pipeline pour identifier :
 
-- Versions PROD ;
-- Versions SNAPSHOT ;
-- autres contextes éventuels.
+- l'espace Nexus ;
+- le Package ;
+- la Version ;
+- la catégorie de Version ;
+- la dernière Version PROD.
 
-**Statut : À instruire**
+**Statut : À instruire techniquement**
 
 ---
 
-## Q-036 — Applications consommatrices
+## Q-037 — Jenkins
+
+Jenkins produit les Versions à partir du type de branche et de la Version de base.
+
+Il faudra déterminer si le pipeline doit interroger directement Jenkins ou si les informations disponibles dans GitHub et Nexus sont suffisantes.
+
+**Statut : À instruire techniquement**
+
+---
+
+## Q-038 — Applications consommatrices
 
 Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
@@ -685,7 +644,7 @@ Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
 ---
 
-## Q-037 — Usage des Composants
+## Q-039 — Usage des Composants
 
 Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des Composants dans les Applications ?
 
@@ -695,7 +654,7 @@ Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des 
 
 # 12. Questions ouvertes — Architecture
 
-## Q-038 — Backend
+## Q-040 — Backend
 
 À quel moment le dashboard statique actuel devra-t-il évoluer vers une architecture avec backend ?
 
@@ -703,7 +662,7 @@ Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des 
 
 ---
 
-## Q-039 — Stockage historique
+## Q-041 — Stockage historique
 
 Quel système doit conserver les Snapshots à terme ?
 
@@ -711,7 +670,7 @@ Quel système doit conserver les Snapshots à terme ?
 
 ---
 
-## Q-040 — Multi-source
+## Q-042 — Multi-source
 
 Comment orchestrer à terme les différentes sources nécessaires ?
 
@@ -719,6 +678,7 @@ Comment orchestrer à terme les différentes sources nécessaires ?
 GitHub
 Catalogue
 Nexus
+Jenkins éventuellement
 Applications consommatrices
 Analyse du code
 Autres sources
@@ -742,4 +702,4 @@ Pour chaque question :
 6. définir les impacts sur les indicateurs ;
 7. seulement ensuite modifier l'implémentation.
 
-Cette approche doit éviter que le code ou les contraintes actuelles de GitHub deviennent implicitement la définition du métier.
+Cette approche doit éviter que les contraintes actuelles de GitHub, Jenkins ou Nexus deviennent implicitement la définition du métier.

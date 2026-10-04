@@ -27,7 +27,7 @@ Design System
     └── Librairie
 ```
 
-Un Design System peut contenir plusieurs librairies.
+Un Design System peut contenir plusieurs Librairies.
 
 ---
 
@@ -35,52 +35,32 @@ Un Design System peut contenir plusieurs librairies.
 
 ### Définition
 
-Unité métier du Design System mise à disposition des applications consommatrices.
+Unité métier du Design System mise à disposition des Applications consommatrices.
 
 ### Situation actuelle
 
 Aujourd'hui :
 
-- une librairie correspond à un repository ;
-- une librairie est distribuée sous la forme d'un package ;
-- ce package peut être utilisé par les applications dans une version donnée.
-
-```text
-Repository
-    └── Librairie
-          └── Package
-```
+- une Librairie correspond à un Repository ;
+- une Librairie est distribuée sous la forme d'un Package ;
+- ce Package peut être utilisé par les Applications dans une Version donnée.
 
 Exemples observés :
 
-| Librairie | Package | Dernière version PROD déclarée |
+| Librairie | Package | Dernière Version PROD déclarée |
 |---|---|---|
 | Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
 | Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
 | Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
 
-Pour Design System React, une version `1.8.0-SNAPSHOT` existe également actuellement sur `develop` et dans Nexus pour les tests d'intégration.
-
 ### Cible future
 
 Le modèle doit permettre :
 
-- plusieurs librairies dans un repository ;
-- plusieurs packages pour une librairie.
-
-```text
-Repository
-    ├── Librairie A
-    │     ├── Package A1
-    │     └── Package A2
-    │
-    └── Librairie B
-          └── Package B1
-```
+- plusieurs Librairies dans un Repository ;
+- plusieurs Packages pour une Librairie.
 
 Ces cardinalités représentent une capacité cible.
-
-Elles ne décrivent pas la situation actuelle.
 
 ---
 
@@ -92,11 +72,14 @@ Conteneur technique de code et de données GitHub.
 
 ### Données associées
 
-Un repository peut fournir notamment :
+Un Repository peut fournir notamment :
 
 - Issues ;
 - Pull Requests ;
 - Milestones ;
+- branches ;
+- tags ;
+- Releases ;
 - informations de projets.
 
 ### Situation actuelle
@@ -111,78 +94,38 @@ Un repository peut fournir notamment :
 1 Repository = 1..n Librairies
 ```
 
-Le repository est un objet de source et d'organisation technique. Il ne doit pas remplacer la notion métier de Librairie.
-
 ---
 
 ## 5. Package
 
 ### Définition
 
-Unité technique distribuable correspondant actuellement à une librairie et pouvant être référencée comme dépendance par une application.
+Unité technique distribuable correspondant actuellement à une Librairie et pouvant être référencée comme dépendance par une Application.
 
 ### Situation actuelle établie
 
-Aujourd'hui, une librairie est distribuée sous la forme d'un package.
+Le Package :
 
-Le package :
-
-- possède un nom permettant de l'identifier ;
-- possède plusieurs versions au cours de son cycle de vie ;
+- possède un nom ;
+- possède une Version de base ;
+- peut produire plusieurs types de Versions ;
 - est publié dans Nexus ;
-- peut être utilisé par une application dans une version donnée.
+- peut être utilisé par une Application dans une Version donnée.
 
-```text
-Librairie
-    └── Package
-          ├── Version 1
-          ├── Version 2
-          └── Version N
-```
-
-Les exemples réels actuellement identifiés sont :
+Exemple :
 
 ```text
 Design System React
     └── @my-enterprise/design-system-react
           ├── PROD : 1.7.1
-          └── develop / intégration : 1.8.0-SNAPSHOT
-
-Enterprise Assets
-    └── @my-enterprise/enterprise-assets
-          └── PROD : 2.1.0
-
-Design System Metier React
-    └── @my-enterprise/design-system-metier-react
-          └── PROD : 0.14.0
+          └── develop : 1.8.0-SNAPSHOT
 ```
-
-Aucune information n'est encore établie ici concernant d'éventuelles versions SNAPSHOT des deux derniers Packages.
 
 ### Cible future
 
-Une librairie pourra être distribuée par plusieurs packages.
-
-```text
-Librairie
-    ├── Package A
-    ├── Package B
-    └── Package C
-```
+Une Librairie pourra être distribuée par plusieurs Packages.
 
 Cette possibilité doit être supportée par le modèle cible mais ne constitue pas une situation actuelle établie.
-
-### À préciser
-
-Les propriétés définitives du Package restent à définir.
-
-Il reste notamment à préciser son articulation avec :
-
-- la librairie ;
-- les composants ;
-- les releases ;
-- les versions ;
-- les sources de publication.
 
 ---
 
@@ -192,49 +135,71 @@ Il reste notamment à préciser son articulation avec :
 
 Identification d'un état versionné d'un Package.
 
-### Situation actuelle établie
+### Version de base
 
-Un même Package peut avoir plusieurs Versions disponibles avec des finalités différentes.
-
-Pour `@my-enterprise/design-system-react`, deux situations sont actuellement observées :
-
-| Version | Contexte | Nexus | Usage |
-|---|---|---|---|
-| `1.7.1` | PROD | publiée | disponible pour les clients et destinée à la production |
-| `1.8.0-SNAPSHOT` | develop / intégration | publiée | destinée aux tests d'intégration, pas au déploiement en production |
-
-La présence dans Nexus n'est donc pas suffisante pour qualifier une Version comme version de production.
-
-### Version PROD
-
-Une Version PROD est une version publiée et disponible pour les clients avec vocation à être utilisée en production.
-
-Pour Design System React, la dernière Version PROD déclarée est actuellement :
+Le cycle de construction utilise une Version de base de forme :
 
 ```text
-1.7.1
+M.m.r
 ```
+
+Cette Version de base est utilisée par la CI Jenkins pour produire différentes Versions selon le type de branche.
+
+### Types actuellement établis
+
+| Contexte / branche | Version produite |
+|---|---|
+| `develop` | `M.m.r-SNAPSHOT` |
+| `project/***` | `M.m.r-SNAPSHOT` |
+| `release/****` | `M.m.r-rc.[build Jenkins]` |
+| `hotfix/****` | `M.m.r-hc.[build Jenkins]` |
+| PROD | `M.m.r` |
 
 ### Version SNAPSHOT
 
-Une Version SNAPSHOT peut être publiée dans Nexus sans être destinée à la production.
+Une Version SNAPSHOT :
 
-Pour Design System React, la branche `develop` contient actuellement dans son `package.json` :
+- est produite depuis `develop` ou `project/***` ;
+- possède la forme `M.m.r-SNAPSHOT` ;
+- peut être publiée dans Nexus ;
+- est destinée aux tests d'intégration ;
+- n'a pas vocation à être déployée en production.
+
+### Release Candidate
+
+Une Release Candidate :
+
+- est produite depuis `release/****` ;
+- possède la forme `M.m.r-rc.[numéro de build Jenkins]`.
+
+### Hotfix Candidate
+
+Une Hotfix Candidate :
+
+- est produite depuis `hotfix/****` ;
+- possède la forme `M.m.r-hc.[numéro de build Jenkins]`.
+
+### Version PROD
+
+Une Version PROD :
+
+- possède la forme `M.m.r` sans suffixe ;
+- est disponible dans un espace Nexus spécifique ;
+- possède un tag Git correspondant ;
+- doit posséder une Milestone portant son numéro ;
+- possède normalement une Release correspondante.
+
+Exemple :
 
 ```text
-1.8.0-SNAPSHOT
+1.7.1
+├── Nexus PROD
+├── tag Git : 1.7.1
+├── Milestone : 1.7.1
+└── Release : normalement présente
 ```
 
-Cette version est disponible dans Nexus pour les tests d'intégration.
-
-### À préciser
-
-Il reste notamment à déterminer :
-
-- la règle générique permettant de classifier les versions ;
-- la relation entre branche et Version ;
-- la relation entre Version et Release ;
-- la relation entre Version et Milestone GitHub.
+La Release n'est pas considérée comme obligatoire à ce stade.
 
 ---
 
@@ -242,26 +207,17 @@ Il reste notamment à déterminer :
 
 ### Définition
 
-Unité fonctionnelle réutilisable appartenant à une librairie du Design System.
+Unité fonctionnelle réutilisable appartenant à une Librairie du Design System.
 
-### Relations
-
-```text
-Librairie
-    └── Composant
-```
-
-Un composant peut être associé à :
+Un Composant peut être associé à :
 
 - des Issues ;
-- des anomalies ;
-- des audits ;
-- des versions ;
+- des Anomalies ;
+- des Audits ;
+- des Versions ;
 - des informations de qualité.
 
-### Référence
-
-Le catalogue des composants constitue la référence des composants connus du pipeline.
+Le catalogue des composants constitue la référence des Composants connus du pipeline.
 
 ---
 
@@ -270,8 +226,6 @@ Le catalogue des composants constitue la référence des composants connus du pi
 ### Définition
 
 Élément de travail provenant actuellement de GitHub.
-
-### Informations métier
 
 Une Issue peut notamment posséder :
 
@@ -283,13 +237,9 @@ Une Issue peut notamment posséder :
 - un Milestone ;
 - des relations avec d'autres Issues ;
 - des relations avec des Pull Requests ;
-- un ou plusieurs composants associés.
+- un ou plusieurs Composants associés.
 
-### Important
-
-Une Issue n'est pas nécessairement une anomalie.
-
-Son sens métier est déterminé par sa classification et son contexte.
+Une Issue n'est pas nécessairement une Anomalie.
 
 ---
 
@@ -299,22 +249,18 @@ Son sens métier est déterminé par sa classification et son contexte.
 
 Problème identifié sur le Design System et nécessitant potentiellement une correction.
 
-### Identification
-
-La manière d'identifier une anomalie doit être configurable.
+La manière d'identifier une Anomalie doit être configurable.
 
 Elle peut dépendre :
 
 - de l'Issue Type ;
 - d'un label ;
 - d'une combinaison de critères ;
-- du repository ou de l'organisation.
+- du Repository ou de l'organisation.
 
-### Propriétés métier possibles
+Une Anomalie peut être caractérisée par :
 
-Une anomalie peut être caractérisée par :
-
-- son composant ;
+- son Composant ;
 - son statut ;
 - sa criticité ;
 - le domaine de sa criticité ;
@@ -322,21 +268,15 @@ Une anomalie peut être caractérisée par :
 - sa date de détection ;
 - sa date de correction ;
 - son origine ;
-- l'audit éventuel dont elle provient ;
+- l'Audit éventuel dont elle provient ;
 - les Pull Requests associées ;
-- la version concernée.
+- la Version concernée.
 
 ---
 
 ## 10. Amélioration
 
-### Définition
-
-Proposition d'amélioration ne correspondant pas nécessairement à une anomalie ou à une non-conformité.
-
-Cette distinction est particulièrement importante pour les audits.
-
-Un audit peut produire :
+Une **Amélioration** est une proposition d'amélioration ne correspondant pas nécessairement à une Anomalie ou à une non-conformité.
 
 ```text
 Audit
@@ -350,11 +290,9 @@ Ces deux catégories ne doivent pas être automatiquement agrégées dans les m�
 
 ## 11. Criticité
 
-### Définition
+La **Criticité** est un niveau d'importance associé à une Anomalie.
 
-Niveau d'importance associé à une anomalie.
-
-La criticité ne doit pas être considérée indépendamment de son domaine.
+Elle doit être associée à un domaine.
 
 Il faut pouvoir distinguer notamment :
 
@@ -365,31 +303,13 @@ Il faut pouvoir distinguer notamment :
 - Developer Experience ;
 - Designer Experience.
 
-Une valeur telle que `major` n'est donc pas suffisante seule.
-
-Le modèle métier doit pouvoir représenter conceptuellement :
-
-```text
-Domaine de criticité + Niveau de criticité
-```
-
 ---
 
 ## 12. Audit
 
-### Définition
-
-Opération structurée visant à évaluer un périmètre du Design System.
-
-### Types
-
-Le modèle doit permettre plusieurs types d'audit.
+Un **Audit** est une opération structurée visant à évaluer un périmètre du Design System.
 
 L'accessibilité constitue le premier domaine identifié.
-
-D'autres types pourront être ajoutés ultérieurement.
-
-### Relations possibles
 
 ```text
 Audit
@@ -407,25 +327,19 @@ Les cardinalités précises restent à formaliser.
 
 ## 13. Campagne d'audit
 
-### Définition
+Une **Campagne d'audit** est un ensemble cohérent d'Audits réalisés dans un même contexte.
 
-Ensemble cohérent d'audits réalisés dans un même contexte.
+Elle doit permettre de suivre notamment :
 
-Une campagne doit permettre de suivre notamment :
-
-- les composants prévus ;
-- les composants en cours ;
-- les composants terminés ;
-- les composants conformes ;
-- les composants non conformes.
+- les Composants prévus ;
+- les Composants en cours ;
+- les Composants terminés ;
+- les Composants conformes ;
+- les Composants non conformes.
 
 ---
 
 ## 14. Conformité
-
-### Définition
-
-Résultat d'un audit pour un périmètre donné.
 
 Les états métier minimaux sont :
 
@@ -435,29 +349,21 @@ AUDITÉ & CONFORME
 AUDITÉ & NON CONFORME
 ```
 
-Un composant non audité ne doit pas être automatiquement considéré comme non conforme.
+Un Composant non audité ne doit pas être automatiquement considéré comme non conforme.
 
 ---
 
 ## 15. Pull Request
 
-### Définition
-
-Objet GitHub représentant une proposition de modification du code.
+Une **Pull Request** représente une proposition de modification du code.
 
 Une Pull Request peut être reliée à une ou plusieurs Issues.
 
-Elle constitue une information importante pour déterminer comment certains travaux ont été réalisés.
-
 La présence obligatoire ou non d'une Pull Request dépend du type de workflow.
-
-Par exemple, un audit ou une Epic ne suit pas nécessairement le même cycle qu'un travail de développement standard.
 
 ---
 
 ## 16. Projet et statut
-
-### Définition
 
 Le projet GitHub permet notamment de représenter l'état d'avancement d'un élément de travail.
 
@@ -471,19 +377,13 @@ Les statuts actuellement identifiés comprennent :
 - Blocked ;
 - Cancelled.
 
-Le statut représente **où se trouve le travail dans son workflow**.
-
-Il ne doit pas être confondu avec l'Issue Type ou les labels.
-
 ---
 
 ## 17. Iteration
 
-### Définition
+Une **Iteration** est une période de travail planifiée utilisée pour organiser les travaux.
 
-Période de travail planifiée utilisée pour organiser les travaux.
-
-Elle peut servir à calculer des indicateurs tels que :
+Elle peut servir à calculer notamment :
 
 - nombre d'Issues prévues ;
 - nombre d'Issues terminées ;
@@ -493,15 +393,11 @@ Elle peut servir à calculer des indicateurs tels que :
 - capacité ;
 - état du sprint.
 
-Les règles exactes seront documentées dans le domaine workflow.
-
 ---
 
 ## 18. Milestone
 
-### Définition
-
-Objet GitHub actuellement utilisé pour représenter différents types de regroupements.
+Une **Milestone** est un objet GitHub actuellement utilisé pour représenter différents types de regroupements.
 
 Les usages identifiés comprennent notamment :
 
@@ -510,72 +406,94 @@ Les usages identifiés comprennent notamment :
 - horizons de planification ;
 - lots de conception.
 
-Un Milestone ne doit donc pas être automatiquement assimilé à une Version.
+### Règle établie pour une Version PROD
 
-Le pipeline devra interpréter sa signification selon des règles configurables.
+Une Version PROD doit disposer d'une Milestone portant son numéro.
 
----
-
-## 19. Release
-
-### Définition
-
-Notion représentant la mise à disposition d'une version.
-
-La relation exacte entre :
-
-- Release ;
-- Version ;
-- Package ;
-- Milestone ;
-
-reste à formaliser.
-
-Il ne faut pas introduire d'équivalence automatique entre ces objets tant que les règles métier correspondantes ne sont pas établies.
-
----
-
-## 20. Application consommatrice
-
-### Définition
-
-Application utilisant une ou plusieurs librairies du Design System.
-
-### Situation actuelle établie
-
-Une application utilise un Package dans une Version donnée.
+Exemple :
 
 ```text
-Application
-    └── utilise
-          ├── Package
-          └── Version du Package
+Version PROD : 1.7.1
+Milestone : 1.7.1
 ```
 
-Toutes les Versions publiées dans Nexus ne sont pas nécessairement destinées à être utilisées en production.
-
-### Cible future
-
-Le système devra pouvoir enrichir cette relation avec notamment :
-
-- le contexte de la Version utilisée ;
-- les composants réellement utilisés ;
-- leur fréquence d'utilisation ;
-- la Version PROD attendue ;
-- la dette de mise à niveau ;
-- la qualité associée aux composants consommés.
-
-Les sources permettant de construire ces informations restent à définir.
+Cela ne signifie pas que toute Milestone représente nécessairement une Version PROD.
 
 ---
 
-## 21. Snapshot
+## 19. Tag Git
 
 ### Définition
 
-Photographie du système à un instant donné.
+Un **Tag Git** identifie un point du Repository.
 
-Un Snapshot permet de conserver :
+### Règle établie pour une Version PROD
+
+Une Version PROD possède un tag Git correspondant à son numéro.
+
+Exemple :
+
+```text
+Version PROD : 1.7.1
+Tag Git : 1.7.1
+```
+
+---
+
+## 20. Release
+
+Une **Release** représente une information de publication associée au Repository.
+
+Pour une Version PROD, une Release correspondante existe normalement.
+
+Cependant, son caractère systématiquement obligatoire n'est pas établi.
+
+La Release ne doit donc pas être utilisée seule comme critère obligatoire de qualification d'une Version PROD.
+
+---
+
+## 21. Publication Nexus
+
+### Définition
+
+Publication d'une Version d'un Package dans Nexus.
+
+### Important
+
+Plusieurs types de Versions sont disponibles dans Nexus.
+
+La publication Nexus ne signifie donc pas automatiquement :
+
+```text
+Version = PROD
+```
+
+Une Version PROD est disponible dans un espace Nexus spécifique.
+
+Les Versions intermédiaires générées par Jenkins peuvent également être publiées dans Nexus.
+
+---
+
+## 22. Application consommatrice
+
+Une **Application consommatrice** utilise une ou plusieurs Librairies du Design System.
+
+Une Application utilise un Package dans une Version donnée.
+
+Le système devra à terme distinguer :
+
+- Version PROD ;
+- Version SNAPSHOT ;
+- Release Candidate ;
+- Hotfix Candidate.
+
+---
+
+## 23. Snapshot
+
+Un **Snapshot** est une photographie du système à un instant donné.
+
+Il permet de conserver :
 
 - les indicateurs ;
 - leur contexte ;
@@ -583,17 +501,11 @@ Un Snapshot permet de conserver :
 - la version des règles ;
 - les informations nécessaires à leur interprétation.
 
-La comparaison de plusieurs Snapshots permet d'analyser l'évolution dans le temps.
-
 ---
 
-## 22. Indicateur
+## 24. Indicateur
 
-### Définition
-
-Mesure calculée à partir du modèle normalisé.
-
-Un indicateur doit être explicable et traçable.
+Un **Indicateur** est une mesure calculée à partir du modèle normalisé.
 
 Il doit notamment pouvoir exposer :
 
@@ -610,58 +522,31 @@ Il doit notamment pouvoir exposer :
 
 ---
 
-## 23. Relation synthétique entre les objets
-
-### Situation actuelle
+## 25. Relation synthétique entre les objets
 
 ```text
-Design System
+Repository
     │
-    └── Repository
+    ├── branches
+    ├── tags
+    ├── Milestones
+    ├── Releases
+    │
+    └── Librairie
           │
-          └── Librairie
-                │
-                ├── Package
-                │     │
-                │     ├── Versions PROD
-                │     └── Versions SNAPSHOT
-                │
-                └── Composants
-                      │
-                      ├── Issues
-                      ├── Anomalies
-                      └── Audits
-
-Application
-    │
-    └── utilise un Package dans une Version donnée
+          ├── Package
+          │     │
+          │     └── Versions
+          │           ├── PROD
+          │           ├── SNAPSHOT
+          │           ├── Release Candidate
+          │           └── Hotfix Candidate
+          │
+          └── Composants
 ```
 
-### Cible future
+Jenkins produit les différentes formes de Versions en fonction du type de branche.
 
-```text
-Design System
-    │
-    ├── Repository
-    │     │
-    │     └── 1..n Librairies
-    │             │
-    │             ├── 1..n Packages
-    │             │       └── Versions
-    │             │
-    │             └── Composants
-    │
-    └── Applications
-          │
-          └── Consommations
-                ├── Package
-                ├── Version
-                ├── contexte de Version
-                └── Composants utilisés
-```
+Nexus constitue la source de publication des Packages et de leurs Versions.
 
-La notion de **Consommation** présentée dans la cible est une représentation conceptuelle pratique.
-
-Elle n'est pas encore validée comme objet métier autonome.
-
-Les cardinalités cibles qui ne correspondent pas encore à une réalité observée restent à valider progressivement.
+La modélisation technique définitive de ces relations reste à définir après stabilisation des règles métier.
