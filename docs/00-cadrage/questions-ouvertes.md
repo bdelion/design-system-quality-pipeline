@@ -780,6 +780,28 @@ Ces exemples ne constituent pas des règles prédéfinies.
 
 ---
 
+## D-041 — Nouvelles Anomalies lors d'un Audit de revalidation
+
+Lorsqu'un nouvel Audit de revalidation constate une Anomalie, l'auditeur crée une nouvelle Issue d'Anomalie liée à cette nouvelle Issue d'Audit.
+
+Une Anomalie issue d'un Audit précédent n'est pas rouverte pour porter le constat du nouvel Audit, y compris lorsque le nouveau constat concerne un problème qui avait précédemment été considéré comme corrigé.
+
+```text
+Audit initial
+  └── Anomalie A
+        └── corrigée / Done / Closed
+
+Audit de revalidation
+  └── problème constaté
+        └── nouvelle Anomalie B
+```
+
+Ce principe permet de conserver l'historique des constats et de rattacher chaque Anomalie à l'Audit qui l'a effectivement produite.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1564,6 +1586,16 @@ Le déclenchement d'un nouvel Audit de revalidation relève d'un choix collectif
 Il reste à déterminer comment cette décision est matérialisée dans GitHub et dans le workflow : création manuelle de l'Issue d'Audit, action ou champ du Project, label, automatisation déclenchée explicitement, ou autre mécanisme.
 
 Il reste également à préciser qui est responsable de créer l'Issue d'Audit de revalidation après cette décision collective.
+
+**Statut : À instruire**
+
+---
+
+## Q-064 — Lien entre Anomalies successives portant sur un même problème
+
+Un Audit de revalidation crée de nouvelles Anomalies au lieu de rouvrir celles des Audits précédents.
+
+Il reste à déterminer si, lorsqu'une nouvelle Anomalie correspond au même problème qu'une Anomalie précédemment corrigée, une relation explicite doit être conservée entre les deux Issues afin de permettre d'identifier une récurrence ou une correction insuffisante.
 
 **Statut : À instruire**
 

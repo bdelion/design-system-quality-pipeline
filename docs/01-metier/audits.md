@@ -562,6 +562,25 @@ Le dashboard peut exposer les Anomalies restantes par criticité et aider la Squ
 
 La manière de matérialiser la décision collective et la responsabilité de création de la nouvelle Issue d'Audit restent à préciser.
 
+### Résultat d'un Audit de revalidation
+
+Chaque Audit constitue un nouveau constat de l'état du Composant.
+
+Si l'Audit de revalidation détecte une Anomalie, l'auditeur crée une nouvelle Issue d'Anomalie liée à cette nouvelle Issue d'Audit. Une Anomalie provenant d'un Audit précédent n'est pas rouverte pour porter ce nouveau constat.
+
+```text
+Audit initial
+  └── Anomalie A
+        └── corrigée / Done / Closed
+
+Audit de revalidation
+  └── nouvelle Anomalie B
+```
+
+Cette règle préserve la temporalité et la traçabilité : chaque Anomalie reste rattachée à l'Audit qui l'a produite et les constats historiques ne sont pas réécrits.
+
+La nécessité d'une relation explicite entre deux Anomalies successives correspondant éventuellement au même problème reste à déterminer.
+
 ---
 
 ## 26. Historisation
