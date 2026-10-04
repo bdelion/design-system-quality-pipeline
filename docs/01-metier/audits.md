@@ -10,7 +10,7 @@ Les Audits constituent un domaine distinct :
 - du cycle de publication ;
 - du traitement des Anomalies résultant éventuellement de l'Audit.
 
-Le premier domaine d'Audit identifié dans le projet est l'accessibilité.
+Le premier domaine d'Audit actuellement identifié est l'accessibilité, avec les Audits RGAA.
 
 ---
 
@@ -32,33 +32,158 @@ Un Audit peut produire :
 
 ---
 
-## 3. Issue d'Audit
+## 3. Nature de l'Issue et famille d'Audit
 
-Le fonctionnement souhaité repose sur une **Issue d'Audit par Composant à auditer**.
+Deux notions doivent être distinguées.
+
+### Nature de l'Issue
+
+La nature indique que l'Issue représente un travail d'Audit.
+
+La cible souhaitée est :
+
+```text
+Issue Type = 🔍 Audit
+```
+
+### Famille d'Audit
+
+La famille indique quel type d'évaluation est réalisé.
+
+La première famille actuellement identifiée est :
+
+```text
+RGAA
+```
+
+Le modèle cible est donc conceptuellement :
+
+```text
+Issue
+├── nature : Audit
+├── famille d'Audit : RGAA
+└── Composant : xxx
+```
+
+Cette séparation permet de ne pas confondre la nature du travail avec la taxonomie des Audits.
+
+---
+
+## 4. Identification actuelle d'une Issue d'Audit
+
+Aujourd'hui, une Issue d'Audit RGAA est identifiée par le label :
+
+```text
+Audit RGAA
+```
+
+Le Composant concerné est identifié par un label :
+
+```text
+🧩 Component:xxx
+```
+
+Exemple conceptuel :
+
+```text
+Issue
+├── label : Audit RGAA
+└── label : 🧩 Component:Button
+```
+
+Le label `Audit RGAA` représente actuellement à la fois :
+
+- le fait qu'il s'agit d'un Audit ;
+- la famille d'Audit RGAA.
+
+Cette représentation est amenée à évoluer.
+
+---
+
+## 5. Identification cible d'une Issue d'Audit
+
+La cible souhaitée est d'utiliser un Issue Type :
+
+```text
+🔍 Audit
+```
 
 Conceptuellement :
+
+```text
+Issue
+├── Issue Type : 🔍 Audit
+├── famille d'Audit : RGAA
+└── label : 🧩 Component:xxx
+```
+
+Le mécanisme technique permettant de représenter la famille d'Audit n'est pas encore décidé.
+
+Il pourrait être porté par différents mécanismes GitHub, mais cette décision reste à instruire.
+
+Il ne faut donc pas encore imposer une représentation technique particulière de la famille d'Audit.
+
+---
+
+## 6. Pourquoi séparer Audit et famille d'Audit
+
+Un Issue Type spécifique à chaque famille conduirait potentiellement à multiplier les Issue Types :
+
+```text
+Audit RGAA
+Audit WAI-ARIA
+Audit ...
+```
+
+La cible envisagée préfère séparer :
+
+```text
+Nature
+└── 🔍 Audit
+
+Famille
+├── RGAA
+├── WAI-ARIA
+└── ...
+```
+
+Cette approche permet d'ajouter de nouvelles familles sans nécessairement modifier la taxonomie principale des Issue Types.
+
+La liste définitive des familles d'Audit reste à établir.
+
+---
+
+## 7. Issue d'Audit et Composant
+
+Le fonctionnement souhaité repose sur une Issue d'Audit par Composant à auditer.
 
 ```text
 Composant
     │
     └── Issue d'Audit
-          │
-          └── Audit du Composant
 ```
 
-L'Issue d'Audit représente le travail consistant à auditer le Composant.
+Aujourd'hui, le Composant est identifié par :
 
-Elle doit être distinguée des éventuelles Anomalies découvertes pendant cet Audit.
+```text
+🧩 Component:xxx
+```
+
+Exemple :
+
+```text
+🧩 Component:Button
+```
+
+La règle exacte concernant le nombre de labels Component autorisés sur une Issue d'Audit reste à formaliser.
 
 ---
 
-## 4. Fonctionnement cible des Audits
+## 8. Fonctionnement cible des Audits
 
 Le comportement cible est de réaliser les Audits avant la création de la Version PROD finale.
 
-Les Issues d'Audit des Composants évoluent au sein de la Milestone correspondant à la future Version PROD.
-
-Exemple :
+Les Issues d'Audit des Composants évoluent dans la Milestone correspondant à la future Version PROD.
 
 ```text
 Milestone 1.1.0
@@ -70,21 +195,11 @@ Milestone 1.1.0
 
 L'Audit est réalisé sur une Release Candidate de cette future Version.
 
-Exemple :
-
 ```text
-Version de base 1.1.0
-        │
-        ▼
-Release Candidate
-1.1.0-rc.n
+Release Candidate 1.1.0-rc.n
         │
         ▼
 Audits des composants
-        │
-        ├── Issue Audit composant A
-        ├── Issue Audit composant B
-        └── Issue Audit composant C
         │
         ▼
 Version PROD finale 1.1.0
@@ -94,182 +209,105 @@ L'objectif est de pouvoir produire, si possible, une Version PROD finale conform
 
 ---
 
-## 5. Audit pré-PROD
+## 9. Audit pré-PROD
 
-Un **Audit pré-PROD** est réalisé sur une Release Candidate avant la publication de la Version PROD finale.
+Un Audit pré-PROD est réalisé sur une Release Candidate avant la publication de la Version PROD finale.
 
-La Version auditée techniquement est donc une Release Candidate :
+La Version auditée techniquement est :
 
 ```text
 M.m.r-rc.n
 ```
 
-L'Audit contribue à préparer la Version PROD :
+La Version PROD cible est :
 
 ```text
 M.m.r
 ```
 
-Exemple :
+Les Issues d'Audit sont rattachées à la Milestone :
 
 ```text
-1.1.0-rc.n
-    │
-    ▼
-Audit
-    │
-    ▼
-Version PROD cible : 1.1.0
-```
-
-La Milestone utilisée par les Issues d'Audit est la Milestone de la Version cible :
-
-```text
-1.1.0
+M.m.r
 ```
 
 ---
 
-## 6. Audit de rattrapage
+## 10. Audit de rattrapage
 
-Une Milestone spécifique de forme :
+Une Milestone :
 
 ```text
 M.m.r-Audit
 ```
 
-correspond à un mécanisme de **rattrapage**.
+correspond à un mécanisme de rattrapage.
 
-Elle est utilisée lorsque les Audits n'ont pas été réalisés avant la création du Tag et du Package de la Version PROD.
-
-Exemple :
+Elle est utilisée lorsque les Audits n'ont pas été réalisés avant la publication de la Version PROD.
 
 ```text
 Version PROD 1.1.0
-    │
-    ├── Tag Git 1.1.0
-    ├── Package 1.1.0 publié dans Nexus PROD
-    │
-    ▼
+        │
+        ▼
 Audit de rattrapage
-    │
-    └── Milestone 1.1.0-Audit
+        │
+        └── Milestone 1.1.0-Audit
 ```
 
-`1.1.0-Audit` ne représente donc pas une nouvelle Version du Package.
-
-Il s'agit du contexte de rattrapage de l'Audit de la Version PROD `1.1.0`.
+`1.1.0-Audit` ne représente pas une nouvelle Version.
 
 ---
 
-## 7. Contenu d'une Milestone de rattrapage
+## 11. Contenu d'une Milestone de rattrapage
 
-Une Milestone telle que :
-
-```text
-1.1.0-Audit
-```
-
-contient uniquement les **Issues d'Audit des Composants**.
-
-Le principe est :
+Une Milestone `M.m.r-Audit` contient uniquement les Issues d'Audit des Composants.
 
 ```text
 Milestone 1.1.0-Audit
-    │
     ├── Issue Audit composant A
     ├── Issue Audit composant B
     └── Issue Audit composant C
 ```
 
-Il existe une Issue d'Audit par Composant à auditer.
-
-Les Anomalies découvertes à la suite de ces Audits ne doivent pas être confondues avec ces Issues d'Audit.
+Les Anomalies découvertes pendant les Audits suivent ensuite leur propre workflow.
 
 ---
 
-## 8. Anomalies découvertes pendant un Audit
+## 12. Anomalies découvertes pendant un Audit
 
-Lorsqu'un Audit identifie une Anomalie, celle-ci suit ensuite le processus de traitement des Anomalies.
-
-Elle n'est pas conservée dans la Milestone `M.m.r-Audit` au titre du travail d'Audit.
-
-Le fonctionnement établi est :
+Une Anomalie découverte pendant un Audit passe ensuite par :
 
 ```text
-Issue d'Audit
-    │
-    ▼
-Audit du Composant
-    │
-    ├── aucune Anomalie
-    │
-    └── Anomalie détectée
-              │
-              ▼
-           Grooming
-              │
-              ├── qualification
-              └── pesée
-                    │
-                    ▼
-            planification ultérieure
-                    │
-                    ├── Milestone
-                    └── Sprint / Iteration
-```
-
-La Milestone et le Sprint de traitement de l'Anomalie sont donc déterminés après le Grooming.
-
----
-
-## 9. Séparation entre Audit et correction
-
-Le processus d'Audit et le processus de correction d'une Anomalie sont deux processus distincts.
-
-```text
-AUDIT
-Issue Audit
-    │
-    ▼
-Détection éventuelle d'une Anomalie
-
-TRAITEMENT
-Anomalie
-    │
-    ▼
+Audit
+    ↓
+Anomalie détectée
+    ↓
 Grooming
-    │
-    ▼
+    ↓
 Pesée
-    │
-    ▼
+    ↓
 Planification
-    │
     ├── Milestone
     └── Sprint
-    │
-    ▼
-Correction
 ```
 
-Cette séparation doit être conservée dans le modèle métier et dans les indicateurs.
+Le travail d'Audit et le travail de correction sont donc deux processus distincts.
+
+L'Anomalie doit néanmoins pouvoir conserver une relation avec l'Issue d'Audit à l'origine de sa détection.
 
 ---
 
-## 10. Deux contextes d'Audit
+## 13. Contextes d'Audit
 
-Le modèle doit désormais distinguer au minimum deux contextes.
+Le modèle doit distinguer au minimum deux contextes.
 
 ### Audit pré-PROD
 
 ```text
 Release Candidate M.m.r-rc.n
-        │
-        ▼
+        ↓
 Audit
-        │
-        ▼
+        ↓
 Version PROD cible M.m.r
 ```
 
@@ -283,8 +321,7 @@ Milestone M.m.r
 
 ```text
 Version PROD M.m.r
-        │
-        ▼
+        ↓
 Audit
 ```
 
@@ -294,112 +331,25 @@ Les Issues d'Audit sont rattachées à :
 Milestone M.m.r-Audit
 ```
 
-Ces deux situations ne doivent pas être confondues lors de l'analyse de la qualité d'une Version.
-
 ---
 
-## 11. Version auditée et Version cible
-
-Le modèle devra être capable de distinguer deux notions.
-
-### Version effectivement auditée
+## 14. Version auditée et Version cible
 
 Dans un Audit pré-PROD :
 
 ```text
-M.m.r-rc.n
+Version effectivement auditée : M.m.r-rc.n
+Version PROD cible             : M.m.r
 ```
 
-### Version PROD cible
-
-La Version que l'on prépare à publier :
+Dans un Audit de rattrapage :
 
 ```text
-M.m.r
+Version effectivement auditée : M.m.r
+Version PROD concernée         : M.m.r
 ```
 
-Dans un Audit de rattrapage, la Version auditée est directement la Version PROD déjà publiée :
-
-```text
-M.m.r
-```
-
-Cette distinction sera importante pour la traçabilité de la conformité.
-
----
-
-## 12. Milestone et contexte d'Audit
-
-La Milestone fournit une information de contexte.
-
-### Fonctionnement cible
-
-```text
-Milestone : M.m.r
-Contexte  : préparation de la Version PROD
-Audit     : réalisé sur une Release Candidate
-```
-
-### Rattrapage
-
-```text
-Milestone : M.m.r-Audit
-Contexte  : Audit postérieur à la publication PROD
-Audit     : réalisé sur la Version PROD
-```
-
-Le suffixe `-Audit` doit rester configurable.
-
----
-
-## 13. Temporalité
-
-La temporalité est une propriété importante du domaine des Audits.
-
-Le modèle doit permettre de distinguer :
-
-```text
-Audit pré-PROD
-    │
-    ├── Release Candidate disponible
-    ├── Audit
-    └── Version PROD finale
-```
-
-de :
-
-```text
-Audit de rattrapage
-    │
-    ├── Version PROD disponible
-    └── Audit postérieur
-```
-
-Les définitions précises des dates utilisées pour représenter ces événements restent à instruire.
-
----
-
-## 14. Conséquence sur la conformité
-
-La temporalité de l'Audit modifie l'interprétation de la conformité.
-
-Dans le fonctionnement cible, l'Audit d'une Release Candidate vise à permettre la production d'une Version PROD finale conforme, si possible.
-
-Dans le fonctionnement de rattrapage, la Version PROD existe déjà au moment où l'Audit est effectué.
-
-Il faut donc pouvoir distinguer :
-
-```text
-conformité évaluée avant publication PROD
-```
-
-et :
-
-```text
-conformité évaluée après publication PROD
-```
-
-Cette distinction devra être conservée dans les indicateurs et dans l'historique.
+Cette distinction est nécessaire pour la traçabilité de la conformité.
 
 ---
 
@@ -419,8 +369,6 @@ Un Composant non audité ne doit pas être considéré automatiquement comme non
 
 ## 16. Couverture d'Audit
 
-La couverture mesure la part du périmètre ayant effectivement été auditée.
-
 ```text
 Couverture d'Audit
 =
@@ -429,13 +377,11 @@ nombre de Composants audités
 nombre total de Composants du périmètre
 ```
 
-Le périmètre exact utilisé comme dénominateur devra être explicitement défini.
+Le périmètre exact du dénominateur reste à définir.
 
 ---
 
 ## 17. Taux de conformité
-
-Le taux de conformité doit être calculé sur les éléments effectivement audités.
 
 ```text
 Taux de conformité
@@ -445,15 +391,13 @@ nombre de Composants conformes
 nombre de Composants audités
 ```
 
-Il ne doit pas utiliser automatiquement tous les Composants comme dénominateur.
+Les Composants non audités ne doivent pas être automatiquement comptabilisés comme non conformes.
 
 ---
 
-## 18. Traçabilité des Anomalies d'Audit
+## 18. Traçabilité des Anomalies
 
-Une Anomalie découverte lors d'un Audit doit pouvoir conserver une relation avec son origine.
-
-Le modèle devra permettre de retrouver au minimum :
+Une Anomalie découverte lors d'un Audit doit pouvoir conserver sa provenance :
 
 ```text
 Anomalie
@@ -462,123 +406,55 @@ Anomalie
           │
           └── Issue d'Audit
                 │
-                └── Composant audité
+                └── Composant
 ```
 
-Cette relation est distincte de la Milestone et du Sprint dans lesquels l'Anomalie sera ensuite planifiée pour correction.
+Cette relation est indépendante de la Milestone et du Sprint dans lesquels l'Anomalie sera ensuite planifiée.
 
 ---
 
-## 19. Campagne d'Audit
+## 19. Historisation
 
-Une **Campagne d'Audit** représente un ensemble cohérent d'Audits.
+L'historisation doit permettre de distinguer :
 
-Elle doit permettre de suivre notamment :
-
-- le périmètre prévu ;
-- les Composants à auditer ;
-- les Composants audités ;
-- les Composants conformes ;
-- les Composants non conformes ;
-- l'avancement global.
-
-La manière exacte dont une Campagne est représentée dans les données sources reste à préciser.
+- Audit réalisé avant la PROD ;
+- Audit de rattrapage ;
+- Version ou Release Candidate effectivement auditée ;
+- famille d'Audit ;
+- Composant audité ;
+- résultat connu à un instant donné ;
+- Anomalies découvertes.
 
 ---
 
-## 20. Historisation
+## 20. Principes retenus
 
-L'historisation doit permettre de différencier :
-
-```text
-Version auditée avant sa publication PROD
-```
-
-de :
-
-```text
-Version auditée après sa publication PROD
-```
-
-Elle doit également permettre de répondre à des questions telles que :
-
-```text
-La Version avait-elle été auditée avant sa mise en PROD ?
-```
-
-```text
-Quel était son niveau de conformité avant la PROD ?
-```
-
-```text
-Un Audit de rattrapage a-t-il été nécessaire ?
-```
-
-```text
-Quelles Anomalies ont été découvertes par cet Audit ?
-```
-
-```text
-Quand ces Anomalies ont-elles ensuite été planifiées et corrigées ?
-```
+1. Une Issue d'Audit correspond à un Composant à auditer.
+2. Aujourd'hui, une Issue d'Audit RGAA est identifiée par le label `Audit RGAA`.
+3. Aujourd'hui, le Composant est identifié par `🧩 Component:xxx`.
+4. La cible souhaitée est `Issue Type = 🔍 Audit`.
+5. La nature `Audit` et la famille d'Audit sont deux notions distinctes.
+6. La représentation technique cible de la famille d'Audit reste à décider.
+7. Le fonctionnement cible est l'Audit pré-PROD sur une Release Candidate.
+8. Les Issues d'Audit pré-PROD évoluent dans la Milestone `M.m.r`.
+9. `M.m.r-Audit` constitue un mécanisme de rattrapage.
+10. Une Milestone de rattrapage contient les Issues d'Audit, pas les Anomalies découvertes.
+11. Les Anomalies passent ensuite par Grooming, pesée et planification.
+12. Pré-PROD et rattrapage doivent rester distingués analytiquement.
 
 ---
 
-## 21. Principes retenus
-
-### Principe 1 — Une Issue d'Audit correspond à un Composant à auditer
-
-Le fonctionnement établi prévoit une Issue d'Audit par Composant.
-
-### Principe 2 — Le fonctionnement cible est l'Audit pré-PROD
-
-L'objectif est d'auditer une Release Candidate avant la création de la Version PROD finale.
-
-### Principe 3 — La Milestone standard est utilisée dans le fonctionnement cible
-
-Les Issues d'Audit évoluent dans la Milestone `M.m.r` de la future Version PROD.
-
-### Principe 4 — `M.m.r-Audit` est un mécanisme de rattrapage
-
-Cette Milestone est utilisée lorsque l'Audit n'a pas été réalisé avant la publication PROD.
-
-### Principe 5 — Une Milestone d'Audit ne contient que les Issues d'Audit
-
-Les Anomalies découvertes suivent ensuite leur propre workflow.
-
-### Principe 6 — Une Anomalie découverte passe par le Grooming
-
-Elle est qualifiée et pesée avant d'être inscrite dans une Milestone et un Sprint.
-
-### Principe 7 — Audit et correction sont deux processus différents
-
-Le travail d'Audit ne doit pas être confondu avec le travail de correction des Anomalies détectées.
-
-### Principe 8 — Conserver la relation d'origine
-
-Une Anomalie doit pouvoir rester reliée à l'Issue d'Audit qui a permis sa détection.
-
-### Principe 9 — Pré-PROD et rattrapage doivent être distingués
-
-Cette distinction est nécessaire pour interpréter correctement la qualité d'une Version.
-
----
-
-## 22. Points restant à préciser
+## 21. Points restant à préciser
 
 Les points suivants restent à instruire :
 
-- comment reconnaître précisément une Issue d'Audit ;
-- comment une Issue d'Audit référence son Composant ;
-- comment une Anomalie est reliée à l'Issue d'Audit qui l'a détectée ;
+- quelles familles d'Audit doivent être supportées ;
+- comment représenter techniquement la famille d'Audit ;
+- si une Issue d'Audit peut avoir plusieurs familles ;
+- si une Issue d'Audit doit obligatoirement avoir exactement un Composant ;
 - comment déterminer qu'une Issue d'Audit est terminée ;
 - comment déterminer qu'un Composant est conforme ou non conforme ;
-- comment représenter la Release Candidate effectivement auditée ;
-- comment une Campagne d'Audit est identifiée ;
-- comment gérer plusieurs Audits successifs d'un même Composant ;
-- quelle date représente le début d'un Audit ;
-- quelle date représente la fin d'un Audit ;
-- quelle date représente la détection d'une Anomalie ;
-- comment calculer la conformité globale d'une Version.
-
-Ces éléments doivent être établis avant de définir les règles de qualité correspondantes.
+- comment identifier la Release Candidate effectivement auditée ;
+- comment relier techniquement une Anomalie à l'Issue d'Audit qui l'a détectée ;
+- comment identifier une Campagne d'Audit ;
+- comment gérer plusieurs Audits successifs du même Composant.
