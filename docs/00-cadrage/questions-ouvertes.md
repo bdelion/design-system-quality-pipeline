@@ -1070,6 +1070,26 @@ La sévérité de cette future règle de qualité reste à définir.
 
 ---
 
+## D-054 — Milestone prioritaire et Version auditée complémentaire
+
+Pour l'analyse d'un Audit, la Milestone constitue la référence principale permettant d'identifier la Version de référence.
+
+Le champ `Version auditée :` du template reste attendu afin de conserver la Version effectivement testée, mais son absence ne doit pas bloquer l'analyse lorsque la Milestone est exploitable.
+
+Une Issue d'Audit `Done + Closed` avec une Milestone valide mais un champ `Version auditée :` vide constitue donc une anomalie de données partielle et non bloquante.
+
+Dans ce cas :
+
+- l'analyse peut continuer à partir de la Version de référence déduite de la Milestone ;
+- l'absence du champ doit rester visible comme information manquante ;
+- le pipeline ne doit pas prétendre connaître une Version effectivement auditée plus précise que ce que les données permettent d'établir.
+
+Cette distinction est particulièrement importante en pré-PROD : une Milestone `1.8.0` permet de connaître la Version de référence, mais l'absence de `Version auditée :` peut empêcher de savoir quelle Release Candidate `1.8.0-rc.n` a réellement été auditée.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2019,6 +2039,16 @@ Une incohérence entre la Version de référence portée par la Milestone et le 
 Il reste à déterminer la sévérité de cette anomalie dans le futur moteur de qualité et son impact éventuel sur le calcul de conformité.
 
 **Statut : À instruire lors de la définition des règles de qualité**
+
+---
+
+## Q-074 — Représentation d'une Version auditée manquante
+
+Lorsqu'une Milestone valide permet de poursuivre l'analyse mais que le champ `Version auditée :` est absent, l'Audit reste exploitable avec une donnée partielle.
+
+Il reste à définir comment cette information manquante sera représentée dans le dashboard et dans les métadonnées de fiabilité : avertissement, indicateur de complétude, annotation sur l'Audit, ou autre représentation.
+
+**Statut : À instruire lors de la définition de la qualité des données et de l'UX**
 
 ---
 

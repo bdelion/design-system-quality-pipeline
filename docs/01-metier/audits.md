@@ -734,6 +734,27 @@ Ainsi, `1.8.0-rc.42` est cohérent avec une Milestone `1.8.0`, alors que `1.9.0-
 
 Une incohérence constitue une anomalie de données à signaler. Sa sévérité et son impact éventuel sur les calculs restent à définir.
 
+
+### Priorité de la Milestone en cas de Version auditée manquante
+
+La Milestone est la référence principale utilisée pour identifier la Version de référence d'un Audit.
+
+Le champ `Version auditée :` reste attendu dans le template, mais son absence ne bloque pas l'analyse lorsque la Milestone est valide et exploitable.
+
+Dans cette situation, l'Audit est considéré comme exploitable avec une donnée partielle :
+
+```text
+Milestone       : 1.8.0-Audit
+Version auditée : <vide>
+
+Version de référence exploitable : 1.8.0
+Version effectivement testée     : non renseignée
+```
+
+Le pipeline ne doit pas inventer la Version effectivement testée. En particulier, pour une Milestone pré-PROD `1.8.0`, l'absence du champ peut empêcher de déterminer quelle RC `1.8.0-rc.n` a réellement été auditée.
+
+Cette absence doit être signalée comme information manquante non bloquante. Sa représentation exacte dans le dashboard et dans les métadonnées de fiabilité reste à définir.
+
 ---
 
 ## 26. Historisation
