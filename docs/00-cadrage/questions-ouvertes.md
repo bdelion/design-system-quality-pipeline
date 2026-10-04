@@ -220,6 +220,52 @@ Une évolution future est souhaitée mais aucun calendrier ni seuil technique n'
 
 ---
 
+## Q-013 — Relation Librairie / Repository
+
+**Situation actuelle :**
+
+Le fonctionnement actuel peut être considéré comme :
+
+```text
+1 repository = 1 librairie
+```
+
+**Orientation validée :**
+
+Le modèle doit pouvoir évoluer vers :
+
+```text
+1 repository = 1..n librairies
+```
+
+notamment pour prendre en charge des repositories de type monorepo.
+
+**Question restante :**
+
+Comment identifier et délimiter les différentes librairies présentes dans un même repository ?
+
+Les sources actuellement disponibles ne permettent pas de définir cette règle.
+
+**Décision :**
+
+À instruire avant l'implémentation du support monorepo.
+
+---
+
+## Q-014 — Identité d'un composant dans un monorepo
+
+Si plusieurs librairies sont présentes dans un même repository, comment déterminer à quelle librairie appartient un composant ?
+
+**Situation :**
+
+La réponse n'est pas définie dans les sources disponibles.
+
+**Décision :**
+
+À instruire ultérieurement.
+
+---
+
 ## 5. Règle générale
 
 Lorsqu'une nouvelle information métier ne peut pas être déduite sans hypothèse, elle doit être ajoutée à ce document plutôt que transformée en règle technique implicite.
