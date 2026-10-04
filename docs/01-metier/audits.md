@@ -903,3 +903,47 @@ Le modèle doit donc distinguer :
 Un changement de Version de la Librairie ne suffit pas, à lui seul, à imposer un nouvel Audit.
 
 La définition précise permettant de déterminer qu'un Composant est « inchangé » reste à établir.
+
+
+### État des lieux des Composants entre deux Versions
+
+Le projet doit pouvoir comparer deux Versions de Librairie afin de produire un état des lieux des Composants.
+
+Les états minimums retenus sont :
+
+| État | Signification |
+| --- | --- |
+| `NOUVEAU` | Composant présent dans la Version cible mais absent de la Version de référence |
+| `ÉVOLUÉ` | Composant présent dans les deux Versions avec des modifications détectées |
+| `INCHANGÉ` | Composant présent dans les deux Versions sans modification détectée |
+| `DÉCOMMISSIONNÉ` | Composant présent dans la Version de référence mais absent de la Version cible |
+
+La comparaison pourra s'appuyer sur les modifications Git des fichiers appartenant à chaque Composant.
+
+Cette capacité existe actuellement dans un script séparé et pourra être intégrée à ce projet.
+
+### Responsabilité de la décision d'Audit
+
+L'état des lieux est une aide au pilotage de la campagne d'Audit.
+
+Il permet notamment de faire apparaître les Composants `NOUVEAU` et `ÉVOLUÉ`, qui peuvent conduire la Squad à créer des Issues d'Audit.
+
+Cependant :
+
+```text
+Comparaison des Versions
+        ↓
+État du Composant
+        ↓
+Information fournie à la Squad
+        ↓
+Décision humaine
+        ↓
+Création éventuelle d'une Issue d'Audit
+```
+
+Le pipeline ne décide pas automatiquement qu'un nouvel Audit est nécessaire et ne crée pas automatiquement une Issue d'Audit sur la seule base de l'évolution détectée.
+
+La décision reste de la responsabilité de la Squad.
+
+La source permettant d'associer précisément les fichiers Git aux Composants reste à définir.

@@ -1188,6 +1188,39 @@ La manière de déterminer techniquement et fonctionnellement qu'un Composant es
 
 ---
 
+## D-059 — État des lieux des Composants entre deux Versions
+
+Le projet doit pouvoir produire un état des lieux des Composants entre deux Versions de Librairie.
+
+Cet état des lieux distingue au minimum quatre situations :
+
+- `NOUVEAU` : Composant présent dans la Version cible mais absent de la Version de référence ;
+- `ÉVOLUÉ` : Composant présent dans les deux Versions et ayant subi des modifications ;
+- `INCHANGÉ` : Composant présent dans les deux Versions sans modification détectée ;
+- `DÉCOMMISSIONNÉ` : Composant présent dans la Version de référence mais absent de la Version cible.
+
+La détection des évolutions pourra s'appuyer sur les modifications Git des fichiers appartenant aux Composants.
+
+Cette fonctionnalité existe actuellement dans un script séparé et pourra être intégrée au projet.
+
+**Statut : Établi sur le principe**
+
+---
+
+## D-060 — La décision d'ouvrir un Audit reste à la Squad
+
+L'état des lieux entre deux Versions est une aide à la décision et non un moteur de décision automatique d'Audit.
+
+Il permet notamment à la Squad d'identifier les Composants nouveaux et ceux qui ont évolué afin de décider des Issues d'Audit à créer.
+
+Le pipeline ne doit pas déduire automatiquement qu'une Issue d'Audit doit être ouverte et ne doit pas créer cette Issue sur la seule base d'un état `NOUVEAU` ou `ÉVOLUÉ`.
+
+La responsabilité de décider d'ouvrir ou non une Issue d'Audit reste à la Squad.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2180,9 +2213,21 @@ Il reste à définir :
 
 ## Q-077 — Détermination d'un Composant inchangé entre deux Versions
 
-Un Audit antérieur reste applicable à une Version ultérieure lorsque le Composant n'a pas changé.
+L'état des lieux entre deux Versions pourra s'appuyer sur les modifications Git des fichiers appartenant aux Composants afin de distinguer les Composants `NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ` et `DÉCOMMISSIONNÉ`.
 
-Il reste à définir ce qui permet d'établir qu'un Composant est effectivement « inchangé » : absence de modification de son code source, absence de modification de certains fichiers, information déclarative, analyse Git, ou autre mécanisme.
+Cet état des lieux sert d'aide à la décision. La décision d'ouvrir une Issue d'Audit reste sous la responsabilité de la Squad.
+
+La manière exacte d'associer les fichiers du repository aux Composants reste à préciser.
+
+**Statut : Partiellement établi**
+
+---
+
+## Q-078 — Référentiel permettant d'associer les fichiers aux Composants
+
+Pour comparer deux Versions et déterminer qu'un Composant est `ÉVOLUÉ` ou `INCHANGÉ`, le pipeline doit savoir quels fichiers ou répertoires appartiennent à chaque Composant.
+
+Il reste à déterminer quelle source fera foi pour cette association : structure conventionnelle du repository, configuration explicite, catalogue de Composants, ou autre mécanisme.
 
 **Statut : À instruire**
 
