@@ -533,16 +533,43 @@ Le résultat de conformité n'est actuellement pas saisi explicitement.
 Pour un Audit terminé :
 
 ```text
-0 sub-Issue d'Anomalie
+0 sub-Issue classée comme Anomalie
 → AUDITÉ & CONFORME
 
-≥ 1 sub-Issue d'Anomalie
+≥ 1 sub-Issue classée comme Anomalie
 → AUDITÉ & NON CONFORME
 ```
 
-La règle permettant de reconnaître précisément une sub-Issue comme une Anomalie reste à instruire.
+Une sub-Issue d'Amélioration ne rend donc pas, à elle seule, le Composant non conforme.
 
-**Statut : Partiellement établi**
+**Statut : Établi pour le fonctionnement actuel**
+
+---
+
+## D-030 — Classification des sub-Issues d'un Audit d'Accessibilité
+
+Les sub-Issues d'une Issue d'Audit d'Accessibilité peuvent actuellement représenter deux natures métier distinctes :
+
+```text
+Issue d'Audit
+├── Anomalie
+└── Amélioration
+```
+
+Une sub-Issue d'Anomalie possède actuellement :
+
+- l'Issue Type `🐛 Bug` ;
+- exactement un des labels de criticité RGAA connus : `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
+- un label `♿ a11y:xxx` ;
+- un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+
+Une sub-Issue d'Amélioration possède actuellement :
+
+- l'Issue Type `✨ Feature` ;
+- un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente ;
+- un type ou une catégorie d'Amélioration qui reste à définir.
+
+**Statut : Partiellement établi — catégorisation des Améliorations à définir**
 
 ---
 
@@ -638,9 +665,18 @@ Le fonctionnement cible réalise l'Audit sur `M.m.r-rc.n` avant la PROD.
 
 ## Q-011 — Définition d'une Anomalie
 
-Quelle règle doit déterminer qu'une Issue représente une Anomalie ?
+Dans le contexte d'une sub-Issue créée à partir d'un Audit d'Accessibilité, une Anomalie est actuellement caractérisée par la combinaison suivante :
 
-**Statut : À instruire**
+- Issue Type `🐛 Bug` ;
+- un des labels `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
+- un label `♿ a11y:xxx` ;
+- un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+
+Cette réponse établit la règle pour les Anomalies issues d'un Audit d'Accessibilité.
+
+La définition générale d'une Anomalie doit rester configurable car sa représentation peut varier selon les repositories, organisations et origines de l'Issue.
+
+**Statut : Partiellement établi**
 
 ---
 
@@ -710,9 +746,11 @@ au moins une sub-Issue d'Anomalie
 
 La conformité est donc actuellement déduite des relations de l'Issue d'Audit et non saisie dans un champ dédié.
 
-Il reste à déterminer précisément comment une sub-Issue est reconnue comme une Anomalie.
+Une sub-Issue d'Anomalie issue d'un Audit d'Accessibilité est reconnue par l'Issue Type `🐛 Bug`, sa criticité RGAA, son label `♿ a11y:xxx` et son label Component identique à celui de l'Audit parent.
 
-**Statut : Partiellement établi**
+Les sub-Issues d'Amélioration ne sont pas comptées comme Anomalies dans cette règle de conformité.
+
+**Statut : Établi pour le fonctionnement actuel**
 
 ---
 
@@ -1054,14 +1092,20 @@ Une Anomalie découverte pendant un Audit est reliée à l'Issue d'Audit sous fo
 ```text
 Issue d'Audit
     ├── Sub-Issue Anomalie A
-    ├── Sub-Issue Anomalie B
+    ├── Sub-Issue Amélioration B
     └── ...
 ```
 
-Cette relation permet de conserver la provenance de l'Anomalie lorsque celle-ci passe ensuite par le Grooming, la pesée et la planification.
-Il reste à déterminer la règle permettant d'identifier précisément une sub-Issue comme une Anomalie.
+Dans le contexte d'un Audit d'Accessibilité, une sub-Issue d'Anomalie possède actuellement :
 
-**Statut : Partiellement établi**
+- l'Issue Type `🐛 Bug` ;
+- un des labels `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
+- un label `♿ a11y:xxx` ;
+- le même label `🧩 Component:xxx` que l'Issue d'Audit parente.
+
+Une sub-Issue d'Amélioration utilise l'Issue Type `✨ Feature` et le même label Component que l'Audit parent. Sa catégorisation complémentaire reste à définir.
+
+**Statut : Établi pour la relation et la classification des Anomalies ; catégorisation des Améliorations à instruire**
 
 ---
 
@@ -1154,6 +1198,21 @@ Ce template doit faciliter :
 Il n'a pas nécessairement vocation à remplacer la grille ou checklist détaillée utilisée par l'auditeur.
 
 Quel est le minimum d'informations qui doit être demandé par ce template ?
+
+**Statut : À instruire**
+
+---
+
+## Q-056 — Catégorisation des Améliorations issues d'un Audit
+
+Les sub-Issues d'Amélioration issues d'un Audit d'Accessibilité utilisent actuellement :
+
+- l'Issue Type `✨ Feature` ;
+- un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+
+Il reste à déterminer quel label, champ ou autre mécanisme doit représenter le type ou la catégorie d'Amélioration.
+
+Aucune valeur n'est définie à ce stade.
 
 **Statut : À instruire**
 
