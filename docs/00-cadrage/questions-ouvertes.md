@@ -802,6 +802,28 @@ Ce principe permet de conserver l'historique des constats et de rattacher chaque
 
 ---
 
+## D-042 — Absence de lien direct entre Anomalies successives
+
+Lorsqu'un nouvel Audit détecte un problème identique ou similaire à celui d'une Anomalie issue d'un Audit précédent, aucune relation métier explicite supplémentaire n'est requise entre les deux Anomalies.
+
+Le rattachement de chaque Anomalie à son Issue d'Audit respective est considéré suffisant pour assurer la traçabilité :
+
+```text
+Audit A
+  └── Anomalie A
+
+Audit B
+  └── Anomalie B
+```
+
+Le pipeline et le dashboard ne doivent donc pas inventer une relation telle que `récurrence de` entre les Anomalies si cette relation n'existe pas dans les données sources.
+
+Une analyse future de récurrence pourrait être calculée ou proposée comme indicateur distinct, mais elle ne constituerait pas une relation métier source.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1593,11 +1615,20 @@ Il reste également à préciser qui est responsable de créer l'Issue d'Audit d
 
 ## Q-064 — Lien entre Anomalies successives portant sur un même problème
 
-Un Audit de revalidation crée de nouvelles Anomalies au lieu de rouvrir celles des Audits précédents.
+Lorsqu'une nouvelle Anomalie correspond au même problème qu'une Anomalie issue d'un Audit précédent, aucune relation explicite entre les deux Issues n'est requise.
 
-Il reste à déterminer si, lorsqu'une nouvelle Anomalie correspond au même problème qu'une Anomalie précédemment corrigée, une relation explicite doit être conservée entre les deux Issues afin de permettre d'identifier une récurrence ou une correction insuffisante.
+Le rattachement de chacune à son Issue d'Audit respective est suffisant :
 
-**Statut : À instruire**
+```text
+Audit A → Anomalie A
+Audit B → Anomalie B
+```
+
+Le dashboard ne doit pas fabriquer une relation métier de type `récurrence de`.
+
+Une éventuelle analyse de récurrence pourra être étudiée ultérieurement comme un indicateur calculé, indépendamment des relations métier sources.
+
+**Statut : Établi**
 
 ---
 

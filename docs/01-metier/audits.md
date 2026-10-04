@@ -579,7 +579,11 @@ Audit de revalidation
 
 Cette règle préserve la temporalité et la traçabilité : chaque Anomalie reste rattachée à l'Audit qui l'a produite et les constats historiques ne sont pas réécrits.
 
-La nécessité d'une relation explicite entre deux Anomalies successives correspondant éventuellement au même problème reste à déterminer.
+Lorsqu'une nouvelle Anomalie correspond à un problème identique ou similaire à celui d'une Anomalie issue d'un Audit précédent, aucune relation explicite supplémentaire n'est nécessaire entre les deux Anomalies.
+
+Le rattachement de chacune à son Issue d'Audit respective est suffisant pour la traçabilité. Le pipeline et le dashboard ne doivent pas créer artificiellement une relation `récurrence de`.
+
+Une éventuelle analyse de récurrence pourra être étudiée ultérieurement comme un indicateur calculé, sans modifier les relations métier sources.
 
 ---
 
