@@ -622,6 +622,24 @@ Ces trois valeurs constituent le référentiel actuel, mais le modèle doit perm
 
 ---
 
+## D-033 — Référentiel de criticité partagé avec l'auditeur
+
+Les trois niveaux de criticité RGAA actuellement utilisés sont partagés avec l'auditeur :
+
+```text
+🚦 rgaa:bloquante
+🚦 rgaa:majeure
+🚦 rgaa:mineure
+```
+
+Il s'agit donc d'un référentiel utilisé dans le processus d'Audit et non d'une classification créée uniquement pour les besoins du dashboard.
+
+La définition précise et les critères d'attribution de chacun de ces niveaux ne sont pas encore connus.
+
+**Statut : Établi pour l'usage du référentiel ; sémantique détaillée à confirmer**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1304,6 +1322,26 @@ La cardinalité `exactement 1` est établie. Le référentiel doit cependant pou
 Il reste à déterminer ultérieurement comment ce référentiel sera configuré et gouverné sans figer ces trois valeurs dans l'implémentation.
 
 **Statut : Règle actuelle établie ; extensibilité à instruire ultérieurement**
+
+---
+
+## Q-059 — Critères d'attribution des criticités RGAA
+
+Les niveaux :
+
+```text
+🚦 rgaa:bloquante
+🚦 rgaa:majeure
+🚦 rgaa:mineure
+```
+
+sont partagés avec l'auditeur.
+
+Il reste à déterminer la définition précise de chacun de ces niveaux et les critères utilisés par l'auditeur pour attribuer une criticité à une Anomalie.
+
+Aucune définition fonctionnelle de `bloquante`, `majeure` ou `mineure` ne doit être inventée tant que cette information n'a pas été confirmée.
+
+**Statut : À confirmer avec l'auditeur**
 
 ---
 

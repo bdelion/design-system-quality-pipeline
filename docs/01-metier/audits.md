@@ -312,6 +312,10 @@ La cardinalité métier actuelle est :
 
 Cette cardinalité est établie pour le fonctionnement actuel. En revanche, ces trois valeurs ne constituent pas une enum technique définitive : le modèle doit permettre l'évolution du référentiel de criticité.
 
+Ces trois niveaux sont partagés avec l'auditeur. Ils appartiennent donc au référentiel effectivement utilisé dans le processus d'Audit.
+
+En revanche, la définition précise de `bloquante`, `majeure` et `mineure`, ainsi que les critères d'attribution utilisés par l'auditeur, ne sont pas encore connus. Le modèle et les indicateurs ne doivent pas leur attribuer une sémantique supplémentaire tant que celle-ci n'a pas été confirmée.
+
 La configuration et la gouvernance futures de ce référentiel restent à définir.
 
 ---
