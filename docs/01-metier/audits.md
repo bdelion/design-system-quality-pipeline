@@ -653,6 +653,36 @@ Cette date est utilisée pour ordonner plusieurs Audits d'un même couple `Compo
 
 La disponibilité technique de la date de transition du Project vers `Done` dans les données collectées reste à vérifier.
 
+
+### Audit en cours et verdict courant
+
+Un nouvel Audit en cours ne remplace pas le verdict du dernier Audit terminé.
+
+Tant que le nouvel Audit ne satisfait pas simultanément `Project Status = Done` et `GitHub Issue State = Closed`, le dernier verdict acquis reste le verdict de conformité courant du couple `Composant × Version`.
+
+```text
+Button@1.7.1
+├── Audit A → terminé → CONFORME
+└── Audit B → In progress
+```
+
+Le dashboard doit alors distinguer deux informations :
+
+- la conformité courante : `CONFORME`, issue de l'Audit A ;
+- l'activité d'Audit : un nouvel Audit B est en cours.
+
+Aucun verdict ne doit être anticipé pour l'Audit en cours. Lorsqu'il devient `Done + Closed`, son verdict remplace le précédent comme verdict courant, sans supprimer l'historique.
+
+
+Ces deux dimensions doivent pouvoir être représentées simultanément pour le couple `Composant × Version` :
+
+```text
+conformité courante = verdict du dernier Audit terminé
+audit en cours       = existence d'un nouvel Audit non terminé
+```
+
+L'information `audit en cours` doit être visible dans le dashboard sans être interprétée comme un nouveau verdict de conformité. La représentation UX exacte reste à définir.
+
 ---
 
 ## 26. Historisation

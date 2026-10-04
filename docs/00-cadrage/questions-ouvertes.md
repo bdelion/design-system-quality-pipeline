@@ -916,6 +916,57 @@ Pour déterminer l'état de conformité courant, l'Audit ayant la date de réali
 
 ---
 
+## D-048 — Un Audit en cours ne remplace pas le dernier verdict acquis
+
+Pour un même couple `Composant × Version`, un nouvel Audit qui n'est pas encore réalisé au sens métier (`Project Status = Done` et `GitHub Issue State = Closed`) ne modifie pas l'état de conformité courant.
+
+Le verdict du dernier Audit terminé reste le verdict courant jusqu'à la réalisation du nouvel Audit.
+
+Exemple :
+
+```text
+Button@1.7.1
+├── Audit A → terminé → CONFORME
+└── Audit B → In progress
+```
+
+Dans cette situation :
+
+- la conformité courante de `Button@1.7.1` reste `CONFORME` ;
+- le dashboard doit également indiquer qu'un nouvel Audit est en cours ;
+- aucun verdict ne doit être anticipé pour l'Audit B.
+
+Lorsque l'Audit B devient `Done + Closed`, son verdict devient alors le nouveau verdict courant.
+
+**Statut : Établi**
+
+---
+
+## D-049 — Séparer conformité courante et activité d'Audit en cours
+
+Pour un couple `Composant × Version`, le dashboard doit pouvoir représenter simultanément :
+
+- le verdict de conformité courant, issu du dernier Audit terminé ;
+- l'existence éventuelle d'un nouvel Audit en cours sur ce même couple.
+
+Ces deux informations sont indépendantes.
+
+Exemple :
+
+```text
+Button@1.7.1
+├── conformité courante : CONFORME
+└── nouvel Audit : EN COURS
+```
+
+Le démarrage d'un nouvel Audit ne modifie pas le verdict courant. Ce verdict ne change que lorsque le nouvel Audit devient `Done + Closed` et produit à son tour un verdict.
+
+L'information indiquant qu'un Audit est en cours doit être visible quelque part dans le dashboard pour le couple `Composant × Version`.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1771,6 +1822,28 @@ La date de réalisation d'un Audit nécessite de connaître l'instant où l'Issu
 Il reste à vérifier que la source GitHub collectée permet d'obtenir de manière fiable l'historique ou la date de transition du Project vers `Done`.
 
 **Statut : À vérifier techniquement**
+
+---
+
+## Q-069 — Présentation d'un Audit en cours à côté du verdict courant
+
+Pour un même couple `Composant × Version`, le dashboard doit afficher simultanément :
+
+- la conformité courante issue du dernier Audit terminé ;
+- l'existence d'un nouvel Audit en cours, lorsqu'il existe.
+
+Exemple :
+
+```text
+Conformité courante : CONFORME
+Nouvel Audit : EN COURS
+```
+
+Le principe métier est établi : ces deux informations sont distinctes et doivent pouvoir coexister.
+
+Il reste uniquement à définir leur représentation UX exacte dans le dashboard : badge séparé, statut secondaire, lien vers l'Issue d'Audit, date du dernier verdict, ou combinaison de ces éléments.
+
+**Statut : Principe établi ; représentation UX à instruire**
 
 ---
 
