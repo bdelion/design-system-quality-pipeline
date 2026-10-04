@@ -4,236 +4,396 @@
 
 **BASE DE TRAVAIL — ENRICHIE PAR LES DÉCISIONS DU 04/10/2026**
 
-Ce document décrit le modèle métier actuellement observé, les orientations validées et les éléments qui restent à instruire.
+Ce document décrit le modèle métier actuellement identifié pour le suivi des Design Systems et de leurs librairies.
 
-Il ne doit pas transformer une hypothèse future en réalité actuelle.
+Il distingue volontairement :
+
+* ce qui correspond au fonctionnement actuel ;
+* les orientations futures explicitement souhaitées ;
+* les sujets qui restent à instruire.
+
+Une hypothèse future ne doit pas être considérée comme une réalité actuelle.
 
 ---
 
-## 1. Organisation générale
+## 1. Finalité du modèle métier
 
-Le modèle métier doit distinguer plusieurs niveaux :
+Le modèle métier doit permettre de représenter les éléments nécessaires au suivi :
+
+* des librairies du Design System ;
+* de leurs composants ;
+* des travaux réalisés autour de ces composants ;
+* des anomalies ;
+* des audits ;
+* des versions ;
+* des relations entre ces objets ;
+* à terme, des applications qui consomment les librairies.
+
+Le modèle ne doit pas être construit exclusivement autour des objets GitHub.
+
+GitHub constitue actuellement une source majeure de données, mais les concepts métier doivent pouvoir être conservés si d'autres sources sont ajoutées ultérieurement.
+
+---
+
+## 2. Organisation générale
+
+Le modèle cible doit distinguer plusieurs niveaux.
 
 ```text
 Organisation
     │
     └── Librairie
             │
-            └── Repository
-                    │
-                    ├── Issues
-                    ├── Pull Requests
-                    └── autres objets GitHub
+            ├── Package(s)
+            │
+            ├── Repository(s)
+            │
+            ├── Version(s)
+            │
+            └── Composant(s)
 ```
 
-Cependant, cette représentation ne correspond pas encore au fonctionnement cible.
+Cette représentation est une **orientation cible**.
 
-### Situation actuelle
+Elle ne signifie pas que toutes ces relations sont actuellement présentes dans le code.
 
-Dans le périmètre actuel :
+---
+
+## 3. Situation actuelle concernant les repositories
+
+Dans le périmètre actuel du projet, la situation de travail est :
 
 ```text
 1 repository = 1 librairie
 ```
 
-Cette correspondance est une simplification correspondant à l'organisation actuelle du projet.
+Cette correspondance est compatible avec l'organisation actuelle observée dans le projet.
 
-### Évolution souhaitée
+Elle ne doit toutefois pas devenir une contrainte du modèle métier.
 
-Le modèle doit permettre à terme :
+---
+
+## 4. Évolution souhaitée concernant les repositories
+
+Le modèle doit pouvoir évoluer pour représenter un repository contenant plusieurs librairies.
+
+La cible minimale identifiée est donc :
 
 ```text
 1 repository = 1..n librairies
 ```
 
-Une librairie doit donc posséder une identité métier indépendante de celle du repository.
+Cette évolution correspond notamment au besoin futur de gérer des repositories de type monorepo.
 
-Cette distinction est importante pour permettre l'évolution vers des repositories de type monorepo.
+La manière d'identifier et de délimiter les différentes librairies dans un même repository n'est pas encore définie.
+
+**À instruire.**
 
 ---
 
-## 2. Modèle cible de référence
+## 5. Librairie
 
-L'organisation cible discutée est :
+Une librairie représente une unité métier du Design System suivie par le dashboard.
+
+Aujourd'hui, elle correspond principalement à un package distribuable.
+
+Cependant, le modèle doit permettre à terme qu'une librairie fonctionnelle puisse être distribuée par plusieurs packages.
+
+La relation cible envisagée est donc :
 
 ```text
-Organisation
+Librairie
     │
-    └── Librairie
-          │
-          ├── Repository
-          │
-          ├── Components
-          │
-          ├── Versions
-          │
-          ├── Audits
-          │
-          └── Anomalies
+    ├── Package
+    ├── Package
+    └── ...
 ```
 
-Les Issues et Pull Requests restent des objets provenant de GitHub et doivent être rattachés au contexte métier approprié.
+La définition exacte d'une librairie indépendante de ses packages reste à préciser.
 
-Le modèle exact des relations sera précisé dans `docs/01-metier/relations.md`.
-
----
-
-## 3. Objets actuellement identifiés
-
-Le code actuel expose notamment :
-
-```text
-NormalizedData
-├── libraries[]
-├── components[]
-├── audits[]
-├── anomalies[]
-└── pullRequests[]
-```
-
-Le snapshot conserve également le `RawDataset` et les décisions de qualité des données.
-
----
-
-## 4. Objets métier identifiés
-
-Les principaux objets métier identifiés dans les échanges sont :
-
-* Organisation ;
-* Librairie ;
-* Repository ;
-* Composant ;
-* Issue ;
-* Anomalie ;
-* Audit ;
-* Pull Request ;
-* Version ;
-* Iteration ;
-* Milestone ;
-* Catalogue.
-
-Tous ces objets ne sont pas encore implémentés comme objets indépendants dans le code actuel.
-
----
-
-## 5. Principes de séparation
-
-Les concepts suivants doivent rester distincts :
-
-| Concept          | Question à laquelle il répond                                           |
-| ---------------- | ----------------------------------------------------------------------- |
-| Issue Type       | Qu'est-ce que l'issue ?                                                 |
-| Label            | Qu'est-ce qui caractérise l'issue ?                                     |
-| Project / Status | Où se trouve l'issue dans le workflow ?                                 |
-| Iteration        | Quand le travail est-il planifié ?                                      |
-| Milestone        | À quel lot, horizon ou version l'issue est-elle rattachée ?             |
-| Librairie        | Quelle librairie métier est concernée ?                                 |
-| Repository       | Dans quel repository GitHub se trouvent les données ?                   |
-| Component        | Quel composant est concerné ?                                           |
-| Audit            | Dans quel contexte d'évaluation intervient le composant ou l'anomalie ? |
-| Version          | Quelle version du produit/librairie est concernée ?                     |
-| Pull Request     | Quelle réalisation technique est associée au travail ?                  |
+**À instruire.**
 
 ---
 
 ## 6. Repository et librairie
 
-Le repository est actuellement utilisé comme représentation technique de la librairie.
+Le repository est une entité technique GitHub.
 
-Cette relation ne doit toutefois pas devenir une contrainte du modèle métier.
+La librairie est une entité métier.
 
-La relation cible est :
+Aujourd'hui, elles sont pratiquement confondues dans le périmètre du projet.
+
+À terme, elles doivent être distinguées.
 
 ```text
-Library 1 ─────── 1..n Repository
+Repository
+     │
+     ├── Librairie A
+     ├── Librairie B
+     └── ...
 ```
 
-ou, selon les besoins qui seront précisés ultérieurement, une relation permettant également de représenter plusieurs librairies dans un même repository.
-
-**À instruire :** la cardinalité exacte et le sens de la relation entre librairie et repository dans les cas de monorepo.
+La cardinalité exacte et les règles d'identification restent à définir.
 
 ---
 
-## 7. Composant
+## 7. Package
 
-Un composant appartient à une librairie métier.
+Le package représente le mode de distribution d'une librairie.
 
-Le repository constitue actuellement un moyen technique de retrouver cette librairie, mais il ne doit pas devenir la seule identité du composant.
+Aujourd'hui, le modèle de travail considère principalement :
 
-Cette distinction est nécessaire pour préparer le support futur des monorepos.
+```text
+1 librairie = 1 package principal
+```
+
+Cette relation pourra évoluer vers :
+
+```text
+1 librairie = 1..n packages
+```
+
+La définition précise du package, notamment son identifiant, son registre, son lien avec une version et sa relation avec un repository, reste à instruire.
 
 ---
 
-## 8. Versions
+## 8. Composant
 
-Une librairie peut être associée à plusieurs versions.
+Un composant est une unité fonctionnelle du Design System fournie par une librairie.
 
-Les règles permettant de déterminer une version à partir des données GitHub, notamment des Milestones, restent à préciser.
+Il doit être identifié indépendamment du repository technique.
 
-Le traitement de suffixes tels que `-Audit` est identifié dans les spécifications mais fera l'objet d'une définition dédiée.
+Le catalogue constitue actuellement une référence permettant d'identifier les composants connus.
+
+À terme, un composant pourra également être rapproché des applications consommatrices.
 
 ---
 
-## 9. Audit
+## 9. Issue
 
-Un audit est un objet métier distinct d'une Issue GitHub.
+L'Issue est un objet provenant de GitHub.
 
-Une Issue peut constituer la représentation technique d'un audit dans GitHub, mais le modèle métier doit permettre de distinguer :
+Elle constitue une donnée technique permettant notamment de représenter :
 
-* l'objet audit ;
-* son support GitHub éventuel ;
-* le composant concerné ;
-* la version ;
-* les anomalies éventuellement découvertes.
+* un travail ;
+* une anomalie ;
+* un audit ;
+* une tâche ;
+* une fonctionnalité ;
+* un autre objet selon l'Issue Type.
 
-La taxonomie complète des audits reste à formaliser.
+Une Issue GitHub ne doit donc pas être automatiquement assimilée à un objet métier unique.
 
 ---
 
 ## 10. Anomalie
 
-Une anomalie est un objet métier distinct de l'Issue GitHub qui la représente éventuellement.
+Une anomalie représente un problème identifié dans le périmètre du Design System.
 
-La définition exacte d'une anomalie reste à instruire.
+La représentation technique actuelle repose principalement sur les Issues GitHub.
 
-En particulier, il n'est pas encore décidé que toutes les anomalies sont nécessairement des `BUG` au sens de l'Issue Type GitHub.
+Cependant, la définition métier exacte d'une anomalie n'est pas encore totalement arrêtée.
 
-Voir `docs/00-cadrage/questions-ouvertes.md`.
+En particulier, il reste à déterminer :
 
----
+* si toute anomalie correspond à une Issue ;
+* si toute anomalie possède l'Issue Type `BUG` ;
+* comment distinguer une anomalie ordinaire d'une anomalie issue d'un audit ;
+* comment distinguer une anomalie d'une amélioration proposée.
 
-## 11. Pull Request
-
-La Pull Request constitue une donnée technique GitHub permettant notamment de relier un travail à sa réalisation.
-
-La présence ou l'absence d'une Pull Request dépend du workflow de l'objet concerné.
-
-Elle ne doit donc pas être considérée comme une propriété universelle de tous les objets métier.
+**À instruire.**
 
 ---
 
-## 12. Principe d'évolution
+## 11. Audit
 
-Le modèle doit permettre de passer progressivement de :
+Un audit représente une évaluation réalisée sur un périmètre donné.
+
+Le projet identifie notamment les audits de composants et les audits d'accessibilité.
+
+Un audit peut être représenté techniquement par une Issue GitHub, mais l'objet métier doit rester distinct de cette représentation.
+
+Le modèle doit pouvoir associer un audit à :
+
+* une librairie ;
+* un composant ;
+* une version ;
+* un statut ;
+* un résultat ;
+* éventuellement un ou plusieurs objets produits par l'audit.
+
+La notion de campagne d'audit et la taxonomie complète des types d'audit restent à définir.
+
+**À instruire.**
+
+---
+
+## 12. Version
+
+Une version représente un état versionné d'une librairie ou d'un package.
+
+Les données GitHub peuvent notamment utiliser les Milestones pour représenter des versions.
+
+Une Milestone ne doit toutefois pas être automatiquement considérée comme une Version, car les spécifications actuelles identifient plusieurs usages des Milestones.
+
+La relation exacte entre Version, Package, Release et Milestone reste à formaliser.
+
+**À instruire.**
+
+---
+
+## 13. Pull Request
+
+La Pull Request est un objet technique GitHub représentant une réalisation ou une modification proposée.
+
+Elle peut servir à établir la traçabilité entre une Issue et sa réalisation technique.
+
+La présence d'une Pull Request n'est toutefois pas nécessairement obligatoire pour tous les types de travaux.
+
+Cette règle dépend du workflow applicable à l'objet concerné.
+
+---
+
+## 14. Iteration
+
+Une Iteration représente une période de travail planifiée.
+
+Les spécifications métier identifient notamment les besoins de suivi des sprints et de leur activité.
+
+Les notions de sprint, iteration, capacité, engagement et vélocité doivent être précisées dans les documents de workflow et d'indicateurs.
+
+---
+
+## 15. Milestone
+
+Une Milestone est un objet GitHub pouvant être utilisé pour différents besoins métier.
+
+Les usages identifiés comprennent notamment :
+
+* version ;
+* audit ;
+* horizon de planification ;
+* lot de travail.
+
+Elle ne doit donc pas être assimilée systématiquement à une version.
+
+La règle de classification d'une Milestone devra être précisée.
+
+---
+
+## 16. Catalogue
+
+Le catalogue constitue le référentiel des composants connus.
+
+Il est actuellement séparé des données GitHub.
+
+Il permet notamment de distinguer les composants connus du catalogue des composants rencontrés dans les données sources.
+
+La gouvernance et les règles complètes du catalogue restent à préciser.
+
+---
+
+## 17. Applications consommatrices
+
+À terme, le modèle devra pouvoir représenter les applications utilisant les librairies du Design System.
+
+Le besoin identifié comprend notamment :
 
 ```text
+Application
+    │
+    ├── utilise une librairie
+    │       └── dans une version donnée
+    │
+    └── utilise des composants
+```
+
+Les informations attendues comprennent notamment :
+
+* librairies utilisées ;
+* versions utilisées ;
+* composants utilisés ;
+* fréquence d'utilisation des composants ;
+* dette éventuelle de version.
+
+La méthode d'acquisition de ces données n'est pas encore définie.
+
+**À instruire.**
+
+---
+
+## 18. Principes de séparation
+
+Les concepts suivants doivent rester distincts :
+
+| Concept          | Question à laquelle il répond                                      |
+| ---------------- | ------------------------------------------------------------------ |
+| Organisation     | Dans quel périmètre organisationnel ?                              |
+| Librairie        | Quelle unité métier du Design System ?                             |
+| Package          | Comment la librairie est-elle distribuée ?                         |
+| Repository       | Où se trouvent techniquement les sources ?                         |
+| Composant        | Quel élément du Design System est concerné ?                       |
+| Issue Type       | De quel type est le travail GitHub ?                               |
+| Label            | Quelles caractéristiques sont associées à l'Issue ?                |
+| Project / Status | Où se trouve le travail dans le workflow ?                         |
+| Iteration        | Quand le travail est-il planifié ?                                 |
+| Milestone        | À quel lot, horizon, audit ou version le travail est-il rattaché ? |
+| Audit            | Quelle évaluation est réalisée ?                                   |
+| Anomalie         | Quel problème a été identifié ?                                    |
+| Pull Request     | Quelle réalisation technique est associée ?                        |
+| Version          | Quel état versionné est concerné ?                                 |
+
+---
+
+## 19. Principe d'évolution
+
+Le modèle doit permettre une évolution progressive :
+
+```text
+Situation actuelle
+
 GitHub
   ↓
 Repository
   ↓
-Issues / PR
+Issues / Pull Requests
+  ↓
+Librairie / Composants
 ```
 
-à un modèle métier plus explicite :
+vers :
 
 ```text
+Modèle cible
+
 Organisation
-  ↓
+    ↓
 Librairie
-  ↓
-Repository
-  ↓
-Composants / Versions / Audits / Anomalies
+    ├── Package(s)
+    ├── Repository(s)
+    ├── Version(s)
+    └── Composant(s)
+            ↑
+            │
+      Application(s)
+      consommatrice(s)
 ```
 
-sans devoir réécrire les définitions métier lorsque le support des monorepos sera introduit.
+Cette évolution doit pouvoir être réalisée sans remettre en cause les définitions métier fondamentales.
+
+---
+
+## 20. Décisions restant à prendre
+
+Les sujets suivants restent à instruire :
+
+* définition exacte d'une librairie indépendante d'un package ;
+* relation librairie/package ;
+* relation librairie/repository ;
+* identification de plusieurs librairies dans un monorepo ;
+* identification d'un composant dans un monorepo ;
+* définition précise d'une anomalie ;
+* définition complète d'un audit ;
+* relation Version / Package / Release / Milestone ;
+* identification des applications consommatrices ;
+* méthode d'analyse du code des consommateurs.
