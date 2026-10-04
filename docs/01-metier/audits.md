@@ -24,11 +24,13 @@ Un Audit peut notamment porter sur :
 - une Version ou une Release Candidate ;
 - un ou plusieurs Composants.
 
+Dans le fonctionnement actuel, une Issue d'Audit est créée pour chaque Composant à auditer.
+
 Un Audit peut produire :
 
-- un résultat de conformité ;
-- des Anomalies ;
-- des propositions d'Amélioration.
+- aucune Anomalie ;
+- une ou plusieurs Anomalies ;
+- éventuellement des propositions d'Amélioration.
 
 ---
 
@@ -42,7 +44,7 @@ La nature indique que l'Issue représente un travail d'Audit.
 
 La cible souhaitée est :
 
-```text id="8zvwgy"
+```text
 Issue Type = 🔍 Audit
 ```
 
@@ -52,20 +54,18 @@ La famille indique le domaine évalué par l'Audit.
 
 La seule famille actuellement pratiquée est :
 
-```text id="7ek56v"
+```text
 Accessibilité
 ```
 
 Le modèle cible est donc conceptuellement :
 
-```text id="cw5lao"
+```text
 Issue
-├── nature         : Audit
-├── famille d'Audit: Accessibilité
-└── Composant      : xxx
+├── nature          : Audit
+├── famille d'Audit : Accessibilité
+└── Composant       : xxx
 ```
-
-Cette séparation permet de ne pas confondre la nature du travail avec le domaine évalué.
 
 ---
 
@@ -79,9 +79,9 @@ Lors des Audits d'Accessibilité actuels, l'auditeur traite a priori ensemble le
 
 Il n'est pas établi aujourd'hui que ces trois notions doivent constituer des familles d'Audit distinctes.
 
-Au contraire, le fonctionnement observé conduit pour l'instant à les regrouper sous la famille métier :
+Le fonctionnement observé conduit pour l'instant à les regrouper sous la famille métier :
 
-```text id="25h1y9"
+```text
 Accessibilité
 ```
 
@@ -94,27 +94,25 @@ Le détail exact :
 
 reste à confirmer avec l'auditeur.
 
-Le modèle ne doit donc pas encore imposer une structure détaillée RGAA / WCAG / WAI-ARIA.
-
 ---
 
 ## 5. Identification actuelle d'une Issue d'Audit
 
 Aujourd'hui, une Issue d'Audit d'Accessibilité est identifiée par le label :
 
-```text id="2ijmo1"
+```text
 Audit RGAA
 ```
 
 Le Composant concerné est identifié par :
 
-```text id="c4bg17"
+```text
 🧩 Component:xxx
 ```
 
 Exemple :
 
-```text id="m2f9nx"
+```text
 Issue
 ├── label : Audit RGAA
 └── label : 🧩 Component:Button
@@ -122,60 +120,30 @@ Issue
 
 Le nom actuel du label ne signifie pas que l'Audit se limite nécessairement au seul RGAA.
 
-L'auditeur traite a priori l'Accessibilité de manière plus globale.
-
 ---
 
 ## 6. Identification cible d'une Issue d'Audit
 
 La cible souhaitée est d'utiliser :
 
-```text id="xztl8c"
+```text
 Issue Type = 🔍 Audit
 ```
 
 Conceptuellement :
 
-```text id="20xi7x"
+```text
 Issue
-├── Issue Type     : 🔍 Audit
-├── famille        : Accessibilité
-└── Composant      : 🧩 Component:xxx
+├── Issue Type : 🔍 Audit
+├── famille    : Accessibilité
+└── Composant  : 🧩 Component:xxx
 ```
 
 Le mécanisme technique permettant de représenter la famille d'Audit n'est pas encore décidé.
 
 ---
 
-## 7. Pourquoi séparer Audit et famille d'Audit
-
-Un Issue Type spécifique à chaque domaine conduirait potentiellement à multiplier les Issue Types :
-
-```text id="zz8kes"
-Audit Accessibilité
-Audit Performance
-Audit Sécurité
-Audit ...
-```
-
-La cible envisagée préfère séparer :
-
-```text id="boz88j"
-Nature
-└── 🔍 Audit
-
-Famille
-├── Accessibilité
-└── autres familles futures éventuelles
-```
-
-À ce jour, aucune autre famille que l'Accessibilité n'est réellement pratiquée.
-
-Des Audits de Sécurité, Performance, Qualité UI ou autres pourraient éventuellement être envisagés ultérieurement, mais ils ne constituent pas actuellement des besoins métier établis.
-
----
-
-## 8. Grille d'Audit
+## 7. Grille d'Audit
 
 L'auditeur dispose probablement d'une grille ou checklist de critères à contrôler.
 
@@ -193,15 +161,13 @@ Il reste notamment à déterminer :
 - les référentiels qu'elle couvre ;
 - les informations qui doivent éventuellement être remontées dans GitHub.
 
-Il ne faut pas reproduire cette grille dans le modèle sans l'avoir étudiée.
-
 ---
 
-## 9. Template d'Issue d'Audit
+## 8. Template d'Issue d'Audit
 
 À terme, il est souhaité de mettre en place un template d'Issue pour les Audits.
 
-L'objectif de ce template est de fournir le **minimum vital** nécessaire :
+L'objectif est de fournir le minimum vital nécessaire :
 
 - au pilotage ;
 - à la traçabilité ;
@@ -210,32 +176,13 @@ L'objectif de ce template est de fournir le **minimum vital** nécessaire :
 
 Le template n'a pas nécessairement vocation à remplacer la grille complète utilisée par l'auditeur.
 
-Conceptuellement :
-
-```text id="48v0lc"
-Grille / checklist de l'auditeur
-        │
-        └── détail des contrôles
-                  │
-                  ▼
-          réalisation de l'Audit
-                  │
-                  ▼
-Issue GitHub d'Audit
-        │
-        └── informations minimales
-            de pilotage et traçabilité
-```
-
-Le contenu exact du template reste à définir.
-
 ---
 
-## 10. Issue d'Audit et Composant
+## 9. Issue d'Audit et Composant
 
 Le fonctionnement souhaité repose sur une Issue d'Audit par Composant à auditer.
 
-```text id="quq2jo"
+```text
 Composant
     │
     └── Issue d'Audit
@@ -243,7 +190,7 @@ Composant
 
 Aujourd'hui, le Composant est identifié par :
 
-```text id="1n4fqv"
+```text
 🧩 Component:xxx
 ```
 
@@ -251,39 +198,136 @@ La règle exacte concernant le nombre de labels Component autorisés reste à fo
 
 ---
 
-## 11. Fonctionnement cible des Audits
+## 10. Fin d'un Audit
+
+Dans le fonctionnement actuel, l'Audit d'un Composant est considéré comme réalisé lorsque les deux conditions suivantes sont satisfaites :
+
+```text
+Project Status = Done
+ET
+GitHub Issue State = Closed
+```
+
+Conceptuellement :
+
+```text
+Issue d'Audit
+├── status = Done
+└── state  = Closed
+        │
+        ▼
+AUDIT RÉALISÉ
+```
+
+Le seul statut `Done` n'est donc pas suffisant.
+
+Le seul état GitHub `Closed` n'est pas suffisant non plus.
+
+Les deux informations sont combinées.
+
+---
+
+## 11. Résultat de conformité
+
+Le résultat de conformité n'est actuellement pas déclaré explicitement par l'auditeur dans un champ dédié.
+
+Il est déduit des relations entre l'Issue d'Audit et ses sub-Issues d'Anomalie.
+
+Lorsque l'Audit est réalisé :
+
+```text
+Issue d'Audit
+├── Done
+├── Closed
+└── aucune sub-Issue d'Anomalie
+        │
+        ▼
+COMPOSANT CONFORME
+```
+
+Lorsque l'Audit est réalisé et qu'au moins une sub-Issue d'Anomalie existe :
+
+```text
+Issue d'Audit
+├── Done
+├── Closed
+└── ≥ 1 sub-Issue d'Anomalie
+        │
+        ▼
+COMPOSANT NON CONFORME
+```
+
+La conformité est donc actuellement **calculée** et non explicitement déclarée.
+
+---
+
+## 12. États de conformité
+
+Les états minimaux sont :
+
+```text
+NON AUDITÉ
+AUDITÉ & CONFORME
+AUDITÉ & NON CONFORME
+```
+
+La règle actuelle peut être représentée ainsi :
+
+| Audit Done | Issue Closed | Sub-Issue d'Anomalie | État |
+|---|---|---|---|
+| non | peu importe | peu importe | NON AUDITÉ |
+| oui | non | peu importe | NON AUDITÉ |
+| oui | oui | aucune | AUDITÉ & CONFORME |
+| oui | oui | au moins une | AUDITÉ & NON CONFORME |
+
+Cette table représente le fonctionnement actuellement établi.
+
+Des états intermédiaires ou incohérents pourront éventuellement être introduits ultérieurement par le moteur de qualité des données.
+
+---
+
+## 13. Nature des sub-Issues
+
+La règle de conformité dépend de la présence de **sub-Issues d'Anomalie**.
+
+Il reste donc nécessaire de définir précisément comment une sub-Issue est reconnue comme une Anomalie.
+
+Une simple présence de sub-Issue ne doit pas être assimilée automatiquement à une non-conformité tant qu'il n'est pas établi que toutes les sub-Issues d'une Issue d'Audit représentent nécessairement des Anomalies.
+
+Ce point doit être instruit avant l'implémentation de la règle de calcul.
+
+---
+
+## 14. Fonctionnement cible des Audits
 
 Le comportement cible est de réaliser les Audits avant la création de la Version PROD finale.
 
 Les Issues d'Audit des Composants évoluent dans la Milestone correspondant à la future Version PROD.
 
-```text id="7bjzhx"
+```text
 Milestone 1.1.0
-    │
     ├── Issue Audit composant A
     ├── Issue Audit composant B
     └── Issue Audit composant C
 ```
 
-L'Audit est réalisé sur une Release Candidate de cette future Version.
+L'Audit est réalisé sur une Release Candidate :
 
-```text id="ilzhvu"
+```text
 Release Candidate 1.1.0-rc.n
-        │
-        ▼
-Audits des composants
-        │
-        ▼
-Version PROD finale 1.1.0
+        ↓
+Audits
+        ↓
+Version PROD 1.1.0
 ```
 
 ---
 
-## 12. Audit pré-PROD
+## 15. Audit pré-PROD
 
 Un Audit pré-PROD est réalisé sur une Release Candidate avant la publication de la Version PROD finale.
 
-```text id="chfuse"
+```text
 Version auditée : M.m.r-rc.n
 Version cible   : M.m.r
 Milestone       : M.m.r
@@ -291,38 +335,38 @@ Milestone       : M.m.r
 
 ---
 
-## 13. Audit de rattrapage
+## 16. Audit de rattrapage
 
 Une Milestone :
 
-```text id="y9agmy"
+```text
 M.m.r-Audit
 ```
 
-correspond à un mécanisme de rattrapage.
-
-Elle est utilisée lorsque les Audits n'ont pas été réalisés avant la publication de la Version PROD.
+correspond à un mécanisme de rattrapage lorsque les Audits n'ont pas été réalisés avant la publication de la Version PROD.
 
 `M.m.r-Audit` ne représente pas une nouvelle Version.
 
 ---
 
-## 14. Contenu d'une Milestone de rattrapage
+## 17. Anomalies découvertes pendant un Audit
 
-Une Milestone `M.m.r-Audit` contient uniquement les Issues d'Audit des Composants.
+Les Anomalies découvertes pendant l'Audit sont représentées comme des sub-Issues liées à l'Issue d'Audit.
 
-Les Anomalies découvertes pendant les Audits suivent ensuite leur propre workflow.
+Conceptuellement :
 
----
+```text
+Issue d'Audit
+    │
+    ├── Sub-Issue Anomalie A
+    ├── Sub-Issue Anomalie B
+    └── ...
+```
 
-## 15. Anomalies découvertes pendant un Audit
+Ces Anomalies suivent ensuite leur propre cycle :
 
-Une Anomalie découverte pendant un Audit passe ensuite par :
-
-```text id="og1sgn"
-Audit
-    ↓
-Anomalie détectée
+```text
+Anomalie
     ↓
 Grooming
     ↓
@@ -333,45 +377,31 @@ Planification
     └── Sprint
 ```
 
-Le travail d'Audit et le travail de correction sont deux processus distincts.
+La relation de sub-Issue permet de conserver l'origine de l'Anomalie même lorsque celle-ci est ensuite planifiée dans une autre Milestone.
 
 ---
 
-## 16. Version auditée et Version cible
+## 18. Version auditée et Version cible
 
 Dans un Audit pré-PROD :
 
-```text id="x6q1ct"
+```text
 Version effectivement auditée : M.m.r-rc.n
 Version PROD cible             : M.m.r
 ```
 
 Dans un Audit de rattrapage :
 
-```text id="ojjren"
+```text
 Version effectivement auditée : M.m.r
 Version PROD concernée         : M.m.r
 ```
 
 ---
 
-## 17. États de conformité
+## 19. Couverture d'Audit
 
-Pour un Composant dans un contexte d'Audit donné, les états minimaux identifiés sont :
-
-```text id="hbxyn8"
-NON AUDITÉ
-AUDITÉ & CONFORME
-AUDITÉ & NON CONFORME
-```
-
-Un Composant non audité ne doit pas être considéré automatiquement comme non conforme.
-
----
-
-## 18. Couverture d'Audit
-
-```text id="07veth"
+```text
 Couverture d'Audit
 =
 nombre de Composants audités
@@ -379,13 +409,19 @@ nombre de Composants audités
 nombre total de Composants du périmètre
 ```
 
+Un Composant est considéré comme audité lorsque son Issue d'Audit est à la fois :
+
+```text
+Done + Closed
+```
+
 Le périmètre exact du dénominateur reste à définir.
 
 ---
 
-## 19. Taux de conformité
+## 20. Taux de conformité
 
-```text id="oas808"
+```text
 Taux de conformité
 =
 nombre de Composants conformes
@@ -393,21 +429,9 @@ nombre de Composants conformes
 nombre de Composants audités
 ```
 
----
+Un Composant audité est actuellement considéré comme conforme lorsqu'aucune sub-Issue d'Anomalie n'est liée à son Issue d'Audit.
 
-## 20. Traçabilité des Anomalies
-
-Une Anomalie découverte lors d'un Audit doit pouvoir conserver sa provenance :
-
-```text id="heihu5"
-Anomalie
-    │
-    └── découverte lors de
-          │
-          └── Issue d'Audit
-                │
-                └── Composant
-```
+Un Composant non audité ne doit pas être comptabilisé comme non conforme.
 
 ---
 
@@ -420,27 +444,32 @@ L'historisation doit permettre de distinguer :
 - Version ou Release Candidate effectivement auditée ;
 - famille d'Audit ;
 - Composant audité ;
-- résultat connu à un instant donné ;
-- Anomalies découvertes.
+- date à laquelle l'Audit est devenu Done et Closed ;
+- résultat de conformité calculé ;
+- Anomalies découvertes ;
+- évolution ultérieure de ces Anomalies.
+
+Le résultat connu à un instant donné ne doit pas être réécrit rétroactivement à partir d'informations apparues plus tard.
 
 ---
 
 ## 22. Principes retenus
 
 1. Une Issue d'Audit correspond à un Composant à auditer.
-2. Aujourd'hui, une Issue d'Audit d'Accessibilité est identifiée par le label `Audit RGAA`.
-3. Aujourd'hui, le Composant est identifié par `🧩 Component:xxx`.
+2. Aujourd'hui, une Issue d'Audit d'Accessibilité est identifiée par `Audit RGAA`.
+3. Le Composant est identifié par `🧩 Component:xxx`.
 4. La cible souhaitée est `Issue Type = 🔍 Audit`.
-5. `Audit` et `Accessibilité` représentent deux dimensions distinctes.
-6. L'Accessibilité est la seule famille d'Audit actuellement pratiquée.
-7. RGAA, WCAG et WAI-ARIA sont actuellement traités ensemble par l'auditeur dans le cadre de l'Audit d'Accessibilité.
-8. Leur modélisation détaillée reste à instruire.
-9. L'auditeur dispose probablement d'une grille de contrôle qui reste à identifier.
-10. Un template GitHub minimal d'Issue d'Audit est souhaité à terme.
-11. Ce template n'a pas nécessairement vocation à remplacer la grille détaillée de l'auditeur.
-12. Le fonctionnement cible est l'Audit pré-PROD sur une Release Candidate.
-13. `M.m.r-Audit` constitue un mécanisme de rattrapage.
-14. Audit et correction des Anomalies sont des processus distincts.
+5. L'Accessibilité est la seule famille d'Audit actuellement pratiquée.
+6. RGAA, WCAG et WAI-ARIA sont actuellement traités ensemble par l'auditeur.
+7. Un Audit est considéré comme réalisé lorsque l'Issue d'Audit est `Done` et `Closed`.
+8. La conformité n'est actuellement pas explicitement déclarée.
+9. Un Composant audité sans sub-Issue d'Anomalie est considéré comme conforme.
+10. Un Composant audité avec au moins une sub-Issue d'Anomalie est considéré comme non conforme.
+11. Les Anomalies découvertes sont reliées à l'Issue d'Audit sous forme de sub-Issues.
+12. Ces Anomalies suivent ensuite leur propre workflow de Grooming, pesée et planification.
+13. Un template GitHub minimal d'Issue d'Audit est souhaité à terme.
+14. Le fonctionnement cible est l'Audit pré-PROD sur une Release Candidate.
+15. `M.m.r-Audit` constitue un mécanisme de rattrapage.
 
 ---
 
@@ -449,14 +478,12 @@ L'historisation doit permettre de distinguer :
 Les points suivants restent à instruire :
 
 - le contenu réel de la grille utilisée par l'auditeur ;
-- la distinction éventuelle entre RGAA, WCAG et WAI-ARIA dans cette grille ;
-- les versions des référentiels applicables ;
-- le minimum d'informations à intégrer au template d'Issue ;
-- le mécanisme GitHub de représentation de la famille d'Audit ;
+- le minimum d'informations du futur template ;
+- comment reconnaître précisément une sub-Issue comme Anomalie ;
+- si toutes les sub-Issues d'une Issue d'Audit sont nécessairement des Anomalies ;
 - si une Issue d'Audit doit obligatoirement avoir exactement un Composant ;
 - comment identifier la Release Candidate auditée ;
-- comment déterminer la fin d'un Audit ;
-- comment déterminer le résultat de conformité ;
-- comment relier une Anomalie à l'Issue d'Audit qui l'a détectée ;
-- comment identifier une Campagne d'Audit ;
-- comment gérer plusieurs Audits successifs du même Composant.
+- quelle date exacte représente la fin de l'Audit ;
+- comment traiter les incohérences entre `Done` et `Closed` ;
+- comment gérer plusieurs Audits successifs du même Composant ;
+- comment la correction ultérieure des Anomalies influence l'état de conformité historique ou courant du Composant.
