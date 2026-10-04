@@ -2290,11 +2290,22 @@ Autres sources
 
 ## Q-044 — Familles d'Audit
 
-Quelles familles d'Audit le modèle doit-il supporter ?
+La seule famille d'Audit actuellement pratiquée est :
 
-RGAA est actuellement établi.
+```text
+Accessibilité
+```
 
-**Statut : À instruire**
+Lors de cet Audit, l'auditeur traite a priori ensemble les problématiques relatives :
+
+- au RGAA ;
+- aux WCAG ;
+- à WAI-ARIA.
+Il n'est pas établi que ces trois notions doivent constituer des familles d'Audit différentes.
+Le détail des référentiels et critères réellement utilisés reste à confirmer avec l'auditeur.
+D'autres familles, par exemple Sécurité ou Performance, pourraient être envisagées à terme mais ne correspondent pas aujourd'hui à des pratiques établies.
+
+**Statut : Établi pour le fonctionnement actuel**
 
 ---
 
@@ -2430,6 +2441,25 @@ Il faut distinguer :
 - la Version d'artefact calculée ou publiée par Jenkins.
 
 **Statut : Établi**
+
+---
+
+## Q-055 — Template d'Issue d'Audit
+
+À terme, un template GitHub doit fournir le minimum vital nécessaire à une Issue d'Audit.
+
+Ce template doit faciliter :
+
+- le pilotage ;
+- la traçabilité ;
+- l'exploitation par le dashboard ;
+- la compréhension du résultat de l'Audit.
+
+Il n'a pas nécessairement vocation à remplacer la grille ou checklist détaillée utilisée par l'auditeur.
+
+Quel est le minimum d'informations qui doit être demandé par ce template ?
+
+**Statut : À instruire**
 
 ---
 
