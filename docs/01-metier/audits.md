@@ -695,20 +695,40 @@ Ainsi, deux Audits simultanément ouverts, `Ready`, `In progress`, ou plus gén�
 La sévérité de cette future règle de qualité reste à définir.
 
 
-### Version effectivement auditée obligatoire
+### Milestone et Version effectivement auditée
 
-Toute Issue d'Audit doit cibler une Version effectivement auditée identifiable.
+Toute Issue d'Audit doit être rattachée à une Milestone permettant d'identifier la Version de référence et le contexte de l'Audit.
 
-Cette information est nécessaire pour rattacher le verdict au couple `Composant × Version`. Une Issue d'Audit `Done + Closed` sans Version auditée déterminable constitue donc une donnée métier incomplète/anormale.
+Les formes actuellement retenues sont :
 
-La Version auditée et la Milestone doivent rester deux informations distinctes. En pré-PROD, par exemple :
+- `M.m.r` pour le cycle normal ;
+- `M.m.r-Audit` pour le rattrapage d'une Version déjà publiée.
+
+L'Issue d'Audit contient également dans son template :
 
 ```text
-Milestone              : 1.8.0
-Version effectivement auditée : 1.8.0-rc.n
+Version auditée : <version>
 ```
 
-Le mécanisme GitHub permettant d'enregistrer ou de retrouver de manière fiable la Version effectivement auditée reste à définir.
+Cette information conserve la Version effectivement testée.
+
+En pré-PROD :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.8.0-rc.42
+```
+
+En rattrapage :
+
+```text
+Milestone       : 1.8.0-Audit
+Version auditée : 1.8.0
+```
+
+La Milestone sert donc de pivot vers la Version de référence, tandis que le champ `Version auditée :` conserve la précision sur l'artefact réellement audité.
+
+La règle à appliquer en cas d'incohérence entre ces deux informations reste à définir.
 
 ---
 

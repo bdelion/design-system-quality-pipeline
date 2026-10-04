@@ -998,6 +998,45 @@ La Version auditée ne doit pas être déduite systématiquement du seul nom de 
 
 ---
 
+## D-052 — Milestone comme référence de Version et Version auditée dans le template
+
+Pour une Issue d'Audit, la Milestone doit suffire pour identifier la Version de référence et le contexte d'Audit.
+
+Les formes actuellement retenues sont :
+
+- `M.m.r` pour l'Audit rattaché au cycle normal de la Version ;
+- `M.m.r-Audit` pour l'Audit de rattrapage d'une Version déjà publiée.
+
+Le suffixe `-Audit` reste configurable comme déjà établi.
+
+L'Issue d'Audit contient également dans son template une information explicite :
+
+```text
+Version auditée : <version>
+```
+
+Cette information permet de conserver la Version effectivement testée, notamment lorsqu'elle est plus précise que la Milestone.
+
+Exemple pré-PROD :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.8.0-rc.42
+```
+
+Exemple de rattrapage :
+
+```text
+Milestone       : 1.8.0-Audit
+Version auditée : 1.8.0
+```
+
+La Milestone constitue donc le pivot de rattachement à la Version de référence, tandis que `Version auditée :` documente l'artefact/version effectivement soumis à l'Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1890,11 +1929,42 @@ Il reste à déterminer comment cette anomalie de données/workflow devra être 
 
 ## Q-071 — Source de la Version effectivement auditée
 
-Toute Issue d'Audit doit permettre d'identifier sans ambiguïté la Version effectivement auditée.
+La Milestone constitue la référence structurante permettant d'identifier la Version de référence et le contexte de l'Audit :
 
-La Milestone ne suffit pas nécessairement à porter cette information : en pré-PROD, une Issue peut appartenir à la Milestone `M.m.r` alors que l'auditeur travaille sur `M.m.r-rc.n`.
+- `M.m.r` pour le cycle normal ;
+- `M.m.r-Audit` pour le rattrapage.
 
-Il reste à déterminer où la Version effectivement auditée doit être enregistrée ou retrouvée de manière fiable dans GitHub : champ du Project, contenu structuré de l'Issue d'Audit, label, autre mécanisme, ou combinaison de sources.
+L'Issue d'Audit contient également dans son template le champ :
+
+```text
+Version auditée : <version>
+```
+
+Ce champ conserve la Version effectivement testée et peut être plus précis que la Milestone, notamment pour un Audit pré-PROD effectué sur une Release Candidate.
+
+Exemple :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.8.0-rc.42
+```
+
+**Statut : Établi**
+
+---
+
+## Q-072 — Cohérence entre Milestone et champ Version auditée
+
+La Milestone et le champ `Version auditée :` portent deux informations complémentaires mais liées.
+
+Il reste à définir la règle de cohérence à appliquer lorsqu'elles sont contradictoires, par exemple :
+
+```text
+Milestone       : 1.8.0
+Version auditée : 1.9.0-rc.3
+```
+
+Cette situation devra être distinguée des cas normaux où la Version auditée est une déclinaison de la Version de référence portée par la Milestone.
 
 **Statut : À instruire**
 
