@@ -276,6 +276,8 @@ Dans le fonctionnement actuel, une sub-Issue d'Amélioration issue d'un Audit d'
 - l'Issue Type `✨ Feature` ;
 - un label `🧩 Component:xxx` identique au label Component de l'Issue d'Audit parente.
 
+Aucun exemple réel d'Amélioration d'Audit n'est disponible à ce stade. L'orientation envisagée pour sa catégorisation est un label de la forme `[famille d'amélioration]:xxx`. Le préfixe, les familles, les valeurs et la cardinalité restent à définir.
+
 Un label, champ ou autre mécanisme permettant de préciser le type d'Amélioration est souhaité, mais n'est pas encore défini.
 
 Il ne faut donc inventer aucune valeur pour cette catégorisation à ce stade.

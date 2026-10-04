@@ -640,6 +640,27 @@ La définition précise et les critères d'attribution de chacun de ces niveaux 
 
 ---
 
+## D-034 — Orientation de catégorisation des Améliorations d'Audit
+
+Aucun exemple réel de sub-Issue d'Amélioration issue d'un Audit n'est disponible à ce stade pour établir un référentiel existant.
+
+L'orientation envisagée est d'utiliser un modèle de label de la forme :
+
+```text
+[famille d'amélioration]:xxx
+```
+
+Cette notation exprime uniquement un principe cible de catégorisation. Le préfixe réel, les familles d'amélioration, les valeurs autorisées et leur cardinalité ne sont pas encore définis.
+
+Les caractéristiques actuellement établies d'une Amélioration d'Audit restent :
+
+- Issue Type `✨ Feature` ;
+- label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+
+**Statut : Orientation cible à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1272,18 +1293,27 @@ Quel est le minimum d'informations qui doit être demandé par ce template ?
 
 ---
 
-## Q-056 — Catégorisation des Améliorations issues d'un Audit
+## Q-056 — Catégorisation des Améliorations d'Audit
 
-Les sub-Issues d'Amélioration issues d'un Audit d'Accessibilité utilisent actuellement :
+Aucun exemple réel de sub-Issue d'Amélioration n'est disponible pour le moment.
 
-- l'Issue Type `✨ Feature` ;
-- un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+L'orientation envisagée est un label de la forme :
 
-Il reste à déterminer quel label, champ ou autre mécanisme doit représenter le type ou la catégorie d'Amélioration.
+```text
+[famille d'amélioration]:xxx
+```
 
-Aucune valeur n'est définie à ce stade.
+Restent à déterminer :
 
-**Statut : À instruire**
+- le préfixe ou nom réel du label ;
+- les familles d'amélioration ;
+- les valeurs associées ;
+- la cardinalité de cette catégorisation ;
+- sa gouvernance et son extensibilité.
+
+Il ne faut pas inventer de référentiel avant de disposer d'exemples ou d'une décision métier.
+
+**Statut : À instruire — orientation cible identifiée**
 
 ---
 
