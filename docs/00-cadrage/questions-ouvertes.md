@@ -741,6 +741,45 @@ Cette nouvelle Issue d'Audit permet également de matérialiser l'activité de r
 
 ---
 
+## D-039 — Distinction entre correction et conformité
+
+La correction d'une Anomalie et la conformité d'un Composant sont deux notions métier distinctes.
+
+Une Anomalie peut être considérée comme corrigée lorsque son traitement est terminé selon son workflow. Cette information décrit l'état de traitement de l'Anomalie.
+
+La conformité, en revanche, relève du jugement de l'auditeur dans le cadre d'un Audit. Le pipeline et le dashboard ne doivent pas se substituer à ce jugement en déduisant automatiquement qu'un Composant est conforme parce que ses Anomalies ont été corrigées.
+
+```text
+Anomalie corrigée
+≠
+Composant automatiquement conforme
+```
+
+Le retour à un verdict de conformité doit être porté par une Issue d'Audit de revalidation.
+
+**Statut : Établi**
+
+---
+
+## D-040 — Déclenchement collectif de l'Audit de revalidation
+
+La création d'une Issue d'Audit de revalidation ne dépend pas nécessairement de la fermeture de toutes les Anomalies issues de l'Audit précédent.
+
+Le moment de la revalidation peut être décidé collectivement par la Squad selon le contexte et les objectifs recherchés.
+
+Des stratégies possibles ont été évoquées à titre d'exemples :
+
+- revalider lorsque toutes les Anomalies `bloquantes` ont été traitées ;
+- revalider lorsque toutes les Anomalies sauf les `mineures` ont été traitées ;
+- attendre que toutes les Anomalies aient été traitées ;
+- appliquer une autre décision collective adaptée au contexte.
+
+Ces exemples ne constituent pas des règles prédéfinies.
+
+**Statut : Principe établi ; modalités de décision à préciser**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1499,13 +1538,32 @@ La clôture de l'Anomalie ne rétablit pas automatiquement la conformité du Com
 
 ## Q-062 — Déclenchement de l'Audit de revalidation
 
-Après correction des Anomalies d'un Composant, une nouvelle Issue d'Audit doit être créée afin de revalider globalement sa conformité.
+La nouvelle Issue d'Audit de revalidation n'est pas déclenchée automatiquement par la fermeture de toutes les Anomalies.
 
-Il reste à déterminer à quel moment cette nouvelle Issue d'Audit doit être créée, notamment si elle doit être déclenchée :
+Son déclenchement relève d'un choix collectif de la Squad, en fonction du contexte et du niveau de correction jugé suffisant pour demander une nouvelle évaluation à l'auditeur.
 
-- après la correction de chaque Anomalie ;
-- lorsque toutes les Anomalies issues de l'Audit initial sont corrigées ;
-- ou selon une autre règle de regroupement.
+Exemples évoqués, sans valeur de règle :
+
+- toutes les Anomalies `bloquantes` sont traitées ;
+- toutes les Anomalies sauf les `mineures` sont traitées ;
+- toutes les Anomalies sont traitées ;
+- autre seuil décidé collectivement.
+
+Le dashboard peut suivre l'état des corrections et fournir les informations nécessaires à cette décision, mais il ne doit pas déduire lui-même que le Composant est conforme.
+
+Il reste à préciser comment cette décision collective est matérialisée dans GitHub et qui crée l'Issue d'Audit de revalidation.
+
+**Statut : Principe établi ; mécanisme opérationnel à instruire**
+
+---
+
+## Q-063 — Matérialisation de la décision de revalidation
+
+Le déclenchement d'un nouvel Audit de revalidation relève d'un choix collectif de la Squad.
+
+Il reste à déterminer comment cette décision est matérialisée dans GitHub et dans le workflow : création manuelle de l'Issue d'Audit, action ou champ du Project, label, automatisation déclenchée explicitement, ou autre mécanisme.
+
+Il reste également à préciser qui est responsable de créer l'Issue d'Audit de revalidation après cette décision collective.
 
 **Statut : À instruire**
 

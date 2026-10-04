@@ -535,34 +535,32 @@ Un Composant non audité ne doit pas être comptabilisé comme non conforme.
 
 ## 25. Revalidation après correction des Anomalies
 
-Après correction des Anomalies détectées lors d'un Audit, le modèle cible retenu est de créer une nouvelle Issue d'Audit du Composant.
+La correction d'une Anomalie et la conformité d'un Composant sont deux notions distinctes.
 
-La fermeture des Anomalies ne suffit pas à elle seule à faire évoluer le Composant vers `AUDITÉ & CONFORME`.
-
-Le cycle cible est :
+Une Anomalie peut être déclarée corrigée selon son workflow de traitement. Cette information ne permet pas au pipeline ou au dashboard de conclure que le Composant est conforme : le verdict de conformité relève du jugement de l'auditeur.
 
 ```text
-Issue d'Audit initiale
-        ↓
-Anomalie(s)
-        ↓
-Correction
-        ↓
-Nouvelle Issue d'Audit du Composant
-        ↓
-Revalidation par l'auditeur
-        ↓
-Nouveau verdict de conformité
+Anomalie corrigée
+≠
+Composant automatiquement conforme
 ```
 
-Cette nouvelle Issue d'Audit a deux fonctions :
+Après correction d'Anomalies, le modèle cible prévoit donc une nouvelle Issue d'Audit du Composant afin de porter explicitement la revalidation et le nouveau verdict de conformité.
 
-1. **métier** : porter explicitement le nouvel état de conformité du Composant après correction ;
-2. **pilotage** : matérialiser l'activité de revalidation de l'auditeur afin qu'elle puisse être suivie dans les Sprints et Milestones comme les autres activités.
+Le déclenchement de cette revalidation n'est toutefois pas une conséquence automatique de la fermeture de toutes les Anomalies. Il relève d'un choix collectif de la Squad.
 
-La clôture d'une Anomalie et le verdict de conformité du Composant deviennent ainsi deux événements distincts.
+Selon le contexte, la Squad peut par exemple décider de demander une revalidation :
 
-Le déclenchement exact de l'Issue d'Audit de revalidation reste à préciser : notamment, il faut déterminer si elle est créée après chaque correction ou après la correction de l'ensemble des Anomalies issues de l'Audit précédent.
+- lorsque toutes les Anomalies `bloquantes` sont traitées ;
+- lorsque toutes les Anomalies sauf les `mineures` sont traitées ;
+- lorsque toutes les Anomalies sont traitées ;
+- selon un autre seuil décidé collectivement.
+
+Ces seuils sont des exemples et ne constituent pas un référentiel de règles prédéfini.
+
+Le dashboard peut exposer les Anomalies restantes par criticité et aider la Squad à prendre cette décision. Il ne doit ni déclencher implicitement un verdict de conformité, ni se substituer à l'auditeur.
+
+La manière de matérialiser la décision collective et la responsabilité de création de la nouvelle Issue d'Audit restent à préciser.
 
 ---
 
