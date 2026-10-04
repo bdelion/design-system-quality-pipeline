@@ -544,6 +544,7 @@ Les points suivants restent à instruire :
 - le contenu réel de la grille utilisée par l'auditeur ;
 - le minimum d'informations du futur template ;
 - le mécanisme de représentation de la famille d'Audit ;
+- la gouvernance et la liste complète des catégories `♿ a11y:xxx` ;
 - le label, champ ou autre mécanisme permettant de catégoriser une Amélioration ;
 - si une Issue d'Audit doit obligatoirement avoir exactement un Composant ;
 - comment identifier la Release Candidate auditée ;

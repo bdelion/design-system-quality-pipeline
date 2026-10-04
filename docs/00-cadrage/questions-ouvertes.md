@@ -573,6 +573,33 @@ Une sub-Issue d'Amélioration possède actuellement :
 
 ---
 
+## D-031 — Catégories Accessibilité des Anomalies d'Audit
+
+Les Anomalies issues d'un Audit d'Accessibilité portent un label de forme :
+
+```text
+♿ a11y:xxx
+```
+
+Les valeurs actuellement observées et connues sont :
+
+- `♿ a11y:image` ;
+- `♿ a11y:limite de temps` ;
+- `♿ a11y:navigation clavier` ;
+- `♿ a11y:propriétés (nom rôle état)` ;
+- `♿ a11y:contrastes` ;
+- `♿ a11y:espacement des caractères` ;
+- `♿ a11y:contrôle au clavier` ;
+- `♿ a11y:statut`.
+
+Cette liste correspond aux valeurs connues à ce jour. Elle n'est pas exhaustive et ne doit pas être modélisée comme une énumération fermée.
+
+Les catégories `navigation clavier` et `contrastes` ont été citées plusieurs fois dans l'inventaire fourni ; elles ne sont listées qu'une fois ici sans en déduire l'existence de doublons dans GitHub.
+
+**Statut : Établi pour les valeurs actuellement connues ; référentiel ouvert**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -671,6 +698,8 @@ Dans le contexte d'une sub-Issue créée à partir d'un Audit d'Accessibilité, 
 - un des labels `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
 - un label `♿ a11y:xxx` ;
 - un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+
+Les valeurs `♿ a11y:xxx` actuellement connues sont : `image`, `limite de temps`, `navigation clavier`, `propriétés (nom rôle état)`, `contrastes`, `espacement des caractères`, `contrôle au clavier` et `statut`. Cette liste n'est pas exhaustive.
 
 Cette réponse établit la règle pour les Anomalies issues d'un Audit d'Accessibilité.
 
