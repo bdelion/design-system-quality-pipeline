@@ -1000,3 +1000,47 @@ Décision éventuelle d'ouvrir un Audit
 ```
 
 Le Dashboard ne doit pas transformer automatiquement ce signal en obligation d'Audit et le pipeline ne doit pas créer automatiquement l'Issue correspondante.
+
+
+### Couverture d'Audit et taux de conformité
+
+La couverture d'Audit et le taux de conformité sont deux indicateurs distincts avec des dénominateurs différents.
+
+Pour une Version donnée :
+
+```text
+Couverture d'Audit
+=
+Composants disposant d'un Audit applicable
+/
+Composants du Catalogue
+```
+
+Puis :
+
+```text
+Taux de conformité
+=
+Composants audités conformes
+/
+Composants audités
+```
+
+Exemple :
+
+```text
+Composants au Catalogue : 20
+Composants audités       : 17
+Composants conformes     : 14
+
+Couverture d'Audit = 17 / 20 = 85 %
+Taux de conformité = 14 / 17 ≈ 82,4 %
+```
+
+Les 3 Composants non audités ne sont pas considérés comme non conformes.
+
+Dans le fonctionnement actuel, il n'est pas nécessaire de savoir si ces 3 Composants sont `NOUVEAU`, `ÉVOLUÉ` ou dans une autre situation pour calculer ces deux indicateurs.
+
+À terme, la comparaison entre Versions enrichira l'explication de la couverture en qualifiant les Composants et en faisant ressortir ceux pour lesquels un nouvel Audit devrait être envisagé.
+
+La décision d'ouvrir effectivement une Issue d'Audit reste à la Squad.

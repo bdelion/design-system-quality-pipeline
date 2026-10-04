@@ -1264,6 +1264,68 @@ Elle ne remet pas en cause D-060 : la décision d'ouvrir effectivement une Issue
 
 ---
 
+## D-064 — Couverture d'Audit calculée sur le Catalogue de Composants
+
+Pour une Version donnée, la couverture d'Audit est calculée par rapport au nombre total de Composants du Catalogue considéré.
+
+La formule retenue est :
+
+```text
+Couverture d'Audit
+=
+nombre de Composants disposant d'un Audit applicable
+/
+nombre total de Composants du Catalogue
+```
+
+Exemple :
+
+```text
+Composants au Catalogue : 20
+Composants audités       : 17
+
+Couverture d'Audit = 17 / 20 = 85 %
+```
+
+À terme, les 17 Composants audités pourront inclure des Composants audités directement sur la Version courante ainsi que des Composants couverts par un Audit antérieur encore applicable.
+
+Dans le fonctionnement actuel, la notion de Composant `NOUVEAU` ou `ÉVOLUÉ` non encore audité n'est pas requise pour calculer la couverture. Cette qualification sera apportée ultérieurement par la fonctionnalité de comparaison entre Versions.
+
+**Statut : Établi**
+
+---
+
+## D-065 — Taux de conformité calculé uniquement sur les Composants audités
+
+Le taux de conformité d'une Version est calculé uniquement parmi les Composants considérés comme audités pour cette Version.
+
+La formule retenue est :
+
+```text
+Taux de conformité
+=
+nombre de Composants audités conformes
+/
+nombre de Composants audités
+```
+
+Exemple :
+
+```text
+Composants au Catalogue : 20
+Composants audités       : 17
+Composants conformes     : 14
+
+Couverture d'Audit = 17 / 20
+Taux de conformité = 14 / 17
+```
+
+Les Composants non audités ne doivent donc pas être comptabilisés comme non conformes.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2240,17 +2302,23 @@ Cette décision implique une appréciation de la qualité des données spécifiq
 
 ## Q-076 — Dénominateur et héritage de la couverture d'Audit
 
-La couverture d'Audit d'une Version ne peut pas être calculée uniquement à partir des Audits réalisés directement dans cette Version.
+La couverture d'Audit est calculée sur le nombre total de Composants du Catalogue.
 
-Un Composant peut avoir été audité sur une Version antérieure et ne pas nécessiter de nouvel Audit s'il n'a pas évolué depuis d'une manière nécessitant une nouvelle validation.
+```text
+Couverture d'Audit
+=
+Composants disposant d'un Audit applicable
+/
+Composants du Catalogue
+```
 
-Il reste à définir :
+Exemple : 17 Composants audités sur 20 Composants au Catalogue donnent une couverture de 85 %.
 
-- comment déterminer qu'un Audit antérieur reste applicable à une Version ultérieure ;
-- quels changements d'un Composant invalident cette applicabilité ;
-- comment distinguer, dans la couverture, un Composant audité sur la Version courante d'un Composant couvert par un Audit antérieur encore applicable.
+Le taux de conformité est ensuite calculé uniquement parmi les Composants audités.
 
-**Statut : À instruire**
+À terme, la couverture pourra prendre en compte explicitement l'héritage d'un Audit antérieur pour un Composant inchangé. La comparaison automatique permettant de qualifier les Composants `NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ` ou `DÉCOMMISSIONNÉ` est reportée à une évolution ultérieure et n'est pas un prérequis au calcul actuel.
+
+**Statut : Établi pour le calcul actuel ; enrichissement cible déjà identifié**
 
 ---
 
@@ -2285,6 +2353,16 @@ Le traitement cible doit comparer le tag nouvellement créé au tag précédent 
 Il reste à préciser la règle exacte de sélection lorsque plusieurs lignes de Versions coexistent, notamment avec `master` et plusieurs branches `support/xxx`.
 
 **Statut : À instruire lors de la conception de la comparaison entre Versions**
+
+---
+
+## Q-080 — Version du Catalogue utilisée comme dénominateur
+
+La couverture d'Audit utilise le nombre de Composants du Catalogue comme dénominateur.
+
+Il reste à préciser si le Catalogue est versionné et, dans ce cas, quelle photographie du Catalogue doit être utilisée pour calculer la couverture d'une Version donnée de Librairie.
+
+**Statut : À instruire**
 
 ---
 
