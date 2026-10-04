@@ -694,6 +694,22 @@ Ainsi, deux Audits simultanément ouverts, `Ready`, `In progress`, ou plus gén�
 
 La sévérité de cette future règle de qualité reste à définir.
 
+
+### Version effectivement auditée obligatoire
+
+Toute Issue d'Audit doit cibler une Version effectivement auditée identifiable.
+
+Cette information est nécessaire pour rattacher le verdict au couple `Composant × Version`. Une Issue d'Audit `Done + Closed` sans Version auditée déterminable constitue donc une donnée métier incomplète/anormale.
+
+La Version auditée et la Milestone doivent rester deux informations distinctes. En pré-PROD, par exemple :
+
+```text
+Milestone              : 1.8.0
+Version effectivement auditée : 1.8.0-rc.n
+```
+
+Le mécanisme GitHub permettant d'enregistrer ou de retrouver de manière fiable la Version effectivement auditée reste à définir.
+
 ---
 
 ## 26. Historisation

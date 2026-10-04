@@ -984,6 +984,20 @@ La règle porte sur l'ensemble des Audits non terminés et pas uniquement sur ce
 
 ---
 
+## D-051 — Version auditée obligatoire
+
+Toute Issue d'Audit doit cibler une Version effectivement auditée qui puisse être identifiée sans ambiguïté.
+
+Cette exigence découle du modèle de conformité au niveau du couple `Composant × Version` : sans Version auditée identifiable, le verdict d'un Audit ne peut pas être correctement rattaché.
+
+Une Issue d'Audit `Done + Closed` dont la Version effectivement auditée ne peut pas être déterminée constitue donc une donnée métier incomplète/anormale.
+
+La Version auditée ne doit pas être déduite systématiquement du seul nom de la Milestone. En particulier, dans le fonctionnement pré-PROD déjà établi, la Milestone peut être `M.m.r` alors que la Version réellement auditée est une Release Candidate `M.m.r-rc.n`.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1871,6 +1885,18 @@ La présence de plusieurs Issues d'Audit non terminées pour le même couple `Co
 Il reste à déterminer comment cette anomalie de données/workflow devra être classée dans le futur moteur de règles : information, avertissement, erreur bloquante, ou autre niveau de sévérité.
 
 **Statut : À instruire lors de la définition des règles de qualité**
+
+---
+
+## Q-071 — Source de la Version effectivement auditée
+
+Toute Issue d'Audit doit permettre d'identifier sans ambiguïté la Version effectivement auditée.
+
+La Milestone ne suffit pas nécessairement à porter cette information : en pré-PROD, une Issue peut appartenir à la Milestone `M.m.r` alors que l'auditeur travaille sur `M.m.r-rc.n`.
+
+Il reste à déterminer où la Version effectivement auditée doit être enregistrée ou retrouvée de manière fiable dans GitHub : champ du Project, contenu structuré de l'Issue d'Audit, label, autre mécanisme, ou combinaison de sources.
+
+**Statut : À instruire**
 
 ---
 
