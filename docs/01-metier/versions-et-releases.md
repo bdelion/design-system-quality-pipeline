@@ -15,7 +15,8 @@ Il vise notamment à distinguer :
 - les publications Nexus ;
 - les Tags Git ;
 - les Milestones ;
-- les Releases.
+- les Releases ;
+- les Milestones utilisées pour représenter un contexte d'Audit.
 
 ---
 
@@ -70,6 +71,8 @@ Cette Version sert de base à la génération des Versions publiées par Jenkins
 | Hotfix Candidate | `M.m.r-hc.[build]` | build de `hotfix/***` |
 | PROD release | `M.m.r` | merge `release/***` → `master`, puis Jenkins |
 | PROD hotfix | `M.m.r` | merge `hotfix/***` → `master`, puis Jenkins |
+
+Une Milestone telle que `M.m.r-Audit` n'est pas une Version supplémentaire du Package.
 
 ---
 
@@ -271,7 +274,7 @@ hotfix/***  → master ─┘
 
 ---
 
-## 14. Milestone
+## 14. Milestone de Version PROD
 
 Une Version PROD doit posséder une Milestone portant exactement son numéro.
 
@@ -281,11 +284,137 @@ Version PROD M.m.r
         └── Milestone M.m.r
 ```
 
+Exemple :
+
+```text
+Version PROD : 1.1.0
+Milestone    : 1.1.0
+```
+
 L'existence d'une Milestone `M.m.r` ne prouve toutefois pas à elle seule que la Version PROD a été publiée.
 
 ---
 
-## 15. Release
+## 15. Milestone d'Audit
+
+Une Milestone d'Audit telle que :
+
+```text
+1.1.0-Audit
+```
+
+ne représente pas une nouvelle Version du Package.
+
+Elle représente un contexte d'Audit portant sur la Version PROD :
+
+```text
+1.1.0
+```
+
+La relation métier est donc :
+
+```text
+Version PROD 1.1.0
+    │
+    ├── Milestone de version : 1.1.0
+    │
+    └── Milestone d'audit   : 1.1.0-Audit
+```
+
+Les deux Milestones font référence à la même Version du Package mais représentent des contextes différents.
+
+---
+
+## 16. Temporalité de l'Audit
+
+Dans le fonctionnement actuellement établi, l'Audit représenté par `1.1.0-Audit` est réalisé **après la mise à disposition de la Version PROD `1.1.0`**.
+
+La chronologie est donc :
+
+```text
+Création de la Version PROD 1.1.0
+        │
+        ├── Tag Git 1.1.0
+        ├── Package 1.1.0 dans Nexus PROD
+        │
+        ▼
+Version disponible
+        │
+        ▼
+Audit de la Version 1.1.0
+        │
+        └── Milestone 1.1.0-Audit
+```
+
+L'Audit ne constitue donc pas, dans ce cas, une étape préalable à la publication de la Version PROD.
+
+Cette distinction temporelle est importante pour l'analyse de la qualité.
+
+Un Audit réalisé après la publication d'une Version ne permet pas, à lui seul, d'affirmer que cette Version avait été auditée ou déclarée conforme au moment de sa mise à disposition.
+
+---
+
+## 17. Normalisation d'une Milestone d'Audit
+
+Le pipeline doit pouvoir interpréter une Milestone telle que :
+
+```text
+1.1.0-Audit
+```
+
+comme une référence à :
+
+```text
+Version auditée : 1.1.0
+Contexte        : AUDIT
+```
+
+Cette normalisation ne doit pas détruire la valeur source.
+
+Le modèle doit donc pouvoir conserver au minimum :
+
+```text
+Valeur source       : 1.1.0-Audit
+Version de référence: 1.1.0
+Contexte            : AUDIT
+```
+
+Conceptuellement :
+
+```text
+Milestone source
+    │
+    ├── title              = 1.1.0-Audit
+    ├── normalizedVersion  = 1.1.0
+    └── context            = AUDIT
+```
+
+Les noms techniques définitifs de ces propriétés restent à définir lors de la conception du modèle normalisé.
+
+---
+
+## 18. Suffixe d'Audit
+
+Le suffixe permettant d'identifier une Milestone d'Audit doit rester configurable.
+
+Le fonctionnement observé utilise :
+
+```text
+-Audit
+```
+
+Le modèle métier ne doit cependant pas dépendre définitivement de cette chaîne de caractères.
+
+Il doit distinguer :
+
+- la valeur source ;
+- la règle de reconnaissance ;
+- la Version de référence ;
+- le contexte métier identifié.
+
+---
+
+## 19. Release
 
 Une Version PROD possède normalement une Release correspondante.
 
@@ -299,7 +428,7 @@ La Release ne doit donc pas encore être utilisée comme invariant obligatoire d
 
 ---
 
-## 16. Cycle global des Versions
+## 20. Cycle global des Versions
 
 Le cycle actuellement établi est :
 
@@ -335,9 +464,20 @@ Version de base M.m.r
                                 └── Nexus PROD
 ```
 
+Une Version PROD peut ensuite faire l'objet d'un Audit :
+
+```text
+M.m.r PROD
+    │
+    ▼
+Audit post-publication
+    │
+    └── Milestone M.m.r-Audit
+```
+
 ---
 
-## 17. Application consommatrice
+## 21. Application consommatrice
 
 Une Application utilise un Package dans une Version donnée.
 
@@ -353,32 +493,35 @@ Cette distinction sera nécessaire pour mesurer correctement la dette de montée
 
 ---
 
-## 18. Version et Audit
+## 22. Version et qualité
 
-Les conventions actuelles peuvent utiliser des Milestones telles que :
+La qualité d'une Version doit être analysée en tenant compte de la temporalité des informations disponibles.
+
+Il faut notamment pouvoir distinguer :
 
 ```text
-1.1.0
-1.1.0-Audit
+Version publiée
+    │
+    ├── état de qualité connu au moment de la publication
+    │
+    └── état de qualité connu après des Audits ultérieurs
 ```
 
-Ces valeurs peuvent se rapporter à une même Version de référence avec des contextes différents.
+Dans le fonctionnement actuellement observé, certains Audits sont réalisés après la mise à disposition de la Version PROD.
 
-Le suffixe utilisé pour identifier le contexte d'Audit doit être configurable.
+Le modèle historique devra donc éviter de projeter rétroactivement un résultat d'Audit sur un instant où cet Audit n'avait pas encore été réalisé.
 
-Il faut conserver :
-
-- la valeur source de la Milestone ;
-- la Version normalisée ;
-- le contexte de la Milestone.
+La définition précise des indicateurs de qualité par Version reste à instruire.
 
 ---
 
-## 19. Historisation
+## 23. Historisation
 
 Il faut distinguer :
 
 - la Version du Package analysé ;
+- la date de publication de cette Version ;
+- la date ou période de l'Audit ;
 - la date du Snapshot ;
 - la version du modèle analytique ;
 - la version des règles.
@@ -387,7 +530,7 @@ Ces notions ont des responsabilités différentes.
 
 ---
 
-## 20. Principes retenus
+## 24. Principes retenus
 
 ### Principe 1 — La Version est rattachée au Package
 
@@ -425,21 +568,29 @@ Jenkins
     └── Nexus PROD M.m.r
 ```
 
-### Principe 6 — La Milestone est obligatoire pour une PROD
+### Principe 6 — La Milestone de Version est obligatoire pour une PROD
 
 Une Version PROD `M.m.r` doit avoir une Milestone `M.m.r`.
 
-### Principe 7 — La Release GitHub n'est pas encore considérée comme obligatoire
+### Principe 7 — Une Milestone d'Audit n'est pas une Version
+
+`M.m.r-Audit` représente un contexte d'Audit portant sur la Version PROD `M.m.r`.
+
+### Principe 8 — L'Audit concerné est postérieur à la publication
+
+Dans le fonctionnement observé, l'Audit associé à `M.m.r-Audit` est réalisé après la mise à disposition de `M.m.r`.
+
+### Principe 9 — La Release GitHub n'est pas encore considérée comme obligatoire
 
 Elle existe normalement, mais son mécanisme de création et son caractère obligatoire restent à confirmer.
 
-### Principe 8 — Conserver les valeurs sources
+### Principe 10 — Conserver les valeurs sources
 
-Le pipeline doit conserver les informations nécessaires à l'explication de la classification et de la publication d'une Version.
+La normalisation d'une Milestone d'Audit ne doit jamais faire perdre son intitulé d'origine.
 
 ---
 
-## 21. Points restant à préciser
+## 25. Points restant à préciser
 
 Les éléments suivants restent ouverts :
 
@@ -449,7 +600,10 @@ Les éléments suivants restent ouverts :
 - comportement attendu lorsque le Tag Git est absent ;
 - éventuels autres merges réalisés dans les workflows release et hotfix ;
 - conventions exactes appliquées aux autres Librairies ;
+- modalités précises de création et de clôture d'une Milestone d'Audit ;
+- manière d'identifier les Audits appartenant à une Milestone d'Audit ;
+- définition de la conformité d'une Version à partir des Audits ;
 - source permettant d'identifier les Versions utilisées par les Applications ;
 - définition de la dette de montée de Version.
 
-Ces points doivent être instruits progressivement à partir du fonctionnement réel du processus de livraison.
+Ces points doivent être instruits progressivement à partir du fonctionnement réel du processus.

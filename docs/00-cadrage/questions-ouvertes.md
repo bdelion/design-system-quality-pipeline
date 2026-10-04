@@ -160,14 +160,6 @@ Tag Git M.m.r
 Publication Nexus PROD M.m.r
 ```
 
-Le mécanisme final de mise en production est donc commun aux branches release et hotfix :
-
-```text
-release/*** ─┐
-             ├──> master → Jenkins → PROD
-hotfix/*** ──┘
-```
-
 **Statut : Établi**
 
 ---
@@ -201,7 +193,58 @@ La présence dans Nexus ne suffit donc pas à qualifier une Version de PROD.
 
 ---
 
-## D-012 — Composant non audité
+## D-012 — Milestone d'Audit et Version
+
+Une Milestone :
+
+```text
+M.m.r-Audit
+```
+
+ne représente pas une Version supplémentaire du Package.
+
+Elle représente le contexte d'Audit de la Version PROD :
+
+```text
+M.m.r
+```
+
+Exemple :
+
+```text
+1.1.0-Audit
+    ↓
+Version auditée : 1.1.0
+Contexte        : AUDIT
+```
+
+La valeur source de la Milestone doit être conservée.
+
+**Statut : Établi**
+
+---
+
+## D-013 — Temporalité de l'Audit
+
+Dans le fonctionnement actuellement observé, les Audits concernés par les Milestones `M.m.r-Audit` sont réalisés après la mise à disposition de la Version PROD.
+
+```text
+Version PROD
+    ↓
+Publication
+    ↓
+Version disponible
+    ↓
+Audit
+```
+
+Un résultat d'Audit ne doit donc pas être considéré comme connu au moment de la publication lorsqu'il a été obtenu ultérieurement.
+
+**Statut : Établi**
+
+---
+
+## D-014 — Composant non audité
 
 Un Composant non audité ne doit pas être automatiquement considéré comme non conforme.
 
@@ -215,7 +258,7 @@ AUDITÉ & NON CONFORME
 
 ---
 
-## D-013 — Vélocité vide et vélocité zéro
+## D-015 — Vélocité vide et vélocité zéro
 
 Les valeurs suivantes sont différentes :
 
@@ -227,7 +270,7 @@ velocity > 0
 
 ---
 
-## D-014 — Criticité
+## D-016 — Criticité
 
 La Criticité doit être associée à un domaine.
 
@@ -242,7 +285,7 @@ Il faut notamment pouvoir distinguer :
 
 ---
 
-## D-015 — Anomalie et amélioration
+## D-017 — Anomalie et amélioration
 
 Une Anomalie et une proposition d'Amélioration sont deux notions différentes.
 
@@ -319,11 +362,6 @@ hotfix/*** → master → Jenkins → PROD
 
 est établi.
 
-Jenkins produit notamment :
-
-- le Tag Git ;
-- le Package dans Nexus PROD.
-
 **Statut : Établi**
 
 ---
@@ -367,13 +405,20 @@ Comment le système doit-il traiter une Version PROD publiée dans Nexus lorsque
 La convention :
 
 ```text
-1.1.0
-1.1.0-Audit
+M.m.r-Audit
 ```
 
-doit-elle toujours être interprétée comme une même Version de référence avec deux contextes différents ?
+représente un Audit de la Version PROD :
 
-**Statut : À confirmer**
+```text
+M.m.r
+```
+
+Il s'agit de la même Version du Package dans un contexte différent.
+
+L'Audit est réalisé après la mise à disposition de la Version PROD.
+
+**Statut : Établi**
 
 ---
 
@@ -439,7 +484,39 @@ Quelles informations déterminent qu'un Composant audité est conforme ou non co
 
 ## Q-018 — Version auditée
 
-Comment déterminer précisément la Version du Composant ou de la Librairie faisant l'objet d'un Audit ?
+Pour une Milestone de forme :
+
+```text
+M.m.r-Audit
+```
+
+la Version auditée est :
+
+```text
+M.m.r
+```
+
+Exemple :
+
+```text
+1.1.0-Audit → 1.1.0
+```
+
+La valeur source et le contexte `AUDIT` doivent être conservés.
+
+**Statut : Établi pour cette convention**
+
+---
+
+## Q-019 — Temporalité exacte de l'Audit
+
+L'Audit est réalisé après la mise à disposition de la Version PROD.
+
+Il reste à déterminer comment identifier précisément :
+
+- le début de l'Audit ;
+- la fin de l'Audit ;
+- la date à laquelle un Composant est considéré comme audité.
 
 **Statut : À instruire**
 
@@ -447,7 +524,7 @@ Comment déterminer précisément la Version du Composant ou de la Librairie fai
 
 # 7. Questions ouvertes — Workflow
 
-## Q-019 — Profils de workflow
+## Q-020 — Profils de workflow
 
 Les profils suivants doivent-ils être formalisés comme des profils métier distincts ?
 
@@ -461,7 +538,7 @@ Les profils suivants doivent-ils être formalisés comme des profils métier dis
 
 ---
 
-## Q-020 — Exceptions aux règles de Pull Request
+## Q-021 — Exceptions aux règles de Pull Request
 
 Pour quels profils une Pull Request n'est-elle pas obligatoire avant le statut Done ?
 
@@ -469,7 +546,7 @@ Pour quels profils une Pull Request n'est-elle pas obligatoire avant le statut D
 
 ---
 
-## Q-021 — Statut Cancelled
+## Q-022 — Statut Cancelled
 
 Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled ?
 
@@ -479,7 +556,7 @@ Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled
 
 # 8. Questions ouvertes — Applications consommatrices
 
-## Q-022 — Identification des Applications
+## Q-023 — Identification des Applications
 
 Quelle source permet de connaître les Applications qui utilisent ou devraient utiliser le Design System ?
 
@@ -487,7 +564,7 @@ Quelle source permet de connaître les Applications qui utilisent ou devraient u
 
 ---
 
-## Q-023 — Détection des Packages utilisés
+## Q-024 — Détection des Packages utilisés
 
 Comment déterminer qu'une Application utilise un Package donné ?
 
@@ -495,7 +572,7 @@ Comment déterminer qu'une Application utilise un Package donné ?
 
 ---
 
-## Q-024 — Détection de la Version utilisée
+## Q-025 — Détection de la Version utilisée
 
 Comment déterminer la Version effectivement utilisée par une Application ?
 
@@ -503,7 +580,7 @@ Comment déterminer la Version effectivement utilisée par une Application ?
 
 ---
 
-## Q-025 — Versions non-PROD utilisées par les consommateurs
+## Q-026 — Versions non-PROD utilisées par les consommateurs
 
 Comment traiter une Application utilisant :
 
@@ -519,7 +596,7 @@ notamment selon qu'il s'agit d'un environnement de test ou de production ?
 
 ---
 
-## Q-026 — Détection des Composants utilisés
+## Q-027 — Détection des Composants utilisés
 
 Comment analyser le code d'une Application afin d'identifier :
 
@@ -530,7 +607,7 @@ Comment analyser le code d'une Application afin d'identifier :
 
 ---
 
-## Q-027 — Dette de montée de Version
+## Q-028 — Dette de montée de Version
 
 Comment définir la dette liée à l'utilisation d'une ancienne Version PROD ?
 
@@ -547,7 +624,7 @@ Il faudra notamment définir :
 
 ---
 
-## Q-028 — Alertes aux Squads
+## Q-029 — Alertes aux Squads
 
 Quelles situations doivent provoquer une alerte à destination d'une Squad responsable d'une Application ?
 
@@ -555,17 +632,19 @@ Quelles situations doivent provoquer une alerte à destination d'une Squad respo
 
 ---
 
-# 9. Questions ouvertes — Qualité des Applications consommatrices
+# 9. Questions ouvertes — Qualité
 
-## Q-029 — Qualité d'une Version
+## Q-030 — Qualité d'une Version
 
 Comment calculer la qualité d'une Version d'une Librairie ?
+
+Il faudra tenir compte du fait que certains résultats d'Audit sont obtenus après la publication de la Version.
 
 **Statut : À instruire**
 
 ---
 
-## Q-030 — Qualité d'un Composant
+## Q-031 — Qualité d'un Composant
 
 Comment calculer la qualité d'un Composant pour une Version donnée ?
 
@@ -573,7 +652,7 @@ Comment calculer la qualité d'un Composant pour une Version donnée ?
 
 ---
 
-## Q-031 — Badge ou note d'une Application
+## Q-032 — Badge ou note d'une Application
 
 Comment construire une information synthétique de qualité pour une Application en croisant :
 
@@ -591,7 +670,7 @@ Qualité des Composants
 
 ---
 
-## Q-032 — RGAA / WAI-ARIA d'une Application
+## Q-033 — RGAA / WAI-ARIA d'une Application
 
 Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA calculé à partir des Composants du Design System utilisés par une Application ?
 
@@ -601,7 +680,7 @@ Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA ca
 
 # 10. Questions ouvertes — Historisation
 
-## Q-033 — Granularité historique
+## Q-034 — Granularité historique
 
 Quels événements doivent provoquer la création d'un Snapshot ?
 
@@ -617,7 +696,27 @@ Exemples à étudier :
 
 ---
 
-## Q-034 — Conservation
+## Q-035 — Historisation de la connaissance de la qualité
+
+Comment représenter la différence entre :
+
+```text
+qualité connue au moment de la publication
+```
+
+et :
+
+```text
+qualité connue après un Audit ultérieur
+```
+
+sans modifier rétroactivement l'état historique ?
+
+**Statut : À instruire**
+
+---
+
+## Q-036 — Conservation
 
 Quelle durée d'historique doit être conservée ?
 
@@ -627,7 +726,7 @@ Quelle durée d'historique doit être conservée ?
 
 # 11. Questions ouvertes — Sources externes
 
-## Q-035 — Nexus
+## Q-037 — Nexus
 
 Nexus est identifié comme source de publication des Packages et Versions.
 
@@ -643,15 +742,14 @@ Il faudra déterminer les informations nécessaires au pipeline pour identifier 
 
 ---
 
-## Q-036 — Jenkins
+## Q-038 — Jenkins
 
 Jenkins intervient dans :
 
 - la génération des Versions SNAPSHOT ;
 - la génération des Release Candidates ;
 - la génération des Hotfix Candidates ;
-- la production des éléments de Version PROD après merge d'une release vers `master` ;
-- la production des éléments de Version PROD après merge d'un hotfix vers `master` ;
+- la production des éléments de Version PROD après merge vers `master` ;
 - la création du Tag Git ;
 - la publication du Package dans Nexus PROD.
 
@@ -661,7 +759,7 @@ Il reste à déterminer si le pipeline doit interroger directement Jenkins ou si
 
 ---
 
-## Q-037 — Applications consommatrices
+## Q-039 — Applications consommatrices
 
 Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
@@ -669,7 +767,7 @@ Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
 ---
 
-## Q-038 — Usage des Composants
+## Q-040 — Usage des Composants
 
 Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des Composants dans les Applications ?
 
@@ -679,7 +777,7 @@ Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des 
 
 # 12. Questions ouvertes — Architecture
 
-## Q-039 — Backend
+## Q-041 — Backend
 
 À quel moment le dashboard statique actuel devra-t-il évoluer vers une architecture avec backend ?
 
@@ -687,7 +785,7 @@ Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des 
 
 ---
 
-## Q-040 — Stockage historique
+## Q-042 — Stockage historique
 
 Quel système doit conserver les Snapshots à terme ?
 
@@ -695,7 +793,7 @@ Quel système doit conserver les Snapshots à terme ?
 
 ---
 
-## Q-041 — Multi-source
+## Q-043 — Multi-source
 
 Comment orchestrer à terme les différentes sources nécessaires ?
 
