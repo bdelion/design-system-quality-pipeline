@@ -1295,3 +1295,59 @@ Autre organisation — précise-la.
 Cette réponse nous permettra ensuite de déterminer si le futur modèle doit être pensé dès maintenant comme un **modèle de données centré sur le Design System**, plutôt que comme un modèle centré uniquement sur GitHub.
 
 ----------------
+
+Avant de répondre à cette question, peux-tu me fournir le contenu complet et modifié des documents suite à ton retour :
+
+"Cette réponse est cohérente avec les spécifications existantes : elles parlent bien d'un repository correspondant actuellement à une librairie, tout en prévoyant le cas futur du monorepo. 
+
+
+
+Je peux donc maintenant établir comme fait actuel :
+
+Une librairie est aujourd'hui distribuée sous la forme d'un package directement consommé par les applications, avec un nom et une version.
+
+Cela donne une première relation concrète :
+
+
+
+Librairie
+   │
+   └── Package
+         │
+         └── Version
+               │
+               └── consommé par Application
+
+Mais je ne vais pas encore décider si Librairie, Package et Version doivent être trois objets distincts dans le modèle final : il faut d'abord comprendre comment vos packages sont réellement organisés.
+
+Mise à jour documentaire
+
+Dans les quatre documents précédents, il faut maintenant remplacer les formulations encore trop hypothétiques par :
+
+
+
+Librairie : unité métier actuellement distribuée sous forme de package. 
+
+Package : unité effectivement consommée par les applications. 
+
+Version : version du package consommé. 
+
+Cible future : conserver la possibilité qu'une librairie soit distribuée par plusieurs packages. 
+
+
+
+Il faudra également ajouter cette relation dans modele-metier.md :
+
+
+
+Librairie
+    │
+    └── Package
+          │
+          └── Version
+
+avec la mention :
+
+Situation actuelle observée : une librairie correspond à un package distribué et consommé directement par les applications. La possibilité de plusieurs packages pour une même librairie reste une capacité cible, non une situation actuelle établie.
+
+Je ne te demande donc pas de modifier le code à ce stade."

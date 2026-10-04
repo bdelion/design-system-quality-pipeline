@@ -1,81 +1,84 @@
 # Objets métier
 
-## Statut
+## 1. Objectif
 
-**BASE DE TRAVAIL — ENRICHIE LE 04/10/2026**
+Ce document recense les principaux objets métier manipulés ou envisagés par le Design System Quality Pipeline.
 
-Ce document décrit les objets métier identifiés dans le projet.
+Il distingue :
 
-Il distingue les objets métier des objets techniques provenant de GitHub.
+- les objets métier ;
+- les objets provenant des systèmes sources ;
+- les objets nécessaires aux futures évolutions.
 
----
-
-## 1. Organisation
-
-### Définition
-
-Une Organisation représente un périmètre organisationnel regroupant une ou plusieurs librairies du Design System.
-
-### Situation actuelle
-
-Le projet utilise notamment le owner GitHub pour identifier l'organisation.
-
-### À instruire
-
-La définition métier exacte d'une Organisation et la nécessité de gérer plusieurs organisations ne sont pas encore définies.
+Leur modèle technique définitif n'est pas nécessairement arrêté.
 
 ---
 
-## 2. Librairie
+## 2. Design System
 
 ### Définition
 
-Une Librairie représente une unité métier du Design System suivie par le dashboard.
+Ensemble cohérent de ressources, composants, règles et librairies mis à disposition des produits de l'entreprise.
 
-### Situation actuelle
-
-Aujourd'hui, une librairie correspond principalement à un package distribuable.
-
-### Évolution souhaitée
-
-Le modèle doit pouvoir représenter une librairie fonctionnelle distribuée par plusieurs packages.
+### Relations principales
 
 ```text
-Librairie
-├── Package A
-├── Package B
-└── ...
+Design System
+    └── Librairie
 ```
 
-### À instruire
-
-La définition exacte d'une librairie indépendante de son ou ses packages n'est pas encore arrêtée.
+Un Design System peut contenir plusieurs librairies.
 
 ---
 
-## 3. Package
+## 3. Librairie
 
 ### Définition
 
-Un Package représente une unité distribuable d'une librairie.
+Unité métier du Design System mise à disposition des applications consommatrices.
 
 ### Situation actuelle
 
-Le besoin identifié correspond principalement à un package associé à une librairie.
+Aujourd'hui :
 
-### Cible
+- une librairie correspond à un repository ;
+- une librairie est distribuée sous la forme d'un package ;
+- ce package peut être utilisé par les applications dans une version donnée.
 
-Une librairie pourra éventuellement être distribuée par plusieurs packages.
+```text
+Repository
+    └── Librairie
+          └── Package
+```
 
-### À instruire
+Exemples observés :
 
-Il reste à déterminer :
+| Librairie | Package | Version actuelle déclarée |
+|---|---|---|
+| Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
+| Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
+| Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
 
-* comment identifier un package ;
-* quel registre utiliser ;
-* comment rattacher un package à une librairie ;
-* comment rattacher une version à un package ;
-* comment gérer plusieurs packages d'une même librairie.
+### Cible future
+
+Le modèle doit permettre :
+
+- plusieurs librairies dans un repository ;
+- plusieurs packages pour une librairie.
+
+```text
+Repository
+    ├── Librairie A
+    │     ├── Package A1
+    │     └── Package A2
+    │
+    └── Librairie B
+          └── Package B1
+```
+
+Ces cardinalités représentent une capacité cible.
+
+Elles ne décrivent pas la situation actuelle.
 
 ---
 
@@ -83,366 +86,557 @@ Il reste à déterminer :
 
 ### Définition
 
-Un Repository est un dépôt technique GitHub.
+Conteneur technique de code et de données GitHub.
+
+### Données associées
+
+Un repository peut fournir notamment :
+
+- Issues ;
+- Pull Requests ;
+- Milestones ;
+- informations de projets.
 
 ### Situation actuelle
 
-Dans le périmètre actuel :
-
 ```text
-1 repository = 1 librairie
+1 Repository = 1 Librairie
 ```
 
 ### Cible
 
-Le modèle doit pouvoir représenter :
-
 ```text
-1 repository = 1..n librairies
+1 Repository = 1..n Librairies
 ```
 
-notamment pour gérer des monorepos.
-
-### À instruire
-
-La méthode d'identification des librairies présentes dans un repository n'est pas définie.
+Le repository est un objet de source et d'organisation technique. Il ne doit pas remplacer la notion métier de Librairie.
 
 ---
 
-## 5. Composant
+## 5. Package
 
 ### Définition
 
-Un Composant est une unité fonctionnelle d'une librairie du Design System.
+Unité technique distribuable correspondant actuellement à une librairie et pouvant être référencée comme dépendance par une application.
 
-### Référence
+### Situation actuelle établie
 
-Le catalogue constitue actuellement une référence pour les composants connus.
+Aujourd'hui, une librairie est distribuée sous la forme d'un package.
+
+Le package :
+
+- possède un nom permettant de l'identifier ;
+- possède plusieurs versions au cours de son cycle de vie ;
+- peut être utilisé par une application dans une version donnée.
+
+```text
+Librairie
+    └── Package
+          ├── Version 1
+          ├── Version 2
+          └── Version N
+```
+
+Les exemples réels actuellement identifiés sont :
+
+```text
+Design System React
+    └── @my-enterprise/design-system-react
+          └── version actuelle déclarée : 1.7.1
+
+Enterprise Assets
+    └── @my-enterprise/enterprise-assets
+          └── version actuelle déclarée : 2.1.0
+
+Design System Metier React
+    └── @my-enterprise/design-system-metier-react
+          └── version actuelle déclarée : 0.14.0
+```
+
+### Cible future
+
+Une librairie pourra être distribuée par plusieurs packages.
+
+```text
+Librairie
+    ├── Package A
+    ├── Package B
+    └── Package C
+```
+
+Cette possibilité doit être supportée par le modèle cible mais ne constitue pas une situation actuelle établie.
+
+### À préciser
+
+Les propriétés définitives du Package restent à définir.
+
+Il reste notamment à préciser son articulation avec :
+
+- la librairie ;
+- les composants ;
+- les releases ;
+- les versions ;
+- les sources de publication.
+
+---
+
+## 6. Version
+
+### Définition
+
+Identification d'un état versionné d'un Package.
+
+### Situation actuelle établie
+
+Une application utilise un Package dans une Version donnée.
+
+```text
+Application
+    └── utilise
+          ├── Package
+          └── Version du Package
+```
+
+Les versions actuelles déclarées dans les exemples fournis sont :
+
+- `@my-enterprise/design-system-react` : `1.7.1` ;
+- `@my-enterprise/enterprise-assets` : `2.1.0` ;
+- `@my-enterprise/design-system-metier-react` : `0.14.0`.
+
+La signification exacte de **version actuelle** reste à préciser.
+
+### À préciser
+
+Il reste également à déterminer précisément la relation entre :
+
+- version de package ;
+- release ;
+- milestone GitHub ;
+- version métier de la librairie.
+
+Aucune équivalence définitive entre ces notions ne doit être introduite tant qu'elle n'a pas été validée.
+
+---
+
+## 7. Composant
+
+### Définition
+
+Unité fonctionnelle réutilisable appartenant à une librairie du Design System.
 
 ### Relations
 
-Un composant doit pouvoir être relié à :
+```text
+Librairie
+    └── Composant
+```
 
-* une librairie ;
-* un repository technique ;
-* des Issues ;
-* des audits ;
-* des anomalies ;
-* des versions.
+Un composant peut être associé à :
 
-La relation exacte entre composant et version reste à préciser.
+- des Issues ;
+- des anomalies ;
+- des audits ;
+- des versions ;
+- des informations de qualité.
+
+### Référence
+
+Le catalogue des composants constitue la référence des composants connus du pipeline.
 
 ---
 
-## 6. Issue
+## 8. Issue
 
 ### Définition
 
-Une Issue est un objet provenant de GitHub.
+Élément de travail provenant actuellement de GitHub.
 
-Elle peut représenter différents types de travaux.
+### Informations métier
 
-### Données actuellement exploitées
+Une Issue peut notamment posséder :
 
-Le RAW Dataset conserve notamment :
-
-* identifiant ;
-* numéro ;
-* titre ;
-* état ;
-* Issue Type ;
-* labels ;
-* criticités ;
-* parents ;
-* dates ;
-* Pull Requests liées ;
-* statuts de Projects ;
-* Milestone.
+- un Issue Type ;
+- des labels ;
+- un statut de workflow ;
+- une vélocité ;
+- une Iteration ;
+- un Milestone ;
+- des relations avec d'autres Issues ;
+- des relations avec des Pull Requests ;
+- un ou plusieurs composants associés.
 
 ### Important
 
-Une Issue GitHub ne doit pas être considérée automatiquement comme une anomalie.
+Une Issue n'est pas nécessairement une anomalie.
 
-Elle peut notamment représenter un audit, une fonctionnalité, une tâche, une anomalie ou un autre type de travail.
-
----
-
-## 7. Anomalie
-
-### Définition de travail
-
-Une Anomalie représente un problème identifié sur un élément du Design System.
-
-### Situation actuelle
-
-Les anomalies sont principalement représentées par des Issues GitHub.
-
-### Point non décidé
-
-La règle actuelle du projet identifie notamment les anomalies à partir de l'Issue Type `BUG`.
-
-Les échanges ont toutefois établi que cette règle est probablement trop restrictive pour constituer une définition métier définitive.
-
-Il est envisagé de permettre une définition configurable reposant notamment sur :
-
-* Issue Type ;
-* label ;
-* combinaison de critères ;
-* règles différentes selon la librairie ou le repository.
-
-**La règle définitive reste à instruire.**
+Son sens métier est déterminé par sa classification et son contexte.
 
 ---
 
-## 8. Audit
-
-### Définition de travail
-
-Un Audit représente une évaluation réalisée sur un composant, une librairie, une version ou un autre périmètre.
-
-### Données actuellement identifiées
-
-Le modèle actuel permet notamment de relier un audit à :
-
-* une librairie ;
-* un composant ;
-* une version ;
-* un statut ;
-* une Issue source ;
-* un résultat.
-
-### À instruire
-
-Il reste à préciser :
-
-* les types d'audit ;
-* la notion de campagne ;
-* les résultats possibles ;
-* la relation entre audit et anomalies ;
-* la relation entre audit et version.
-
----
-
-## 9. Pull Request
+## 9. Anomalie
 
 ### Définition
 
-Une Pull Request est un objet GitHub représentant une modification proposée ou réalisée.
+Problème identifié sur le Design System et nécessitant potentiellement une correction.
 
-Elle constitue notamment une information de traçabilité technique.
+### Identification
 
-### Règle importante
+La manière d'identifier une anomalie doit être configurable.
 
-La présence d'une Pull Request n'est pas nécessairement obligatoire pour tous les types de travaux.
+Elle peut dépendre :
 
-Les workflows identifiés distinguent notamment les travaux standards, les audits et les Epics.
+- de l'Issue Type ;
+- d'un label ;
+- d'une combinaison de critères ;
+- du repository ou de l'organisation.
+
+### Propriétés métier possibles
+
+Une anomalie peut être caractérisée par :
+
+- son composant ;
+- son statut ;
+- sa criticité ;
+- le domaine de sa criticité ;
+- sa catégorie ;
+- sa date de détection ;
+- sa date de correction ;
+- son origine ;
+- l'audit éventuel dont elle provient ;
+- les Pull Requests associées ;
+- la version concernée.
 
 ---
 
-## 10. Version
+## 10. Amélioration
 
 ### Définition
 
-Une Version représente une version identifiable d'une librairie ou d'un package.
+Proposition d'amélioration ne correspondant pas nécessairement à une anomalie ou à une non-conformité.
 
-### Situation actuelle
+Cette distinction est particulièrement importante pour les audits.
 
-Les versions peuvent être déduites notamment de données GitHub telles que les Milestones.
-
-### À instruire
-
-La relation exacte entre :
-
-* librairie ;
-* package ;
-* version ;
-* release ;
-* milestone
-
-reste à définir.
-
----
-
-## 11. Release
-
-### Définition
-
-Le terme Release désigne un événement ou un artefact de livraison d'une version.
-
-### Situation actuelle
-
-Le projet identifie des besoins liés aux versions et aux releases mais ne dispose pas encore d'un modèle métier complet et indépendant pour les releases.
-
-### À instruire
-
-Il faudra déterminer si une Release constitue :
-
-* un objet métier indépendant ;
-* une propriété d'une Version ;
-* une représentation GitHub ;
-* ou une combinaison de ces concepts.
-
----
-
-## 12. Iteration
-
-### Définition
-
-Une Iteration représente une période de travail planifiée.
-
-Elle permet notamment de regrouper les travaux d'un sprint.
-
-### Besoins identifiés
-
-Les indicateurs envisagés comprennent notamment :
-
-* début ;
-* fin ;
-* durée ;
-* jours ouvrés ;
-* travaux traités ;
-* Done ;
-* Cancelled ;
-* travaux reportés ;
-* statut du sprint ;
-* vélocité.
-
-Les règles précises restent à définir.
-
----
-
-## 13. Milestone
-
-### Définition
-
-Une Milestone est un objet GitHub pouvant être utilisé pour plusieurs finalités.
-
-Les usages identifiés comprennent notamment :
-
-* version ;
-* audit ;
-* planification ;
-* lot de travail.
-
-Une Milestone ne doit donc pas être automatiquement assimilée à une Version.
-
----
-
-## 14. Catalogue
-
-### Définition
-
-Le Catalogue est le référentiel des composants connus.
-
-### Rôle
-
-Il sert notamment à :
-
-* identifier les composants de référence ;
-* enrichir les données normalisées ;
-* distinguer les composants connus des composants non référencés.
-
----
-
-## 15. Application consommatrice
-
-### Définition cible
-
-Une Application consommatrice est une application qui utilise une ou plusieurs librairies du Design System.
-
-### Informations recherchées
-
-À terme :
-
-```text
-Application
-├── Librairie utilisée
-│   ├── Version utilisée
-│   └── Composants utilisés
-│       └── Nombre d'utilisations
-└── Dette éventuelle
-```
-
-### À instruire
-
-La source et la méthode permettant d'identifier ces informations ne sont pas définies.
-
----
-
-## 16. Relations principales
-
-Les relations actuellement envisagées sont :
-
-```text
-Organisation
-    │
-    └── Librairie
-          ├── Package
-          ├── Repository
-          ├── Version
-          └── Composant
-```
-
-et :
-
-```text
-Application
-    │
-    └── utilise
-          ├── Librairie
-          ├── Version
-          └── Composant
-```
-
-Ces relations représentent le modèle cible et ne doivent pas être considérées comme entièrement implémentées aujourd'hui.
-
----
-
-## 17. Principe de séparation
-
-Le projet doit conserver la distinction suivante :
-
-```text
-Objet métier
-      ↓
-Représentation technique éventuelle
-      ↓
-Source
-```
-
-Exemple :
-
-```text
-Anomalie
-   ↓
-Issue GitHub
-```
-
-Une Issue GitHub n'est donc pas nécessairement une anomalie.
-
-De même :
+Un audit peut produire :
 
 ```text
 Audit
-   ↓
-Issue GitHub éventuelle
+    ├── Anomalies / non-conformités
+    └── Propositions d'amélioration
 ```
 
-Un audit ne doit pas être confondu avec son support technique.
+Ces deux catégories ne doivent pas être automatiquement agrégées dans les mêmes indicateurs.
 
 ---
 
-## 18. Points à instruire
+## 11. Criticité
 
-Les principaux sujets encore ouverts sont :
+### Définition
 
-* Librairie ↔ Package ;
-* Librairie ↔ Repository ;
-* Package ↔ Version ;
-* Version ↔ Release ;
-* Version ↔ Milestone ;
-* définition d'une anomalie ;
-* définition d'un audit ;
-* identification d'une application consommatrice ;
-* détection des composants utilisés ;
-* mesure du nombre d'utilisations d'un composant.
+Niveau d'importance associé à une anomalie.
+
+La criticité ne doit pas être considérée indépendamment de son domaine.
+
+Il faut pouvoir distinguer notamment :
+
+- accessibilité / RGAA / WAI-ARIA ;
+- métier ;
+- fonctionnalité ;
+- technique ;
+- Developer Experience ;
+- Designer Experience.
+
+Une valeur telle que `major` n'est donc pas suffisante seule.
+
+Le modèle métier doit pouvoir représenter conceptuellement :
+
+```text
+Domaine de criticité + Niveau de criticité
+```
+
+---
+
+## 12. Audit
+
+### Définition
+
+Opération structurée visant à évaluer un périmètre du Design System.
+
+### Types
+
+Le modèle doit permettre plusieurs types d'audit.
+
+L'accessibilité constitue le premier domaine identifié.
+
+D'autres types pourront être ajoutés ultérieurement.
+
+### Relations possibles
+
+```text
+Audit
+    ├── Campagne
+    ├── Composant
+    ├── Version
+    ├── Résultat
+    ├── Anomalies
+    └── Améliorations
+```
+
+Les cardinalités précises restent à formaliser.
+
+---
+
+## 13. Campagne d'audit
+
+### Définition
+
+Ensemble cohérent d'audits réalisés dans un même contexte.
+
+Une campagne doit permettre de suivre notamment :
+
+- les composants prévus ;
+- les composants en cours ;
+- les composants terminés ;
+- les composants conformes ;
+- les composants non conformes.
+
+---
+
+## 14. Conformité
+
+### Définition
+
+Résultat d'un audit pour un périmètre donné.
+
+Les états métier minimaux sont :
+
+```text
+NON AUDITÉ
+AUDITÉ & CONFORME
+AUDITÉ & NON CONFORME
+```
+
+Un composant non audité ne doit pas être automatiquement considéré comme non conforme.
+
+---
+
+## 15. Pull Request
+
+### Définition
+
+Objet GitHub représentant une proposition de modification du code.
+
+Une Pull Request peut être reliée à une ou plusieurs Issues.
+
+Elle constitue une information importante pour déterminer comment certains travaux ont été réalisés.
+
+La présence obligatoire ou non d'une Pull Request dépend du type de workflow.
+
+Par exemple, un audit ou une Epic ne suit pas nécessairement le même cycle qu'un travail de développement standard.
+
+---
+
+## 16. Projet et statut
+
+### Définition
+
+Le projet GitHub permet notamment de représenter l'état d'avancement d'un élément de travail.
+
+Les statuts actuellement identifiés comprennent :
+
+- Backlog ;
+- Ready ;
+- In progress ;
+- In review ;
+- Done ;
+- Blocked ;
+- Cancelled.
+
+Le statut représente **où se trouve le travail dans son workflow**.
+
+Il ne doit pas être confondu avec l'Issue Type ou les labels.
+
+---
+
+## 17. Iteration
+
+### Définition
+
+Période de travail planifiée utilisée pour organiser les travaux.
+
+Elle peut servir à calculer des indicateurs tels que :
+
+- nombre d'Issues prévues ;
+- nombre d'Issues terminées ;
+- nombre d'Issues annulées ;
+- report ;
+- vélocité ;
+- capacité ;
+- état du sprint.
+
+Les règles exactes seront documentées dans le domaine workflow.
+
+---
+
+## 18. Milestone
+
+### Définition
+
+Objet GitHub actuellement utilisé pour représenter différents types de regroupements.
+
+Les usages identifiés comprennent notamment :
+
+- versions ;
+- versions d'audit ;
+- horizons de planification ;
+- lots de conception.
+
+Un Milestone ne doit donc pas être automatiquement assimilé à une Version.
+
+Le pipeline devra interpréter sa signification selon des règles configurables.
+
+---
+
+## 19. Release
+
+### Définition
+
+Notion représentant la mise à disposition d'une version.
+
+La relation exacte entre :
+
+- Release ;
+- Version ;
+- Package ;
+- Milestone ;
+
+reste à formaliser.
+
+Il ne faut pas introduire d'équivalence automatique entre ces objets tant que les règles métier correspondantes ne sont pas établies.
+
+---
+
+## 20. Application consommatrice
+
+### Définition
+
+Application utilisant une ou plusieurs librairies du Design System.
+
+### Situation actuelle établie
+
+Une application utilise un Package dans une Version donnée.
+
+```text
+Application
+    └── utilise
+          ├── Package
+          └── Version du Package
+```
+
+### Cible future
+
+Le système devra pouvoir enrichir cette relation avec notamment :
+
+- les composants réellement utilisés ;
+- leur fréquence d'utilisation ;
+- la version attendue ;
+- la dette de mise à niveau ;
+- la qualité associée aux composants consommés.
+
+Les sources permettant de construire ces informations restent à définir.
+
+---
+
+## 21. Snapshot
+
+### Définition
+
+Photographie du système à un instant donné.
+
+Un Snapshot permet de conserver :
+
+- les indicateurs ;
+- leur contexte ;
+- la version du modèle ;
+- la version des règles ;
+- les informations nécessaires à leur interprétation.
+
+La comparaison de plusieurs Snapshots permet d'analyser l'évolution dans le temps.
+
+---
+
+## 22. Indicateur
+
+### Définition
+
+Mesure calculée à partir du modèle normalisé.
+
+Un indicateur doit être explicable et traçable.
+
+Il doit notamment pouvoir exposer :
+
+- sa valeur ;
+- son unité ;
+- son numérateur ;
+- son dénominateur ;
+- son périmètre ;
+- sa période éventuelle ;
+- sa définition ;
+- les entités sources ;
+- sa fiabilité ;
+- les exclusions éventuelles.
+
+---
+
+## 23. Relation synthétique entre les objets
+
+### Situation actuelle
+
+```text
+Design System
+    │
+    └── Repository
+          │
+          └── Librairie
+                │
+                ├── Package
+                │     │
+                │     └── Versions
+                │
+                └── Composants
+                      │
+                      ├── Issues
+                      ├── Anomalies
+                      └── Audits
+
+Application
+    │
+    └── utilise un Package dans une Version donnée
+```
+
+### Cible future
+
+```text
+Design System
+    │
+    ├── Repository
+    │     │
+    │     └── 1..n Librairies
+    │             │
+    │             ├── 1..n Packages
+    │             │       └── Versions
+    │             │
+    │             └── Composants
+    │
+    └── Applications
+          │
+          └── Consommations
+                ├── Package
+                ├── Version
+                └── Composants utilisés
+```
+
+La notion de **Consommation** présentée dans la cible est une représentation conceptuelle pratique.
+
+Elle n'est pas encore validée comme objet métier autonome.
+
+Les cardinalités cibles qui ne correspondent pas encore à une réalité observée restent à valider progressivement.

@@ -1,560 +1,643 @@
-# Questions ouvertes et décisions à instruire
+# Questions ouvertes
 
-## 1. Rôle de ce document
+## 1. Objectif
 
-Ce document recense les sujets qui ne sont pas suffisamment définis pour être implémentés sans risque d'interprétation.
+Ce document recense les décisions métier et d'architecture qui doivent encore être prises pour stabiliser le modèle du Design System Quality Pipeline.
 
-Une question présente dans ce document ne doit pas être considérée comme une décision.
+L'objectif est d'éviter :
 
-Lorsqu'une question est tranchée, sa décision doit être reportée dans le document métier de référence concerné.
+- d'introduire des hypothèses implicites ;
+- de transformer une situation actuelle en contrainte définitive ;
+- de coder des règles métier qui n'ont pas encore été validées.
 
----
+Les questions doivent être traitées progressivement.
 
-# 2. Positionnement du produit
-
-## Q-001 — Organisation finale du produit
-
-### Question
-
-Les différents domaines doivent-ils constituer un seul produit avec plusieurs sections, ou plusieurs produits partageant un même référentiel ?
-
-### État actuel
-
-Une préférence existe pour :
-
-* un point d'entrée unique ;
-* plusieurs sections clairement identifiables ;
-* une page d'accueil de synthèse destinée à l'entreprise.
-
-### Décision
-
-**À instruire.**
+Lorsqu'une réponse est établie, elle doit être reportée dans les documents de référence concernés.
 
 ---
 
-# 3. Librairies
+# 2. Décisions et faits déjà établis
 
-## Q-002 — Définition métier d'une librairie
+## D-001 — Repository et Librairie
 
-### Situation actuelle
+### Décision actuelle
 
-Une librairie correspond principalement à un package distribuable.
-
-### Évolution souhaitée
-
-Le modèle doit pouvoir représenter une librairie fonctionnelle pouvant être distribuée par plusieurs packages.
-
-### Question
-
-Quelle définition métier doit être retenue pour une librairie indépendamment de son ou ses packages ?
-
-### Décision
-
-**À instruire.**
-
----
-
-## Q-003 — Relation Librairie / Repository
-
-### Situation actuelle
-
-Le projet fonctionne actuellement selon :
+Aujourd'hui :
 
 ```text
-1 repository = 1 librairie
+1 Repository = 1 Librairie
 ```
 
-### Évolution souhaitée
+### Cible
 
-Le modèle doit pouvoir représenter :
+Le modèle doit permettre à terme :
 
 ```text
-1 repository = 1..n librairies
+1 Repository = 1..n Librairies
 ```
 
-notamment pour les monorepos.
-
-### Question
-
-Comment identifier les différentes librairies présentes dans un même repository ?
-
-### Décision
-
-**À instruire.**
+afin de supporter notamment les monorepos.
 
 ---
 
-## Q-004 — Relation Librairie / Package
+## D-002 — Librairie et Package
 
-### Question
+### Fait actuel établi
 
-Une librairie peut-elle être distribuée par plusieurs packages ?
+Une librairie est aujourd'hui distribuée sous la forme d'un package directement consommé par les applications.
 
-### État
+Le package possède :
 
-Le besoin de permettre cette évolution est identifié.
+- un nom ;
+- des versions.
 
-### Décision
+La relation actuelle est :
 
-**Orientation : oui à terme.**
+```text
+Librairie
+    │
+    └── Package
+```
 
-Les modalités précises restent à définir.
+Dans la situation actuelle :
 
----
+```text
+1 Librairie = 1 Package
+```
 
-## Q-005 — Relation Composant / Librairie dans un monorepo
+### Cible
 
-### Question
+Le modèle doit conserver la possibilité :
 
-Lorsqu'un repository contient plusieurs librairies, comment déterminer à quelle librairie appartient un composant ?
+```text
+1 Librairie = 1..n Packages
+```
 
-### Décision
-
-**À instruire.**
-
----
-
-# 4. Versions et releases
-
-## Q-006 — Définition d'une Version
-
-### Question
-
-Qu'est-ce qui constitue exactement une Version dans le modèle métier ?
-
-### Décision
-
-**À instruire.**
+Cette cardinalité est une capacité cible et non une situation actuelle observée.
 
 ---
 
-## Q-007 — Définition d'une Release
+## D-003 — Package et Version
 
-### Question
+### Fait actuel établi
 
-Une Release est-elle :
+Une application consomme une version donnée d'un package.
 
-* un objet métier ;
-* un événement de livraison ;
-* une représentation technique ;
-* autre chose ?
+```text
+Application
+    │
+    └── Package @ Version
+```
 
-### Décision
-
-**À instruire.**
-
----
-
-## Q-008 — Relation Version / Release
-
-### Question
-
-Une Version peut-elle exister sans Release ?
-
-Une Release peut-elle concerner plusieurs packages ?
-
-### Décision
-
-**À instruire.**
+La Version consommée est donc actuellement rattachée au Package.
 
 ---
 
-## Q-009 — Relation Milestone / Version
+## D-004 — Composant non audité
 
-### Situation
+Un composant non audité ne doit pas être automatiquement considéré comme non conforme.
 
-Les Milestones peuvent représenter différents usages.
+Il faut distinguer :
 
-### Question
+```text
+NON AUDITÉ
+AUDITÉ & CONFORME
+AUDITÉ & NON CONFORME
+```
 
-Comment déterminer qu'une Milestone représente une Version, un audit, un lot ou un autre objet ?
+Cela permet notamment de séparer :
 
-### Décision
+```text
+Couverture d'audit
+= audités / périmètre
+```
 
-**À instruire.**
+de :
+
+```text
+Taux de conformité
+= conformes / audités
+```
 
 ---
 
-## Q-010 — Normalisation des suffixes de version
+## D-005 — Vélocité vide et vélocité zéro
 
-### Situation
+Les valeurs suivantes sont sémantiquement différentes :
 
-Les formes suivantes ont été explicitement identifiées :
+```text
+velocity = null
+velocity = 0
+velocity > 0
+```
+
+Elles ne doivent pas être normalisées comme une même situation.
+
+---
+
+## D-006 — Criticité
+
+La criticité doit être associée à un domaine.
+
+Il faut notamment pouvoir distinguer :
+
+- accessibilité / RGAA / WAI-ARIA ;
+- métier ;
+- fonctionnalité ;
+- technique ;
+- Developer Experience ;
+- Designer Experience.
+
+Une criticité générique telle que `major` ne suffit pas à elle seule.
+
+---
+
+## D-007 — Anomalie et amélioration
+
+Une anomalie et une proposition d'amélioration sont deux notions différentes.
+
+Un audit peut produire :
+
+```text
+Audit
+    ├── Anomalies / non-conformités
+    └── Propositions d'amélioration
+```
+
+Ces objets ne doivent pas être automatiquement agrégés dans les mêmes indicateurs.
+
+---
+
+# 3. Questions ouvertes — Librairies, Packages et Repositories
+
+## Q-001 — Propriétés du Package
+
+Quelles propriétés doivent définir un Package dans le modèle métier ?
+
+Exemples de propriétés à instruire :
+
+- nom ;
+- identifiant ;
+- source de publication ;
+- version actuelle ;
+- repository source ;
+- librairie associée.
+
+**Statut : À instruire**
+
+---
+
+## Q-002 — Plusieurs packages pour une librairie
+
+Dans quels cas une librairie pourrait-elle être distribuée par plusieurs packages ?
+
+Cette possibilité est une cible du modèle mais aucun cas actuel n'est encore établi.
+
+**Statut : À instruire**
+
+---
+
+## Q-003 — Plusieurs librairies dans un repository
+
+Comment les librairies devront-elles être identifiées dans un futur monorepo ?
+
+Exemples de possibilités à étudier ultérieurement :
+
+- configuration explicite ;
+- répertoires ;
+- packages ;
+- métadonnées de publication.
+
+**Statut : À instruire**
+
+---
+
+## Q-004 — Composants et Packages
+
+Dans le cas futur où une librairie possède plusieurs packages, un composant appartient-il :
+
+- à la librairie ;
+- à un package ;
+- potentiellement à plusieurs packages ?
+
+**Statut : À instruire**
+
+---
+
+# 4. Questions ouvertes — Versions et Releases
+
+## Q-005 — Source de la Version
+
+Quelle est la source de référence permettant d'identifier la version d'un Package ?
+
+**Statut : À instruire**
+
+---
+
+## Q-006 — Version et Release
+
+Quelle est la relation exacte entre :
+
+```text
+Version
+Release
+```
+
+Une Release représente-t-elle systématiquement la publication d'une Version ?
+
+**Statut : À instruire**
+
+---
+
+## Q-007 — Version et Milestone
+
+Quelle relation doit être établie entre :
+
+```text
+Version du Package
+Milestone GitHub
+```
+
+Un Milestone peut actuellement représenter plusieurs notions et ne peut donc pas être assimilé automatiquement à une Version.
+
+**Statut : À instruire**
+
+---
+
+## Q-008 — Version d'audit
+
+La convention :
 
 ```text
 1.1.0
 1.1.0-Audit
 ```
 
-Elles doivent pouvoir être rapprochées.
+doit-elle toujours être interprétée comme une même version de référence avec deux contextes différents ?
 
-### Question
+Le suffixe doit être configurable.
 
-Quelle règle complète de normalisation doit être appliquée ?
-
-### Décision
-
-Le rapprochement et le caractère configurable du suffixe `-Audit` sont établis.
-
-Les règles complètes restent à préciser.
+**Statut : À confirmer**
 
 ---
 
-# 5. Anomalies
+# 5. Questions ouvertes — Anomalies
 
-## Q-011 — Définition d'une anomalie
+## Q-009 — Définition d'une anomalie
 
-### Question
+Quelle règle doit déterminer qu'une Issue représente une anomalie ?
 
-Qu'est-ce qui permet de déterminer qu'une Issue constitue une anomalie ?
+Le modèle doit pouvoir supporter :
 
-### Situation actuelle
+- Issue Type ;
+- label ;
+- combinaison de critères ;
+- configuration spécifique par repository ou organisation.
 
-Le projet utilise notamment `Issue Type = BUG`.
-
-### Problème identifié
-
-Cette règle pourrait être trop restrictive pour constituer la définition métier définitive.
-
-Des critères basés sur :
-
-* Issue Type ;
-* labels ;
-* combinaison de critères ;
-* règles propres à une librairie ou un repository
-
-ont été envisagés.
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-## Q-012 — Anomalie versus amélioration
+## Q-010 — Origine d'une anomalie
 
-### Question
+Quelles origines doivent être distinguées ?
 
-Comment distinguer une anomalie d'une amélioration proposée ?
+Exemples déjà identifiés :
 
-### Décision
+- audit ;
+- utilisateur ;
+- équipe ;
+- autre processus.
 
-**À instruire.**
-
----
-
-## Q-013 — Anomalie issue d'un audit
-
-### Question
-
-Une anomalie détectée lors d'un audit possède-t-elle une qualification particulière permettant de la distinguer des autres anomalies ?
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-# 6. Audits
+## Q-011 — Date de détection
 
-## Q-014 — Types d'audit
+Quelle date représente la détection d'une anomalie ?
 
-### Question
+Exemples possibles :
 
-Quels types d'audit doivent être officiellement supportés ?
+- création de l'Issue ;
+- date d'un audit ;
+- autre événement.
 
-Les échanges ont notamment fait apparaître les audits d'accessibilité.
-
-D'autres types sont envisageables mais ne doivent pas être inventés.
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-## Q-015 — Campagne d'audit
+## Q-012 — Date de correction
 
-### Question
+Quelle date représente la correction effective d'une anomalie ?
 
-Une campagne d'audit est-elle un objet métier distinct d'un audit individuel ?
+Exemples possibles :
 
-### Décision
+- fermeture de l'Issue ;
+- merge de la Pull Request ;
+- publication d'une version ;
+- autre événement.
 
-**À instruire.**
-
----
-
-## Q-016 — Résultat d'un audit
-
-### Question
-
-Quels sont les résultats possibles d'un audit ?
-
-Par exemple :
-
-* conforme ;
-* non conforme ;
-* autre.
-
-La liste complète n'est pas définie.
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-# 7. Consommateurs
+# 6. Questions ouvertes — Audits
 
-## Q-017 — Source des données consommateurs
+## Q-013 — Objet Audit
 
-### Question
+L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHub qui peut actuellement le représenter ?
 
-Quelle source permettra d'analyser les applications consommatrices ?
-
-Possibilités à étudier :
-
-* repositories des applications ;
-* fichiers de dépendances ;
-* analyse statique du code ;
-* autre source.
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-## Q-018 — Identification des applications
+## Q-014 — Campagne d'audit
 
-### Question
+Comment une campagne d'audit est-elle identifiée ?
 
-Comment identifier une application consommatrice et la rattacher à une Squad responsable ?
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-## Q-019 — Identification des librairies utilisées
+## Q-015 — Résultat d'un audit
 
-### Question
+Quelles informations déterminent qu'un composant audité est :
 
-Comment détecter qu'une application utilise une librairie du Design System ?
+```text
+CONFORME
+NON CONFORME
+```
 
-### Décision
-
-**À instruire.**
-
----
-
-## Q-020 — Version utilisée
-
-### Question
-
-Comment déterminer précisément la version de la librairie utilisée par une application ?
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-## Q-021 — Composants utilisés
+## Q-016 — Version auditée
 
-### Question
+Comment déterminer précisément la version du composant ou de la librairie faisant l'objet d'un audit ?
 
-Comment déterminer précisément les composants utilisés par une application ?
-
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-## Q-022 — Nombre d'utilisations d'un composant
+# 7. Questions ouvertes — Workflow
 
-### Question
+## Q-017 — Profils de workflow
 
-Que signifie exactement « nombre d'utilisations » ?
+Les profils suivants doivent-ils être formalisés comme des profils métier distincts ?
 
-Il faut déterminer l'unité de comptage :
+- STANDARD ;
+- EPIC ;
+- AUDIT ;
+- RELEASE ;
+- CONCEPTION.
 
-* occurrence dans le code ;
-* fichier ;
-* instance ;
-* autre.
-
-### Décision
-
-**À instruire.**
+**Statut : À confirmer**
 
 ---
 
-## Q-023 — Composants les plus utilisés
+## Q-018 — Exceptions aux règles de Pull Request
 
-### Question
+Pour quels profils une Pull Request n'est-elle pas obligatoire avant le statut Done ?
 
-Quel indicateur doit être utilisé pour déterminer les composants les plus utilisés ?
+Les audits et Epics constituent des cas déjà identifiés à étudier.
 
-### Décision
-
-**À instruire.**
+**Statut : À formaliser**
 
 ---
 
-# 8. Dette de version
+## Q-019 — Statut Cancelled
 
-## Q-024 — Version attendue
+Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled ?
 
-### Question
+Les règles actuelles concernant les Pull Requests et Milestones devront être réévaluées dans le modèle de workflow complet.
 
-Comment déterminer qu'une application devrait utiliser une version donnée d'une librairie ?
-
-### Décision
-
-**À instruire.**
+**Statut : À formaliser**
 
 ---
 
-## Q-025 — Dette de version
+# 8. Questions ouvertes — Applications consommatrices
 
-### Question
+## Q-020 — Identification des applications
 
-Quelle règle transforme l'écart entre version utilisée et version attendue en dette ?
+Quelle source permet de connaître la liste des applications qui utilisent ou devraient utiliser le Design System ?
 
-### Décision
-
-**À instruire.**
+**Statut : Futur**
 
 ---
 
-## Q-026 — Priorité de la dette
+## Q-021 — Détection des packages consommés
 
-### Question
+Comment déterminer qu'une application consomme un Package donné ?
 
-La dette de version doit-elle avoir différents niveaux de priorité ?
-
-### Décision
-
-**À instruire.**
+**Statut : Futur**
 
 ---
 
-## Q-027 — Alertes
+## Q-022 — Détection de la version consommée
 
-### Question
+Comment déterminer la version du Package effectivement utilisée par une application ?
 
-Quel mécanisme doit être utilisé pour informer les Squads responsables lorsqu'une montée de version est attendue ?
+Le fait qu'une application consomme une version d'un Package est établi.
 
-### Décision
+La source permettant de récupérer cette information reste à déterminer.
 
-**À instruire.**
-
----
-
-# 9. Qualité RGAA/WAI-ARIA des consommateurs
-
-## Q-028 — Note ou badge
-
-### Question
-
-Quelle forme doit prendre l'information synthétique ?
-
-* note ;
-* badge ;
-* niveau ;
-* plusieurs indicateurs ;
-* autre.
-
-### Décision
-
-**À instruire.**
+**Statut : Futur**
 
 ---
 
-## Q-029 — Calcul de la qualité applicative
+## Q-023 — Détection des composants utilisés
 
-### Question
+Comment analyser le code d'une application afin d'identifier :
 
-Comment calculer la qualité RGAA/WAI-ARIA d'une application ?
+- les composants utilisés ;
+- leur nombre d'utilisations ?
 
-Les informations envisagées comprennent notamment :
-
-* version de la librairie ;
-* composants utilisés ;
-* état de qualité des composants.
-
-### Décision
-
-**À instruire.**
+**Statut : Futur**
 
 ---
 
-## Q-030 — Relation qualité composant / qualité application
+## Q-024 — Dette de montée de version
 
-### Question
+Comment définir la dette liée à l'utilisation d'une ancienne version du Design System ?
 
-Une application utilisant un composant non conforme doit-elle nécessairement voir sa qualité RGAA/WAI-ARIA dégradée ?
+Il faudra notamment définir :
 
-### Décision
+- version actuelle ;
+- version attendue ;
+- délai acceptable ;
+- niveau de dette ;
+- équipe responsable.
 
-**À instruire.**
-
----
-
-# 10. Architecture future
-
-## Q-031 — Backend / base de données
-
-### Question
-
-À quel moment l'architecture actuelle basée sur fichiers et snapshots doit-elle évoluer vers un backend et une base de données ?
-
-### Décision
-
-**À instruire.**
+**Statut : Futur**
 
 ---
 
-## Q-032 — API
+## Q-025 — Alertes aux Squads
 
-### Question
+Quelles situations doivent provoquer une alerte à destination d'une Squad responsable d'une application ?
 
-Quelle partie du modèle doit être exposée par une API lorsque l'architecture évoluera ?
-
-### Décision
-
-**À instruire.**
+**Statut : Futur**
 
 ---
 
-## Q-033 — Frontend
+# 9. Questions ouvertes — Qualité des applications consommatrices
 
-### Question
+## Q-026 — Qualité d'une version
 
-Le dashboard HTML actuel doit-il évoluer vers une application frontend complète ?
+Comment calculer la qualité d'une version d'une librairie ?
 
-### Décision
-
-**À instruire.**
+**Statut : À instruire**
 
 ---
 
-# 11. Règle de gouvernance des décisions
+## Q-027 — Qualité d'un composant
 
-Lorsqu'un sujet n'est pas suffisamment documenté par les sources disponibles ou par une décision explicite, il doit rester marqué :
+Comment calculer la qualité d'un composant pour une version donnée ?
 
-> **À instruire**
+**Statut : À instruire**
 
-Il ne doit pas être transformé en règle technique par supposition.
+---
 
-Lorsqu'une décision est prise :
+## Q-028 — Badge ou note d'une application
 
-1. elle est ajoutée à ce document ;
-2. elle est reportée dans le document métier correspondant ;
-3. son impact sur les indicateurs est examiné ;
-4. son impact sur les règles de qualité des données est examiné ;
-5. seulement ensuite son implémentation est envisagée.
+Comment construire une information synthétique de qualité pour une application en croisant :
+
+```text
+Application
+    ↓
+Package / Version utilisés
+    ↓
+Composants utilisés
+    ↓
+Qualité des composants
+```
+
+Le besoin est identifié mais le modèle de scoring n'est pas défini.
+
+Aucune formule ne doit être introduite avant validation de ce modèle.
+
+**Statut : Futur**
+
+---
+
+## Q-029 — RGAA / WAI-ARIA d'une application
+
+Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA calculé à partir des composants du Design System utilisés par une application ?
+
+Il faudra notamment déterminer :
+
+- le périmètre évalué ;
+- les limites de responsabilité du Design System ;
+- la prise en compte des composants utilisés ;
+- la version utilisée ;
+- les composants non audités ;
+- les anomalies ouvertes.
+
+**Statut : Futur**
+
+---
+
+# 10. Questions ouvertes — Historisation
+
+## Q-030 — Granularité historique
+
+Quels événements doivent provoquer la création d'un Snapshot ?
+
+Exemples à étudier :
+
+- exécution périodique ;
+- release ;
+- fin de sprint ;
+- audit ;
+- exécution manuelle.
+
+**Statut : À instruire**
+
+---
+
+## Q-031 — Conservation
+
+Quelle durée d'historique doit être conservée ?
+
+**Statut : À instruire**
+
+---
+
+# 11. Questions ouvertes — Sources externes
+
+## Q-032 — Publication des packages
+
+Quelle source permettra de connaître les packages publiés et leurs versions ?
+
+**Statut : À instruire**
+
+---
+
+## Q-033 — Applications consommatrices
+
+Quelle source permettra d'identifier les applications et leurs dépendances ?
+
+**Statut : Futur**
+
+---
+
+## Q-034 — Usage des composants
+
+Quelle source ou quel mécanisme permettra de mesurer l'utilisation réelle des composants dans les applications ?
+
+**Statut : Futur**
+
+---
+
+# 12. Questions ouvertes — Architecture
+
+## Q-035 — Backend
+
+À quel moment le dashboard statique actuel devra-t-il évoluer vers une architecture avec backend ?
+
+**Statut : À instruire ultérieurement**
+
+---
+
+## Q-036 — Stockage historique
+
+Quel système doit conserver les Snapshots à terme ?
+
+**Statut : À instruire ultérieurement**
+
+---
+
+## Q-037 — Multi-source
+
+Comment orchestrer à terme les différentes sources nécessaires ?
+
+```text
+GitHub
+Catalogue
+Publication des Packages
+Applications consommatrices
+Analyse du code
+Autres sources
+```
+
+**Statut : À instruire ultérieurement**
+
+---
+
+# 13. Méthode de traitement des questions
+
+Les questions ne doivent pas être résolues toutes en même temps.
+
+Pour chaque question :
+
+1. observer le fonctionnement réel ;
+2. établir le fait métier ;
+3. distinguer situation actuelle et cible ;
+4. mettre à jour le modèle métier ;
+5. définir ensuite les règles ;
+6. définir les impacts sur les indicateurs ;
+7. seulement ensuite modifier l'implémentation.
+
+Cette approche doit éviter que le code ou les contraintes actuelles de GitHub deviennent implicitement la définition du métier.
