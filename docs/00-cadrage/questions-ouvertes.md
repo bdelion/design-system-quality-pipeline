@@ -697,6 +697,22 @@ Le mécanisme permettant ensuite de considérer globalement le Composant comme c
 
 ---
 
+## D-037 — Hypothèse de clôture d'une Anomalie après merge de la PR
+
+Le responsable et le moment exacts de la clôture d'une Anomalie d'Audit ne sont pas encore définitivement actés.
+
+L'hypothèse actuelle est la suivante :
+
+1. la correction est portée par une Pull Request ;
+2. l'auditeur réalise la revue prévue dans la Definition of Done de l'Anomalie ;
+3. après validation de l'auditeur et merge de la Pull Request sur la branche cible, le développeur ou la squad fait passer l'Issue à `Done` puis `Closed`.
+
+Le merge de la Pull Request constitue un événement technique de fin de correction. La validation de l'auditeur constitue une condition métier distincte. Le workflow ne doit pas considérer le seul merge comme suffisant tant que cette hypothèse n'a pas été formellement actée.
+
+**Statut : Hypothèse de workflow à confirmer**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1438,6 +1454,22 @@ Ce modèle pourrait être plus pertinent lorsqu'un Audit a généré plusieurs A
 Il reste à arbitrer le modèle retenu et, éventuellement, les conditions dans lesquelles chacun des deux modèles s'applique.
 
 **Statut : À arbitrer**
+
+---
+
+## Q-061 — Responsable et déclencheur de la clôture d'une Anomalie
+
+Le workflow n'est pas encore définitivement défini.
+
+L'hypothèse actuelle est que le développeur ou la squad met l'Anomalie à `Done` puis `Closed` lorsque la Pull Request de correction est mergée sur la branche cible, sous réserve que la revue attendue de l'auditeur ait été réalisée positivement.
+
+Il reste à confirmer :
+
+- que le développeur ou la squad est bien responsable de cette transition ;
+- que le merge sur la branche cible constitue bien le déclencheur opérationnel ;
+- comment la validation de l'auditeur est matérialisée et contrôlée avant la clôture.
+
+**Statut : À confirmer**
 
 ---
 

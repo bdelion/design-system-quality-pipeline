@@ -539,6 +539,10 @@ Le workflow de correction et de revalidation n'est pas encore définitivement ac
 
 L'orientation actuelle est que la Definition of Done d'une Anomalie doit inclure une revue par l'auditeur avant le passage de l'Issue à `Done` puis `Closed`.
 
+Le responsable de cette transition n'est pas encore acté. L'hypothèse actuelle est que le développeur ou la squad effectue le passage à `Done` puis `Closed` au moment où la Pull Request de correction est mergée sur la branche cible, après validation de l'auditeur.
+
+Le merge de la Pull Request et la validation de l'auditeur sont deux faits distincts : le premier est un événement technique de livraison de la correction, le second une condition métier de la Definition of Done. Le seul merge ne doit donc pas être interprété comme une validation de l'auditeur.
+
 Deux modèles restent possibles pour déterminer le retour global du Composant à l'état `AUDITÉ & CONFORME` :
 
 1. **revalidation portée par les Anomalies** : chaque correction est revue par l'auditeur et la fermeture de toutes les Anomalies pourrait suffire à rétablir la conformité ;
