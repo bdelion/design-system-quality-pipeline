@@ -6,7 +6,8 @@ Ce document décrit le cycle de Version des Packages du Design System et ses rel
 
 Il distingue notamment :
 
-- la Version de base ;
+- la Version déclarée dans `package.json` ;
+- la Version d'artefact produite par Jenkins ;
 - les Versions SNAPSHOT ;
 - les Release Candidates ;
 - les Hotfix Candidates ;
@@ -19,19 +20,138 @@ Il distingue notamment :
 
 ---
 
-## 2. Version de base
+## 2. Version déclarée dans `package.json`
 
-Le cycle de construction utilise une Version de base :
+Le fichier `package.json` contient une propriété :
+
+```json
+{
+  "version": "1.8.0"
+}
+```
+
+Dans le fonctionnement nominal observé sur `develop`, cette valeur est une Version de base de forme :
 
 ```text
 M.m.r
 ```
 
-Cette Version sert de base aux différentes Versions produites par Jenkins.
+Exemple :
+
+```text
+1.8.0
+```
+
+Cette valeur ne correspond pas nécessairement à la Version exacte de l'artefact qui sera publié dans Nexus.
+
+Jenkins peut construire la Version finale de l'artefact en fonction du contexte de build.
 
 ---
 
-## 3. Classification des Versions
+## 3. Version de base et Version d'artefact
+
+Le modèle doit distinguer deux notions.
+
+### Version déclarée
+
+Valeur présente dans `package.json`.
+
+Exemple :
+
+```text
+1.8.0
+```
+
+### Version d'artefact
+
+Version calculée ou produite par Jenkins pour l'artefact construit.
+
+Exemples :
+
+```text
+1.8.0-SNAPSHOT
+1.8.0-rc.123
+1.8.0-hc.42
+1.8.0
+```
+
+Conceptuellement :
+
+```text
+package.json.version
+        │
+        ▼
+Version déclarée
+        │
+        ▼
+Jenkins + contexte de build
+        │
+        ▼
+Version d'artefact
+```
+
+Les noms techniques définitifs de ces deux propriétés seront définis ultérieurement dans le modèle normalisé.
+
+---
+
+## 4. Cas nominal
+
+Dans le cas nominal établi :
+
+```json
+{
+  "version": "1.8.0"
+}
+```
+
+Jenkins utilise cette Version comme base et construit la Version d'artefact selon le contexte.
+
+```text
+1.8.0
+    │
+    ▼
+Jenkins
+    │
+    ├── develop / project/***
+    │      └── 1.8.0-SNAPSHOT
+    │
+    ├── release/***
+    │      └── 1.8.0-rc.[build]
+    │
+    ├── hotfix/***
+    │      └── 1.8.0-hc.[build]
+    │
+    └── production
+           └── 1.8.0
+```
+
+---
+
+## 5. `package.json` contenant déjà `-SNAPSHOT`
+
+Jenkins sait également traiter le cas où `package.json` contient déjà une Version telle que :
+
+```json
+{
+  "version": "1.8.0-SNAPSHOT"
+}
+```
+
+Ce cas est supporté.
+
+Il ne faut donc pas définir une règle métier imposant systématiquement :
+
+```text
+package.json.version = M.m.r
+```
+
+La valeur sans suffixe correspond au fonctionnement nominal actuellement observé, mais elle n'est pas une contrainte absolue du processus Jenkins.
+
+Les règles précises appliquées par Jenkins lorsqu'un suffixe est déjà présent ne sont pas encore documentées.
+
+---
+
+## 6. Classification des Versions d'artefact
 
 | Catégorie | Forme | Origine |
 |---|---|---|
@@ -45,7 +165,7 @@ Une Milestone `M.m.r-Audit` n'est pas une Version supplémentaire.
 
 ---
 
-## 4. Versions SNAPSHOT
+## 7. Versions SNAPSHOT
 
 Depuis :
 
@@ -54,17 +174,38 @@ develop
 project/***
 ```
 
-Jenkins produit :
+Jenkins produit une Version d'artefact :
 
 ```text
 M.m.r-SNAPSHOT
+```
+
+Dans le fonctionnement nominal, Jenkins ajoute donc le suffixe :
+
+```text
+-SNAPSHOT
+```
+
+à la Version de base présente dans `package.json`.
+
+Exemple :
+
+```text
+package.json
+    │
+    └── 1.8.0
+          │
+          ▼
+       Jenkins
+          │
+          └── 1.8.0-SNAPSHOT
 ```
 
 Ces Versions peuvent être disponibles dans Nexus mais sont destinées aux tests d'intégration et non à la production.
 
 ---
 
-## 5. Release Candidate
+## 8. Release Candidate
 
 Depuis :
 
@@ -78,13 +219,24 @@ Jenkins produit :
 M.m.r-rc.[numéro de build Jenkins]
 ```
 
+Exemple conceptuel :
+
+```text
+package.json : 1.8.0
+branche       : release/***
+build Jenkins : 123
+        │
+        ▼
+artefact      : 1.8.0-rc.123
+```
+
 Une Release Candidate joue également un rôle important dans le fonctionnement cible des Audits.
 
 L'objectif est de pouvoir auditer une Release Candidate avant la publication de la Version PROD correspondante.
 
 ---
 
-## 6. Hotfix Candidate
+## 9. Hotfix Candidate
 
 Depuis :
 
@@ -98,9 +250,20 @@ Jenkins produit :
 M.m.r-hc.[numéro de build Jenkins]
 ```
 
+Exemple conceptuel :
+
+```text
+package.json : 1.8.0
+branche       : hotfix/***
+build Jenkins : 42
+        │
+        ▼
+artefact      : 1.8.0-hc.42
+```
+
 ---
 
-## 7. Production d'une Version PROD
+## 10. Production d'une Version PROD
 
 Deux chemins de production sont établis :
 
@@ -127,14 +290,14 @@ Une Version PROD :
 
 ---
 
-## 8. Milestone de Version
+## 11. Milestone de Version
 
 Une Version PROD cible possède une Milestone portant son numéro.
 
 Exemple :
 
 ```text
-Version : 1.1.0
+Version   : 1.1.0
 Milestone : 1.1.0
 ```
 
@@ -144,11 +307,9 @@ Dans le fonctionnement cible des Audits, les Issues d'Audit des Composants évol
 
 ---
 
-## 9. Audit pré-PROD — fonctionnement cible
+## 12. Audit pré-PROD — fonctionnement cible
 
 Le fonctionnement souhaité consiste à réaliser les Audits sur une Release Candidate avant la publication de la Version PROD finale.
-
-Exemple :
 
 ```text
 Milestone 1.1.0
@@ -173,13 +334,13 @@ Il faut donc distinguer :
 
 ```text
 Version effectivement auditée : 1.1.0-rc.n
-Version PROD cible            : 1.1.0
-Milestone                     : 1.1.0
+Version PROD cible             : 1.1.0
+Milestone                      : 1.1.0
 ```
 
 ---
 
-## 10. Audit de rattrapage
+## 13. Audit de rattrapage
 
 La convention :
 
@@ -187,9 +348,7 @@ La convention :
 M.m.r-Audit
 ```
 
-est utilisée pour effectuer un **Audit de rattrapage** lorsque l'Audit n'a pas été réalisé avant la création de la Version PROD.
-
-Exemple :
+est utilisée pour effectuer un Audit de rattrapage lorsque l'Audit n'a pas été réalisé avant la création de la Version PROD.
 
 ```text
 Version PROD 1.1.0
@@ -209,7 +368,7 @@ Elle ne représente pas une Version supplémentaire.
 
 ---
 
-## 11. Contenu de la Milestone de rattrapage
+## 14. Contenu de la Milestone de rattrapage
 
 La Milestone :
 
@@ -218,8 +377,6 @@ M.m.r-Audit
 ```
 
 ne contient que les Issues d'Audit des Composants.
-
-Exemple :
 
 ```text
 1.1.0-Audit
@@ -235,7 +392,7 @@ Elles passent ensuite par le Grooming, la pesée et la planification.
 
 ---
 
-## 12. Anomalies découvertes pendant l'Audit
+## 15. Anomalies découvertes pendant l'Audit
 
 Une Anomalie détectée pendant un Audit suit son propre cycle :
 
@@ -262,7 +419,7 @@ La Milestone de correction de l'Anomalie peut donc être différente de la Miles
 
 ---
 
-## 13. Deux temporalités
+## 16. Deux temporalités d'Audit
 
 Le modèle doit distinguer deux situations.
 
@@ -288,7 +445,7 @@ Cette différence doit être conservée dans le modèle normalisé et dans les i
 
 ---
 
-## 14. Conséquence sur la conformité
+## 17. Conséquence sur la conformité
 
 Dans le fonctionnement cible, les Audits participent à la préparation d'une Version PROD que l'on souhaite conforme.
 
@@ -306,7 +463,7 @@ Les définitions précises de ces indicateurs restent à formaliser.
 
 ---
 
-## 15. Nexus
+## 18. Nexus
 
 Nexus peut contenir :
 
@@ -319,9 +476,11 @@ M.m.r-hc.[build]
 
 La présence dans Nexus ne suffit donc pas à qualifier une Version de PROD.
 
+La Version publiée dans Nexus doit être distinguée de la Version déclarée dans `package.json`.
+
 ---
 
-## 16. Tag Git
+## 19. Tag Git
 
 Une Version PROD possède un Tag Git correspondant.
 
@@ -335,7 +494,7 @@ hotfix/***  → master ─┘
 
 ---
 
-## 17. Release
+## 20. Release
 
 Une Version PROD possède normalement une Release correspondante.
 
@@ -343,28 +502,33 @@ Son caractère systématiquement obligatoire et son mécanisme exact de créatio
 
 ---
 
-## 18. Cycle global
+## 21. Cycle global
 
 ```text
-Version de base M.m.r
+package.json.version
         │
-        ├── develop / project
-        │     └── M.m.r-SNAPSHOT
-        │
-        ├── release
-        │     ├── M.m.r-rc.[build]
-        │     │       │
-        │     │       └── Audit pré-PROD souhaité
-        │     │
-        │     └── merge master
-        │           └── Jenkins
-        │                 └── M.m.r PROD
-        │
-        └── hotfix
-              ├── M.m.r-hc.[build]
-              └── merge master
-                    └── Jenkins
-                          └── M.m.r PROD
+        └── généralement M.m.r
+                │
+                ▼
+             Jenkins
+                │
+                ├── develop / project
+                │     └── M.m.r-SNAPSHOT
+                │
+                ├── release
+                │     ├── M.m.r-rc.[build]
+                │     │       │
+                │     │       └── Audit pré-PROD souhaité
+                │     │
+                │     └── merge master
+                │           └── Jenkins
+                │                 └── M.m.r PROD
+                │
+                └── hotfix
+                      ├── M.m.r-hc.[build]
+                      └── merge master
+                            └── Jenkins
+                                  └── M.m.r PROD
 ```
 
 Si l'Audit n'a pas été effectué avant la PROD :
@@ -380,25 +544,29 @@ Milestone M.m.r-Audit
 
 ---
 
-## 19. Principes retenus
+## 22. Principes retenus
 
-1. Une Release Candidate peut être la Version effectivement auditée avant la PROD.
-2. Le fonctionnement cible consiste à auditer avant la publication PROD.
-3. Les Issues d'Audit pré-PROD évoluent dans la Milestone `M.m.r`.
-4. `M.m.r-Audit` correspond à un mécanisme de rattrapage.
-5. `M.m.r-Audit` n'est pas une Version.
-6. Une Milestone de rattrapage ne contient que les Issues d'Audit des Composants.
-7. Les Anomalies découvertes suivent ensuite leur propre cycle de Grooming et de planification.
-8. La qualité avant PROD et la qualité découverte après PROD doivent être distinguées.
-9. La valeur source des Milestones doit être conservée.
-10. Le suffixe `-Audit` doit être configurable.
+1. La Version déclarée dans `package.json` et la Version d'artefact sont deux notions distinctes.
+2. Dans le fonctionnement nominal, `package.json` contient une Version `M.m.r`.
+3. Jenkins construit la Version d'artefact en fonction du contexte de build.
+4. Jenkins sait également traiter un `package.json` contenant déjà `M.m.r-SNAPSHOT`.
+5. La forme `M.m.r` dans `package.json` ne doit donc pas être considérée comme une contrainte absolue.
+6. Une Release Candidate peut être la Version effectivement auditée avant la PROD.
+7. Le fonctionnement cible consiste à auditer avant la publication PROD.
+8. Les Issues d'Audit pré-PROD évoluent dans la Milestone `M.m.r`.
+9. `M.m.r-Audit` correspond à un mécanisme de rattrapage.
+10. `M.m.r-Audit` n'est pas une Version.
+11. Une Milestone de rattrapage ne contient que les Issues d'Audit des Composants.
+12. Les Anomalies découvertes suivent ensuite leur propre cycle de Grooming et de planification.
+13. La qualité avant PROD et la qualité découverte après PROD doivent être distinguées.
 
 ---
 
-## 20. Points restant à préciser
+## 23. Points restant à préciser
 
 Restent notamment à déterminer :
 
+- le traitement Jenkins exact lorsque `package.json.version` contient déjà un suffixe ;
 - comment identifier précisément la Release Candidate auditée ;
 - si toutes les Issues d'Audit d'une Version doivent être terminées avant la PROD ;
 - ce qui détermine qu'une Version peut être considérée comme conforme ;
