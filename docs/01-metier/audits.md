@@ -879,3 +879,27 @@ Il faut donc distinguer au minimum :
 - Composant dont la situation ne peut pas être déterminée.
 
 La règle permettant de décider si l'Audit antérieur reste applicable après le passage à une nouvelle Version n'est pas encore définie.
+
+
+### Héritage de l'Audit pour un Composant inchangé
+
+Lorsqu'un Composant n'a pas changé entre deux Versions de Librairie, son Audit antérieur reste applicable à la Version suivante.
+
+```text
+Button audité en 1.7.0 → CONFORME
+              │
+              └── Button inchangé en 1.8.0
+                         ↓
+              Audit antérieur encore applicable
+```
+
+Cela ne signifie pas qu'un nouvel Audit `Button@1.8.0` a été réalisé. Le verdict historique reste rattaché à la Version effectivement auditée.
+
+Le modèle doit donc distinguer :
+
+- **verdict d'Audit historique** : résultat acquis sur le `Composant × Version` effectivement audité ;
+- **couverture héritée** : applicabilité de ce résultat à une Version ultérieure lorsque le Composant est inchangé.
+
+Un changement de Version de la Librairie ne suffit pas, à lui seul, à imposer un nouvel Audit.
+
+La définition précise permettant de déterminer qu'un Composant est « inchangé » reste à établir.

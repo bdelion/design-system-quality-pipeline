@@ -1158,6 +1158,36 @@ Les règles permettant de déterminer qu'un Audit antérieur reste applicable à
 
 ---
 
+## D-058 — Héritage d'un Audit lorsque le Composant est inchangé
+
+Lorsqu'un Composant n'a pas changé entre deux Versions de Librairie, son Audit antérieur reste applicable à la Version suivante.
+
+Exemple :
+
+```text
+Button@1.7.0
+Audit : CONFORME
+
+Button dans la Librairie 1.8.0
+Évolution du Composant : aucune
+→ l'Audit antérieur reste applicable
+```
+
+Cette applicabilité ne modifie pas l'historique du verdict d'Audit : le verdict reste rattaché au `Composant × Version` effectivement audité.
+
+Il faut donc distinguer :
+
+- le verdict historique obtenu lors de l'Audit ;
+- la couverture héritée de ce verdict pour une Version ultérieure dans laquelle le Composant est inchangé.
+
+Un nouvel Audit n'est pas requis du seul fait du changement de Version de la Librairie.
+
+La manière de déterminer techniquement et fonctionnellement qu'un Composant est « inchangé » reste à préciser.
+
+**Statut : Établi sur le principe**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2143,6 +2173,16 @@ Il reste à définir :
 - comment déterminer qu'un Audit antérieur reste applicable à une Version ultérieure ;
 - quels changements d'un Composant invalident cette applicabilité ;
 - comment distinguer, dans la couverture, un Composant audité sur la Version courante d'un Composant couvert par un Audit antérieur encore applicable.
+
+**Statut : À instruire**
+
+---
+
+## Q-077 — Détermination d'un Composant inchangé entre deux Versions
+
+Un Audit antérieur reste applicable à une Version ultérieure lorsque le Composant n'a pas changé.
+
+Il reste à définir ce qui permet d'établir qu'un Composant est effectivement « inchangé » : absence de modification de son code source, absence de modification de certains fichiers, information déclarative, analyse Git, ou autre mécanisme.
 
 **Statut : À instruire**
 
