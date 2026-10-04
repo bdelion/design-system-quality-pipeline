@@ -824,6 +824,30 @@ Une analyse future de récurrence pourrait être calculée ou proposée comme in
 
 ---
 
+## D-043 — Continuité des Audits d'un Composant sans relation directe
+
+Lorsqu'une nouvelle Issue d'Audit est créée pour revalider un Composant, aucune relation explicite avec l'Issue d'Audit précédente n'est requise.
+
+Le label `🧩 Component:xxx` commun aux Issues d'Audit est considéré suffisant pour identifier qu'elles concernent le même Composant.
+
+Les Audits successifs d'un même Composant peuvent porter sur des Versions différentes selon les choix de la Squad. Même si l'objectif souhaité est de conserver une cohérence de Version dans le cycle de correction et de revalidation, cette cohérence ne doit pas être supposée comme une règle absolue par le modèle.
+
+```text
+Audit A
+├── 🧩 Component:X
+└── Version V1
+
+Audit B
+├── 🧩 Component:X
+└── Version V1 ou V2
+```
+
+Le pipeline doit donc conserver séparément l'identité du Composant et la Version effectivement auditée pour chaque Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -1629,6 +1653,22 @@ Le dashboard ne doit pas fabriquer une relation métier de type `récurrence de`
 Une éventuelle analyse de récurrence pourra être étudiée ultérieurement comme un indicateur calculé, indépendamment des relations métier sources.
 
 **Statut : Établi**
+
+---
+
+## Q-065 — Changement de Version entre deux Audits successifs
+
+Deux Audits successifs d'un même Composant peuvent porter sur des Versions différentes selon les choix de la Squad.
+
+Cette possibilité est établie, même si elle peut être contraire au fonctionnement idéal recherché.
+
+Il reste à préciser ultérieurement si le dashboard doit :
+
+- simplement exposer la Version effectivement auditée à chaque Audit ;
+- signaler un changement de Version entre un Audit ayant détecté des Anomalies et l'Audit de revalidation ;
+- ou appliquer une autre règle de pilotage sans bloquer le workflow.
+
+**Statut : Fait établi ; règle de pilotage à instruire**
 
 ---
 

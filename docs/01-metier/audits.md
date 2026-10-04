@@ -585,6 +585,23 @@ Le rattachement de chacune à son Issue d'Audit respective est suffisant pour la
 
 Une éventuelle analyse de récurrence pourra être étudiée ultérieurement comme un indicateur calculé, sans modifier les relations métier sources.
 
+### Continuité entre Audits successifs
+
+Une Issue d'Audit de revalidation n'a pas besoin d'être explicitement reliée à l'Issue d'Audit précédente.
+
+Le label `🧩 Component:xxx` commun aux Audits est suffisant pour identifier qu'ils concernent le même Composant.
+
+La Version ne doit pas être utilisée comme condition d'identité ou de chaînage entre deux Audits : selon les choix de la Squad, un Audit de revalidation peut être réalisé sur une Version différente de celle de l'Audit précédent.
+
+Même si ce changement de Version peut être contraire au fonctionnement idéal recherché, le modèle doit représenter la réalité observée et conserver la Version effectivement auditée pour chaque Audit.
+
+```text
+Audit A : Component X + Version V1
+Audit B : Component X + Version V1 ou V2
+```
+
+Une éventuelle alerte ou règle de pilotage sur le changement de Version reste à définir séparément.
+
 ---
 
 ## 26. Historisation
