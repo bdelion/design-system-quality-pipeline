@@ -2018,6 +2018,46 @@ Seules les Versions effectivement identifiées comme affectées doivent être en
 
 ---
 
+## D-096 — Distinguer Version observée et Version affectée pour une remontée client
+
+Lorsqu'un client remonte un Bug hors périmètre des Audits d'accessibilité, la Version qu'il utilise au moment du constat est d'abord une **Version observée**.
+
+Elle ne doit pas être considérée immédiatement comme une **Version affectée**.
+
+La Squad doit analyser la remontée afin de déterminer si le défaut provient réellement du Design System ou de son utilisation par l'application consommatrice.
+
+```text
+Remontée client sur 1.7.1
+        │
+        ▼
+Version observée : 1.7.1
+        │
+        ▼
+Analyse par la Squad
+        │
+        ├── défaut du Design System
+        │       └── 1.7.1 peut être qualifiée comme Version affectée
+        │
+        └── erreur d'implémentation côté client
+                └── ne pas qualifier 1.7.1 comme Version affectée
+```
+
+Cette distinction évite d'attribuer au Design System une anomalie provenant en réalité de l'intégration du Composant par le client.
+
+**Statut : Établi**
+
+---
+
+## D-097 — Une erreur d'implémentation client conduit généralement à l'état Cancelled
+
+Après analyse d'une remontée, si la Squad conclut que le problème provient d'une erreur d'implémentation du Composant par le client et non d'un défaut du Design System, l'Issue passe généralement au statut `Cancelled`.
+
+La formulation `généralement` est conservée : cette pratique est établie comme comportement habituel, mais son caractère systématique reste à confirmer avant d'en faire une règle de workflow bloquante.
+
+**Statut : Établi comme pratique habituelle**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3292,9 +3332,23 @@ Il reste à définir le format structuré attendu afin que le pipeline puisse ex
 
 ## Q-100 — Sémantique de la Version renseignée lors d'une remontée client
 
-Lorsqu'un client remonte un Bug hors accessibilité en indiquant la Version qu'il utilise, il reste à préciser si cette Version doit être considérée directement comme une `Version affectée` ou seulement comme une `Version observée/utilisée`, la qualification `affectée` pouvant éventuellement nécessiter une confirmation ultérieure.
+La Version utilisée par le client au moment de la remontée doit d'abord être considérée comme une `Version observée`.
 
-**Statut : À instruire**
+Elle ne devient une `Version affectée` qu'après analyse et confirmation par la Squad que le défaut provient bien du Design System.
+
+Une erreur d'implémentation du Composant côté client ne doit pas conduire à qualifier la Version du Design System comme affectée.
+
+**Statut : Établi**
+
+---
+
+## Q-101 — Caractère systématique de Cancelled pour une erreur d'implémentation client
+
+Lorsqu'une analyse conclut que le problème provient d'une erreur d'implémentation côté client, l'Issue passe généralement au statut `Cancelled`.
+
+Il reste à confirmer si ce comportement est systématique et peut devenir une règle de workflow, ou s'il existe des exceptions métier.
+
+**Statut : À confirmer**
 
 ---
 

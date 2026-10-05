@@ -1668,3 +1668,36 @@ Versions affectées
 Aucune propagation vers les Versions antérieures ne doit être inférée automatiquement à partir de la seule Version sur laquelle le défaut a été observé.
 
 La distinction éventuelle entre `Version observée/utilisée` par le client et `Version affectée` reste à préciser.
+
+
+### Version observée, Version affectée et qualification par la Squad
+
+Pour une remontée client hors périmètre des Audits d'accessibilité, la Version utilisée par le client constitue d'abord une **Version observée**.
+
+```text
+Client utilisant 1.7.1
+└── Bug remonté
+    └── Version observée : 1.7.1
+```
+
+Cette observation ne suffit pas à conclure que `1.7.1` est affectée par un défaut du Design System. Le problème peut provenir d'une mauvaise implémentation ou utilisation du Composant dans l'application consommatrice.
+
+La Squad réalise donc une qualification :
+
+```text
+Version observée
+      │
+      ▼
+Analyse Squad
+      │
+      ├── défaut confirmé dans le Design System
+      │       └── Version affectée
+      │
+      └── erreur d'implémentation client
+              ├── Version non qualifiée comme affectée
+              └── Issue généralement Cancelled
+```
+
+La distinction entre `Version observée` et `Version affectée` doit être conservée dans le modèle afin de ne pas attribuer prématurément au Design System un défaut qui appartient au contexte d'intégration client.
+
+Le passage à `Cancelled` en cas d'erreur client est une pratique habituelle ; son caractère strictement systématique reste à confirmer.
