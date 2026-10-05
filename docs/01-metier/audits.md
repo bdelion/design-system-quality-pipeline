@@ -2085,3 +2085,30 @@ Component identique à celui de l'Audit
 Une Improvement identifiée comme issue d'un Audit mais absente de ses sous-Issues doit être signalée comme incohérente.
 
 Comme précédemment, cette traçabilité ne donne pas à l'Improvement le même rôle qu'une Anomalie : l'Improvement n'affecte pas le verdict de conformité.
+
+
+### Relation obligatoire entre Audit et Anomalie
+
+Une Anomalie issue d'un Audit doit obligatoirement être une sous-Issue de cet Audit.
+
+```text
+Audit Button
+└── Anomalie
+    └── 🧩 Component:Button
+```
+
+Le pipeline doit contrôler conjointement la relation de sous-Issue, la présence d'exactement un Composant et l'identité de ce Composant avec celui de l'Audit parent.
+
+Une Anomalie identifiée comme issue d'un Audit mais absente de ses sous-Issues doit être signalée comme incohérente.
+
+### Règle commune des sous-Issues d'Audit
+
+Les Anomalies et les Improvements issues d'un Audit suivent la même règle structurelle :
+
+```text
+Audit
+├── Anomalie    → sous-Issue obligatoire + même Component
+└── Improvement → sous-Issue obligatoire + même Component
+```
+
+Leur rôle métier reste différent : l'Anomalie participe au verdict de conformité, l'Improvement non.

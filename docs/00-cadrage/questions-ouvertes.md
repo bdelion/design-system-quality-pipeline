@@ -2537,6 +2537,36 @@ Cette règle ne modifie pas la conformité : une Improvement reste distincte d'u
 
 ---
 
+## D-121 — Une Anomalie d'Audit doit être une sous-Issue de l'Audit
+
+Une Anomalie issue d'un Audit doit obligatoirement être créée comme **sous-Issue de l'Issue d'Audit** qui l'a fait émerger.
+
+La relation Audit → Anomalie doit être explicite dans GitHub. L'Anomalie doit également porter exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent.
+
+Une Anomalie identifiée comme issue d'un Audit mais qui n'est pas une sous-Issue de cet Audit constitue une incohérence à détecter.
+
+**Statut : Établi**
+
+---
+
+## D-122 — Règle commune de traçabilité des résultats d'Audit
+
+Les Anomalies et Improvements issues d'un Audit suivent la même règle structurelle :
+
+```text
+Issue d'Audit
+├── sous-Issue Anomalie
+│   └── exactement 1 Component, identique à l'Audit
+└── sous-Issue Improvement
+    └── exactement 1 Component, identique à l'Audit
+```
+
+Leur rôle métier reste différent : l'Anomalie intervient dans le verdict de conformité ; l'Improvement n'y intervient pas.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3059,15 +3089,13 @@ Le seul statut Done ou le seul état Closed n'est pas suffisant.
 
 ## Q-050 — Relation Issue d'Audit / Anomalie
 
-La relation entre une Issue d'Audit et ses Anomalies est utilisée pour la traçabilité de l'Audit.
+Une Anomalie issue d'un Audit doit obligatoirement être une sous-Issue de l'Issue d'Audit qui l'a fait émerger.
 
-Pour le rattachement au Composant, une Anomalie d'Audit doit porter exactement un label `🧩 Component:xxx`, identique à celui de l'Issue d'Audit parente.
+Elle doit également porter exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent.
 
-Le pipeline doit contrôler cette cohérence afin de détecter les erreurs de rattachement.
+La relation Audit → Anomalie est donc explicite et contrôlable dans GitHub.
 
-Les autres détails éventuels de modélisation de la relation Audit → Anomalie restent à instruire s'ils deviennent nécessaires.
-
-**Statut : Partiellement établi**
+**Statut : Établi**
 
 ---
 
