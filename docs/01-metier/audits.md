@@ -1700,4 +1700,26 @@ Analyse Squad
 
 La distinction entre `Version observée` et `Version affectée` doit être conservée dans le modèle afin de ne pas attribuer prématurément au Design System un défaut qui appartient au contexte d'intégration client.
 
-Le passage à `Cancelled` en cas d'erreur client est une pratique habituelle ; son caractère strictement systématique reste à confirmer.
+Lorsque la Squad confirme que le problème provient uniquement d'une erreur d'implémentation côté client, le passage de l'Issue au statut `Cancelled` est obligatoire.
+
+
+### Règle obligatoire de clôture d'une erreur d'implémentation client
+
+Lorsque l'analyse de la Squad conclut que la remontée provient uniquement d'une mauvaise implémentation du Composant côté client, l'Issue doit obligatoirement passer au statut `Cancelled`.
+
+```text
+Remontée client
+└── Version observée : 1.7.1
+    │
+    ▼
+Analyse Squad
+    │
+    └── erreur d'implémentation client confirmée
+        ├── Status : Cancelled — obligatoire
+        ├── 1.7.1 reste une Version observée
+        └── pas de Version affectée déduite de cette remontée
+```
+
+L'Issue reste utile comme trace de la remontée et de sa qualification, mais elle ne constitue pas une Anomalie confirmée du Design System.
+
+L'éventuel usage analytique de ces remontées `Cancelled` pour mesurer les difficultés d'intégration des consommateurs reste à définir.

@@ -2048,13 +2048,20 @@ Cette distinction évite d'attribuer au Design System une anomalie provenant en 
 
 ---
 
-## D-097 — Une erreur d'implémentation client conduit généralement à l'état Cancelled
+## D-097 — Une erreur d'implémentation client impose l'état Cancelled
 
-Après analyse d'une remontée, si la Squad conclut que le problème provient d'une erreur d'implémentation du Composant par le client et non d'un défaut du Design System, l'Issue passe généralement au statut `Cancelled`.
+Après analyse d'une remontée, si la Squad conclut que le problème provient uniquement d'une erreur d'implémentation du Composant par le client et non d'un défaut du Design System, l'Issue doit obligatoirement passer au statut `Cancelled`.
 
-La formulation `généralement` est conservée : cette pratique est établie comme comportement habituel, mais son caractère systématique reste à confirmer avant d'en faire une règle de workflow bloquante.
+Dans ce cas :
 
-**Statut : Établi comme pratique habituelle**
+- la Version utilisée par le client reste une `Version observée` ;
+- elle ne doit pas être qualifiée comme `Version affectée` sur la seule base de cette remontée ;
+- l'Issue reste dans l'historique de la remontée et de sa qualification ;
+- elle ne représente pas une Anomalie confirmée du Design System.
+
+Cette règle est une règle de workflow obligatoire.
+
+**Statut : Établi**
 
 ---
 
@@ -3344,11 +3351,21 @@ Une erreur d'implémentation du Composant côté client ne doit pas conduire à 
 
 ## Q-101 — Caractère systématique de Cancelled pour une erreur d'implémentation client
 
-Lorsqu'une analyse conclut que le problème provient d'une erreur d'implémentation côté client, l'Issue passe généralement au statut `Cancelled`.
+Lorsqu'une analyse conclut que le problème provient uniquement d'une erreur d'implémentation côté client et non d'un défaut du Design System, l'Issue doit obligatoirement passer au statut `Cancelled`.
 
-Il reste à confirmer si ce comportement est systématique et peut devenir une règle de workflow, ou s'il existe des exceptions métier.
+Ce comportement constitue une règle de workflow.
 
-**Statut : À confirmer**
+**Statut : Établi**
+
+---
+
+## Q-102 — Traitement des remontées Cancelled dans les indicateurs
+
+Le statut `Cancelled` est obligatoire lorsque la remontée correspond uniquement à une erreur d'implémentation côté client.
+
+Il reste à préciser si le Dashboard doit néanmoins compter séparément ces remontées `Cancelled` comme un indicateur de consommation du Design System, par exemple pour identifier des difficultés récurrentes d'intégration ou de documentation côté clients.
+
+**Statut : À instruire**
 
 ---
 
