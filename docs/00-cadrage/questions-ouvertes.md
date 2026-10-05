@@ -1656,9 +1656,27 @@ Ce taux décrit l'avancement du traitement et ne constitue pas un taux de confor
 
 Même à `100 %` d'Anomalies traitées, le verdict reste `NON CONFORME` tant qu'un nouvel Audit terminé n'a pas conclu `CONFORME`.
 
-La formule exacte permettant de déterminer qu'une Anomalie est « traitée » reste à préciser.
+Une Anomalie entre dans le numérateur des Anomalies traitées lorsqu'elle satisfait la règle D-081 : `Project Status = Done` et `GitHub Issue State = Closed`.
 
-**Statut : Principe établi ; formule à instruire**
+**Statut : Établi**
+
+---
+
+## D-081 — Une Anomalie est traitée lorsqu'elle est Done et Closed
+
+Pour le calcul du taux de traitement des Anomalies, une Anomalie est considérée comme traitée uniquement lorsque les deux conditions suivantes sont satisfaites :
+
+```text
+Project Status = Done
+AND
+GitHub Issue State = Closed
+```
+
+Cette définition consolide un principe déjà abordé dans les questions relatives à la fermeture et au traitement des Anomalies.
+
+Elle permet de disposer d'une règle explicite et homogène pour le calcul du taux de traitement, sans confondre une Anomalie simplement avancée dans le workflow avec une Anomalie effectivement terminée.
+
+**Statut : Établi**
 
 ---
 
@@ -2810,11 +2828,17 @@ Il reste à préciser, lors de la conception du Dashboard, comment présenter vi
 
 ## Q-090 — Définition d'une Anomalie traitée
 
-Le Dashboard doit afficher un taux de traitement des Anomalies pour les Composants `NON CONFORME`.
+Pour le calcul du taux de traitement, une Anomalie est considérée comme traitée uniquement lorsque :
 
-Il reste à définir précisément quand une Anomalie entre dans le numérateur des Anomalies traitées : par exemple selon son Project Status, son GitHub Issue State, la fusion de sa Pull Request, ou une combinaison de ces éléments.
+```text
+Project Status = Done
+AND
+GitHub Issue State = Closed
+```
 
-**Statut : À instruire**
+Cette question recoupait un principe déjà abordé antérieurement sur la fermeture et le traitement des Anomalies. La règle est désormais consolidée explicitement pour le calcul de l'indicateur.
+
+**Statut : Établi**
 
 ---
 

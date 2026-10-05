@@ -1359,4 +1359,33 @@ Revalidation attendue
 
 Le `100 %` ne doit jamais être interprété comme un verdict `CONFORME`. Le taux mesure uniquement l'avancement du traitement des Anomalies ; la conformité reste déterminée par un nouvel Audit.
 
-La définition exacte d'une Anomalie « traitée » reste à préciser.
+Une Anomalie est considérée comme traitée uniquement lorsque :
+
+```text
+Project Status = Done
+AND
+GitHub Issue State = Closed
+```
+
+Cette règle sert au calcul du taux de traitement des Anomalies.
+
+
+### Règle de comptabilisation d'une Anomalie traitée
+
+Pour le calcul du taux de traitement, une Anomalie est comptabilisée comme traitée uniquement lorsque :
+
+```text
+Project Status = Done
+AND
+GitHub Issue State = Closed
+```
+
+Le taux de traitement peut donc être exprimé conceptuellement ainsi :
+
+```text
+nombre d'Anomalies Done ET Closed
+---------------------------------
+nombre total d'Anomalies concernées
+```
+
+Cette mesure décrit l'avancement du traitement. Elle ne modifie jamais directement le verdict de conformité du Composant.
