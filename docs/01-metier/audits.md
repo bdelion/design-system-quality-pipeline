@@ -1974,3 +1974,21 @@ Agrégation choisie
 ```
 
 Le principe fonctionnel est établi, mais sa conception détaillée est différée. Il n'est donc pas encore décidé quels opérateurs de combinaison, dimensions, agrégations, visualisations ou mécanismes de sauvegarde seront proposés.
+
+
+### Cardinalité Composant d'une Issue d'Audit
+
+Une Issue d'Audit représente l'Audit d'un seul Composant.
+
+Elle doit donc porter exactement un label `🧩 Component:xxx`.
+
+```text
+Issue d'Audit
+├── 0 label Component      → invalide
+├── 1 label Component      → valide
+└── > 1 labels Component   → invalide
+```
+
+Cette contrainte permet d'associer sans ambiguïté le résultat de l'Audit, sa Version de référence, ses Anomalies et son verdict de conformité à un unique Composant.
+
+Elle ne remet pas en cause la possibilité, pour une Issue classique, de concerner exceptionnellement plusieurs Composants.

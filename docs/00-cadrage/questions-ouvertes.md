@@ -2425,6 +2425,29 @@ La conception détaillée de cette capacité est volontairement différée : lis
 
 ---
 
+## D-117 — Une Issue d'Audit concerne exactement un Composant
+
+Une Issue d'Audit doit obligatoirement porter **un et un seul** label `🧩 Component:xxx`.
+
+Sa cardinalité de rattachement au Catalogue est donc :
+
+```text
+Issue d'Audit
+    │
+    └── exactement 1 Composant
+```
+
+Les situations suivantes sont invalides pour une Issue d'Audit :
+
+- aucun label `🧩 Component:xxx` ;
+- plusieurs labels `🧩 Component:xxx`.
+
+Cette règle est spécifique aux Issues d'Audit. Les Issues classiques peuvent exceptionnellement concerner plusieurs Composants conformément aux décisions D-108 à D-110.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2913,9 +2936,11 @@ Une Issue d'Audit possède-t-elle exactement une famille ou peut-elle appartenir
 
 ## Q-047 — Cardinalité du Composant
 
-Une Issue d'Audit doit-elle posséder exactement un label `🧩 Component:xxx` ?
+Une Issue d'Audit doit obligatoirement être rattachée à **un et un seul Composant** au moyen d'un label `🧩 Component:xxx`.
 
-**Statut : À confirmer**
+Une Issue d'Audit sans Composant ou avec plusieurs Composants est invalide.
+
+**Statut : Établi**
 
 ---
 
