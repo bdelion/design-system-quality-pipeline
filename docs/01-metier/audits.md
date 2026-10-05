@@ -2328,3 +2328,18 @@ Pour les indicateurs fondés sur GitHub, l'unité de comptage reste l'**Issue An
 Le pipeline ne doit pas fusionner ou dédupliquer automatiquement plusieurs Anomalies au motif qu'elles paraissent concerner le même problème.
 
 La possibilité de mesurer séparément le nombre d'occurrences regroupées dans une même Anomalie reste à instruire.
+
+
+### Unité de comptage des Anomalies
+
+L'unité de comptage retenue pour les indicateurs est l'Issue GitHub qualifiée comme Anomalie.
+
+```text
+1 Issue Anomalie GitHub = 1 Anomalie
+```
+
+Une Issue compte donc pour une seule Anomalie même lorsqu'elle décrit plusieurs occurrences d'un même défaut.
+
+Le dashboard ne cherche pas à déterminer le nombre d'occurrences contenues dans une Issue. Il ne doit notamment pas tenter de l'inférer depuis le titre, la description ou les commentaires.
+
+Cette convention garantit que les métriques reposent sur une donnée structurée et vérifiable. Elle implique également que le nombre d'Anomalies affiché représente un nombre d'Issues Anomalie et non un nombre exhaustif d'occurrences techniques de défauts.

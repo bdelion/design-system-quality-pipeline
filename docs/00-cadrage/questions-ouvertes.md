@@ -2836,6 +2836,29 @@ Conséquence pour les indicateurs :
 
 ---
 
+## D-134 — L'unité de comptage d'une Anomalie est l'Issue GitHub
+
+Pour les indicateurs du dashboard, une **Issue GitHub qualifiée comme Anomalie** compte pour **une Anomalie**.
+
+Cette règle s'applique même si l'Issue regroupe plusieurs occurrences d'un même défaut dans le Composant.
+
+```text
+1 Issue Anomalie GitHub = 1 Anomalie comptabilisée
+```
+
+Le dashboard ne cherche pas à compter, extraire ou estimer les occurrences internes décrites dans une Issue.
+
+En conséquence :
+
+- une Issue regroupant plusieurs occurrences compte pour 1 Anomalie ;
+- plusieurs Issues distinctes comptent chacune pour 1 Anomalie ;
+- aucun décompte d'occurrences n'est dérivé du titre, de la description, des commentaires ou d'autres contenus textuels de l'Issue ;
+- les indicateurs doivent être nommés et expliqués de façon à ne pas présenter le nombre d'Issues Anomalie comme un nombre d'occurrences techniques de défauts.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -4261,11 +4284,17 @@ D'autres types pourront éventuellement apparaître à l'avenir. Ils devront alo
 
 ## Q-114 — Nombre d'occurrences regroupées dans une Anomalie d'Audit
 
-Lorsqu'une seule Issue Anomalie regroupe plusieurs occurrences d'un même problème dans un Composant, il reste à déterminer si le nombre ou le détail de ces occurrences est représenté de manière structurée et exploitable.
+Lorsqu'une seule Issue Anomalie regroupe plusieurs occurrences d'un même problème dans un Composant, le dashboard ne cherche pas à compter ces occurrences.
 
-Tant que ce point n'est pas établi, les indicateurs doivent compter les **Issues Anomalie** et ne pas prétendre mesurer le nombre exact d'occurrences du défaut.
+L'unité de comptage retenue est l'Issue GitHub :
 
-**Statut : À instruire**
+```text
+1 Issue Anomalie = 1 Anomalie comptabilisée
+```
+
+Le nombre d'occurrences internes n'est ni extrait ni estimé.
+
+**Statut : Établi**
 
 ---
 
