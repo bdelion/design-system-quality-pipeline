@@ -2175,6 +2175,55 @@ Le dénombrement exact et sa méthode de détection seront traités ultérieurem
 
 ---
 
+## D-104 — Ne pas figer immédiatement les ratios d'usage comme KPI définitifs
+
+Les ratios construits à partir des Issues et des données d'usage des Composants doivent d'abord être considérés comme des **indicateurs candidats à instruire**.
+
+Aucun de ces ratios ne doit être retenu à ce stade comme KPI définitif de qualité ou de comparaison entre Composants.
+
+Leur définition, leur interprétation, leurs biais éventuels et leur utilité pour les différents usages du Dashboard devront être instruits avant validation.
+
+**Statut : Établi**
+
+---
+
+## D-105 — Instruire en priorité le ratio Issues / occurrences globales
+
+Parmi les ratios candidats, le ratio suivant est considéré comme particulièrement intéressant à instruire en premier :
+
+```text
+nombre total d'Issues du Composant
+----------------------------------
+nombre total d'occurrences du Composant
+dans l'ensemble des applications utilisatrices
+```
+
+Ce ratio vise à mettre le volume d'Issues en perspective avec l'intensité globale d'utilisation du Composant.
+
+Il est considéré, à ce stade, comme potentiellement plus pertinent que le seul ratio `Issues / applications utilisatrices`, sans pour autant être encore validé comme KPI définitif.
+
+**Statut : Orientation établie — ratio à instruire**
+
+---
+
+## D-106 — Conserver Issues / applications utilisatrices comme ratio candidat
+
+Le ratio suivant reste également pertinent à instruire :
+
+```text
+nombre total d'Issues du Composant
+----------------------------------
+nombre d'applications utilisatrices du Composant
+```
+
+Il apporte une lecture différente du ratio par occurrences : il rapporte les Issues au nombre de consommateurs distincts plutôt qu'au volume total d'utilisation.
+
+Il reste un ratio candidat et n'est pas encore validé comme KPI définitif.
+
+**Statut : Ratio candidat à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3505,16 +3554,35 @@ Le besoin est établi. Les ratios exacts, les sources, la méthode de détection
 
 ## Q-105 — Ratios d'usage et d'Issues à retenir
 
-Les mesures de base nécessaires sont établies :
+Les ratios ne sont pas encore figés et doivent faire l'objet d'une instruction.
 
-- nombre total d'Issues, tous types confondus, par Composant ;
-- nombre d'applications utilisant le Composant au moins une fois ;
-- nombre d'occurrences du Composant par application ;
-- nombre total d'occurrences du Composant sur l'ensemble des applications.
+Deux premiers candidats sont identifiés :
 
-Il reste à définir les ratios les plus pertinents à construire à partir de ces mesures et des indicateurs déjà définis.
+1. `nombre total d'Issues / nombre total d'occurrences globales du Composant` ;
+2. `nombre total d'Issues / nombre d'applications utilisatrices du Composant`.
 
-La définition technique des usages et leur dénombrement est explicitement différée.
+Le premier est considéré à ce stade comme potentiellement plus pertinent et doit être instruit en priorité.
+
+D'autres ratios pertinents peuvent être proposés et ajoutés au catalogue des indicateurs candidats.
+
+**Statut : À instruire — premiers candidats identifiés**
+
+---
+
+## Q-106 — Autres ratios candidats autour des Issues et de l'usage
+
+Au-delà des ratios `Issues / occurrences globales` et `Issues / applications utilisatrices`, il reste à instruire d'autres ratios potentiellement utiles.
+
+Premières propositions à étudier, sans les considérer comme des KPI validés :
+
+- `Anomalies confirmées / occurrences globales` ;
+- `Anomalies confirmées / applications utilisatrices` ;
+- `erreurs d'intégration client / occurrences globales` ;
+- `erreurs d'intégration client / applications utilisatrices` ;
+- `applications ayant remonté au moins une erreur d'intégration / applications utilisatrices` ;
+- déclinaisons éventuelles par type d'Issue ou par criticité lorsque cela a un sens métier.
+
+Pour chaque candidat, il faudra préciser son objectif, son interprétation, son périmètre, son unité de restitution et ses biais éventuels.
 
 **Statut : À instruire**
 

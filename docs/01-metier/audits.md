@@ -1794,3 +1794,39 @@ Le nombre d'occurrences est une autre mesure : il conserve le volume d'utilisati
 Ces données permettront ultérieurement de construire des ratios pertinents afin de comparer les Composants sans se limiter aux volumes bruts.
 
 La définition technique de ce qui constitue une déclaration ou un usage, les sources de données, la méthode de détection et l'implémentation du dénombrement sont volontairement différées.
+
+
+### Ratios candidats entre Issues et usages
+
+Les ratios d'usage ne sont pas encore figés comme KPI. Ils constituent un ensemble d'indicateurs candidats à instruire.
+
+Deux premiers ratios sont identifiés :
+
+```text
+Ratio A — exposition par occurrences
+
+Issues totales du Composant
+────────────────────────────
+Occurrences globales du Composant
+```
+
+```text
+Ratio B — exposition par consommateurs
+
+Issues totales du Composant
+────────────────────────────
+Applications utilisatrices du Composant
+```
+
+Le ratio A est considéré à ce stade comme potentiellement plus pertinent à instruire en premier, car il tient compte du volume total d'utilisation du Composant. Le ratio B reste intéressant car il apporte une lecture par nombre de consommateurs distincts.
+
+D'autres ratios candidats doivent également être étudiés, notamment autour :
+
+- des Anomalies confirmées ;
+- des erreurs d'intégration client ;
+- du nombre d'applications ayant effectivement rencontré ou remonté une difficulté ;
+- éventuellement des types d'Issue et criticités lorsque la comparaison est pertinente.
+
+Aucun de ces ratios ne doit être interprété comme un score de qualité tant que sa définition et ses biais n'ont pas été instruits.
+
+La collecte et le dénombrement technique des usages restent différés.
