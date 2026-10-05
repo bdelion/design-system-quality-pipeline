@@ -1953,3 +1953,24 @@ Page d'analyse dynamique
 Cette approche permet d'analyser les Issues sans Composant sans créer artificiellement un nouveau label uniquement pour les qualifier de transverses.
 
 Elle complète les indicateurs et vues prédéfinis du Dashboard par une capacité d'exploration multidimensionnelle. La liste exacte des dimensions et l'ergonomie de cette page restent à instruire.
+
+
+### Croisement de plusieurs critères
+
+La page d'analyse dynamique doit permettre de combiner plusieurs critères avant d'agréger les résultats.
+
+```text
+Issues
+  │
+  ▼
+Filtres combinés
+├── Issue Type = Bug
+├── label = accessibilité
+└── Composant = Button
+  │
+  ▼
+Agrégation choisie
+└── Status
+```
+
+Le principe fonctionnel est établi, mais sa conception détaillée est différée. Il n'est donc pas encore décidé quels opérateurs de combinaison, dimensions, agrégations, visualisations ou mécanismes de sauvegarde seront proposés.

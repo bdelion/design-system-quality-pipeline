@@ -2401,6 +2401,30 @@ Les critères exacts proposés par la page, les combinaisons autorisées et son 
 
 ---
 
+## D-116 — Permettre le croisement de plusieurs critères dans l'analyse dynamique
+
+La page d'analyse dynamique doit permettre de combiner plusieurs critères de filtrage simultanément, puis d'agréger le résultat selon une dimension choisie.
+
+Exemple conceptuel :
+
+```text
+Filtres
+├── Issue Type = Bug
+├── label = accessibilité
+└── Composant = Button
+
+Agrégation
+└── Status
+```
+
+Ce besoin fonctionnel est établi.
+
+La conception détaillée de cette capacité est volontairement différée : liste complète des dimensions, opérateurs de combinaison, ergonomie, visualisations, sauvegarde éventuelle des analyses et autres comportements seront instruits ultérieurement.
+
+**Statut : Besoin fonctionnel établi — conception différée**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3828,9 +3852,19 @@ Le mécanisme devra éviter de transformer une simple heuristique en erreur de q
 
 Le besoin d'une page permettant de sélectionner dynamiquement des critères de filtre et d'agrégation est établi.
 
-Il reste à définir progressivement la liste des dimensions que l'utilisateur pourra sélectionner, au-delà des premières dimensions identifiées : Composant, présence/absence de Composant, Issue Type et labels.
+Il est également établi que plusieurs critères pourront être croisés simultanément avant d'agréger les résultats selon une dimension choisie.
 
-**Statut : À instruire**
+Il reste à définir ultérieurement :
+
+- la liste complète des dimensions disponibles ;
+- les opérateurs de combinaison des critères ;
+- les types d'agrégation ;
+- l'ergonomie et les visualisations ;
+- les éventuelles fonctions de sauvegarde ou de réutilisation d'une analyse.
+
+Les premières dimensions identifiées restent notamment : Composant, présence/absence de Composant, Issue Type et labels.
+
+**Statut : À instruire ultérieurement**
 
 ---
 
