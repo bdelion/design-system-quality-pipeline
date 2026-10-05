@@ -1334,3 +1334,29 @@ Ainsi, `AUDIT RÉALISÉ` n'est jamais synonyme de `CONFORME`.
 Pour le pilotage de la qualité, le verdict `CONFORME` ou `NON CONFORME` constitue l'information principale. L'état `AUDIT RÉALISÉ` apporte une information complémentaire de suivi du patrimoine et de l'activité d'Audit.
 
 La représentation UX exacte de ces deux dimensions sera définie lors de la conception du Dashboard.
+
+
+### Non-conformité et taux de traitement des Anomalies
+
+La correction des Anomalies et le verdict de conformité sont deux dimensions différentes.
+
+Un Composant dont le dernier verdict applicable est `NON CONFORME` reste `NON CONFORME` jusqu'à ce qu'un nouvel Audit terminé produise un verdict `CONFORME`.
+
+Le Dashboard doit néanmoins rendre visible l'avancement du traitement des Anomalies ayant conduit à cette non-conformité.
+
+```text
+Verdict applicable : NON CONFORME
+Anomalies traitées : 75 %
+```
+
+Lorsque toutes les Anomalies connues ont été traitées :
+
+```text
+Verdict applicable : NON CONFORME
+Anomalies traitées : 100 %
+Revalidation attendue
+```
+
+Le `100 %` ne doit jamais être interprété comme un verdict `CONFORME`. Le taux mesure uniquement l'avancement du traitement des Anomalies ; la conformité reste déterminée par un nouvel Audit.
+
+La définition exacte d'une Anomalie « traitée » reste à préciser.

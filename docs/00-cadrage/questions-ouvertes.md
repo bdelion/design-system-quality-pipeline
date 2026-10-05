@@ -1638,6 +1638,30 @@ Dans les restitutions orientées qualité, le verdict de conformité doit être 
 
 ---
 
+## D-079 — Les corrections ne remplacent pas le verdict de conformité
+
+Lorsqu'un Composant a un verdict applicable `NON CONFORME`, la correction de tout ou partie des Anomalies connues ne suffit pas à rendre le Composant `CONFORME`.
+
+Le verdict reste `NON CONFORME` jusqu'à ce qu'un nouvel Audit terminé confirme explicitement la conformité, y compris lorsque toutes les Anomalies connues ont été traitées.
+
+**Statut : Établi**
+
+---
+
+## D-080 — Taux de traitement des Anomalies distinct du verdict
+
+Pour un Composant `NON CONFORME`, le Dashboard doit pouvoir afficher un marqueur indiquant le taux de traitement des Anomalies associées au verdict applicable.
+
+Ce taux décrit l'avancement du traitement et ne constitue pas un taux de conformité.
+
+Même à `100 %` d'Anomalies traitées, le verdict reste `NON CONFORME` tant qu'un nouvel Audit terminé n'a pas conclu `CONFORME`.
+
+La formule exacte permettant de déterminer qu'une Anomalie est « traitée » reste à préciser.
+
+**Statut : Principe établi ; formule à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2781,6 +2805,16 @@ Le verdict de conformité est l'information qualité principale et `AUDIT RÉALI
 Il reste à préciser, lors de la conception du Dashboard, comment présenter visuellement ces deux dimensions sans les confondre, notamment dans la future page de suivi du patrimoine.
 
 **Statut : À instruire lors de la conception UX du Dashboard**
+
+---
+
+## Q-090 — Définition d'une Anomalie traitée
+
+Le Dashboard doit afficher un taux de traitement des Anomalies pour les Composants `NON CONFORME`.
+
+Il reste à définir précisément quand une Anomalie entre dans le numérateur des Anomalies traitées : par exemple selon son Project Status, son GitHub Issue State, la fusion de sa Pull Request, ou une combinaison de ces éléments.
+
+**Statut : À instruire**
 
 ---
 
