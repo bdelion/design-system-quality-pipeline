@@ -1576,3 +1576,28 @@ Cette règle distingue clairement :
 - la vue d'une Version passée, orientée photographie historique.
 
 L'événement technique à retenir comme instant exact de sortie PROD reste à déterminer.
+
+
+### Immutabilité d'une Version publiée et de sa Milestone
+
+Une fois une Version PROD sortie, sa photographie historique reste immuable.
+
+Une Anomalie non traitée au moment de cette sortie reste `NON TRAITÉE` dans la vue historique, même si elle est corrigée ultérieurement sans nouvelle publication PROD.
+
+La Milestone correspondant à la Version publiée est elle aussi considérée comme figée et close. Une nouvelle Anomalie découverte après cette clôture ne doit pas lui être rattachée rétroactivement.
+
+```text
+1.7.0 publiée
+└── Milestone 1.7.0 close
+
+Après la publication
+└── nouvelle Anomalie
+    └── pas de rattachement rétroactif à la Milestone 1.7.0
+```
+
+Cette règle conduit à distinguer deux notions :
+
+- la **Milestone**, qui matérialise un contexte de planification/livraison ;
+- les **Versions potentiellement affectées** par l'Anomalie.
+
+Le modèle permettant d'identifier les Versions affectées n'est pas encore défini.

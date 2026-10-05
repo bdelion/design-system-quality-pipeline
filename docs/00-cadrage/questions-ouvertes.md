@@ -1902,6 +1902,46 @@ La vue `latest`, à l'inverse, sert au pilotage de l'état courant du patrimoine
 
 ---
 
+## D-091 — La photographie d'une Version PROD reste immuable après sa sortie
+
+Une fois une Version PROD sortie, sa photographie historique ne doit plus évoluer.
+
+Une Anomalie non traitée au moment de la sortie reste donc `NON TRAITÉE` dans la vue historique de cette Version, même si elle est corrigée ultérieurement sans nouvelle publication PROD.
+
+Cette immutabilité concerne les indicateurs historiques de la Version et évite de réécrire a posteriori son niveau de qualité observé à sa sortie.
+
+**Statut : Établi**
+
+---
+
+## D-092 — Une Milestone de Version PROD close ne reçoit pas rétroactivement de nouvelles Anomalies
+
+Lorsqu'une Version PROD est sortie et que sa Milestone correspondante est figée et close, une Anomalie découverte ou créée ultérieurement ne doit pas être rattachée rétroactivement à cette Milestone.
+
+Exemple :
+
+```text
+Milestone 1.7.0
+→ Version publiée
+→ Milestone close
+
+Puis découverte d'une nouvelle Anomalie
+→ ne pas rattacher cette Anomalie à la Milestone 1.7.0
+```
+
+Le fait qu'une Anomalie puisse concerner fonctionnellement du code déjà présent dans une ancienne Version ne signifie donc pas qu'elle appartient à la Milestone historique de cette Version.
+
+Il faut distinguer :
+
+- le rattachement de planification/livraison matérialisé par la Milestone ;
+- l'éventuelle connaissance des Versions affectées par une Anomalie.
+
+La manière de déterminer et de représenter les Versions affectées reste à instruire.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3135,6 +3175,16 @@ La vue historique ne doit pas être recalculée à partir de l'état actuel des 
 Le principe de photographie historique à la sortie de la Version est établi.
 
 Il reste à préciser quel événement technique fournit la date/heure de référence exacte de cette sortie : création du Git tag PROD, publication de l'artefact dans Nexus PROD, éventuelle GitHub Release, ou une autre source de vérité.
+
+**Statut : À instruire**
+
+---
+
+## Q-097 — Versions affectées par une Anomalie découverte après une release
+
+Une Anomalie découverte après la clôture d'une Milestone PROD ne doit pas être rattachée rétroactivement à cette Milestone.
+
+Il reste à déterminer si le modèle doit néanmoins identifier explicitement la ou les Versions déjà publiées qui sont affectées par cette Anomalie, indépendamment de la Milestone utilisée pour sa planification et sa correction.
 
 **Statut : À instruire**
 
