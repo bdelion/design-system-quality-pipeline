@@ -2271,3 +2271,21 @@ Improvement d'Audit Accessibilité
 L'absence de catégorie a11y sur une Improvement est donc valide et ne doit pas être signalée comme une incohérence.
 
 La cardinalité maximale reste à confirmer : il n'est pas encore établi si une Improvement catégorisée doit porter au plus un label `♿ a11y:xxx` ou peut en porter plusieurs.
+
+
+### Cardinalité maximale a11y d'une Improvement : non déterminée
+
+Pour une Improvement d'Audit Accessibilité, l'absence de label `♿ a11y:xxx` est valide.
+
+En revanche, aucune règle n'est encore établie sur le nombre maximal de catégories lorsqu'elles sont présentes :
+
+```text
+Improvement d'Audit Accessibilité
+├── 0 label ♿ a11y:xxx  → valide
+├── 1 label              → représentable
+└── > 1 labels           → représentable tant que la règle n'est pas confirmée
+```
+
+Le pipeline ne doit donc pas produire d'erreur de cardinalité maximale pour une Improvement sur la seule présence de plusieurs labels `♿ a11y:xxx`.
+
+Ce point devra être confirmé ultérieurement à partir des pratiques réelles ou avec les acteurs concernés.

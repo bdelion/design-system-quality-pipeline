@@ -2765,6 +2765,23 @@ Cette règle se distingue explicitement de celle des Anomalies d'Audit Accessibi
 
 ---
 
+## D-131 — La cardinalité maximale a11y d'une Improvement d'Audit reste ouverte
+
+Pour une **Improvement issue d'un Audit Accessibilité**, il est établi que la catégorisation `♿ a11y:xxx` est facultative.
+
+En revanche, il n'est pas possible à ce stade de déterminer si une Improvement catégorisée doit porter :
+
+- au maximum un label `♿ a11y:xxx` ;
+- ou plusieurs labels `♿ a11y:xxx`.
+
+Aucune contrainte maximale ne doit donc être imposée pour le moment.
+
+Le modèle doit pouvoir représenter plusieurs catégories et le pipeline ne doit pas considérer leur présence comme une incohérence tant que cette cardinalité n'a pas été confirmée.
+
+**Statut : À confirmer**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3408,12 +3425,14 @@ La catégorisation complémentaire envisagée pour les Improvements, par exemple
 
 Les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse et peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit.
 
-Les cardinalités suivantes sont désormais établies :
+Les cardinalités suivantes sont établies :
 
 - **Anomalie d'Audit Accessibilité** : exactement un label `♿ a11y:xxx` ;
-- **Improvement d'Audit Accessibilité** : le label `♿ a11y:xxx` est facultatif ; zéro est donc autorisé.
+- **Improvement d'Audit Accessibilité** : le label `♿ a11y:xxx` est facultatif ; zéro est autorisé.
 
-Il reste à confirmer si une Improvement d'Audit Accessibilité qui porte des catégories a11y peut en porter plusieurs, ainsi que les règles applicables aux Issues hors Audit.
+Pour une Improvement d'Audit Accessibilité, la cardinalité maximale n'est pas connue : il n'est pas établi si elle doit être limitée à un label ou peut en porter plusieurs. Tant que ce point n'est pas confirmé, plusieurs catégories doivent être représentables et ne doivent pas être signalées comme une incohérence.
+
+Les règles de cardinalité applicables aux Issues hors Audit restent également à confirmer.
 
 **Statut : Partiellement établi — cardinalité maximale des Improvements et règles hors Audit à confirmer**
 
