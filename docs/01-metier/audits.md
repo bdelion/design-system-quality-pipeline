@@ -1907,3 +1907,24 @@ Le total global repose sur les Issues GitHub distinctes. Une Issue multi-Composa
 Dans la ventilation par Composant, cette même Issue contribue en revanche une fois à chacun des Composants concernés. La somme des compteurs par Composant peut par conséquent dépasser le nombre d'Issues distinctes avec Composant.
 
 Le nombre d'Issues sans Composant doit également être visible. Il ne doit pas encore être interprété automatiquement comme un défaut de qualité des données, car certaines Issues peuvent être légitimement transverses.
+
+
+### Issues sans Composant : transverse ou rattachement manquant
+
+Une Issue sans label `🧩 Component:xxx` peut être légitimement transverse. L'absence de label ne constitue donc pas automatiquement une anomalie de données.
+
+```text
+Issue sans label Composant
+        │
+        ├── Issue réellement transverse
+        │      └── absence de Composant légitime
+        │
+        └── Issue concernant un Composant
+               └── rattachement potentiellement manquant
+```
+
+Le second cas ne peut pas être déduit de manière certaine à partir de la seule absence du label.
+
+À terme, le pipeline pourra éventuellement produire une qualification distincte telle que `Composant manquant suspecté` à partir de signaux complémentaires. Cette qualification devra rester différente d'une erreur certaine tant qu'une règle métier fiable ne permet pas de conclure.
+
+Des pistes à instruire incluent la présence d'un Composant dans des informations structurées de l'Issue, son rattachement à un Audit, ou les informations issues d'une PR liée.

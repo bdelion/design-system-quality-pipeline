@@ -2340,6 +2340,35 @@ La somme de la ventilation par Composant n'est pas destinée à reconstituer le 
 
 ---
 
+## D-112 — Une Issue sans Composant peut être légitimement transverse
+
+Une Issue peut légitimement ne porter aucun label `🧩 Component:xxx` lorsqu'elle est transverse et ne concerne effectivement aucun Composant.
+
+L'absence de label Composant ne constitue donc pas, à elle seule, une erreur de qualité des données.
+
+Le Dashboard doit permettre de rendre visibles les Issues sans Composant sans les qualifier automatiquement comme invalides.
+
+**Statut : Établi**
+
+---
+
+## D-113 — Ne pas déduire automatiquement qu'un label Composant est manquant
+
+À partir de la seule absence de label `🧩 Component:xxx`, le pipeline ne peut pas déterminer de manière fiable si une Issue est légitimement transverse ou si son rattachement à un Composant a été oublié.
+
+Une éventuelle détection de `Composant manquant suspecté` pourra être instruite ultérieurement à partir de signaux complémentaires, par exemple :
+
+- mention explicite d'un Composant dans le titre ou la description ;
+- relation avec un Audit portant un Composant ;
+- relation avec une PR dont les changements concernent un Composant ;
+- autres informations structurées permettant de rapprocher l'Issue d'un Composant.
+
+Ces mécanismes seraient des aides à la qualification et ne doivent pas, sans règle fiable, transformer automatiquement une Issue sans Composant en erreur.
+
+**Statut : Principe établi — mécanisme de détection à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3741,14 +3770,23 @@ Une Issue multi-Composants reste unique dans le total Bibliothèque mais contrib
 
 ## Q-110 — Nature des Issues sans Composant
 
-Le Dashboard doit afficher le nombre d'Issues sans label `🧩 Component:xxx`.
+Il est établi qu'une Issue peut légitimement être transverse et ne porter aucun label `🧩 Component:xxx`.
 
-Il reste à déterminer si ces Issues doivent être distinguées entre :
+L'absence du label ne permet pas, à elle seule, d'identifier les Issues qui concernent réellement un Composant mais dont le rattachement a été oublié.
 
-- Issues légitimement transverses, ne concernant aucun Composant ;
-- Issues qui devraient concerner un Composant mais auxquelles le label Composant manque.
+La distinction entre `Issue transverse` et `Composant manquant suspecté` devra donc reposer sur une qualification ou sur des signaux complémentaires à instruire.
 
-Cette distinction conditionnera notamment l'interprétation de l'indicateur `Issues sans Composant` et son éventuel usage comme indicateur de qualité des données.
+**Statut : Partiellement établi**
+
+---
+
+## Q-111 — Mécanisme d'identification d'un Composant manquant suspecté
+
+Il reste à définir comment identifier une Issue sans label `🧩 Component:xxx` qui concerne probablement un Composant.
+
+Des pistes pourront être instruites ultérieurement : informations structurées dans l'Issue, relation avec un Audit, analyse d'une PR liée, mention d'un Composant ou autres signaux.
+
+Le mécanisme devra éviter de transformer une simple heuristique en erreur de qualité des données certaine.
 
 **Statut : À instruire**
 
