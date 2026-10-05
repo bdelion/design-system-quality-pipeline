@@ -2567,6 +2567,30 @@ Leur rôle métier reste différent : l'Anomalie intervient dans le verdict de c
 
 ---
 
+## D-123 — Les types connus de sous-Issues d'Audit ne constituent pas une liste fermée
+
+À ce jour, les deux seuls types métier identifiés comme sous-Issues d'une Issue d'Audit sont :
+
+- les **Anomalies** ;
+- les **Improvements**.
+
+Il n'est cependant pas établi que cette liste restera exhaustive à l'avenir.
+
+Le modèle ne doit donc pas considérer par principe que toute autre sous-Issue d'un Audit est impossible.
+
+Si un nouveau type de sous-Issue d'Audit apparaît ultérieurement, ses règles métier devront être définies explicitement avant de l'intégrer aux analyses, notamment :
+
+- son rôle dans l'Audit ;
+- son rattachement au Composant ;
+- son éventuel effet sur le verdict de conformité ;
+- sa prise en compte dans les indicateurs.
+
+En particulier, une sous-Issue d'un type inconnu ne doit pas être assimilée automatiquement à une Anomalie et ne doit pas modifier automatiquement le verdict de conformité.
+
+**Statut : Établi pour le périmètre actuel — extensible**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3997,6 +4021,16 @@ Il reste à définir ultérieurement :
 Les premières dimensions identifiées restent notamment : Composant, présence/absence de Composant, Issue Type et labels.
 
 **Statut : À instruire ultérieurement**
+
+---
+
+## Q-113 — Futurs types de sous-Issues d'Audit
+
+À ce jour, seuls les types métier Anomalie et Improvement sont identifiés comme sous-Issues d'une Issue d'Audit.
+
+D'autres types pourront éventuellement apparaître à l'avenir. Ils devront alors être instruits explicitement avant d'être intégrés aux règles de conformité et aux indicateurs.
+
+**Statut : À instruire si le besoin apparaît**
 
 ---
 

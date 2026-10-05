@@ -2112,3 +2112,20 @@ Audit
 ```
 
 Leur rôle métier reste différent : l'Anomalie participe au verdict de conformité, l'Improvement non.
+
+
+### Extensibilité des types de sous-Issues d'Audit
+
+Dans le périmètre actuellement connu, une Issue d'Audit peut produire deux types métier de sous-Issues :
+
+```text
+Audit
+├── Anomalie
+└── Improvement
+```
+
+Ce sont les deux seuls cas identifiés à ce jour, mais cette liste n'est pas considérée comme définitivement fermée.
+
+Si un autre type apparaît à l'avenir, son comportement devra être défini explicitement. Le pipeline ne devra notamment pas considérer automatiquement une sous-Issue inconnue comme une Anomalie ni lui faire modifier le verdict de conformité.
+
+Les règles actuelles restent donc précises pour Anomalie et Improvement tout en laissant le modèle extensible.
