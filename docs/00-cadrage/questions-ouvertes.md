@@ -2119,6 +2119,62 @@ Cet indicateur reste distinct des indicateurs d'Anomalies confirmées et ne cons
 
 ---
 
+## D-100 — Mettre en perspective les Issues d'un Composant avec son niveau d'usage
+
+Le modèle analytique cible doit permettre de mettre en perspective les volumes d'Issues et de remontées d'un Composant avec son niveau réel d'utilisation dans les applications consommatrices.
+
+Cette mise en perspective doit notamment éviter de considérer qu'un Composant est plus problématique uniquement parce qu'il génère davantage d'Issues alors qu'il est aussi beaucoup plus utilisé.
+
+Les ratios exacts restent à définir.
+
+**Statut : Établi pour le besoin analytique cible ; implémentation différée**
+
+---
+
+## D-101 — Mesurer le nombre total d'Issues par Composant
+
+Le Dashboard cible doit permettre de connaître, pour chaque Composant, le nombre total d'Issues qui lui sont rattachées, tous types d'Issue confondus.
+
+Cette mesure est distincte des indicateurs spécialisés sur les Anomalies, Audits, Improvements ou erreurs d'intégration client.
+
+**Statut : Établi**
+
+---
+
+## D-102 — Mesurer le nombre d'applications utilisatrices d'un Composant
+
+Pour chaque Composant, le Dashboard cible doit permettre de connaître le nombre d'applications consommatrices qui déclarent ou utilisent ce Composant au moins une fois.
+
+Une application ne compte qu'une fois dans cet indicateur, quel que soit le nombre d'occurrences du Composant dans cette application.
+
+**Statut : Établi pour le besoin cible ; détection des usages différée**
+
+---
+
+## D-103 — Mesurer les occurrences d'un Composant par application et globalement
+
+Le Dashboard cible doit distinguer :
+
+- le nombre d'occurrences/déclarations d'un Composant dans chaque application utilisatrice ;
+- la somme de ces occurrences sur l'ensemble des applications utilisatrices.
+
+Exemple :
+
+```text
+Button
+├── Application A : 3 occurrences
+├── Application B : 10 occurrences
+└── Total          : 13 occurrences
+
+Applications utilisatrices : 2
+```
+
+Le dénombrement exact et sa méthode de détection seront traités ultérieurement.
+
+**Statut : Établi pour le besoin cible ; implémentation différée**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3439,9 +3495,26 @@ Elle reste séparée des indicateurs de qualité intrinsèque du Design System.
 
 ## Q-104 — Normalisation par le niveau d'usage du Composant
 
-Le nombre de remontées d'erreurs d'intégration par Composant est établi.
+Les volumes d'Issues et de remontées par Composant doivent pouvoir être mis en perspective avec le niveau d'usage du Composant dans les applications consommatrices.
 
-Il reste à préciser si, lorsque les données de consommation seront disponibles, cet indicateur devra également être rapporté au niveau d'usage du Composant afin de distinguer un Composant réellement difficile à intégrer d'un Composant qui génère davantage de remontées simplement parce qu'il est beaucoup plus utilisé.
+Le besoin est établi. Les ratios exacts, les sources, la méthode de détection et le dénombrement des usages seront définis et implémentés ultérieurement.
+
+**Statut : Partiellement établi — implémentation différée**
+
+---
+
+## Q-105 — Ratios d'usage et d'Issues à retenir
+
+Les mesures de base nécessaires sont établies :
+
+- nombre total d'Issues, tous types confondus, par Composant ;
+- nombre d'applications utilisant le Composant au moins une fois ;
+- nombre d'occurrences du Composant par application ;
+- nombre total d'occurrences du Composant sur l'ensemble des applications.
+
+Il reste à définir les ratios les plus pertinents à construire à partir de ces mesures et des indicateurs déjà définis.
+
+La définition technique des usages et leur dénombrement est explicitement différée.
 
 **Statut : À instruire**
 

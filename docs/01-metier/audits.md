@@ -1770,3 +1770,27 @@ Erreurs d'intégration client
 Cette restitution permet de repérer les Composants sur lesquels les consommateurs rencontrent le plus fréquemment des difficultés et d'orienter les actions de documentation, formation ou accompagnement.
 
 Le volume brut ne doit toutefois pas être interprété automatiquement comme un niveau de mauvaise qualité du Composant : un Composant très utilisé peut naturellement générer davantage de remontées. La future prise en compte du niveau d'usage des Composants reste à préciser.
+
+
+### Mise en perspective avec l'usage des Composants
+
+À terme, les volumes d'Issues et de difficultés d'intégration devront être mis en perspective avec le niveau d'utilisation réel de chaque Composant.
+
+Les mesures de base attendues sont :
+
+```text
+Button
+├── Issues totales, tous types confondus
+├── Applications utilisatrices : 2
+├── Application A : 3 occurrences
+├── Application B : 10 occurrences
+└── Occurrences globales : 13
+```
+
+Le nombre d'applications utilisatrices compte chaque application une seule fois dès lors qu'elle utilise ou déclare le Composant au moins une fois.
+
+Le nombre d'occurrences est une autre mesure : il conserve le volume d'utilisation à l'intérieur de chaque application puis permet son agrégation globale.
+
+Ces données permettront ultérieurement de construire des ratios pertinents afin de comparer les Composants sans se limiter aux volumes bruts.
+
+La définition technique de ce qui constitue une déclaration ou un usage, les sources de données, la méthode de détection et l'implémentation du dénombrement sont volontairement différées.
