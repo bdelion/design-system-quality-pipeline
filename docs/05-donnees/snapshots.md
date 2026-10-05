@@ -2,171 +2,196 @@
 
 ## 1. Rôle
 
-Le Snapshot est l'enveloppe immuable qui rassemble les données et
-résultats d'une exécution du pipeline.
+Le Snapshot est une photographie immuable de ce que le pipeline connaît
+lors d'une exécution.
 
-Il permet de séparer :
+Il sépare le calcul de sa restitution :
 
 ``` text
-calcul du pipeline
-        ↓
+collecte
+  ↓
+normalisation
+  ↓
+Data Quality
+  ↓
+Analytics
+  ↓
 Snapshot
-        ↓
-dashboard / historique / exports
+  ├── Dashboard
+  ├── Historique
+  └── Exports
 ```
-
-Le dashboard n'a donc pas besoin de recalculer les règles métier ou
-analytiques.
 
 ------------------------------------------------------------------------
 
 ## 2. Contrat actuellement implémenté
 
-Un Snapshot contient :
+Le Snapshot actuel contient notamment :
 
--   `snapshotId` ;
--   `capturedAt` ;
--   `scope` ;
--   `rawData` ;
--   `normalizedData` ;
--   `dataQuality` ;
--   `analytics` ;
--   `ruleVersion` ;
--   `modelVersion` ;
--   `reliability`.
+``` text
+snapshotId
+capturedAt
+scope
+rawData
+normalizedData
+dataQuality
+analytics
+ruleVersion
+modelVersion
+reliability
+```
 
-`dataQuality` contient les alertes et une synthèse par sévérité.
-
-`analytics` contient le contrat analytique V2 et, lorsqu'ils existent,
-les flux calculés par comparaison avec le Snapshot précédent.
-
-------------------------------------------------------------------------
-
-## 3. Immutabilité
-
-`buildSnapshot` clone les structures qui lui sont transmises.
-
-Le Snapshot enregistré ne doit donc pas changer parce qu'un objet en
-mémoire est modifié après sa construction.
-
-Ce principe permet :
-
--   l'explication a posteriori ;
--   la comparaison de deux exécutions ;
--   la reproductibilité des analyses ;
--   la séparation entre production et restitution.
+Les données et résultats transmis au Snapshot sont clonés afin que sa
+représentation ne change pas après sa construction.
 
 ------------------------------------------------------------------------
 
-## 4. Identité et date de capture
+## 3. capturedAt
 
-L'implémentation actuelle génère un `snapshotId` à partir :
+`capturedAt` représente :
 
--   de la date de capture ;
--   d'un suffixe UUID.
+``` text
+la date d'observation du pipeline
+```
 
-`capturedAt` représente la date de création du Snapshot.
+Il ne faut pas l'utiliser implicitement comme :
 
-Cette date est une **date d'observation du pipeline**. Elle ne doit pas
-être confondue avec une date métier telle que la date exacte de
-détection d'une Anomalie, de correction ou de Release.
+-   date de détection d'une Anomalie ;
+-   date de correction ;
+-   date de fin d'un Audit ;
+-   date de Release.
+
+Ces dates métier doivent provenir de règles ou sources explicitement
+définies.
 
 ------------------------------------------------------------------------
 
-## 5. Versions du modèle et des règles
+## 4. Deux axes temporels
 
-Le Snapshot conserve :
+Le modèle doit distinguer :
+
+### Temps métier
+
+``` text
+Release
+Audit
+détection
+correction
+décommission
+```
+
+### Temps d'observation
+
+``` text
+Snapshot.capturedAt
+```
+
+Une information peut être observée après la date réelle de l'événement
+métier.
+
+------------------------------------------------------------------------
+
+## 5. Immutabilité
+
+Un Snapshot historique doit rester interprétable selon :
 
 ``` text
 modelVersion
 ruleVersion
 ```
 
-Ces informations sont nécessaires pour interpréter un Snapshot
-historique lorsque le modèle ou les règles évoluent.
+et selon les données effectivement connues lors de sa capture.
 
-Une comparaison entre Snapshots de versions incompatibles devra être
-explicitement encadrée plutôt que supposée valide.
+Une nouvelle règle ou une nouvelle information ne doit pas modifier
+silencieusement un ancien Snapshot.
 
 ------------------------------------------------------------------------
 
 ## 6. Fiabilité
 
-Le Snapshot possède actuellement une propriété globale :
+Le Snapshot possède actuellement une fiabilité globale.
+
+Le contrat analytique possède également une fiabilité par métrique.
+
+La fiabilité métrique-spécifique est la plus précise :
 
 ``` text
-reliability
+problème sur une donnée
+        ↓
+métriques réellement dépendantes
 ```
 
-L'implémentation actuelle la positionne à `partial` dès qu'au moins une
-alerte DQ existe.
-
-En parallèle, chaque métrique V2 possède sa propre fiabilité calculée à
-partir des impacts DQ qui la concernent.
-
-La fiabilité **métrique-spécifique** constitue le principe analytique le
-plus précis :
+et non :
 
 ``` text
-problème sur une métrique
-≠
-toutes les métriques sont nécessairement partielles
+une alerte DQ
+        ↓
+toutes les métriques deviennent partielles
 ```
 
-La fiabilité globale actuelle doit donc être considérée comme une
-synthèse technique grossière jusqu'à sa révision éventuelle.
+La fiabilité globale actuelle reste donc une synthèse technique
+grossière.
 
 ------------------------------------------------------------------------
 
-## 7. Écriture actuelle
+## 7. Snapshot courant et historique
 
-Le pipeline produit actuellement :
+L'implémentation actuelle distingue notamment :
 
 ``` text
 data/current/snapshot.json
 ```
 
-et conserve également des Snapshots de runs sous :
+et des Snapshots de runs sous :
 
 ``` text
 data/runs/
 ```
 
-Lors de l'audit M0 :
-
--   `data/current/snapshot.json` était versionné ;
--   `data/runs/` était ignoré par Git.
-
-Cette situation décrit la politique actuelle du repository ; la
-stratégie cible de conservation sera définie séparément.
+La politique cible de conservation et de stockage reste à définir.
 
 ------------------------------------------------------------------------
 
-## 8. Snapshot comme contrat
+## 8. Snapshot de Release
 
-Le Snapshot est le contrat de restitution actuel.
+Le besoin métier impose de pouvoir restituer l'état connu à la
+publication d'une Version.
 
-Il doit conserver suffisamment d'informations pour :
+Cela ne signifie pas encore qu'un Snapshot doit nécessairement être créé
+exactement à chaque Release : `Q-034` reste ouverte.
 
--   afficher une métrique ;
--   afficher son numérateur et son dénominateur ;
--   expliquer sa définition ;
--   identifier ses entités sources ;
--   exposer sa fiabilité ;
--   exposer ses exclusions ;
--   remonter aux alertes DQ pertinentes.
-
-Le frontend ne doit pas recréer ces décisions.
+Le contrat cible doit néanmoins permettre d'identifier une photographie
+historique pertinente pour la Release.
 
 ------------------------------------------------------------------------
 
-## 9. Limites
+## 9. Audit de rattrapage
 
-Un Snapshot représente ce que le pipeline **connaissait au moment de la
-capture**.
+Un Snapshot capturé après un Audit de rattrapage peut contenir une
+connaissance plus riche d'une ancienne Version.
 
-Il ne doit pas être réinterprété rétroactivement à partir d'informations
-découvertes plus tard.
+Il ne doit pas réécrire le Snapshot ou la vue historique correspondant à
+la publication de cette Version.
 
-Cette propriété sera particulièrement importante pour les futurs
-historiques de Versions et d'Audits de rattrapage.
+------------------------------------------------------------------------
+
+## 10. Comparaison
+
+Le diff de deux Snapshots produit des changements observables.
+
+Il ne doit pas fabriquer une date métier exacte lorsque seule une
+fenêtre d'observation est connue.
+
+------------------------------------------------------------------------
+
+## 11. Questions ouvertes
+
+Restent notamment à instruire :
+
+-   `Q-034` --- événements déclenchant les Snapshots ;
+-   `Q-035` --- représentation complète de la connaissance historique ;
+-   `Q-036` --- durée de conservation ;
+-   `Q-042` --- stockage cible.
+
+Ces questions doivent être résolues avant de figer la stratégie de
+persistance.

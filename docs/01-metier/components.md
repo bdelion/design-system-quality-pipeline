@@ -1,276 +1,194 @@
-# Composants et catalogue
+# Components
 
-## 1. Rôle métier
+## 1. Rôle
 
-Un Composant représente un élément du Design System suivi par le
-pipeline.
+Le Component est une entité métier du Design System.
 
-Le Catalogue constitue une référence séparée des données GitHub. Il
-permet d'identifier les Composants connus et de leur associer des
-métadonnées de référence.
-
-Le Catalogue actuel est stocké dans :
+Il est identifié par le Catalogue et relié aux Issues GitHub par les
+labels configurés de type :
 
 ``` text
-config/catalogue.yaml
+🧩 Component:xxx
 ```
 
-Cette représentation YAML décrit l'implémentation actuelle. Le futur
-Catalogue historique par Version, établi dans le modèle métier, est plus
-riche et n'est pas encore implémenté.
+Le Catalogue constitue la référence des Components connus du périmètre.
 
 ------------------------------------------------------------------------
 
-## 2. Composant et Librairie
+## 2. Component actif
 
-Un Composant appartient à une Librairie métier.
+Un Component actif appartient au périmètre courant du Catalogue.
 
-Dans l'organisation actuelle :
+Les indicateurs courants peuvent notamment présenter :
 
-``` text
-Repository
-    ↓
-Librairie
-    ↓
-Composants
-```
-
-Cette relation correspond au fonctionnement actuel dans lequel un
-Repository représente une Librairie.
-
-Le modèle doit cependant permettre à terme :
-
-``` text
-Repository
-├── Librairie A
-│   ├── Component A1
-│   └── Component A2
-│
-└── Librairie B
-    ├── Component B1
-    └── Component B2
-```
-
-La Librairie doit donc posséder une identité indépendante du Repository.
-
-Le Repository ne doit pas être utilisé comme identifiant métier
-définitif du Composant.
+-   Issues le concernant ;
+-   Audits ;
+-   conformité ;
+-   Anomalies ;
+-   traitement des Anomalies.
 
 ------------------------------------------------------------------------
 
-## 3. Métadonnées actuellement implémentées
+## 3. Component historique
 
-Une entrée de Catalogue contient actuellement :
+Un Component retiré du Catalogue courant ne doit pas disparaître de
+l'histoire.
 
--   `name` ;
--   `repository`, facultatif ;
--   `stream` ;
--   `owner` ;
--   `squad` ;
--   `status` ;
--   `rgaaLevel` ;
--   `figmaUrl`, facultatif ;
--   `documentationUrl`, facultatif ;
--   `tags` ;
--   `audit`, facultatif.
+Il doit rester interprétable dans les Versions où il existait.
 
-Les statuts actuellement acceptés sont :
+Principe :
 
 ``` text
-stable
-experimental
-deprecated
-removed
-```
-
-L'objet `audit` actuellement implémenté accepte les fréquences :
-
-``` text
-monthly
-quarterly
-yearly
-```
-
-et une date facultative `lastAuditDate` au format `YYYY-MM-DD`.
-
-Ces champs décrivent le schéma du Catalogue actuel. Ils ne préjugent pas
-du futur modèle métier des Audits défini dans
-`docs/01-metier/audits.md`.
-
-------------------------------------------------------------------------
-
-## 4. Validation actuelle du Catalogue
-
-Le chargement refuse notamment :
-
--   une structure sans `version` ou sans tableau `components` ;
--   un champ obligatoire vide ;
--   un statut inconnu ;
--   une fréquence d'audit inconnue ;
--   des tags qui ne sont pas des chaînes non vides ;
--   une URL qui n'utilise pas HTTP ou HTTPS ;
--   une date d'audit invalide ;
--   deux Composants portant le même nom dans le Catalogue.
-
-L'unicité actuelle par `name` est une contrainte de l'implémentation.
-Elle devra être réévaluée avec le futur support de plusieurs Librairies
-par Repository et l'identité métier consolidée des Composants.
-
-------------------------------------------------------------------------
-
-## 5. Composants catalogués et Composants découverts
-
-L'implémentation actuelle distingue notamment :
-
--   un Composant connu du Catalogue ;
--   un Composant découvert dans les données GitHub mais absent du
-    Catalogue.
-
-Lorsqu'un label GitHub correspond à un nom du Catalogue, le Composant
-normalisé reçoit les métadonnées de référence et :
-
-``` text
-discoverySource: catalogue
-```
-
-Lorsqu'un Composant est découvert dans GitHub mais absent du Catalogue,
-l'implémentation actuelle le conserve avec :
-
-``` text
-discoverySource: suggested
-```
-
-et la règle actuelle `DQ-006` le signale.
-
-Ce comportement est un **état implémenté**. La signification métier et
-la future règle DQ seront réexaminées après consolidation de la matrice
-de règles.
-
-Les Composants présents uniquement dans le YAML ne sont pas
-nécessairement équivalents à des Composants observés dans GitHub. Le
-Catalogue est une référence ; la présence dans le Catalogue et
-l'observation dans une source sont deux informations distinctes.
-
-------------------------------------------------------------------------
-
-## 6. Ajouter actuellement un Composant au Catalogue
-
-Lorsqu'un Composant découvert doit être ajouté à la référence :
-
-1.  relever son nom de référence ;
-2.  vérifier l'absence de doublon dans `config/catalogue.yaml` ;
-3.  ajouter une entrée sous `components` ;
-4.  renseigner les champs requis et les métadonnées connues ;
-5.  valider le projet ;
-6.  relancer le pipeline.
-
-Exemple correspondant au schéma actuellement implémenté :
-
-``` yaml
-- name: Tooltip
-  stream: React
-  owner: Front
-  squad: eventail
-  status: stable
-  rgaaLevel: AA
-  tags:
-    - feedback
-    - accessibility
-```
-
-Exemple avec liens et métadonnées d'audit historiques :
-
-``` yaml
-- name: Select
-  stream: React
-  owner: Front
-  squad: eventail
-  status: stable
-  rgaaLevel: AA
-  figmaUrl: https://figma.example.com/select
-  documentationUrl: https://eventail.example.com/select
-  tags:
-    - form
-    - selection
-  audit:
-    frequency: quarterly
-    lastAuditDate: 2026-09-01
-```
-
-Puis :
-
-``` bash
-npm run typecheck
-npm test
-npm run pipeline
+Catalogue Version N
+≠
+Catalogue courant réappliqué rétroactivement à Version N
 ```
 
 ------------------------------------------------------------------------
 
-## 7. Dashboard et Catalogue
+## 4. États d'évolution
 
-Le dashboard actuel est statique et en lecture seule.
-
-Pour une alerte `DQ-006`, l'implémentation historique peut proposer un
-bouton de copie d'une structure YAML à compléter, mais elle n'écrit pas
-directement dans `config/catalogue.yaml`.
-
-Le flux reste donc :
+Le modèle futur prévoit les qualifications :
 
 ``` text
-Composant découvert
-        ↓
-signalement DQ actuel
-        ↓
-qualification humaine
-        ↓
-modification du Catalogue versionné
-        ↓
-validation / pipeline
-        ↓
-nouveau Snapshot / dashboard
+NEW
+EVOLVED
+UNCHANGED
+DECOMMISSIONED
 ```
 
-Une édition directe depuis le navigateur nécessiterait une architecture
-différente : backend sécurisé, validation, gestion des droits,
-journalisation et mécanisme de commit ou de Pull Request.
+Le mécanisme technique permettant de les déterminer automatiquement
+reste différé.
 
 ------------------------------------------------------------------------
 
-## 8. Relation future avec les Applications consommatrices
+## 5. NEW
 
-À terme, le Composant pourra être utilisé comme point de rapprochement
-avec les Applications consommatrices.
-
-Le futur modèle devra pouvoir représenter :
+Un nouveau Component est initialement qualifié :
 
 ``` text
-Application
-    ↓ consomme
-Package @ Version
-    ↓ fournit
-Composants
+AUDIT À FAIRE
 ```
 
-La méthode permettant de détecter cette utilisation à partir du code des
-Applications n'est pas encore définie.
-
-**Statut : Futur / à instruire.**
+Lorsqu'un Audit applicable est terminé, son état d'Audit devient celui
+issu de cet Audit.
 
 ------------------------------------------------------------------------
 
-## 9. Questions restant ouvertes
+## 6. EVOLVED
 
-Restent notamment à consolider :
+Un Component ayant évolué doit être qualifié :
 
--   l'identité d'un Composant dans un contexte multi-Librairies ;
--   le rattachement d'un Composant à la bonne Librairie dans un monorepo
+``` text
+À ÉVALUER
+```
+
+Cette évolution ne signifie pas automatiquement :
+
+``` text
+ancien verdict invalide
+```
+
+ni :
+
+``` text
+nouvel Audit obligatoire
+```
+
+La Squad décide si l'évolution nécessite un nouvel Audit.
+
+------------------------------------------------------------------------
+
+## 7. UNCHANGED
+
+Un Component inchangé peut conserver l'applicabilité d'un verdict
+antérieur.
+
+Cette applicabilité doit être représentée comme un héritage et non comme
+un nouvel Audit fictif.
+
+------------------------------------------------------------------------
+
+## 8. DECOMMISSIONED
+
+Un Component décommissionné :
+
+-   reste présent dans l'historique des Versions où il était applicable
     ;
--   le cas éventuel d'un Composant partagé par plusieurs Librairies ;
--   la construction du Catalogue historique par Version ;
--   la représentation d'une réactivation exceptionnelle ;
--   la détection future de l'utilisation des Composants par les
-    Applications.
+-   est exclu du périmètre actif après sa décommission.
 
-Ces points doivent être traités dans le modèle métier avant d'être
-transformés en contraintes TypeScript.
+La date et la représentation technique exactes de la décommission
+restent à formaliser.
+
+------------------------------------------------------------------------
+
+## 9. Réactivation
+
+La réactivation d'un Component décommissionné est possible mais
+exceptionnelle.
+
+Elle doit être explicite.
+
+La représentation exacte de cette réactivation reste à instruire et ne
+doit pas être déduite automatiquement d'une simple réapparition.
+
+------------------------------------------------------------------------
+
+## 10. Catalogue historique
+
+Les indicateurs de couverture et de conformité d'une ancienne Version
+doivent utiliser le Catalogue applicable à cette Version.
+
+Une modification actuelle du Catalogue ne doit pas changer :
+
+-   le nombre historique de Components ;
+-   la couverture historique ;
+-   les verdicts historiques.
+
+La méthode de construction ou de conservation de ce Catalogue par
+Version reste à définir.
+
+------------------------------------------------------------------------
+
+## 11. Audit applicable
+
+Pour un `Component × Version`, l'information d'Audit peut provenir :
+
+``` text
+Audit direct
+```
+
+ou, lorsque les règles le permettent :
+
+``` text
+verdict hérité
+```
+
+Le dashboard doit pouvoir distinguer l'origine du verdict.
+
+La représentation UX exacte de cette origine reste à préciser.
+
+------------------------------------------------------------------------
+
+## 12. Relations avec les Issues
+
+Une Issue peut concerner :
+
+``` text
+0 Component
+1 Component
+n Components
+```
+
+selon sa nature.
+
+En revanche :
+
+``` text
+Issue d'Audit
+Anomalie d'Audit
+Improvement d'Audit
+```
+
+concernent exactement un Component, identique dans la relation Audit →
+sous-Issue.
