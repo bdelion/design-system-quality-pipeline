@@ -1507,3 +1507,47 @@ Par criticité
 Cette synthèse doit rester traçable : l'utilisateur doit pouvoir identifier les Composants qui contribuent au stock restant de la Librairie.
 
 L'agrégation des Anomalies ne doit pas être confondue avec un verdict de conformité global de la Librairie. Les verdicts restent définis au niveau `Composant × Version` conformément au modèle d'Audit.
+
+
+### Vue latest et vues par Version
+
+Le suivi au niveau Librairie doit proposer deux lectures complémentaires.
+
+#### Vue latest
+
+La vue `latest` représente le patrimoine actif courant.
+
+Elle agrège les Anomalies historiques encore non traitées des Composants qui appartiennent toujours au Catalogue actif de la dernière Version.
+
+Les Composants décommissionnés dans la dernière Version sont exclus du stock courant.
+
+```text
+Anomalie historique non traitée
+        │
+        ├── Composant actif dans latest
+        │       → incluse dans le stock latest
+        │
+        └── Composant décommissionné dans latest
+                → exclue du stock latest
+```
+
+#### Vue par Version
+
+Le Dashboard doit également permettre de sélectionner une Version de la Librairie.
+
+Cette vue s'appuie sur le Catalogue historique de la Version sélectionnée. Un Composant décommissionné aujourd'hui reste donc visible dans une ancienne Version où il était actif.
+
+```text
+1.7.0
+Catalogue : Button, Input, OldSelect
+                         ↑
+                    visible ici
+
+1.8.0 / latest
+Catalogue actif : Button, Input
+OldSelect : décommissionné
+```
+
+La présence d'un Composant dans une vue historique est déterminée par son appartenance au patrimoine de la Version consultée, et non par son état actuel.
+
+La date de référence à utiliser pour l'état de traitement des Anomalies dans une ancienne Version reste à préciser.

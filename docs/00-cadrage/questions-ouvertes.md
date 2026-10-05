@@ -1834,6 +1834,47 @@ Cette agrégation d'Anomalies ne crée pas à elle seule un verdict unique de co
 
 ---
 
+## D-088 — Vue latest : stock historique pertinent du patrimoine actif
+
+Dans la vue `latest` d'une Librairie, les indicateurs de traitement doivent tenir compte des Anomalies historiques encore non traitées des Composants appartenant au patrimoine actif de la dernière Version.
+
+Les Composants décommissionnés dans la Version `latest` sont exclus du stock courant de cette vue.
+
+Une Anomalie détectée sur une Version antérieure peut donc continuer à contribuer au stock `latest` si :
+
+- elle n'est pas traitée selon D-081 ;
+- le Composant concerné appartient toujours au patrimoine actif de la Version `latest`.
+
+Cette règle évite de faire disparaître une dette historique toujours pertinente tout en évitant de polluer le pilotage courant avec la dette de Composants désormais décommissionnés.
+
+**Statut : Établi**
+
+---
+
+## D-089 — Consultation des indicateurs par Version de Librairie
+
+Le Dashboard doit permettre de consulter les indicateurs de traitement pour une Version donnée de la Librairie, en plus de la vue `latest`.
+
+La vue d'une Version doit s'appuyer sur le Catalogue historique propre à cette Version conformément à D-066 et D-067.
+
+Un Composant aujourd'hui décommissionné peut donc rester visible dans une ancienne Version lorsqu'il appartenait au Catalogue actif de cette Version.
+
+Exemple :
+
+```text
+Design System React 1.7.0
+└── OldSelect : présent dans le patrimoine de 1.7.0
+
+Design System React 1.8.0 / latest
+└── OldSelect : décommissionné, exclu du patrimoine actif courant
+```
+
+La vue par Version doit préserver la lecture historique sans réécrire le passé à partir de l'état actuel du Catalogue.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3039,9 +3080,27 @@ La restitution doit permettre de retrouver les Composants contribuant aux indica
 
 ## Q-094 — Périmètre versionné de l'agrégation au niveau Librairie
 
-L'agrégation des Anomalies au niveau de la Librairie est établie.
+Deux lectures sont nécessaires :
 
-Il reste à préciser si, dans une vue consacrée à une Version donnée de la Librairie, le stock et les taux doivent rester calculés sur tout l'historique des Composants de la Librairie ou être présentés avec un périmètre spécifique à cette Version.
+- une vue `latest`, qui reprend les Anomalies historiques encore non traitées des Composants actifs dans la dernière Version et exclut les Composants décommissionnés dans cette Version ;
+- une vue par Version, fondée sur le Catalogue historique propre à la Version consultée.
+
+Un Composant décommissionné aujourd'hui peut donc rester visible dans les indicateurs d'une ancienne Version où il était encore actif.
+
+**Statut : Établi**
+
+---
+
+## Q-095 — Date de référence des indicateurs d'une ancienne Version
+
+La consultation par Version est établie.
+
+Il reste à préciser si la vue d'une ancienne Version doit afficher :
+
+- l'état des Anomalies tel qu'il était au moment de la publication de cette Version ;
+- ou l'état actuel de traitement des Anomalies appartenant au périmètre de cette Version.
+
+Ces deux lectures répondent à des besoins historiques différents.
 
 **Statut : À instruire**
 
