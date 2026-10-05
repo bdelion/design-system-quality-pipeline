@@ -4,7 +4,7 @@
 
 Le `RawDataset` est le contrat d'entrée interne du pipeline.
 
-Il conserve les données nécessaires aux traitements ultérieurs sans les
+Il conserve les faits nécessaires aux traitements ultérieurs sans les
 transformer prématurément en conclusions métier.
 
 Le RAW doit rester suffisamment proche des sources pour permettre :
@@ -22,8 +22,85 @@ Le pipeline peut actuellement produire un RAW depuis :
 -   une fixture ;
 -   GitHub.
 
-Le catalogue YAML est chargé séparément puis ses références de
-Components sont injectées dans le jeu de données avant la normalisation.
+Le Catalogue YAML est chargé séparément puis ses références de
+Composants sont injectées dans le jeu de données avant la normalisation.
+
+## Collecte GitHub actuelle
+
+Le collecteur GitHub fonctionne en lecture seule.
+
+Pour chaque Repository configuré, l'implémentation collecte notamment :
+
+1.  les métadonnées du Repository ;
+2.  les Issues paginées ;
+3.  les Pull Requests paginées ;
+4.  la timeline des Issues ;
+5.  les relations Development et les statuts Projects v2 via GraphQL
+    lorsqu'une URL GraphQL est configurée ;
+6.  les informations de Projects classiques via REST lorsque
+    disponibles.
+
+Les Pull Requests apparaissant dans l'endpoint REST des Issues sont
+filtrées pour éviter les doublons.
+
+Les appels sont projetés vers le contrat RAW minimal du projet : les
+objets riches des API GitHub ne sont pas propagés arbitrairement dans le
+pipeline.
+
+## Relations Issue / Pull Request
+
+L'implémentation actuelle recherche les relations Issue/PR à partir de
+plusieurs signaux structurés ou textuels :
+
+-   mots-clés de fermeture configurés tels que `Closes`, `Fixes` ou
+    `Resolves` ;
+-   titre ou corps selon le traitement concerné ;
+-   timeline GitHub ;
+-   références Development récupérées via GraphQL.
+
+Les numéros détectés sont ensuite résolus contre les Pull Requests
+effectivement collectées.
+
+Une référence textuelle ne doit donc pas être confondue avec une
+relation valide tant que la cible n'a pas été résolue dans le jeu de
+données collecté.
+
+## Projects
+
+Les statuts Project associés aux Issues sont conservés dans le RAW.
+
+L'implémentation actuelle peut combiner :
+
+-   Projects v2 via GraphQL ;
+-   Projects classiques via REST lorsque l'API les expose.
+
+La configuration peut définir des valeurs de statut considérées comme
+annulées par les traitements actuels. Cette interprétation appartient à
+la configuration et aux couches métier, pas au contrat brut de l'API.
+
+## Retries GitHub
+
+Le collecteur implémente des retries pour certaines erreurs
+transitoires.
+
+Les statuts HTTP actuellement considérés comme réessayables comprennent
+notamment :
+
+``` text
+429
+502
+503
+504
+```
+
+ainsi que certains `403` associés aux limites de taux.
+
+Les erreurs réseau transitoires utilisent également un mécanisme de
+retry avec attente. Une erreur considérée permanente est remontée au
+pipeline.
+
+Le token provient de l'environnement et ne doit jamais être copié dans
+le RAW, les fixtures ou les Snapshots.
 
 ## Structure utile
 
@@ -40,8 +117,7 @@ Le RAW conserve notamment :
 
 ### Issue
 
-Le RAW conserve les informations structurées nécessaires au métier,
-notamment :
+Le RAW conserve notamment :
 
 -   `id` ;
 -   `number` ;
@@ -49,9 +125,9 @@ notamment :
 -   `state` ;
 -   `issueType` ;
 -   labels ;
--   Component ou informations permettant son identification ;
--   criticités ;
--   relations parent ;
+-   informations de Composant disponibles ;
+-   criticités disponibles ;
+-   relations parent disponibles ;
 -   dates ;
 -   Pull Requests liés ;
 -   statuts GitHub Project ;
@@ -79,7 +155,7 @@ Le RAW conserve notamment :
 ### Catalogue
 
 Le champ `catalogueComponents` reçoit les noms de référence issus du
-catalogue avant la normalisation.
+Catalogue avant la normalisation.
 
 ## Conservation de la sémantique métier
 
