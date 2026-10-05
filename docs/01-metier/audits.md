@@ -1278,3 +1278,30 @@ CONFORME / NON CONFORME / ...
 ```
 
 Le pipeline peut détecter l'évolution et initialiser `À ÉVALUER`, mais seule la Squad décide entre `AUDIT À FAIRE` et `AUDIT NON NÉCESSAIRE`.
+
+
+### Nouveau Composant et obligation d'Audit
+
+Un Composant `NOUVEAU` se distingue d'un Composant `ÉVOLUÉ`.
+
+En cible métier, un nouveau Composant doit être audité avant sa mise à disposition. L'Audit devrait donc intervenir pendant la mise au point de la Version dans laquelle il est introduit.
+
+```text
+NOUVEAU Composant
+        ↓
+Audit attendu pendant la mise au point
+       / \
+      /   \
+ réalisé   non réalisé à la mise à disposition
+   ↓                    ↓
+verdict            AUDIT À FAIRE
+d'Audit
+```
+
+Si la Version est mise à disposition sans que cet Audit ait été réalisé, le suivi du patrimoine doit directement faire ressortir `AUDIT À FAIRE`.
+
+Il n'y a pas, dans ce cas, de passage préalable par `À ÉVALUER` : le besoin d'Audit est déjà établi par la nature `NOUVEAU` du Composant.
+
+Cette règle décrit le processus cible sans supposer que le processus est toujours respecté dans les données historiques.
+
+La qualification à afficher lorsque l'Audit du nouveau Composant a bien été réalisé avant sa mise à disposition reste à préciser afin de distinguer clairement « Audit réalisé » de « Audit non nécessaire ».

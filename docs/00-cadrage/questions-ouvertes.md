@@ -1561,6 +1561,35 @@ Le pipeline ne doit pas décider automatiquement entre `AUDIT À FAIRE` et `AUDI
 
 ---
 
+## D-076 — Un nouveau Composant doit être audité avant sa mise à disposition
+
+En cible métier, un Composant `NOUVEAU` doit être audité avant sa mise à disposition.
+
+L'Audit devrait donc être réalisé pendant la mise au point de la Version dans laquelle le Composant est introduit.
+
+Si la Version de sortie est mise à disposition alors que l'Audit du nouveau Composant n'a pas été réalisé, le suivi du patrimoine doit qualifier ce Composant en `AUDIT À FAIRE`.
+
+Contrairement à un Composant simplement `ÉVOLUÉ`, un Composant `NOUVEAU` sans Audit ne doit donc pas être initialisé à `À ÉVALUER`.
+
+Exemple :
+
+```text
+DatePicker
+État patrimoine : NOUVEAU
+        │
+        ├── Audit réalisé pendant la mise au point
+        │       → pas d'Audit restant à faire pour sa sortie
+        │
+        └── Audit non réalisé à la mise à disposition
+                → Qualification Audit : AUDIT À FAIRE
+```
+
+Cette règle exprime le processus cible. Elle ne doit pas conduire le pipeline à inventer un Audit qui n'aurait pas été réalisé.
+
+**Statut : Établi, avec objectif de processus**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2675,9 +2704,23 @@ La Squad décide ensuite explicitement si un nouvel Audit est à faire ou s'il n
 
 ## Q-087 — Qualification initiale d'un nouveau Composant
 
-Les états de qualification du besoin d'Audit sont établis pour les Composants `ÉVOLUÉ`.
+Un Composant `NOUVEAU` doit en théorie être audité avant sa mise à disposition.
 
-Il reste à préciser si un Composant `NOUVEAU` doit lui aussi être initialisé à `À ÉVALUER`, ou si sa création entraîne une autre qualification initiale.
+L'Audit devrait être réalisé pendant la mise au point de sa Version de sortie.
+
+Si cet Audit n'a pas été réalisé au moment de la mise à disposition, le Composant est qualifié `AUDIT À FAIRE`.
+
+Il n'est donc pas initialisé à `À ÉVALUER` comme un Composant `ÉVOLUÉ`.
+
+**Statut : Établi**
+
+---
+
+## Q-088 — Traitement d'un nouveau Composant audité avant sa mise à disposition
+
+Lorsqu'un Composant `NOUVEAU` a bien été audité pendant la mise au point de sa Version de sortie, il reste à préciser la valeur de qualification du besoin d'Audit à afficher dans le suivi du patrimoine une fois cet Audit réalisé.
+
+Il faut notamment déterminer si `AUDIT NON NÉCESSAIRE` convient à ce cas ou si un état distinct tel que `AUDIT RÉALISÉ` est nécessaire afin de ne pas confondre « Audit effectué » et « Audit jugé inutile ».
 
 **Statut : À instruire**
 
