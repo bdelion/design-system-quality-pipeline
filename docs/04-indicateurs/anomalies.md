@@ -2,12 +2,19 @@
 
 ## 1. Population
 
-Une Anomalie n'est pas synonyme de toute Issue `Bug`.
+Une Issue GitHub de type `🐛 Bug` est une **Anomalie hors Audit**.
 
-La définition générale configurable d'une Anomalie reste partiellement
-ouverte.
+Lorsqu'une Issue de type `🐛 Bug` est une sub-Issue d'un Audit, elle est
+une **Anomalie issue d'un Audit**.
 
-Pour les Anomalies d'Audit, le modèle est en revanche établi.
+``` text
+Anomalie
+├── hors Audit
+└── issue d'un Audit
+```
+
+Cette distinction qualifie l'origine de l'Anomalie sans modifier son
+unité de comptage.
 
 ------------------------------------------------------------------------
 

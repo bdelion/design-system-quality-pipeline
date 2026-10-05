@@ -510,3 +510,24 @@ Snapshot ≠ événement métier
 ```
 
 Ces distinctions doivent rester visibles dans le modèle normalisé.
+
+------------------------------------------------------------------------
+
+## Anomalie --- identification générale
+
+Une Issue GitHub dont l'Issue Type est `🐛 Bug` représente une
+**Anomalie hors Audit**.
+
+Une Anomalie découverte dans le cadre d'un Audit reste également une
+Issue de type `🐛 Bug`, mais elle est distinguée par sa relation de
+sub-Issue avec l'Issue d'Audit d'origine.
+
+``` text
+Anomalie
+├── hors Audit
+└── issue d'un Audit
+```
+
+La relation à l'Audit qualifie l'origine de l'Anomalie ; elle ne change
+pas la nature `Anomalie` de l'Issue.
+

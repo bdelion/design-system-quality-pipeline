@@ -165,3 +165,31 @@ In progress → branche obligatoire
 Elles dépendent du profil de workflow.
 
 Voir `docs/02-workflow/` et [Règles workflow](regles-workflow.md).
+
+------------------------------------------------------------------------
+
+## Identification d'une Anomalie
+
+### Hors Audit
+
+``` text
+Issue Type = 🐛 Bug
+ET absence de relation de sub-Issue vers un Audit d'origine
+→ Anomalie hors Audit
+```
+
+### Issue d'un Audit
+
+``` text
+Issue Type = 🐛 Bug
+ET sub-Issue d'un Audit
+→ Anomalie issue d'un Audit
+```
+
+La relation d'Audit qualifie l'origine de l'Anomalie ; elle ne crée pas
+une autre nature d'objet.
+
+Les contraintes spécifiques RGAA --- criticité, catégorie a11y et
+Component identique à l'Audit --- s'appliquent aux Anomalies d'Audit
+Accessibilité et ne doivent pas être imposées aux Anomalies hors Audit.
+

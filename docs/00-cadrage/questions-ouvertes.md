@@ -2902,6 +2902,20 @@ Le pipeline doit considérer comme incohérente toute Improvement d'Audit ayant 
 
 ---
 
+### D-137 --- Identification générale d'une Anomalie
+
+Une Issue GitHub de type `🐛 Bug` est une **Anomalie hors Audit**.
+
+Lorsqu'une Issue de type `🐛 Bug` est une sub-Issue d'un Audit, elle est
+une **Anomalie issue de cet Audit**.
+
+La relation à l'Audit qualifie l'origine de l'Anomalie ; elle ne change
+pas sa nature.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2992,19 +3006,16 @@ Le fonctionnement cible réalise l'Audit sur `M.m.r-rc.n` avant la PROD.
 
 # 6. Questions ouvertes — Anomalies
 
-## Q-011 — Définition d'une Anomalie
+### Q-011 --- Définition d'une Anomalie
 
-Pour une Anomalie issue d'un Audit, plusieurs éléments sont désormais établis :
+Une Issue GitHub de type `🐛 Bug` est une **Anomalie hors Audit**.
 
-- elle est une sous-Issue de l'Issue d'Audit ;
-- son Issue Type est obligatoirement `🐛 Bug` ;
-- elle porte exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent ;
-- dans le contexte actuel d'Audit Accessibilité, elle porte exactement une criticité RGAA parmi bloquante, majeure ou mineure ;
-- elle porte un label `♿ a11y:xxx` selon le vocabulaire actuellement observé.
+Lorsqu'une Issue `🐛 Bug` est reliée comme sub-Issue à un Audit, elle
+est une **Anomalie issue de cet Audit**.
 
-La définition générale d'une Anomalie hors contexte d'Audit reste à instruire.
+La relation d'Audit distingue l'origine de l'Anomalie.
 
-**Statut : Partiellement établi**
+**Statut : Établi**
 
 ---
 

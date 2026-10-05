@@ -62,15 +62,19 @@ Le nombre de questions réellement bloquantes est désormais limité.
 
 ### Q-011 --- Définition d'une Anomalie
 
-**Priorité : BLOQUANT V1**
+**Priorité : DÉJÀ ÉTABLI**
 
-La V1 doit savoir quelles Issues alimentent les indicateurs d'Anomalies.
+La règle générale est désormais établie :
 
-La représentation doit rester configurable selon le Repository ou
-l'Organisation.
+``` text
+Issue Type = 🐛 Bug
+→ Anomalie hors Audit
+```
 
-Les décisions ultérieures ont déjà précisé le cas des Anomalies d'Audit
-Accessibilité ; il reste à stabiliser la règle générale.
+Lorsqu'une Issue `🐛 Bug` est reliée comme sub-Issue à un Audit, elle est
+une Anomalie issue de cet Audit.
+
+Q-011 ne bloque donc plus la V1.
 
 ### Q-013 --- Date de détection
 
@@ -435,25 +439,22 @@ réponse change réellement le contrat V1.
 Ordre recommandé :
 
 ``` text
-1. Q-011
-   Définition générale d'une Anomalie
-
-2. Q-013 + Q-014
+1. Q-013 + Q-014
    Dates détection / correction
    uniquement si le KPI de délai reste en V1
 
-3. Q-019
+2. Q-019
    Date métier de réalisation d'un Audit
 
-4. Q-048
+3. Q-048
    RC auditée
    uniquement si la traçabilité RC exacte est exigée en V1
 
-5. Q-081
+4. Q-081
    Catalogue historique
    uniquement si la couverture historique par Version est exigée en V1
 
-6. Q-096
+5. Q-096
    Date de Release
    uniquement si la vue « état à la Release » est exigée en V1
 ```
