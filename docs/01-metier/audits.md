@@ -1389,3 +1389,32 @@ nombre total d'Anomalies concernées
 ```
 
 Cette mesure décrit l'avancement du traitement. Elle ne modifie jamais directement le verdict de conformité du Composant.
+
+
+### Périmètre historique des Anomalies à traiter
+
+Le suivi du traitement d'un Composant ne se limite pas aux Anomalies rattachées à l'Audit ayant produit son verdict courant.
+
+Toutes les Anomalies historiques du Composant restent pertinentes tant qu'elles ne sont pas traitées.
+
+```text
+Audit A
+├── Anomalie 1 → traitée
+└── Anomalie 2 → non traitée ─┐
+
+Audit B                         ├── stock restant du Composant
+├── Anomalie 3 → traitée       │
+└── Anomalie 4 → non traitée ─┘
+```
+
+Une Anomalie est traitée selon la règle :
+
+```text
+Project Status = Done
+AND
+GitHub Issue State = Closed
+```
+
+Une Anomalie traitée n'appartient plus au stock restant, mais son existence et son rattachement à l'Audit d'origine restent conservés dans l'historique.
+
+Le périmètre exact du dénominateur utilisé pour afficher un pourcentage de traitement reste à préciser.

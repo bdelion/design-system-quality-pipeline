@@ -1680,6 +1680,20 @@ Elle permet de disposer d'une règle explicite et homogène pour le calcul du ta
 
 ---
 
+## D-082 — Le suivi du traitement porte sur le stock historique d'Anomalies du Composant
+
+Le suivi du traitement d'un Composant doit prendre en compte toutes ses Anomalies historiques tant qu'elles ne satisfont pas la règle D-081 (`Project Status = Done` et `GitHub Issue State = Closed`).
+
+Le périmètre n'est donc pas limité aux Anomalies créées par l'Audit ayant produit le verdict de conformité courant.
+
+Une Anomalie ancienne reste dans le stock restant à traiter jusqu'à son traitement effectif. Lorsqu'elle devient traitée, elle sort du stock restant mais demeure conservée dans l'historique.
+
+Cette règle permet au Dashboard de restituer à la fois l'avancement global du traitement et le stock d'Anomalies historiques encore non traitées.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2839,6 +2853,16 @@ GitHub Issue State = Closed
 Cette question recoupait un principe déjà abordé antérieurement sur la fermeture et le traitement des Anomalies. La règle est désormais consolidée explicitement pour le calcul de l'indicateur.
 
 **Statut : Établi**
+
+---
+
+## Q-091 — Dénominateur temporel du taux de traitement des Anomalies
+
+Le suivi doit inclure toutes les Anomalies historiques du Composant tant qu'elles ne sont pas traitées.
+
+Il reste à préciser le dénominateur du « taux d'Anomalies traitées » : doit-il représenter toutes les Anomalies historiquement détectées sur le Composant (traitées + non traitées), ou seulement un périmètre temporel/versionné donné ?
+
+**Statut : À instruire**
 
 ---
 
