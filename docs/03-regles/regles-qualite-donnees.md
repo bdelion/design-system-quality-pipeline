@@ -1,25 +1,349 @@
-# Règles de qualité des données — état actuel
+# Règles de qualité des données
 
-| ID | Niveau | Action actuelle | Condition observée dans le code | Impact actuel |
-|---|---|---|---|---|
-| DQ-001 | ERROR | exclude | Anomalie sans criticité | `anomaly.byCriticality.*`, `anomaly.criticalityCoverage` |
-| DQ-002 | ERROR | exclude | Plusieurs criticités incompatibles dans le cas détecté | idem criticité |
-| DQ-003 | ERROR | exclude | Plus d'un parent d'anomalie | `audit.anomalyCount.*` déclaré mais non présent dans le catalogue actuel ; délai inclus |
-| DQ-004 | WARNING | include | Done sans PR identifiable | correction/délai/flow corrected |
-| DQ-005 | WARNING | include | PR mergée liée à issue ouverte | correction/délai/flow corrected |
-| DQ-006 | WARNING | include | composant absent du catalogue | `portfolio.*` |
-| DQ-007 | WARNING | include | label inconnu | `anomaly.byCategory.*` |
-| DQ-008 | ERROR | exclude | anomalie cancelled avec PR | nombreux stocks anomalies |
-| DQ-009 | WARNING | include | Nexus indisponible | `portfolio.release.*` déclaré dans les impacts mais absent du catalogue V2 actuel |
-| DQ-010 | ERROR | exclude | anomalie cancelled avec milestone | nombreux stocks anomalies |
+## 1. Objet de cette page
 
-## Divergences ou points à revoir
+Cette page distingue :
 
-- Les définitions déclaratives YAML et la logique conditionnelle sont actuellement réparties entre configuration, TypeScript et table d'impacts.
-- DQ-003 référence un pattern `audit.anomalyCount.*` qui n'apparaît pas dans le catalogue V2 actuel observé.
-- DQ-006 impacte `portfolio.*`, ce qui peut être plus large que nécessaire selon le KPI.
-- DQ-009 référence `portfolio.release.*`, absent du catalogue V2 actuel.
-- DQ-008 et DQ-010 portent tous deux sur les anomalies annulées.
-- La fiabilité globale du snapshot est actuellement `partial` dès qu'il existe au moins une alerte DQ, y compris un WARNING. Cela mérite d'être distingué de la fiabilité métrique.
+1.  les règles `DQ-001` à `DQ-010` réellement implémentées ;
+2.  leur intention ;
+3.  les divergences observées avec le modèle métier consolidé ;
+4.  les points qui devront être arbitrés avant modification du code.
 
-Ces points sont des constats techniques, pas des décisions de refonte.
+Aucune divergence listée ici ne constitue à elle seule une décision de
+modifier une règle.
+
+## 2. Sémantique actuelle
+
+Le contrat actuel utilise notamment :
+
+``` text
+severity : ERROR | WARNING
+action   : include | exclude | unknown
+```
+
+Une donnée signalée reste conservée dans le Snapshot.
+
+L'action décrit son impact sur le calcul concerné, pas une suppression
+de la donnée source.
+
+## 3. Inventaire lisible des règles actuelles
+
+### DQ-001 --- Criticité absente
+
+**Actuel**
+
+``` text
+Severity : ERROR
+Action   : exclude
+```
+
+Détecte une Anomalie sans criticité normalisée.
+
+Impact actuel : indicateurs de criticité.
+
+**Consolidation métier**
+
+Pour une Anomalie d'Audit Accessibilité, exactement une criticité RGAA
+est attendue.
+
+La règle doit à terme être suffisamment contextualisée pour ne pas
+imposer une criticité RGAA aux objets auxquels elle ne s'applique pas.
+
+------------------------------------------------------------------------
+
+### DQ-002 --- Criticités incompatibles
+
+**Actuel**
+
+``` text
+Severity : ERROR
+Action   : exclude
+```
+
+Détecte plusieurs criticités dans le cas pris en charge par le code.
+
+**Consolidation métier**
+
+Une Anomalie d'Audit Accessibilité doit avoir exactement une criticité
+RGAA.
+
+La criticité RGAA est distincte des autres domaines de priorité ou
+criticité.
+
+------------------------------------------------------------------------
+
+### DQ-003 --- Parents multiples
+
+**Actuel**
+
+``` text
+Severity : ERROR
+Action   : exclude
+```
+
+Détecte une Anomalie avec plusieurs `parentRefs`.
+
+**Consolidation métier**
+
+La règle correspond à une cardinalité désormais établie :
+
+``` text
+Anomaly d'Audit
+→ exactement 1 Audit parent
+```
+
+Il faudra également contrôler l'absence de parent lorsque l'objet est
+qualifié comme Anomalie d'Audit.
+
+**Divergence technique**
+
+Un impact `audit.anomalyCount.*` est déclaré alors que ce préfixe n'est
+pas présent dans le catalogue V2 observé.
+
+------------------------------------------------------------------------
+
+### DQ-004 --- PR de correction absente
+
+**Actuel**
+
+``` text
+Severity : WARNING
+Action   : include
+```
+
+Détecte actuellement une Anomalie `done` sans `pullRequestRefs`.
+
+**Consolidation métier**
+
+Une Anomalie d'Audit suit un workflow de correction par PR dans le
+fonctionnement décrit.
+
+Cependant, la règle générale :
+
+``` text
+Done → PR
+```
+
+n'est pas universelle pour toutes les Issues.
+
+DQ-004 doit donc rester comprise comme une règle appliquée à un contexte
+précis, et non comme la preuve qu'une PR est obligatoire pour EPIC ou
+AUDIT.
+
+------------------------------------------------------------------------
+
+### DQ-005 --- PR mergée et Issue ouverte
+
+**Actuel**
+
+``` text
+Severity : WARNING
+Action   : include
+```
+
+Détecte une PR mergée liée à une Issue encore ouverte.
+
+**Consolidation métier**
+
+Le merge d'une PR et la clôture métier d'une Issue sont deux événements
+distincts.
+
+Pour une Anomalie d'Audit, l'état traité nécessite notamment :
+
+``` text
+Done + Closed
+```
+
+Une PR mergée avec Issue encore ouverte peut donc être une situation
+transitoire légitime.
+
+La sévérité actuelle `WARNING` est cohérente avec le fait qu'il s'agit
+d'un signal à examiner plutôt que d'une suppression de donnée.
+
+------------------------------------------------------------------------
+
+### DQ-006 --- Component absent du Catalogue
+
+**Actuel**
+
+``` text
+Severity : WARNING
+Action   : include
+```
+
+Détecte `discoverySource = suggested`.
+
+**Consolidation métier**
+
+Le Component reste exploitable, mais les indicateurs dépendant du
+Catalogue peuvent être incomplets.
+
+**Divergence technique**
+
+L'impact actuel `portfolio.*` paraît potentiellement plus large que
+nécessaire.
+
+L'impact cible doit être défini métrique par métrique.
+
+------------------------------------------------------------------------
+
+### DQ-007 --- Label inconnu
+
+**Actuel**
+
+``` text
+Severity : WARNING
+Action   : include
+```
+
+Détecte le label configuré comme inconnu.
+
+**Consolidation métier**
+
+La donnée reste utilisable mais une partie de sa classification est
+incertaine.
+
+L'impact doit dépendre de la dimension portée par le label concerné.
+
+------------------------------------------------------------------------
+
+### DQ-008 --- Issue Cancelled référencée par une PR
+
+**Actuel**
+
+``` text
+Severity : ERROR
+Action   : exclude
+```
+
+Une Issue Cancelled liée à une PR est exclue des KPI selon la règle
+actuelle.
+
+**Point métier ouvert**
+
+`Q-022` n'a pas encore établi qu'une Issue Cancelled ne peut jamais
+conserver une relation vers une PR.
+
+Cette règle doit donc être considérée comme :
+
+``` text
+comportement actuellement implémenté
+≠
+invariant métier définitivement validé
+```
+
+------------------------------------------------------------------------
+
+### DQ-009 --- Nexus indisponible
+
+**Actuel**
+
+``` text
+Severity : WARNING
+Action   : include
+```
+
+Détecte :
+
+``` text
+raw.nexusAvailable = false
+```
+
+**Consolidation métier**
+
+Seules les métriques qui dépendent réellement d'une preuve Nexus doivent
+être affectées.
+
+**Divergence technique**
+
+L'impact `portfolio.release.*` ne correspond à aucun préfixe démontré
+dans le catalogue V2 actuel.
+
+------------------------------------------------------------------------
+
+### DQ-010 --- Issue Cancelled avec Milestone
+
+**Actuel**
+
+``` text
+Severity : ERROR
+Action   : exclude
+```
+
+Une Issue Cancelled possédant une Milestone est exclue des KPI selon la
+règle actuelle.
+
+**Point métier ouvert**
+
+`Q-022` n'établit pas encore qu'une Issue Cancelled doit perdre toute
+Milestone.
+
+Comme DQ-008, cette règle est un comportement implémenté à réévaluer
+avant d'en faire un invariant cible.
+
+## 4. Règles manquantes révélées par le modèle consolidé
+
+Le modèle métier fait apparaître des contrôles qui ne sont pas
+représentés explicitement par les dix DQ actuelles.
+
+Exemples établis :
+
+``` text
+Audit → exactement 1 Component
+Anomaly d'Audit → exactement 1 Audit parent
+Improvement d'Audit → exactement 1 Audit parent
+Anomaly d'Audit → même Component que l'Audit
+Improvement d'Audit → même Component que l'Audit
+Anomaly Accessibilité → exactement 1 criticité RGAA
+Anomaly Accessibilité → exactement 1 catégorie a11y
+```
+
+Cette liste identifie des besoins de contrôle.
+
+Elle ne crée pas encore de nouveaux identifiants `DQ-011+`.
+
+## 5. Points techniques à corriger plus tard
+
+Les constats suivants sont confirmés :
+
+-   logique DQ répartie entre YAML, TypeScript et table d'impacts ;
+-   `DQ-003` référence `audit.anomalyCount.*`, absent du catalogue V2
+    observé ;
+-   `DQ-006` impacte `portfolio.*`, potentiellement trop largement ;
+-   `DQ-009` référence `portfolio.release.*`, absent du catalogue V2
+    observé ;
+-   `DQ-008` et `DQ-010` couvrent deux interdictions liées aux Issues
+    Cancelled dont le statut métier reste à formaliser ;
+-   la fiabilité globale du Snapshot devient actuellement `partial` dès
+    qu'une alerte DQ existe, y compris un WARNING.
+
+## 6. Fiabilité cible
+
+La fiabilité doit être principalement métrique-spécifique.
+
+Exemple :
+
+``` text
+DQ sur la criticité d'une Anomalie
+    ↓
+métrique par criticité : affectée
+métrique sans criticité : potentiellement non affectée
+métrique de Version indépendante : non affectée
+```
+
+Une alerte ne doit donc pas contaminer automatiquement toutes les
+métriques.
+
+## 7. Prochaine étape avant le code
+
+Avant toute refonte des DQ :
+
+1.  stabiliser les règles métier nécessaires à la V1 ;
+2.  associer chaque règle à un contexte ou profil ;
+3.  définir la conséquence métier d'une violation ;
+4.  identifier les métriques réellement concernées ;
+5.  décider severity et action ;
+6.  seulement ensuite modifier YAML, TypeScript et tests.
+
+Les fichiers historiques `docs/quality-rules/DQ-001.md` à `DQ-010.md`
+doivent rester disponibles tant que cette migration n'est pas terminée.
