@@ -1623,3 +1623,23 @@ La normalisation du suffixe `-Audit`, déjà prévue comme configurable, permet 
 La Milestone utilisée ensuite pour planifier la correction est une information différente : elle indique quand la correction est prévue ou livrée, et non nécessairement dans quelle Version le défaut a été détecté.
 
 Cette règle est établie pour les Anomalies issues d'un Audit post-PROD. Le cas des Anomalies découvertes hors Audit reste ouvert.
+
+
+### Bugs hors périmètre des Audits d'accessibilité
+
+Le mécanisme de détermination de la Version affectée n'est pas identique pour toutes les Anomalies.
+
+Pour un Bug hors périmètre des Audits d'accessibilité, la Version affectée doit obligatoirement être renseignée dans la description de l'Issue.
+
+```text
+Bug hors Audit d'accessibilité
+├── Description
+│   └── Version affectée : obligatoire
+│
+└── Milestone
+    └── contexte de planification / livraison de la correction
+```
+
+La Version affectée ne doit donc pas être déduite automatiquement de la Milestone.
+
+Le format exact à utiliser dans la description reste à définir avant de spécifier une règle d'extraction par le pipeline.

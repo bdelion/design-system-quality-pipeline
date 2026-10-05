@@ -1972,6 +1972,20 @@ Elle s'applique aux Anomalies issues d'un Audit post-PROD. Le mécanisme permett
 
 ---
 
+## D-094 — Un Bug hors périmètre accessibilité renseigne obligatoirement sa Version affectée dans sa description
+
+Pour un Bug découvert en dehors du périmètre des Audits d'accessibilité, l'information permettant d'identifier la Version affectée doit obligatoirement être renseignée dans la description de l'Issue.
+
+Cette information est distincte de la Milestone de l'Issue.
+
+La description permet d'exprimer la Version dans laquelle le défaut est constaté, tandis que la Milestone peut être utilisée pour le contexte de planification ou de livraison de sa correction.
+
+Le format exact de l'information dans la description n'est pas encore défini et ne doit pas être supposé.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3224,9 +3238,21 @@ Le cas des Anomalies découvertes hors Audit reste à instruire séparément.
 
 ## Q-098 — Version affectée pour une Anomalie découverte hors Audit
 
-Lorsqu'une Anomalie est découverte après une release par un autre canal qu'un Audit, il reste à déterminer si et comment le Dashboard doit identifier explicitement la ou les Versions PROD affectées.
+Pour un Bug hors périmètre des Audits d'accessibilité, la Version affectée doit obligatoirement être renseignée dans la description de l'Issue.
 
-La Milestone de correction ne doit pas être supposée équivalente à la Version dans laquelle le défaut existe.
+Cette information ne doit pas être déduite de la Milestone.
+
+Le format exact utilisé dans la description reste à définir.
+
+**Statut : Partiellement établi**
+
+---
+
+## Q-099 — Format de la Version affectée dans la description d'un Bug hors accessibilité
+
+La présence obligatoire de la Version affectée dans la description de l'Issue est établie pour les Bugs hors périmètre des Audits d'accessibilité.
+
+Il reste à définir le format structuré attendu afin que le pipeline puisse extraire cette information de manière fiable.
 
 **Statut : À instruire**
 
