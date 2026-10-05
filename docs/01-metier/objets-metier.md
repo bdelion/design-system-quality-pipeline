@@ -601,3 +601,21 @@ Dans le fonctionnement nominal, l'Issue doit également être `Closed` de maniè
 
 La date de début d'un Audit n'est pas déduite de cette décision.
 
+------------------------------------------------------------------------
+
+## Audit --- artefact réellement audité
+
+Un Audit pré-PROD porte deux références de Version complémentaires :
+
+``` text
+targetVersion
+→ Version cible portée par la Milestone, de forme M.m.r
+
+auditedReleaseCandidate
+→ champ explicite porté par l'Issue d'Audit, de forme M.m.r-rc.n
+```
+
+`auditedReleaseCandidate` identifie l'artefact réellement soumis à l'Audit.
+
+La Milestone reste nécessaire pour rattacher l'Audit à sa Version cible. Elle ne remplace pas le champ explicite de RC auditée.
+

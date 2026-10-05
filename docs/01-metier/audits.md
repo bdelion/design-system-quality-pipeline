@@ -193,3 +193,30 @@ L'Issue doit également être `Closed` pour que l'Audit soit réalisé. Dans le 
 
 La date de début de l'Audit reste distincte et n'est pas définie par cette décision.
 
+------------------------------------------------------------------------
+
+## Release Candidate auditée
+
+Pour un Audit pré-PROD, deux informations complémentaires doivent être conservées :
+
+``` text
+Milestone de l'Issue d'Audit
+→ Version PROD cible M.m.r
+
+Champ explicite de l'Issue d'Audit
+→ Release Candidate réellement auditée M.m.r-rc.n
+```
+
+Exemple :
+
+``` text
+Milestone              = 1.8.0
+Release Candidate auditée = 1.8.0-rc.13
+```
+
+La Milestone fait partie du contexte de l'Audit et doit être prise en compte, mais elle ne permet pas à elle seule d'identifier la RC effectivement auditée.
+
+La RC ne doit donc pas être déduite implicitement de la dernière RC Jenkins disponible ou de la seule Milestone.
+
+Pour un Audit de rattrapage post-PROD, la Version auditée reste la Version PROD `M.m.r`; le besoin du champ RC concerne l'Audit pré-PROD.
+

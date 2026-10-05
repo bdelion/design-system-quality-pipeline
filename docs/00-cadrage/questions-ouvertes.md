@@ -2995,6 +2995,33 @@ Cette décision ne définit pas la date de début de l'Audit.
 
 ---
 
+### D-142 --- Identification de la Release Candidate auditée
+
+Pour un Audit pré-PROD, la Milestone de l'Issue d'Audit identifie la
+Version PROD cible `M.m.r`.
+
+La Release Candidate réellement auditée est enregistrée dans un champ
+explicite porté par l'Issue d'Audit :
+
+``` text
+Milestone = M.m.r
+RC auditée = M.m.r-rc.n
+```
+
+La Milestone doit être prise en compte dans l'interprétation de l'Audit,
+mais elle ne permet pas à elle seule d'identifier l'artefact réellement
+audité.
+
+La RC auditée ne doit pas être déduite implicitement de la dernière RC
+Jenkins disponible.
+
+Pour un Audit de rattrapage post-PROD, la Version auditée reste la
+Version PROD `M.m.r`.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3513,11 +3540,17 @@ Une Issue d'Audit sans Composant ou avec plusieurs Composants est invalide.
 
 ---
 
-## Q-048 — Identification précise de la Release Candidate auditée
+### Q-048 --- Release Candidate réellement auditée
 
-Comment identifier précisément la Release Candidate `M.m.r-rc.n` effectivement auditée ?
+Pour un Audit pré-PROD :
 
-**Statut : À instruire**
+-   la Milestone de l'Issue d'Audit porte la Version cible `M.m.r` ;
+-   un champ explicite de l'Issue d'Audit porte la RC réellement auditée
+    `M.m.r-rc.n`.
+
+La Milestone et le champ de RC auditée sont complémentaires.
+
+**Statut : Établi**
 
 ---
 

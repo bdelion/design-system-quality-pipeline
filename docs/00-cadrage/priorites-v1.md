@@ -147,23 +147,23 @@ Le fonctionnement actuel ne pratique qu'une famille Accessibilité.
 Il faut éviter d'imposer prématurément une cardinalité générique si la
 V1 n'en a pas besoin.
 
-### Q-048 --- Release Candidate effectivement auditée
+### Q-048 --- Release Candidate réellement auditée
 
-**Priorité : BLOQUANT V1 si la V1 doit tracer l'Audit pré-PROD jusqu'à
-la RC exacte**
+**Priorité : DÉJÀ ÉTABLI**
 
-Le modèle distingue déjà :
+Pour un Audit pré-PROD, la Version cible et l'artefact réellement audité sont deux informations complémentaires :
 
 ``` text
-Version PROD cible = M.m.r
-Version auditée    = M.m.r-rc.n
+Milestone de l'Issue d'Audit
+→ Version cible M.m.r
+
+Champ explicite sur l'Issue d'Audit
+→ RC réellement auditée M.m.r-rc.n
 ```
 
-mais la source de `n` reste à définir.
+La Milestone doit être prise en compte, mais elle ne suffit pas à identifier la RC auditée. La RC ne doit notamment pas être déduite de la dernière RC Jenkins disponible.
 
-------------------------------------------------------------------------
-
-## 3.3 Historique et Catalogue
+L'absence du champ explicite sur un Audit pré-PROD constitue une information manquante à traiter par la qualité des données.
 
 ### Q-081 --- Construction du Catalogue historique
 

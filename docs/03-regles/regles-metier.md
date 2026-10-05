@@ -264,3 +264,26 @@ La fermeture GitHub doit être cohérente avec cet événement, mais ne s'y subs
 
 Cette règle ne définit pas la date de début de l'Audit.
 
+------------------------------------------------------------------------
+
+## Identification de la Release Candidate auditée
+
+Pour un Audit pré-PROD :
+
+``` text
+Version cible = Milestone de l'Issue d'Audit
+RC auditée    = champ explicite de l'Issue d'Audit
+```
+
+La cohérence entre les deux doit être contrôlée. Par exemple :
+
+``` text
+Milestone = 1.8.0
+RC auditée = 1.8.0-rc.13
+→ cohérent
+```
+
+La RC auditée ne doit pas être inférée à partir de la dernière RC construite par Jenkins.
+
+L'absence du champ explicite sur un Audit pré-PROD empêche d'identifier précisément l'artefact audité et doit être traitée comme une information manquante / un problème de qualité des données.
+
