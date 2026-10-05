@@ -1196,3 +1196,43 @@ Le Dashboard et les indicateurs ne doivent donc jamais transformer cette propaga
 L'héritage continue tant que le Composant reste inchangé et qu'aucun nouvel Audit terminé ne fournit un nouveau verdict applicable.
 
 Le comportement à adopter lorsque le Composant évolue et qu'aucun nouvel Audit n'est encore disponible reste à préciser.
+
+
+### Évolution d'un Composant et maintien du verdict
+
+Une évolution technique d'un Composant ne suffit pas à conclure qu'un nouvel Audit est nécessaire.
+
+La modification peut ne pas affecter le périmètre couvert par l'Audit.
+
+```text
+Button@1.7.0
+Audit : CONFORME
+        │
+        └── évolution en 1.8.0
+                    ↓
+             signal patrimoine
+                    ↓
+          examen par la Squad
+              /           \
+             /             \
+   impact Audit         pas d'impact Audit
+       à traiter             ↓
+                        verdict CONFORME
+                        toujours applicable
+```
+
+Le pipeline ne doit donc pas transformer automatiquement un Composant `ÉVOLUÉ` en `NON AUDITÉ`.
+
+La qualification de l'impact appartient à la Squad.
+
+### Page cible de suivi du patrimoine
+
+Le Dashboard devra proposer à terme une page dédiée au suivi du patrimoine des Composants.
+
+Cette page est distincte de la restitution du verdict de conformité.
+
+Elle devra permettre de visualiser les évolutions entre Versions et d'aider la Squad à décider si elles nécessitent ou non un nouvel Audit.
+
+Pour un cas tel que `Button@1.8.0`, la Squad devra pouvoir matérialiser qu'une évolution détectée n'impacte pas le périmètre d'Audit et que le Composant n'est donc pas à auditer pour cette évolution.
+
+La terminologie exacte et les états de cette qualification restent à définir.

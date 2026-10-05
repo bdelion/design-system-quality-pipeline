@@ -1467,6 +1467,64 @@ Un nouvel Audit terminé remplace ce verdict pour le périmètre auquel son nouv
 
 ---
 
+## D-072 — Une évolution de Composant ne rompt pas automatiquement le verdict applicable
+
+Le fait qu'un Composant ait évolué entre deux Versions ne signifie pas automatiquement qu'un nouvel Audit est nécessaire et ne doit pas, à lui seul, invalider le dernier verdict de conformité applicable.
+
+Une modification peut ne pas affecter le périmètre couvert par l'Audit, notamment le périmètre d'accessibilité concerné.
+
+Exemple :
+
+```text
+Button@1.7.0
+Audit → CONFORME
+        │
+        └── Button évolue en 1.8.0
+                    ↓
+        la modification doit être qualifiée
+                    ↓
+        elle peut être sans impact sur le périmètre d'Audit
+                    ↓
+        verdict applicable : CONFORME
+```
+
+Le pipeline ne doit donc pas transformer automatiquement un Composant `ÉVOLUÉ` en `NON AUDITÉ`.
+
+**Statut : Établi**
+
+---
+
+## D-073 — Qualification par la Squad de l'impact d'une évolution sur le besoin d'Audit
+
+Le suivi du patrimoine doit permettre à la Squad d'examiner les Composants ayant évolué et d'indiquer explicitement lorsqu'une évolution n'impacte pas le périmètre nécessitant un nouvel Audit.
+
+Dans ce cas, le Composant peut être marqué comme n'étant pas éligible à un nouvel Audit pour cette évolution, sans remettre en cause le verdict de conformité applicable.
+
+Cette qualification reste une décision de la Squad et ne doit pas être déduite automatiquement de la seule analyse Git.
+
+La terminologie exacte et les valeurs du statut de qualification restent à définir.
+
+**Statut : Principe établi ; modèle de qualification à instruire**
+
+---
+
+## D-074 — Page cible de suivi du patrimoine pour la Squad
+
+Le Dashboard devra à terme proposer une page dédiée au suivi du patrimoine des Composants.
+
+Cette page devra notamment permettre de :
+
+- visualiser les Composants `NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ` et `DÉCOMMISSIONNÉ` lorsque la comparaison entre Versions sera disponible ;
+- faire ressortir les Composants dont l'évolution doit être examinée par la Squad ;
+- enregistrer ou restituer la qualification indiquant qu'une évolution n'impacte pas le périmètre nécessitant un Audit ;
+- distinguer cette information du verdict de conformité du Composant.
+
+Cette page est une aide au pilotage et ne décide pas automatiquement de la création d'une Issue d'Audit.
+
+**Statut : Cible établie ; implémentation ultérieure**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2553,9 +2611,21 @@ Par exemple, il pourrait distinguer un Audit réalisé directement sur la Versio
 
 ## Q-085 — Rupture de l'héritage lorsqu'un Composant évolue
 
-L'héritage d'un verdict reste applicable tant que le Composant est inchangé.
+Une évolution du Composant ne rompt pas automatiquement l'héritage du dernier verdict applicable.
 
-Il reste à préciser l'état de conformité à afficher pour une nouvelle Version lorsque le Composant évolue et qu'aucun nouvel Audit n'a encore été réalisé sur cette nouvelle version du Composant.
+Le Composant peut conserver son verdict, par exemple `CONFORME`, lorsque la Squad qualifie la modification comme n'impactant pas le périmètre nécessitant un nouvel Audit.
+
+Le pipeline ne doit donc pas déduire `NON AUDITÉ` de la seule présence d'une évolution.
+
+**Statut : Établi**
+
+---
+
+## Q-086 — États de qualification d'une évolution vis-à-vis d'un Audit
+
+La page cible de suivi du patrimoine doit permettre à la Squad de qualifier l'impact d'une évolution sur le besoin d'un nouvel Audit.
+
+Il reste à définir les états métier nécessaires à cette qualification, notamment pour distinguer une évolution encore à examiner d'une évolution explicitement considérée comme sans impact sur le périmètre d'Audit.
 
 **Statut : À instruire**
 
