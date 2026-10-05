@@ -2146,3 +2146,29 @@ Audit
 Un autre Issue Type sur une Anomalie d'Audit constitue une incohérence que le pipeline doit pouvoir détecter.
 
 La réciproque n'est pas automatique : une Issue `🐛 Bug` n'est pas nécessairement une Anomalie d'Audit. Son contexte et sa relation avec une Issue d'Audit restent nécessaires pour la qualifier comme telle.
+
+
+### Issue Type obligatoire d'une Improvement d'Audit
+
+Toute Improvement créée à partir d'un Audit doit avoir l'Issue Type `✨ Feature`.
+
+```text
+Audit
+└── Improvement
+    ├── sous-Issue obligatoire
+    ├── Issue Type = ✨ Feature
+    └── 🧩 Component:xxx identique à l'Audit
+```
+
+Un autre Issue Type sur une Improvement d'Audit constitue une incohérence que le pipeline doit pouvoir détecter.
+
+La réciproque n'est pas automatique : une Issue `✨ Feature` n'est pas nécessairement une Improvement d'Audit. Sa relation avec une Issue d'Audit est nécessaire pour la qualifier comme telle.
+
+Les deux catégories actuellement connues disposent ainsi d'une classification explicite :
+
+```text
+Anomalie d'Audit    → 🐛 Bug
+Improvement d'Audit → ✨ Feature
+```
+
+Cette classification reste ouverte à de futurs types de sous-Issues d'Audit, qui devront être définis explicitement avant leur prise en compte.

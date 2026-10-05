@@ -2613,6 +2613,38 @@ Cette règle concerne spécifiquement les Anomalies issues d'un Audit. Elle ne s
 
 ---
 
+## D-125 — Une Improvement d'Audit doit avoir l'Issue Type Feature
+
+Toute Improvement créée à partir d'un Audit doit obligatoirement avoir l'Issue Type `✨ Feature`.
+
+Son identification structurelle repose donc notamment sur les règles cumulatives suivantes :
+
+```text
+Improvement d'Audit
+├── sous-Issue de l'Issue d'Audit
+├── Issue Type = ✨ Feature
+└── exactement 1 🧩 Component:xxx
+    └── identique au Composant de l'Audit parent
+```
+
+Une sous-Issue identifiée comme Improvement d'Audit mais dont l'Issue Type n'est pas `✨ Feature` constitue une incohérence à détecter par le pipeline.
+
+Cette règle concerne spécifiquement les Improvements issues d'un Audit. Elle ne suffit pas, à elle seule, à conclure que toute Issue de type `✨ Feature` est une Improvement d'Audit.
+
+Les deux catégories actuellement connues sont ainsi distinguées structurellement :
+
+```text
+Audit
+├── Anomalie    → Issue Type = 🐛 Bug
+└── Improvement → Issue Type = ✨ Feature
+```
+
+Cette classification reste extensible conformément à D-123.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3238,25 +3270,16 @@ Quel est le minimum d'informations qui doit être demandé par ce template ?
 
 ## Q-056 — Catégorisation des Améliorations d'Audit
 
-Aucun exemple réel de sub-Issue d'Amélioration n'est disponible pour le moment.
+Pour une Improvement issue d'un Audit, plusieurs éléments sont désormais établis :
 
-L'orientation envisagée est un label de la forme :
+- elle est obligatoirement une sous-Issue de l'Issue d'Audit ;
+- son Issue Type est obligatoirement `✨ Feature` ;
+- elle porte exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent ;
+- elle n'intervient pas dans le verdict de conformité.
 
-```text
-[famille d'amélioration]:xxx
-```
+La catégorisation complémentaire envisagée pour les Improvements, par exemple via de futurs labels de famille, reste à instruire.
 
-Restent à déterminer :
-
-- le préfixe ou nom réel du label ;
-- les familles d'amélioration ;
-- les valeurs associées ;
-- la cardinalité de cette catégorisation ;
-- sa gouvernance et son extensibilité.
-
-Il ne faut pas inventer de référentiel avant de disposer d'exemples ou d'une décision métier.
-
-**Statut : À instruire — orientation cible identifiée**
+**Statut : Partiellement établi**
 
 ---
 
