@@ -1601,3 +1601,25 @@ Cette règle conduit à distinguer deux notions :
 - les **Versions potentiellement affectées** par l'Anomalie.
 
 Le modèle permettant d'identifier les Versions affectées n'est pas encore défini.
+
+
+### Version affectée par une Anomalie issue d'un Audit post-PROD
+
+Dans le cas d'un Audit de rattrapage réalisé sur une Version PROD déjà publiée, la Milestone `M.m.r-Audit` fournit le contexte de Version.
+
+```text
+1.7.0
+└── Milestone PROD close
+
+1.7.0-Audit
+└── Audit post-PROD de la Version 1.7.0
+    └── Anomalie détectée
+        ├── Version affectée : 1.7.0
+        └── pas de rattachement rétroactif à la Milestone PROD 1.7.0
+```
+
+La normalisation du suffixe `-Audit`, déjà prévue comme configurable, permet de retrouver la Version de référence `M.m.r`.
+
+La Milestone utilisée ensuite pour planifier la correction est une information différente : elle indique quand la correction est prévue ou livrée, et non nécessairement dans quelle Version le défaut a été détecté.
+
+Cette règle est établie pour les Anomalies issues d'un Audit post-PROD. Le cas des Anomalies découvertes hors Audit reste ouvert.

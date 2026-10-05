@@ -1942,6 +1942,36 @@ La manière de déterminer et de représenter les Versions affectées reste à i
 
 ---
 
+## D-093 — Une Milestone d'Audit post-PROD porte le contexte de la Version affectée
+
+Lorsqu'un Audit est réalisé après la publication d'une Version PROD, la Milestone d'Audit de la forme `M.m.r-Audit` porte le contexte de la Version PROD auditée.
+
+Exemple :
+
+```text
+Milestone PROD
+1.7.0
+→ close et figée
+
+Audit post-PROD
+1.7.0-Audit
+→ version de référence normalisée : 1.7.0
+```
+
+Les Anomalies découvertes dans cet Audit concernent donc la Version `1.7.0`, sans qu'il soit nécessaire ni souhaitable de les rattacher rétroactivement à la Milestone PROD `1.7.0`.
+
+Cette règle complète la distinction déjà établie entre :
+
+- la Milestone PROD, qui reste figée ;
+- la Milestone d'Audit post-PROD, qui fournit le contexte de la Version auditée ;
+- la Milestone ultérieure utilisée pour planifier la correction de l'Anomalie.
+
+Elle s'applique aux Anomalies issues d'un Audit post-PROD. Le mécanisme permettant d'identifier les Versions affectées pour une Anomalie découverte hors Audit reste à instruire.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3182,9 +3212,21 @@ Il reste à préciser quel événement technique fournit la date/heure de réfé
 
 ## Q-097 — Versions affectées par une Anomalie découverte après une release
 
-Une Anomalie découverte après la clôture d'une Milestone PROD ne doit pas être rattachée rétroactivement à cette Milestone.
+Pour une Anomalie issue d'un Audit post-PROD, la Version affectée peut être déterminée à partir du contexte de l'Audit et de sa Milestone `M.m.r-Audit`, normalisée vers `M.m.r`.
 
-Il reste à déterminer si le modèle doit néanmoins identifier explicitement la ou les Versions déjà publiées qui sont affectées par cette Anomalie, indépendamment de la Milestone utilisée pour sa planification et sa correction.
+Exemple : une Anomalie issue de l'Audit `1.7.0-Audit` concerne la Version `1.7.0`, sans être rattachée à la Milestone PROD close `1.7.0`.
+
+Le cas des Anomalies découvertes hors Audit reste à instruire séparément.
+
+**Statut : Partiellement établi**
+
+---
+
+## Q-098 — Version affectée pour une Anomalie découverte hors Audit
+
+Lorsqu'une Anomalie est découverte après une release par un autre canal qu'un Audit, il reste à déterminer si et comment le Dashboard doit identifier explicitement la ou les Versions PROD affectées.
+
+La Milestone de correction ne doit pas être supposée équivalente à la Version dans laquelle le défaut existe.
 
 **Statut : À instruire**
 
