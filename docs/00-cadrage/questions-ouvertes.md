@@ -2878,6 +2878,30 @@ Le pipeline doit considérer comme incohérente toute Anomalie d'Audit ayant zé
 
 ---
 
+## D-136 — Une Improvement d'Audit appartient à un seul Audit parent
+
+La relation entre une **Improvement provenant d'un Audit** et son **Issue d'Audit parent** est stricte du côté de l'Improvement :
+
+```text
+Audit 1 ── 0..n Improvements
+Improvement ── exactement 1 Audit parent
+```
+
+Une même Issue Improvement ne doit donc jamais être rattachée comme sous-Issue à plusieurs Audits.
+
+Cette règle complète la cardinalité déjà établie pour les Anomalies d'Audit. Les deux catégories actuellement connues de sous-Issues d'Audit ont ainsi la même cardinalité vers leur parent :
+
+```text
+Anomalie d'Audit    ── exactement 1 Audit parent
+Improvement d'Audit ── exactement 1 Audit parent
+```
+
+Le pipeline doit considérer comme incohérente toute Improvement d'Audit ayant zéro parent Audit ou plusieurs parents Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3509,12 +3533,14 @@ Quel est le minimum d'informations qui doit être demandé par ce template ?
 Pour une Improvement issue d'un Audit, plusieurs éléments sont désormais établis :
 
 - elle est obligatoirement une sous-Issue de l'Issue d'Audit ;
+- elle appartient à un seul et unique Audit parent ;
 - son Issue Type est obligatoirement `✨ Feature` ;
 - elle porte exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent ;
 - elle ne porte aucune criticité `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
+- sa catégorie `♿ a11y:xxx` est facultative ;
 - elle n'intervient pas dans le verdict de conformité.
 
-La catégorisation complémentaire envisagée pour les Improvements, par exemple via de futurs labels de famille, reste à instruire.
+La catégorisation complémentaire envisagée pour les Improvements, ainsi que la cardinalité maximale des labels `♿ a11y:xxx` lorsqu'ils sont présents, restent à instruire.
 
 **Statut : Partiellement établi**
 

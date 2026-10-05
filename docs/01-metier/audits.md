@@ -2361,3 +2361,20 @@ Une même Issue Anomalie ne peut donc pas être partagée entre plusieurs Audits
 Cette cardinalité préserve également la temporalité des revalidations : lorsqu'un problème est constaté lors d'un nouvel Audit, une nouvelle Anomalie est créée pour ce nouvel Audit plutôt que de rattacher une Anomalie historique à plusieurs Audits.
 
 Le pipeline doit détecter comme incohérente une Anomalie d'Audit sans parent Audit ou rattachée à plusieurs parents Audit.
+
+
+### Cardinalité entre Audit et Improvement
+
+Chaque Improvement provenant d'un Audit appartient à un seul et unique Audit parent.
+
+```text
+Issue d'Audit
+├── 0..n Anomalies
+│   └── chaque Anomalie → exactement 1 Audit parent
+└── 0..n Improvements
+    └── chaque Improvement → exactement 1 Audit parent
+```
+
+Une même Issue Improvement ne peut donc pas être partagée entre plusieurs Audits.
+
+Le pipeline doit détecter comme incohérente une Improvement d'Audit sans parent Audit ou rattachée à plusieurs parents Audit.
