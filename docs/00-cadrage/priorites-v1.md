@@ -78,16 +78,16 @@ Q-011 ne bloque donc plus la V1.
 
 ### Q-013 --- Date de détection
 
-**Priorité : BLOQUANT V1 si le délai de correction est livré en V1**
+**Priorité : DÉJÀ ÉTABLI**
 
-Le délai :
+La date métier de détection d'une Anomalie est la date de création de
+l'Issue `🐛 Bug` dans GitHub :
 
 ``` text
-détection → correction
+detectedAt = GitHub Issue.createdAt
 ```
 
-ne peut pas être défini proprement tant que son point de départ ne l'est
-pas.
+Cette règle vaut pour les Anomalies issues d'un Audit et hors Audit.
 
 ### Q-014 --- Date de correction
 
@@ -441,8 +441,8 @@ réponse change réellement le contrat V1.
 Ordre recommandé :
 
 ``` text
-1. Q-013 + Q-014
-   Dates détection / correction
+1. Q-014
+   Date de correction
    uniquement si le KPI de délai reste en V1
 
 2. Q-019

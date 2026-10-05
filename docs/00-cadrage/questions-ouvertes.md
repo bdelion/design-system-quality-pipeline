@@ -2936,6 +2936,23 @@ de la Squad. D'autres dimensions et indicateurs restent à challenger.
 
 ---
 
+### D-139 --- Date de détection d'une Anomalie
+
+La date métier de détection d'une Anomalie est la date de création de
+l'Issue `🐛 Bug` dans GitHub.
+
+``` text
+Anomalie.detectedAt = GitHub Issue.createdAt
+```
+
+Cette règle s'applique aux Anomalies issues d'un Audit comme aux
+Anomalies hors Audit. Aucune date antérieure de constatation n'est
+reconstruite ou inférée.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3058,11 +3075,16 @@ indicateurs associés.
 
 ---
 
-## Q-013 — Date de détection
+### Q-013 --- Date de détection
 
-Quelle date représente la détection d'une Anomalie ?
+La date de détection d'une Anomalie est la date de création de l'Issue
+`🐛 Bug` dans GitHub.
 
-**Statut : À instruire**
+``` text
+detectedAt = GitHub Issue.createdAt
+```
+
+**Statut : Établi**
 
 ---
 

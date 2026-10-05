@@ -219,3 +219,17 @@ Avant de les introduire, il faudra notamment préciser :
 
 Ces éléments ne font pas partie du contrat V1.
 
+------------------------------------------------------------------------
+
+## Date de détection
+
+Pour les indicateurs portant sur les Anomalies :
+
+``` text
+date de détection = date de création GitHub de l'Issue 🐛 Bug
+detectedAt = issue.createdAt
+```
+
+Cette définition est commune aux Anomalies issues d'un Audit et hors
+Audit. Elle fournit le point de départ du calcul du délai
+détection → correction. La date de correction est définie séparément.

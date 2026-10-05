@@ -552,3 +552,17 @@ la Squad elle-même.
 
 La taxonomie V2 et les indicateurs associés ne sont pas encore définis.
 
+------------------------------------------------------------------------
+
+## Anomalie --- date de détection
+
+Pour une Anomalie, la date métier de détection est la date de création
+de l'Issue `🐛 Bug` dans GitHub.
+
+``` text
+Anomalie.detectedAt = GitHub Issue.createdAt
+```
+
+Cette règle s'applique aux Anomalies issues d'un Audit comme aux
+Anomalies hors Audit. Le modèle ne reconstruit pas une éventuelle
+constatation antérieure à la création de l'Issue.

@@ -216,3 +216,15 @@ l'équipe ou du contenu de l'Issue.
 Une classification plus fine est réservée à une évolution V2 après
 définition explicite des dimensions métier et des sources fiables.
 
+------------------------------------------------------------------------
+
+## Date de détection d'une Anomalie
+
+La date de détection utilisée par le modèle et les indicateurs est la
+date de création GitHub de l'Issue `🐛 Bug` représentant l'Anomalie.
+
+``` text
+detectedAt = issue.createdAt
+```
+
+Aucune date antérieure supposée de constatation ne doit être inférée.
