@@ -1885,3 +1885,25 @@ Vue Modal  : +1
 Cette règle permet à chaque vue Composant de refléter toutes les Issues qui le concernent.
 
 L'Issue conserve toutefois son identité unique. Une agrégation globale ne doit pas déduire le nombre d'Issues en additionnant directement les compteurs par Composant, sous peine de compter plusieurs fois les Issues multi-Composants.
+
+
+### Comptages au niveau Bibliothèque
+
+Au niveau Bibliothèque, plusieurs comptages complémentaires doivent être présentés.
+
+```text
+Bibliothèque
+├── Issues totales distinctes
+│   └── avec ou sans Composant
+│
+├── Issues avec au moins un Composant
+│   └── ventilation par Composant
+│
+└── Issues sans Composant
+```
+
+Le total global repose sur les Issues GitHub distinctes. Une Issue multi-Composants n'y compte donc qu'une seule fois.
+
+Dans la ventilation par Composant, cette même Issue contribue en revanche une fois à chacun des Composants concernés. La somme des compteurs par Composant peut par conséquent dépasser le nombre d'Issues distinctes avec Composant.
+
+Le nombre d'Issues sans Composant doit également être visible. Il ne doit pas encore être interprété automatiquement comme un défaut de qualité des données, car certaines Issues peuvent être légitimement transverses.

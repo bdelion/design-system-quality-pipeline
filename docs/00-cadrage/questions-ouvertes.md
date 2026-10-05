@@ -2297,6 +2297,49 @@ L'Issue reste néanmoins une seule Issue GitHub. Les totaux par Composant ne doi
 
 ---
 
+## D-111 — Distinguer les différents comptages d'Issues au niveau Bibliothèque
+
+Au niveau d'une Bibliothèque, le Dashboard doit fournir plusieurs lectures complémentaires des Issues.
+
+### Total global
+
+Le nombre total d'Issues de la Bibliothèque correspond au nombre d'Issues GitHub distinctes, tous types confondus, qu'elles soient rattachées ou non à un Composant.
+
+Une Issue multi-Composants ne compte donc qu'une seule fois dans ce total.
+
+### Issues rattachées aux Composants
+
+Le Dashboard doit également permettre de distinguer les Issues selon les Composants auxquels elles sont rattachées.
+
+Une Issue multi-Composants est alors comptabilisée une fois pour chacun de ses Composants conformément à D-110.
+
+La somme des compteurs par Composant peut donc être supérieure au nombre d'Issues GitHub distinctes rattachées à au moins un Composant.
+
+### Issues sans Composant
+
+Le Dashboard doit également rendre visible le nombre d'Issues qui ne portent aucun label `🧩 Component:xxx`.
+
+Cette mesure est distincte du total global et de la ventilation par Composant. L'absence de Composant ne constitue pas automatiquement une erreur de données tant que les cas d'Issues légitimement transverses ne sont pas entièrement définis.
+
+Exemple :
+
+```text
+Bibliothèque
+├── Issues totales distinctes : 100
+├── Issues avec au moins un Composant : 85
+├── Issues sans Composant : 15
+└── Ventilation par Composant
+    ├── Button : 30
+    ├── Modal  : 20
+    └── ...
+```
+
+La somme de la ventilation par Composant n'est pas destinée à reconstituer le total global.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3683,11 +3726,31 @@ Elle reste toutefois une seule Issue GitHub au niveau global.
 
 ## Q-109 — Comptage global des Issues au niveau Bibliothèque
 
-Une Issue multi-Composants compte une fois pour chacun de ses Composants dans les indicateurs par Composant, tout en restant une seule Issue GitHub.
+Le nombre total d'Issues au niveau Bibliothèque correspond au nombre d'Issues GitHub distinctes, tous types confondus et avec ou sans rattachement à un Composant.
 
-Il reste à confirmer que le nombre total d'Issues au niveau Bibliothèque doit correspondre au nombre d'Issues GitHub distinctes, sans additionner les totaux calculés par Composant.
+En complément, le Dashboard doit présenter :
 
-**Statut : À confirmer**
+- les Issues rattachées aux Composants et leur ventilation par Composant ;
+- le nombre d'Issues sans Composant.
+
+Une Issue multi-Composants reste unique dans le total Bibliothèque mais contribue à chacun des Composants concernés dans la ventilation.
+
+**Statut : Établi**
+
+---
+
+## Q-110 — Nature des Issues sans Composant
+
+Le Dashboard doit afficher le nombre d'Issues sans label `🧩 Component:xxx`.
+
+Il reste à déterminer si ces Issues doivent être distinguées entre :
+
+- Issues légitimement transverses, ne concernant aucun Composant ;
+- Issues qui devraient concerner un Composant mais auxquelles le label Composant manque.
+
+Cette distinction conditionnera notamment l'interprétation de l'indicateur `Issues sans Composant` et son éventuel usage comme indicateur de qualité des données.
+
+**Statut : À instruire**
 
 ---
 
