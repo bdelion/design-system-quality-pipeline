@@ -1,27 +1,27 @@
 # Catalogue des indicateurs
 
-## 1. Rôle
+## 1. Objectif
 
-Cette page décrit le **contrat analytique V2 actuellement implémenté**.
+Ce dossier décrit les indicateurs métier du **Design System Quality
+Pipeline**.
 
-Elle ne constitue pas encore le catalogue métier V1 définitif. Les
-besoins présents dans `specifications/indicateurs-souhaites.md` et les
-décisions D-001 à D-136 seront consolidés en M3 avant d'être transformés
-en nouvelles métriques.
+Il distingue trois niveaux :
 
-La source exécutable du contrat actuel est :
+-   **ÉTABLI** : définition métier suffisamment stabilisée ;
+-   **IMPLÉMENTÉ** : métrique présente dans le moteur actuel,
+    éventuellement avec une définition historique à confronter au métier
+    ;
+-   **FUTUR / À INSTRUIRE** : indicateur souhaité mais dont la source,
+    la formule ou la sémantique n'est pas encore suffisamment définie.
 
-``` text
-src/analytics/catalog.ts
-```
-
-Chaque métrique produite doit être couverte par ce catalogue.
+Un indicateur ne doit pas être considéré comme établi uniquement parce
+qu'il existe dans le code.
 
 ------------------------------------------------------------------------
 
 ## 2. Contrat d'une métrique
 
-Le modèle actuel associe à une métrique :
+Le contrat Analytics V2 actuel représente notamment une métrique avec :
 
 ``` text
 id
@@ -38,315 +38,196 @@ exclusions
 breakdowns?
 ```
 
-Les unités actuellement prévues sont :
+Ce contrat est une bonne base de traçabilité.
+
+La définition métier doit cependant précéder l'identifiant technique.
+
+------------------------------------------------------------------------
+
+## 3. Fiche de définition
+
+Chaque indicateur stabilisé doit pouvoir répondre aux questions
+suivantes.
+
+### Identité
 
 ``` text
-count
-percentage
-days
+Nom
+Question métier
+Statut
 ```
 
-Les périmètres prévus sont :
+### Calcul
 
 ``` text
-portfolio
-library
-component
-audit
-anomaly
+Valeur
+Unité
+Numérateur
+Dénominateur
+Périmètre
+Période
 ```
 
-Le catalogue qualifie également la nature analytique :
+### Traçabilité
 
 ``` text
-stock
-ratio
-duration
-flow
+Entités sources
+Exclusions
+Fiabilité
+Dimensions de ventilation
+```
+
+### Temporalité
+
+``` text
+À quel instant la valeur est-elle vraie ?
+S'agit-il d'un stock, d'un flux ou d'une photographie historique ?
 ```
 
 ------------------------------------------------------------------------
 
-## 3. Portfolio
+## 4. Familles d'indicateurs
 
-  -------------------------------------------------------------------------------
-  Identifiant                     Nature                  Définition actuelle
-  ------------------------------- ----------------------- -----------------------
-  `portfolio.repositories`        stock                   nombre de Repositories
-                                                          distincts effectivement
-                                                          analysés
+Le catalogue est organisé par vues métier :
 
-  `portfolio.libraries`           stock                   nombre de Librairies
-                                                          analysées
+-   Portfolio ;
+-   Librairie ;
+-   Component ;
+-   Anomalies ;
+-   Audits Accessibilité ;
+-   Sprints ;
+-   Versions ;
+-   Qualité ;
+-   indicateurs futurs.
 
-  `portfolio.components`          stock                   nombre de Composants
-                                                          actifs dans le
-                                                          périmètre
-
-  `portfolio.componentsAudited`   stock                   nombre de Composants
-                                                          actifs disposant d'au
-                                                          moins un Audit terminé
-
-  `portfolio.auditCoverage`       ratio                   Composants actifs
-                                                          disposant d'un Audit
-                                                          terminé / Composants
-                                                          actifs
-  -------------------------------------------------------------------------------
-
-La définition actuelle de `portfolio.auditCoverage` décrit le code
-existant. Le modèle métier consolidé introduit une notion plus riche
-d'Audit applicable et de Catalogue historique par Version ; la métrique
-devra donc être réévaluée en M3 puis lors de la gap analysis.
+Ces vues peuvent partager les mêmes métriques avec des scopes
+différents.
 
 ------------------------------------------------------------------------
 
-## 4. Audits
+## 5. Principes de calcul établis
 
-  ------------------------------------------------------------------------
-  Identifiant              Nature                  Définition actuelle
-  ------------------------ ----------------------- -----------------------
-  `audit.completed`        stock                   Audits ayant atteint un
-                                                   résultat exploitable
+### Couverture d'Audit
 
-  `audit.conform`          stock                   Audits dont le résultat
-                                                   objectif est conforme
+``` text
+Components couverts par un Audit applicable
+/
+Components du Catalogue applicable au périmètre
+```
 
-  `audit.conditional`      stock                   Audits dont le résultat
-                                                   objectif est
-                                                   conditionnel
+La couverture répond à :
 
-  `audit.nonConform`       stock                   Audits dont le résultat
-                                                   objectif est non
-                                                   conforme
+> Quelle part du périmètre possède une information d'Audit applicable ?
 
-  `audit.critical`         stock                   Audits dont le résultat
-                                                   objectif est critique
+### Taux de conformité
 
-  `audit.conformityRate`   ratio                   Audits conformes /
-                                                   Audits terminés
-  ------------------------------------------------------------------------
+``` text
+Components conformes
+/
+Components couverts par un Audit applicable
+```
 
-Les états `conditional` et `critical` appartiennent au modèle analytique
-actuel. Ils ne doivent pas être confondus avec la définition métier
-consolidée de la conformité d'un Composant × Version.
+La conformité répond à :
 
-Le dashboard doit afficher numérateur et dénominateur avec un
-pourcentage afin de rendre le ratio interprétable.
+> Parmi les Components dont la conformité est connue par un Audit
+> applicable, quelle part est conforme ?
+
+Un Component non audité n'est pas compté comme non conforme.
+
+### Traitement des Anomalies
+
+Le principe historique retenu est :
+
+``` text
+Anomalies traitées
+/
+Anomalies détectées
+```
+
+Une Anomalie traitée est `Done + Closed`.
+
+Les vues par criticité doivent utiliser la même définition dans chaque
+sous-population.
 
 ------------------------------------------------------------------------
 
-## 5. Anomalies --- stocks
+## 6. Stock et historique
 
-  ----------------------------------------------------------------------------------
-  Identifiant                        Nature                  Définition actuelle
-  ---------------------------------- ----------------------- -----------------------
-  `anomaly.total`                    stock                   anomalies valides du
-                                                             périmètre, hors
-                                                             annulées
+Il faut distinguer :
 
-  `anomaly.open`                     stock                   anomalies actuellement
-                                                             ouvertes ou rouvertes
+``` text
+stock actuel
+```
 
-  `anomaly.inProgress`               stock                   anomalies actuellement
-                                                             en cours
+de :
 
-  `anomaly.done`                     stock                   anomalies actuellement
-                                                             terminées
+``` text
+état historique à un instant donné
+```
 
-  `anomaly.byCriticality.blocking`   stock                   anomalies de criticité
-                                                             bloquante
+Exemple :
 
-  `anomaly.byCriticality.major`      stock                   anomalies de criticité
-                                                             majeure
+-   nombre d'Anomalies ouvertes aujourd'hui ;
+-   nombre d'Anomalies ouvertes au moment de la publication d'une
+    Version.
 
-  `anomaly.byCriticality.minor`      stock                   anomalies de criticité
-                                                             mineure
-
-  `anomaly.criticalityCoverage`      ratio                   anomalies avec
-                                                             criticité exploitable /
-                                                             anomalies valides
-
-  `anomaly.byCategory.*`             stock                   anomalies portant une
-                                                             catégorie donnée
-
-  `anomaly.correctedEver`            stock                   anomalies ayant déjà
-                                                             atteint une première
-                                                             correction métier
-
-  `anomaly.reopened`                 stock                   anomalies actuellement
-                                                             rouvertes
-
-  `anomaly.cancelled`                stock                   anomalies annulées dans
-                                                             les sources
-  ----------------------------------------------------------------------------------
-
-`anomaly.byCategory.*` est un contrat générique : chaque catégorie
-concrète constitue une instance.
-
-`anomaly.correctedEver` et `anomaly.reopened` sont des **états
-observables dans un Snapshot**, pas des flux temporels.
+Une correction ultérieure ne doit pas réécrire la photographie
+historique d'une ancienne Version.
 
 ------------------------------------------------------------------------
 
-## 6. Anomalies --- délais
+## 7. Fiabilité
 
-Les métriques actuellement déclarées sont :
+La fiabilité est attachée à la métrique.
 
-``` text
-anomaly.correctionDelay.average
-anomaly.correctionDelay.median
-anomaly.correctionDelay.p90
-anomaly.backlog.oldestAge
-```
-
-Les trois premières utilisent actuellement le délai calendaire :
+Une alerte Data Quality n'affecte que les indicateurs qui dépendent
+réellement de la donnée en cause.
 
 ``` text
-createdAt → firstDoneAt
+DQ
+  ↓
+métriques concernées
+  ↓
+reliability
 ```
 
-Lorsqu'aucune observation exploitable n'est disponible, la valeur doit
-être `unknown` et non `0`.
-
-Cette définition décrit le code actuel. Les dates métier de détection et
-de correction restent des sujets à consolider avant de considérer ces
-délais comme les KPI métier définitifs.
+Le statut global du Snapshot ne doit pas remplacer cette analyse.
 
 ------------------------------------------------------------------------
 
-## 7. Anomalies --- flux
+## 8. Dimensions de ventilation
 
-Les métriques de flux actuellement déclarées sont :
-
-``` text
-anomaly.flow.created
-anomaly.flow.corrected
-anomaly.flow.reopened
-anomaly.flow.cancelled
-```
-
-Elles ne sont calculées que lorsqu'un Snapshot précédent comparable est
-disponible.
-
-Chaque flux porte une période :
+Les dimensions établies ou utiles comprennent notamment :
 
 ``` text
-period.from = capturedAt du Snapshot précédent
-period.to   = capturedAt du Snapshot courant
+Librairie
+Component
+Version
+Sprint / Iteration
+criticité
+catégorie a11y
+Issue Type
+Project Status
 ```
 
-Un flux représente donc une transition **observée entre deux états
-collectés**. Il ne constitue pas automatiquement la date exacte de
-l'événement GitHub.
+Une ventilation ne change pas la définition de la population globale.
+
+Une Issue multi-Component peut apparaître dans plusieurs ventilations
+Component tout en restant une seule Issue dans le total global distinct.
 
 ------------------------------------------------------------------------
 
-## 8. Stock et flux
+## 9. Indicateurs non encore normatifs
 
-La distinction est obligatoire :
+Les éléments suivants ne disposent pas encore d'une définition métier
+complète :
 
-``` text
-stock
-= état visible dans un Snapshot
+-   score global de qualité d'une Version ;
+-   score global de qualité d'un Component ;
+-   délai détection → correction d'une Anomalie ;
+-   métriques nécessitant la consommation réelle des Applications ;
+-   métriques normalisées par le nombre d'occurrences d'un Component ;
+-   score ou badge d'une Application.
 
-flow
-= changement observable entre deux Snapshots
-```
-
-Par exemple :
-
-``` text
-anomaly.correctedEver
-```
-
-signifie « déjà corrigée au moins une fois dans les données disponibles
-».
-
-À l'inverse :
-
-``` text
-anomaly.flow.corrected
-```
-
-signifie qu'une première correction est devenue observable entre deux
-Snapshots comparables.
-
-Le dashboard ne doit pas présenter un stock comme un flux sur une
-période.
-
-------------------------------------------------------------------------
-
-## 9. Data Quality et fiabilité
-
-Une règle DQ n'exclut pas automatiquement une entité de toutes les
-métriques.
-
-Les impacts sont appliqués métrique par métrique :
-
-``` text
-include
-exclude
-unknown
-```
-
-La métrique conserve :
-
--   son niveau de fiabilité ;
--   les identifiants des alertes qui la concernent ;
--   les exclusions appliquées.
-
-Une incohérence portant sur une métrique ne doit donc pas, par principe
-analytique, dégrader toutes les autres métriques.
-
-Le Snapshot possède encore une fiabilité globale plus grossière dans
-l'implémentation actuelle. Cette différence est documentée et sera
-réévaluée lors de la gap analysis.
-
-------------------------------------------------------------------------
-
-## 10. Source de vérité analytique
-
-Le contrat courant est :
-
-``` text
-Analytics.metrics
-```
-
-Les propriétés historiques telles que :
-
-``` text
-anomaliesDeclared
-anomaliesCorrected
-openAnomalies
-auditsCoverage
-conformityRate
-averageCorrectionDelayDays
-medianCorrectionDelayDays
-```
-
-sont des projections de compatibilité.
-
-Elles sont marquées `deprecated` dans le modèle TypeScript et ne doivent
-pas servir à implémenter de nouveaux calculs ou écrans.
-
-------------------------------------------------------------------------
-
-## 11. Besoin métier non couvert
-
-Le catalogue actuel ne couvre qu'une partie du besoin exprimé.
-
-Restent notamment à consolider :
-
--   métriques par Librairie et Composant ;
--   workflow et Sprint ;
--   Velocity ;
--   contributeurs ;
--   traitement des Anomalies d'Audit ;
--   couverture applicable et héritée ;
--   conformité Component × Version ;
--   qualité par Version ;
--   consommation des Packages et Components par les Applications ;
--   futurs indicateurs d'usage.
-
-Ces éléments seront traités en M3 et ne doivent pas être inventés à
-partir du catalogue technique actuel.
+Ils restent documentés comme besoins ou pistes, pas comme métriques V1
+établies.
