@@ -1643,3 +1643,28 @@ Bug hors Audit d'accessibilité
 La Version affectée ne doit donc pas être déduite automatiquement de la Milestone.
 
 Le format exact à utiliser dans la description reste à définir avant de spécifier une règle d'extraction par le pipeline.
+
+
+### Cardinalité des Versions affectées pour un Bug hors accessibilité
+
+Un Bug hors périmètre des Audits d'accessibilité peut concerner une ou plusieurs Versions.
+
+Dans la pratique, une seule Version devrait être renseignée dans la majorité des remontées, car le défaut est généralement signalé dans un contexte d'usage client précis.
+
+```text
+Remontée client
+└── Version utilisée : 1.7.1
+```
+
+Le modèle doit néanmoins accepter plusieurs Versions lorsque celles-ci ont été explicitement identifiées comme affectées.
+
+```text
+Versions affectées
+├── 1.6.0
+├── 1.7.0
+└── 1.7.1
+```
+
+Aucune propagation vers les Versions antérieures ne doit être inférée automatiquement à partir de la seule Version sur laquelle le défaut a été observé.
+
+La distinction éventuelle entre `Version observée/utilisée` par le client et `Version affectée` reste à préciser.

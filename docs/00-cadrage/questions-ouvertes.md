@@ -1986,6 +1986,38 @@ Le format exact de l'information dans la description n'est pas encore défini et
 
 ---
 
+## D-095 — Un Bug hors accessibilité peut affecter plusieurs Versions
+
+Pour un Bug hors périmètre des Audits d'accessibilité, le modèle doit permettre d'identifier une ou plusieurs Versions affectées.
+
+Le cas attendu le plus fréquent reste toutefois une seule Version, car la remontée est généralement faite dans un contexte d'usage précis et indique la Version utilisée par le client au moment où le défaut est constaté.
+
+Exemple courant :
+
+```text
+Bug remonté par un client
+└── Version utilisée : 1.7.1
+    └── Version affectée connue : 1.7.1
+```
+
+Cas possible mais plus rare :
+
+```text
+Bug
+└── Versions affectées explicitement identifiées
+    ├── 1.6.0
+    ├── 1.7.0
+    └── 1.7.1
+```
+
+Le pipeline ne doit pas déduire automatiquement qu'une Version antérieure est affectée au seul motif qu'un défaut est constaté sur une Version plus récente.
+
+Seules les Versions effectivement identifiées comme affectées doivent être enregistrées.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3253,6 +3285,14 @@ Le format exact utilisé dans la description reste à définir.
 La présence obligatoire de la Version affectée dans la description de l'Issue est établie pour les Bugs hors périmètre des Audits d'accessibilité.
 
 Il reste à définir le format structuré attendu afin que le pipeline puisse extraire cette information de manière fiable.
+
+**Statut : À instruire**
+
+---
+
+## Q-100 — Sémantique de la Version renseignée lors d'une remontée client
+
+Lorsqu'un client remonte un Bug hors accessibilité en indiquant la Version qu'il utilise, il reste à préciser si cette Version doit être considérée directement comme une `Version affectée` ou seulement comme une `Version observée/utilisée`, la qualification `affectée` pouvant éventuellement nécessiter une confirmation ultérieure.
 
 **Statut : À instruire**
 
