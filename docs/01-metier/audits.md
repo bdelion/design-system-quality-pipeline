@@ -1928,3 +1928,28 @@ Le second cas ne peut pas être déduit de manière certaine à partir de la seu
 À terme, le pipeline pourra éventuellement produire une qualification distincte telle que `Composant manquant suspecté` à partir de signaux complémentaires. Cette qualification devra rester différente d'une erreur certaine tant qu'une règle métier fiable ne permet pas de conclure.
 
 Des pistes à instruire incluent la présence d'un Composant dans des informations structurées de l'Issue, son rattachement à un Audit, ou les informations issues d'une PR liée.
+
+
+### Analyse dynamique des Issues sans Composant
+
+Une Issue sans label `🧩 Component:xxx` ne nécessite pas l'ajout d'un label spécifique `transverse`.
+
+Elle dispose déjà de dimensions métier exploitables, notamment son Issue Type et ses autres labels.
+
+Le Dashboard doit permettre d'exploiter ces dimensions dans une page d'analyse dynamique où la Squad pourra sélectionner des critères pour filtrer ou agréger les Issues.
+
+```text
+Issues
+  │
+  ▼
+Page d'analyse dynamique
+  ├── filtre / agrégation par Composant
+  ├── présence / absence de Composant
+  ├── Issue Type
+  ├── labels
+  └── autres dimensions à définir
+```
+
+Cette approche permet d'analyser les Issues sans Composant sans créer artificiellement un nouveau label uniquement pour les qualifier de transverses.
+
+Elle complète les indicateurs et vues prédéfinis du Dashboard par une capacité d'exploration multidimensionnelle. La liste exacte des dimensions et l'ergonomie de cette page restent à instruire.

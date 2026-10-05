@@ -2369,6 +2369,38 @@ Ces mécanismes seraient des aides à la qualification et ne doivent pas, sans r
 
 ---
 
+## D-114 — Ne pas imposer de label dédié aux Issues sans Composant
+
+Une Issue sans label `🧩 Component:xxx` n'a pas besoin d'un label spécifique permettant de la qualifier comme `transverse`.
+
+Elle conserve son Issue Type ainsi qu'un ou plusieurs autres labels, qui constituent des dimensions d'analyse exploitables.
+
+L'absence de label Composant est donc elle-même une caractéristique observable de l'Issue, sans qu'il soit nécessaire d'introduire un nouveau vocabulaire de label uniquement pour ce cas.
+
+**Statut : Établi**
+
+---
+
+## D-115 — Prévoir une page d'analyse dynamique des Issues
+
+Le Dashboard doit prévoir une page permettant d'analyser les Issues de manière dynamique en sélectionnant les critères utilisés pour les filtrer ou les agréger.
+
+Cette capacité doit notamment permettre d'exploiter les dimensions disponibles sur une Issue, par exemple :
+
+- présence ou absence d'un rattachement à un Composant ;
+- Composant lorsqu'il existe ;
+- Issue Type ;
+- labels ;
+- autres dimensions métier disponibles dans le modèle et pertinentes pour l'analyse.
+
+L'objectif est de ne pas limiter l'analyse aux seuls KPI ou regroupements prédéfinis : la Squad doit pouvoir construire des lectures adaptées à ses besoins à partir des données disponibles.
+
+Les critères exacts proposés par la page, les combinaisons autorisées et son ergonomie restent à définir.
+
+**Statut : Besoin fonctionnel établi — conception à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3787,6 +3819,16 @@ Il reste à définir comment identifier une Issue sans label `🧩 Component:xxx
 Des pistes pourront être instruites ultérieurement : informations structurées dans l'Issue, relation avec un Audit, analyse d'une PR liée, mention d'un Composant ou autres signaux.
 
 Le mécanisme devra éviter de transformer une simple heuristique en erreur de qualité des données certaine.
+
+**Statut : À instruire**
+
+---
+
+## Q-112 — Dimensions disponibles dans la page d'analyse dynamique
+
+Le besoin d'une page permettant de sélectionner dynamiquement des critères de filtre et d'agrégation est établi.
+
+Il reste à définir progressivement la liste des dimensions que l'utilisateur pourra sélectionner, au-delà des premières dimensions identifiées : Composant, présence/absence de Composant, Issue Type et labels.
 
 **Statut : À instruire**
 
