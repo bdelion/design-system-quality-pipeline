@@ -56985,7 +56985,7 @@
           "state": "OPEN",
           "issueType": "ENHANCEMENT",
           "labels": [
-            "filairesMAIF",
+            "filairesENTERPRISE",
             "Design issue"
           ],
           "criticities": [],
@@ -57242,7 +57242,7 @@
           "issueType": "UNKNOWN",
           "labels": [
             "documentation",
-            "filairesMAIF",
+            "filairesENTERPRISE",
             "atom",
             "CI",
             "Release"
@@ -57587,7 +57587,7 @@
           "state": "CLOSED",
           "issueType": "UNKNOWN",
           "labels": [
-            "filairesMAIF",
+            "filairesENTERPRISE",
             "Design issue"
           ],
           "criticities": [],

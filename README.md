@@ -486,3 +486,9 @@ Utiliser `.env` pour les secrets et conserver les traces RAW localement.
 **Version du projet :** `0.1.0`\
 **Stack :** Node.js · TypeScript · Commander · Vitest · ESLint\
 **Modèle :** Design System Quality V2.1
+
+## Documentation V11
+
+La documentation structurée V11 est disponible dans [`docs/README.md`](docs/README.md). Les supports de présentation sont dans [`presentation/README.md`](presentation/README.md).
+
+La documentation distingue explicitement faits implémentés, règles métier, propositions et questions ouvertes. Elle ne doit pas être considérée comme une nouvelle source de vérité fonctionnelle tant que les points marqués « à confirmer » n'ont pas été arbitrés.

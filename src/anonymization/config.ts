@@ -1,4 +1,3 @@
-import type { RawDataset } from '../domain/types.js';
 import type { AnonymizationOptions } from './types.js';
 import type { PipelineConfig } from '../config.js';
 import type { Catalogue } from '../catalogue.js';
@@ -30,26 +29,25 @@ export function anonymizePipelineConfig(config: PipelineConfig, source: RawDatas
 }
 
 /**
- * Creates the catalogue configuration for exactly the components declared by
- * the source RAW dataset. Metadata comes from the reference catalogue, while
- * repository/component identities use the same mapping as the anonymized RAW.
+ * Creates the anonymized catalogue configuration from the reference catalogue.
+ * The reference catalogue is the source of truth for the fixture catalogue.
+ * Repository/component identities use the same mapping as the anonymized RAW.
  */
-export function anonymizeCatalogue(config: Catalogue, source: RawDataset, options: AnonymizationOptions, map: StableMapper): Catalogue {
-  const sourceComponents = new Set(source.catalogueComponents);
-  const catalogueByName = new Map(config.components.map((component) => [component.name, component]));
-  const missing = source.catalogueComponents.filter((name) => !catalogueByName.has(name));
-  if (missing.length > 0) {
-    throw new Error(`Cannot create fixture catalogue: components declared by RAW are missing from catalogue.yaml: ${missing.join(', ')}`);
-  }
-
+export function anonymizeCatalogue(
+  config: Catalogue,
+  options: AnonymizationOptions,
+  map: StableMapper
+): Catalogue {
   return {
     ...config,
-    components: config.components
-      .filter((component) => sourceComponents.has(component.name))
-      .map((component) => ({
-        ...component,
-        ...(component.repository ? { repository: map('repository', component.repository, 'repo') } : {}),
-        ...(options.preserveComponentNames ? {} : { name: map('component', component.name, 'component') })
-      }))
+    components: config.components.map((component) => ({
+      ...component,
+      ...(component.repository
+        ? { repository: map('repository', component.repository, 'repo') }
+        : {}),
+      ...(options.preserveComponentNames
+        ? {}
+        : { name: map('component', component.name, 'component') })
+    }))
   };
 }

@@ -1,2 +1,197 @@
 version: "1.0"
-components: []
+components:
+  - name: Button
+    repository: repo-2901ce22
+    stream: React
+    owner: Front
+    squad: eventail
+    status: stable
+    rgaaLevel: AA
+    tags:
+      - form
+      - action
+    figmaUrl: https://figma.example.com/button
+    documentationUrl: https://eventail.example.com/button
+    audit:
+      frequency: quarterly
+      lastAuditDate: 2026-08-12
+  - name: Modal
+    repository: repo-2901ce22
+    stream: React
+    owner: Front
+    squad: eventail
+    status: stable
+    rgaaLevel: AA
+    tags:
+      - overlay
+      - dialog
+    figmaUrl: https://figma.example.com/modal
+    documentationUrl: https://eventail.example.com/modal
+    audit:
+      frequency: quarterly
+      lastAuditDate: 2026-08-01
+  - name: DatePicker
+    repository: repo-f5e51130
+    stream: React
+    owner: Front
+    squad: eventail
+    status: stable
+    rgaaLevel: AA
+    tags:
+      - form
+      - date
+    figmaUrl: https://figma.example.com/datepicker
+    documentationUrl: https://eventail.example.com/datepicker
+    audit:
+      frequency: monthly
+      lastAuditDate: 2026-07-15
+  - name: Alert
+    repository: repo-f8ba91d1
+    stream: React
+    owner: Front
+    squad: eventail
+    status: stable
+    rgaaLevel: AA
+    tags:
+      - feedback
+    audit:
+      frequency: quarterly
+  - name: Card
+    repository: repo-f8ba91d1
+    stream: React
+    owner: Front
+    squad: eventail
+    status: stable
+    rgaaLevel: AA
+    tags:
+      - layout
+  - name: Toast
+    repository: repo-f5e51130
+    stream: React
+    owner: Front
+    squad: eventail
+    status: experimental
+    rgaaLevel: AA
+    tags:
+      - feedback
+  - name: Tabs
+    repository: repo-f5e51130
+    stream: React
+    owner: Front
+    squad: eventail
+    status: stable
+    rgaaLevel: AA
+    tags:
+      - navigation
+  - name: TreeView
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Radio
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Label
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Switch
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: NotificationStack
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Dialog
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Badge
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Table
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: CopyString
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Loader
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Tag
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: MediaCard
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: Input
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: LinkButton
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: StringFormFragment
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []
+  - name: LoadingIndicator
+    stream: TODO
+    owner: TODO
+    squad: TODO
+    status: stable
+    rgaaLevel: TODO
+    tags: []

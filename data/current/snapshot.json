@@ -306,11 +306,11 @@
           "action"
         ],
         "stream": "React",
-        "owner": "Communs du Dev",
-        "squad": "Plume",
+        "owner": "mySquad",
+        "squad": "ecaille",
         "rgaaLevel": "AA",
         "figmaUrl": "https://figma.example.com/button",
-        "documentationUrl": "https://plume.example.com/button",
+        "documentationUrl": "https://ecaille.example.com/button",
         "audit": {
           "frequency": "quarterly",
           "lastAuditDate": "2026-08-12"
@@ -334,11 +334,11 @@
           "dialog"
         ],
         "stream": "React",
-        "owner": "Communs du Dev",
-        "squad": "Plume",
+        "owner": "mySquad",
+        "squad": "ecaille",
         "rgaaLevel": "AA",
         "figmaUrl": "https://figma.example.com/modal",
-        "documentationUrl": "https://plume.example.com/modal",
+        "documentationUrl": "https://ecaille.example.com/modal",
         "audit": {
           "frequency": "quarterly",
           "lastAuditDate": "2026-08-01"
@@ -392,11 +392,11 @@
           "date"
         ],
         "stream": "React",
-        "owner": "Communs du Dev",
-        "squad": "Plume",
+        "owner": "mySquad",
+        "squad": "ecaille",
         "rgaaLevel": "AA",
         "figmaUrl": "https://figma.example.com/datepicker",
-        "documentationUrl": "https://plume.example.com/datepicker",
+        "documentationUrl": "https://ecaille.example.com/datepicker",
         "audit": {
           "frequency": "monthly",
           "lastAuditDate": "2026-07-15"
@@ -419,8 +419,8 @@
           "feedback"
         ],
         "stream": "React",
-        "owner": "Communs du Dev",
-        "squad": "Plume",
+        "owner": "mySquad",
+        "squad": "ecaille",
         "rgaaLevel": "AA",
         "provenance": {
           "source": "catalogue",
@@ -440,8 +440,8 @@
           "feedback"
         ],
         "stream": "React",
-        "owner": "Communs du Dev",
-        "squad": "Plume",
+        "owner": "mySquad",
+        "squad": "ecaille",
         "rgaaLevel": "AA",
         "audit": {
           "frequency": "quarterly"
@@ -464,8 +464,8 @@
           "layout"
         ],
         "stream": "React",
-        "owner": "Communs du Dev",
-        "squad": "Plume",
+        "owner": "mySquad",
+        "squad": "ecaille",
         "rgaaLevel": "AA",
         "provenance": {
           "source": "catalogue",
