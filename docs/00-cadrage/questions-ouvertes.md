@@ -1353,6 +1353,32 @@ La manière de construire, stocker ou reconstituer techniquement cette photograp
 
 ---
 
+## D-067 — Décommissionnement logique d'un Composant dans le Catalogue
+
+Un Composant décommissionné ne doit pas être supprimé physiquement du Catalogue.
+
+Le Catalogue conserve le Composant ainsi que l'information permettant d'identifier la Version à partir de laquelle il a été décommissionné.
+
+Exemple :
+
+```text
+Composant                  : OldSelect
+Version de décommissionnement : 1.8.0
+```
+
+Dans cet exemple :
+
+- `OldSelect` reste présent dans le périmètre historique des Versions antérieures où il existait, notamment `1.7.0` ;
+- `OldSelect` n'entre plus dans le Catalogue actif de `1.8.0` ;
+- il est donc exclu du dénominateur de couverture d'Audit de `1.8.0` et des Versions ultérieures tant qu'il reste décommissionné ;
+- son historique, notamment ses Audits et ses anciens états de conformité, reste conservé.
+
+Le décommissionnement est donc une suppression logique et non une suppression de l'historique métier.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2400,6 +2426,16 @@ Chaque Version doit disposer conceptuellement de la photographie du Catalogue de
 Il reste à définir comment cette photographie sera obtenue : donnée persistée au moment de la Version, reconstruction depuis Git ou les exports, snapshot du pipeline, ou autre mécanisme.
 
 Cette question est liée à la future fonctionnalité de comparaison entre Versions mais ne doit pas être résolue prématurément.
+
+**Statut : À instruire**
+
+---
+
+## Q-082 — Réactivation d'un Composant décommissionné
+
+Le Catalogue conserve les Composants décommissionnés avec leur Version de décommissionnement.
+
+Il reste à déterminer le comportement attendu si un Composant précédemment décommissionné réapparaît dans une Version ultérieure : réactivation du même Composant historique ou création d'une nouvelle identité de Composant.
 
 **Statut : À instruire**
 

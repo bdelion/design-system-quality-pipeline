@@ -1072,3 +1072,31 @@ Cette photographie permet notamment de préserver la cohérence historique :
 - les indicateurs historiques ne sont pas recalculés avec la composition actuelle du Catalogue.
 
 Le mécanisme technique permettant de construire ou de reconstituer cette photographie reste à définir.
+
+
+### Décommissionnement logique d'un Composant
+
+Lorsqu'un Composant disparaît du Catalogue actif à partir d'une Version, il n'est pas supprimé physiquement du référentiel.
+
+Son décommissionnement est enregistré avec la Version concernée.
+
+```text
+OldSelect
+
+présent en 1.7.0
+        ↓
+décommissionné en 1.8.0
+        ↓
+conservé dans l'historique
+```
+
+Pour `OldSelect` décommissionné en `1.8.0` :
+
+- il appartient toujours au Catalogue historique de `1.7.0` ;
+- il n'appartient plus au Catalogue actif de `1.8.0` ;
+- il n'entre plus dans le dénominateur de couverture d'Audit de `1.8.0` ;
+- ses Audits et verdicts historiques restent consultables.
+
+Le modèle du Catalogue doit donc porter une information de décommissionnement associée à une Version.
+
+Le comportement en cas de réapparition ultérieure d'un Composant décommissionné reste à définir.
