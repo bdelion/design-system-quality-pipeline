@@ -2506,6 +2506,37 @@ Elle ne modifie toutefois pas la sémantique de conformité : contrairement à u
 
 ---
 
+## D-120 — Une Improvement d'Audit doit être une sous-Issue de l'Audit
+
+Une Improvement issue d'un Audit doit obligatoirement être créée comme **sous-Issue de l'Issue d'Audit** qui l'a fait émerger.
+
+La relation entre l'Audit et l'Improvement doit donc être explicite dans GitHub et ne doit pas être déduite uniquement :
+
+- du label `🧩 Component:xxx` ;
+- du titre ou de la description ;
+- d'un autre rapprochement implicite.
+
+La traçabilité attendue est :
+
+```text
+Issue d'Audit
+└── sous-Issue Improvement
+```
+
+Cette relation permet notamment de contrôler conjointement :
+
+1. que l'Improvement est bien rattachée à son Audit d'origine ;
+2. qu'elle possède exactement un label `🧩 Component:xxx` ;
+3. que ce Composant est identique à celui de l'Audit parent.
+
+Une Improvement identifiée comme issue d'un Audit mais qui n'est pas une sous-Issue de cet Audit constitue une incohérence à détecter.
+
+Cette règle ne modifie pas la conformité : une Improvement reste distincte d'une Anomalie et n'entre pas dans la détermination du verdict de conformité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package

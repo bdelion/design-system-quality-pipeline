@@ -1992,3 +1992,96 @@ Issue d'Audit
 Cette contrainte permet d'associer sans ambiguïté le résultat de l'Audit, sa Version de référence, ses Anomalies et son verdict de conformité à un unique Composant.
 
 Elle ne remet pas en cause la possibilité, pour une Issue classique, de concerner exceptionnellement plusieurs Composants.
+
+
+### Contrôle du Composant des Anomalies d'Audit
+
+Une Anomalie issue d'un Audit doit être rattachée au même et unique Composant que son Audit parent.
+
+```text
+Audit
+└── 🧩 Component:Button
+    │
+    └── Anomalie
+        └── 🧩 Component:Button
+            → cohérent
+```
+
+Le contrôle doit signaler les situations suivantes :
+
+```text
+Anomalie sans Component
+→ erreur
+
+Anomalie avec plusieurs Component
+→ erreur
+
+Audit = Button
+Anomalie = Modal
+→ erreur de cohérence
+```
+
+Ce contrôle est une règle de cohérence métier destinée à détecter les erreurs de rattachement. Il s'appuie sur la relation entre l'Anomalie et son Audit parent ainsi que sur la règle imposant exactement un Composant à l'Issue d'Audit.
+
+
+### Contrôle du Composant des Improvements d'Audit
+
+Une Improvement issue d'un Audit doit être rattachée au même et unique Composant que son Audit parent.
+
+```text
+Audit
+└── 🧩 Component:Button
+    │
+    └── Improvement
+        └── 🧩 Component:Button
+            → cohérent
+```
+
+Le contrôle doit signaler :
+
+```text
+Improvement sans Component
+→ erreur
+
+Improvement avec plusieurs Component
+→ erreur
+
+Audit = Button
+Improvement = Modal
+→ erreur de cohérence
+```
+
+La règle de rattachement est donc homogène entre les Anomalies et les Improvements issues d'un Audit.
+
+Cette homogénéité de rattachement ne doit pas conduire à confondre leurs effets métier : seules les Anomalies participent à la détermination du verdict de conformité de l'Audit ; les Improvements n'affectent pas ce verdict.
+
+
+### Relation obligatoire entre Audit et Improvement
+
+Une Improvement issue d'un Audit doit obligatoirement être une sous-Issue de cet Audit.
+
+```text
+Audit Button
+└── Improvement
+    └── 🧩 Component:Button
+```
+
+La relation GitHub parent → sous-Issue constitue la relation explicite de traçabilité entre l'Audit et l'Improvement.
+
+Le rattachement ne doit pas être déduit uniquement du label Composant ou d'informations textuelles.
+
+Le pipeline doit pouvoir contrôler la cohérence de l'ensemble :
+
+```text
+Audit parent
++
+relation de sous-Issue
++
+exactement 1 Component
++
+Component identique à celui de l'Audit
+```
+
+Une Improvement identifiée comme issue d'un Audit mais absente de ses sous-Issues doit être signalée comme incohérente.
+
+Comme précédemment, cette traçabilité ne donne pas à l'Improvement le même rôle qu'une Anomalie : l'Improvement n'affecte pas le verdict de conformité.
