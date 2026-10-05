@@ -1305,3 +1305,32 @@ Il n'y a pas, dans ce cas, de passage préalable par `À ÉVALUER` : le besoin d
 Cette règle décrit le processus cible sans supposer que le processus est toujours respecté dans les données historiques.
 
 La qualification à afficher lorsque l'Audit du nouveau Composant a bien été réalisé avant sa mise à disposition reste à préciser afin de distinguer clairement « Audit réalisé » de « Audit non nécessaire ».
+
+
+### Audit réalisé et verdict de conformité
+
+Le suivi du patrimoine dispose désormais de quatre qualifications du besoin ou de l'activité d'Audit :
+
+| Qualification | Signification |
+| --- | --- |
+| `À ÉVALUER` | La Squad doit encore statuer sur le besoin d'un nouvel Audit. |
+| `AUDIT À FAIRE` | Un nouvel Audit est nécessaire mais n'est pas encore réalisé. |
+| `AUDIT NON NÉCESSAIRE` | La Squad a conclu qu'un nouvel Audit n'est pas nécessaire pour l'évolution considérée. |
+| `AUDIT RÉALISÉ` | L'Audit attendu a effectivement été réalisé. |
+
+Cette qualification doit rester distincte du verdict de conformité.
+
+```text
+Suivi d'activité
+AUDIT RÉALISÉ
+      │
+      └── Résultat de l'Audit
+              ├── CONFORME
+              └── NON CONFORME
+```
+
+Ainsi, `AUDIT RÉALISÉ` n'est jamais synonyme de `CONFORME`.
+
+Pour le pilotage de la qualité, le verdict `CONFORME` ou `NON CONFORME` constitue l'information principale. L'état `AUDIT RÉALISÉ` apporte une information complémentaire de suivi du patrimoine et de l'activité d'Audit.
+
+La représentation UX exacte de ces deux dimensions sera définie lors de la conception du Dashboard.

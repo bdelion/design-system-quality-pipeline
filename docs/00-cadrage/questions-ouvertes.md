@@ -1590,6 +1590,54 @@ Cette règle exprime le processus cible. Elle ne doit pas conduire le pipeline �
 
 ---
 
+## D-077 — État `AUDIT RÉALISÉ` dans le suivi du patrimoine
+
+Le suivi du patrimoine peut utiliser l'état `AUDIT RÉALISÉ` afin d'indiquer explicitement qu'un Audit attendu a effectivement été effectué.
+
+Les qualifications du suivi du besoin d'Audit deviennent ainsi :
+
+- `À ÉVALUER` ;
+- `AUDIT À FAIRE` ;
+- `AUDIT NON NÉCESSAIRE` ;
+- `AUDIT RÉALISÉ`.
+
+`AUDIT RÉALISÉ` décrit la réalisation de l'activité d'Audit. Il ne constitue pas un verdict de conformité.
+
+**Statut : Établi**
+
+---
+
+## D-078 — Le verdict de conformité prime dans la restitution qualité
+
+L'information essentielle pour la qualité d'un Composant reste le verdict de conformité issu de l'Audit applicable.
+
+Il faut donc distinguer :
+
+```text
+Qualification / activité : AUDIT RÉALISÉ
+Verdict qualité          : CONFORME ou NON CONFORME
+```
+
+Un Composant peut notamment être :
+
+```text
+AUDIT RÉALISÉ + CONFORME
+```
+
+ou :
+
+```text
+AUDIT RÉALISÉ + NON CONFORME
+```
+
+Le Dashboard ne doit jamais utiliser `AUDIT RÉALISÉ` comme synonyme de `CONFORME`.
+
+Dans les restitutions orientées qualité, le verdict de conformité doit être mis en avant par rapport au simple fait que l'Audit a été réalisé.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2718,11 +2766,21 @@ Il n'est donc pas initialisé à `À ÉVALUER` comme un Composant `ÉVOLUÉ`.
 
 ## Q-088 — Traitement d'un nouveau Composant audité avant sa mise à disposition
 
-Lorsqu'un Composant `NOUVEAU` a bien été audité pendant la mise au point de sa Version de sortie, il reste à préciser la valeur de qualification du besoin d'Audit à afficher dans le suivi du patrimoine une fois cet Audit réalisé.
+Lorsqu'un Composant `NOUVEAU` a été audité pendant la mise au point de sa Version de sortie, le suivi du patrimoine peut afficher `AUDIT RÉALISÉ`.
 
-Il faut notamment déterminer si `AUDIT NON NÉCESSAIRE` convient à ce cas ou si un état distinct tel que `AUDIT RÉALISÉ` est nécessaire afin de ne pas confondre « Audit effectué » et « Audit jugé inutile ».
+Cet état ne remplace pas le verdict : l'information qualité principale reste `CONFORME` ou `NON CONFORME`.
 
-**Statut : À instruire**
+**Statut : Établi**
+
+---
+
+## Q-089 — Priorité visuelle entre conformité et suivi d'Audit
+
+Le verdict de conformité est l'information qualité principale et `AUDIT RÉALISÉ` une information de suivi d'activité.
+
+Il reste à préciser, lors de la conception du Dashboard, comment présenter visuellement ces deux dimensions sans les confondre, notamment dans la future page de suivi du patrimoine.
+
+**Statut : À instruire lors de la conception UX du Dashboard**
 
 ---
 
