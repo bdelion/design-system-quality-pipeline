@@ -1418,3 +1418,39 @@ GitHub Issue State = Closed
 Une Anomalie traitée n'appartient plus au stock restant, mais son existence et son rattachement à l'Audit d'origine restent conservés dans l'historique.
 
 Le périmètre exact du dénominateur utilisé pour afficher un pourcentage de traitement reste à préciser.
+
+
+### Taux historique et stock restant
+
+Le taux de traitement d'un Composant est cumulatif sur son historique :
+
+```text
+Anomalies historiquement traitées
+---------------------------------
+Anomalies historiquement détectées
+```
+
+Exemple :
+
+```text
+Button
+Anomalies historiquement détectées : 10
+Anomalies traitées                  : 8
+Stock restant                       : 2
+Taux de traitement                  : 80 %
+```
+
+Le Dashboard doit restituer à la fois le pourcentage et le stock restant en valeur absolue.
+
+Pour les Anomalies d'accessibilité portant la criticité RGAA actuelle, le stock restant doit également pouvoir être ventilé par niveau :
+
+```text
+Stock restant : 5
+├── 🚦 rgaa:bloquante : 1
+├── 🚦 rgaa:majeure   : 3
+└── 🚦 rgaa:mineure   : 1
+```
+
+Cette ventilation permet de distinguer la quantité de dette restante de sa criticité.
+
+Ni le taux de traitement, ni la diminution du stock, ni sa ventilation ne remplacent le verdict de conformité issu d'un Audit.

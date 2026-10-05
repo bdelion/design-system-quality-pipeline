@@ -1694,6 +1694,84 @@ Cette règle permet au Dashboard de restituer à la fois l'avancement global du 
 
 ---
 
+## D-083 — Taux historique de traitement des Anomalies d'un Composant
+
+Le taux de traitement des Anomalies d'un Composant est calculé sur l'ensemble des Anomalies historiquement détectées pour ce Composant.
+
+```text
+Taux de traitement
+=
+nombre d'Anomalies historiquement détectées et traitées
+-------------------------------------------------------
+nombre total d'Anomalies historiquement détectées
+```
+
+Une Anomalie est traitée selon D-081 :
+
+```text
+Project Status = Done
+AND
+GitHub Issue State = Closed
+```
+
+Exemple :
+
+```text
+10 Anomalies historiquement détectées
+8 traitées
+2 non traitées
+
+Taux de traitement = 8 / 10 = 80 %
+```
+
+Le taux reste distinct du verdict de conformité.
+
+**Statut : Établi**
+
+---
+
+## D-084 — Affichage du stock restant d'Anomalies
+
+En complément du taux de traitement, le Dashboard doit afficher le nombre absolu d'Anomalies historiques du Composant restant à traiter.
+
+Exemple :
+
+```text
+Taux d'Anomalies traitées : 80 %
+Stock restant             : 2
+```
+
+Le stock restant correspond aux Anomalies qui ne satisfont pas encore la règle D-081.
+
+**Statut : Établi**
+
+---
+
+## D-085 — Répartition du stock restant par criticité RGAA
+
+Pour les Anomalies d'Audit d'accessibilité disposant de la criticité RGAA actuelle, le Dashboard doit pouvoir ventiler le stock restant selon les niveaux :
+
+- `🚦 rgaa:bloquante` ;
+- `🚦 rgaa:majeure` ;
+- `🚦 rgaa:mineure`.
+
+Exemple :
+
+```text
+Stock restant : 5
+├── bloquantes : 1
+├── majeures   : 3
+└── mineures   : 1
+```
+
+Cette ventilation porte sur les Anomalies non traitées et complète le taux global de traitement.
+
+Elle ne change pas le verdict de conformité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2858,9 +2936,23 @@ Cette question recoupait un principe déjà abordé antérieurement sur la ferme
 
 ## Q-091 — Dénominateur temporel du taux de traitement des Anomalies
 
-Le suivi doit inclure toutes les Anomalies historiques du Composant tant qu'elles ne sont pas traitées.
+Le dénominateur du taux de traitement correspond à toutes les Anomalies historiquement détectées sur le Composant.
 
-Il reste à préciser le dénominateur du « taux d'Anomalies traitées » : doit-il représenter toutes les Anomalies historiquement détectées sur le Composant (traitées + non traitées), ou seulement un périmètre temporel/versionné donné ?
+Le numérateur correspond aux Anomalies de ce même historique qui sont traitées selon D-081.
+
+Exemple : 8 Anomalies traitées parmi 10 historiquement détectées donnent un taux de `80 %`.
+
+Le Dashboard doit également afficher le stock restant en valeur absolue et, pour les Anomalies d'accessibilité concernées, sa répartition par niveau `🚦 rgaa:xxx`.
+
+**Statut : Établi**
+
+---
+
+## Q-092 — Périmètre de la ventilation par criticité RGAA
+
+La ventilation du stock restant par `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` et `🚦 rgaa:mineure` est établie pour les Anomalies issues des Audits d'accessibilité.
+
+Il reste à déterminer si le Dashboard doit afficher uniquement les effectifs par niveau ou également un taux de traitement propre à chaque niveau de criticité.
 
 **Statut : À instruire**
 
