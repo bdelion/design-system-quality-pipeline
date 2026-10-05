@@ -247,3 +247,20 @@ GitHub (`Closed`) et le merge de la Pull Request de correction doivent
 La date de `Closed` et la date de merge ne se substituent pas à la date
 de `Done` pour calculer `correctedAt`. Une incohérence entre ces
 événements doit être signalée comme un problème de qualité des données.
+
+------------------------------------------------------------------------
+
+## Date de fin d'un Audit
+
+Un Audit est réalisé lorsque son Issue est simultanément `Done` et `Closed`.
+
+Sa date métier de fin est la date du passage au statut Project `Done` :
+
+``` text
+completedAt = date du passage à Done
+```
+
+La fermeture GitHub doit être cohérente avec cet événement, mais ne s'y substitue pas comme référence temporelle. À `completedAt`, le Component devient audité pour les indicateurs historiques. Un écart entre `Done` et `Closed` relève de la qualité des données.
+
+Cette règle ne définit pas la date de début de l'Audit.
+

@@ -586,3 +586,18 @@ correction lorsqu'une Pull Request est requise.
 `correctedAt`. Un écart temporel ou d'état avec `Closed` ou avec le merge
 de la Pull Request relève d'un contrôle de cohérence des données et ne
 change pas la définition de `correctedAt`.
+
+------------------------------------------------------------------------
+
+## Audit --- date de fin
+
+La date métier de fin d'un Audit est la date à laquelle son Issue d'Audit passe au statut Project `Done`.
+
+``` text
+Audit.completedAt = date du passage de l'Issue d'Audit à Done
+```
+
+Dans le fonctionnement nominal, l'Issue doit également être `Closed` de manière cohérente. C'est à `completedAt` que le Component concerné est considéré comme audité pour les calculs historiques.
+
+La date de début d'un Audit n'est pas déduite de cette décision.
+

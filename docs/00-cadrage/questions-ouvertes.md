@@ -2974,6 +2974,27 @@ signaler.
 
 ---
 
+### D-141 --- Date de fin d'un Audit
+
+Un Audit est considéré comme réalisé lorsque son Issue est simultanément
+`Project Status = Done` et `GitHub Issue State = Closed`.
+
+La date métier de fin est :
+
+``` text
+Audit.completedAt = date du passage à Done
+```
+
+Dans le fonctionnement nominal, `Closed` doit être cohérent avec cet
+événement. À `completedAt`, le Component concerné est considéré comme
+audité pour les calculs historiques.
+
+Cette décision ne définit pas la date de début de l'Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3193,22 +3214,24 @@ Il reste à déterminer comment identifier précisément la Release Candidate ef
 
 ---
 
-## Q-019 — Temporalité exacte de l'Audit
+### Q-019 --- Temporalité exacte de l'Audit
 
-Un Audit est considéré comme réalisé lorsque l'Issue d'Audit est simultanément :
+Un Audit est réalisé lorsque son Issue est simultanément `Done` et
+`Closed`.
 
-```text
-Project Status = Done
-GitHub Issue State = Closed
+Sa date métier de fin est :
+
+``` text
+Audit.completedAt = date du passage au statut Project Done
 ```
 
-Il reste à déterminer :
+À cette date, le Component concerné est considéré comme audité pour les
+calculs historiques.
 
-- quelle information représente le début de l'Audit ;
-- quelle date exacte doit représenter la fin de l'Audit dans les indicateurs historiques ;
-- comment historiser un éventuel décalage entre le passage à `Done` et la fermeture de l'Issue.
+La date de début de l'Audit reste à définir si un besoin métier ou un
+indicateur la nécessite.
 
-**Statut : Partiellement établi**
+**Statut : Partiellement établi --- fin d'Audit établie**
 
 ---
 

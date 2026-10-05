@@ -176,3 +176,20 @@ Restent notamment à instruire :
 -   date exacte de réalisation ;
 -   mécanisme de revalidation ;
 -   traitement de plusieurs Audits non terminés simultanés.
+
+------------------------------------------------------------------------
+
+## Date de fin et effet historique
+
+La date métier de fin d'un Audit est la date à laquelle l'Issue d'Audit passe au statut Project `Done`.
+
+``` text
+Audit.completedAt = date du passage à Done
+```
+
+L'Issue doit également être `Closed` pour que l'Audit soit réalisé. Dans le fonctionnement nominal, `Done` et `Closed` sont cohérents.
+
+À partir de `completedAt`, le Component est considéré comme audité dans la connaissance disponible à cet instant. Un Audit de rattrapage post-PROD ne doit donc pas être projeté rétroactivement sur la date de publication de la Version.
+
+La date de début de l'Audit reste distincte et n'est pas définie par cette décision.
+

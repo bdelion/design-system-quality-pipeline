@@ -91,30 +91,34 @@ Cette règle vaut pour les Anomalies issues d'un Audit et hors Audit.
 
 ### Q-014 --- Date de correction
 
-**Priorité : BLOQUANT V1 si le délai de correction est livré en V1**
+**Priorité : DÉJÀ ÉTABLI**
 
-Même dépendance que Q-013.
+La date métier de correction d'une Anomalie est la date à laquelle
+l'Issue `🐛 Bug` passe au statut Project `Done` :
 
-La fermeture de l'Issue, le passage `Done`, le merge d'une Pull Request
-ou une autre date ne doivent pas être choisis implicitement.
+``` text
+correctedAt = date du passage à Done
+```
 
-------------------------------------------------------------------------
+Dans le fonctionnement nominal, cette date doit être cohérente avec la
+fermeture de l'Issue et le merge de la Pull Request de correction.
 
-## 3.2 Audits
+Un écart relève de la qualité des données ; `Closed` ou la date de merge
+ne remplacent pas silencieusement la référence `Done`.
 
 ### Q-019 --- Temporalité exacte de l'Audit
 
-**Priorité : BLOQUANT V1 pour l'historique des Audits**
+**Priorité : PARTIELLEMENT ÉTABLI — NON BLOQUANT POUR LA FIN D'AUDIT**
 
-Il est établi qu'un Audit est réalisé lorsque :
+La date métier de fin d'un Audit est la date à laquelle son Issue passe au statut Project `Done` :
 
 ``` text
-Project Status = Done
-ET
-GitHub Issue State = Closed
+Audit.completedAt = date du passage à Done
 ```
 
-Il reste à figer la date métier de réalisation.
+L'Issue doit également être `Closed` pour que l'Audit soit réalisé. À `completedAt`, le Component concerné devient audité pour les calculs historiques.
+
+La date de début de l'Audit reste à définir seulement si un besoin métier ou un indicateur la nécessite.
 
 ### Q-045 --- Représentation de la famille d'Audit
 
@@ -441,22 +445,18 @@ réponse change réellement le contrat V1.
 Ordre recommandé :
 
 ``` text
-1. Q-014
-   Date de correction
-   uniquement si le KPI de délai reste en V1
-
-2. Q-019
+1. Q-019
    Date métier de réalisation d'un Audit
 
-3. Q-048
+2. Q-048
    RC auditée
    uniquement si la traçabilité RC exacte est exigée en V1
 
-4. Q-081
+3. Q-081
    Catalogue historique
    uniquement si la couverture historique par Version est exigée en V1
 
-5. Q-096
+4. Q-096
    Date de Release
    uniquement si la vue « état à la Release » est exigée en V1
 ```
