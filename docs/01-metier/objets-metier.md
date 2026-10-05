@@ -2,472 +2,511 @@
 
 ## 1. Objectif
 
-Ce document recense les principaux objets métier manipulés ou envisagés par le Design System Quality Pipeline.
+Ce document recense les objets du **Design System Quality Pipeline** et
+précise leur rôle dans le modèle consolidé.
 
-Il distingue :
+Les cardinalités sont centralisées dans `relations.md`.
 
-- les objets métier ;
-- les objets provenant des systèmes sources ;
-- les objets nécessaires aux futures évolutions.
+Quatre statuts sont utilisés :
 
-Leur modèle technique définitif n'est pas nécessairement arrêté.
+-   **ÉTABLI** : définition métier suffisamment stabilisée ;
+-   **ACTUEL** : représentation observée aujourd'hui ;
+-   **À CONFIRMER** : abstraction ou propriété encore ouverte ;
+-   **FUTUR** : objet volontairement hors V1.
 
----
+------------------------------------------------------------------------
 
 ## 2. Design System
 
-Le **Design System** est l'ensemble cohérent de ressources, Composants, règles et Librairies mis à disposition des produits de l'entreprise.
+Le **Design System** est l'ensemble cohérent de ressources, Composants,
+règles et Librairies mis à disposition des produits de l'entreprise.
 
-Un Design System peut contenir plusieurs Librairies.
+Il constitue la racine métier du périmètre suivi.
 
----
+**Statut : ÉTABLI.**
+
+------------------------------------------------------------------------
 
 ## 3. Librairie
 
-Une **Librairie** est une unité métier du Design System mise à disposition des Applications consommatrices.
+Une **Librairie** est une unité métier du Design System mise à
+disposition des Applications consommatrices.
 
-### Situation actuelle
+### Actuel
 
-```text
+``` text
 1 Repository = 1 Librairie
 1 Librairie = 1 Package
 ```
 
-Exemples :
-
-| Librairie | Package | Dernière Version PROD déclarée |
-|---|---|---|
-| Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
-| Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
-| Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
-
 ### Cible
 
-```text
+``` text
 1 Repository = 1..n Librairies
 1 Librairie = 1..n Packages
 ```
 
----
+La Librairie possède donc une identité métier qui ne doit pas être
+réduite à celle du Repository.
+
+**Statut : ÉTABLI pour l'objet et l'orientation cible.**
+
+------------------------------------------------------------------------
 
 ## 4. Repository
 
-Le **Repository** est un conteneur technique de code et de données GitHub.
+Le **Repository** est un conteneur technique GitHub.
 
-Il peut fournir notamment :
+Il fournit notamment :
 
-- Issues ;
-- Pull Requests ;
-- Milestones ;
-- branches ;
-- tags ;
-- Releases ;
-- informations de projets.
+-   Issues ;
+-   Pull Requests ;
+-   Milestones ;
+-   branches ;
+-   tags ;
+-   Releases ;
+-   informations de Projects.
 
-Le Repository est un objet technique. Il ne doit pas remplacer la notion métier de Librairie.
+Il constitue une source et un périmètre technique, pas l'identité métier
+définitive d'une Librairie.
 
----
+**Statut : ÉTABLI.**
+
+------------------------------------------------------------------------
 
 ## 5. Package
 
-Le **Package** est l'unité technique distribuable correspondant actuellement à une Librairie et pouvant être référencée comme dépendance par une Application.
+Le **Package** est une unité distribuable pouvant être référencée comme
+dépendance par une Application.
 
-Le Package :
+Éléments déjà établis :
 
-- possède un nom ;
-- possède une Version de base ;
-- peut produire plusieurs types de Versions ;
-- est publié dans Nexus ;
-- peut être utilisé par une Application dans une Version donnée.
+-   il possède un nom ;
+-   il possède des Versions ;
+-   ses artefacts sont publiés dans Nexus ;
+-   une Application le consomme dans une Version donnée.
+
+Aujourd'hui, une Librairie correspond à un Package.
 
 À terme, une Librairie pourra être distribuée par plusieurs Packages.
 
----
+Les propriétés définitives et les cas multi-Packages restent à
+instruire.
+
+**Statut : PARTIELLEMENT ÉTABLI --- Q-001, Q-002.**
+
+------------------------------------------------------------------------
 
 ## 6. Version
 
 Une **Version** identifie un état versionné d'un Package.
 
-### Types actuellement établis
+Les formes actuellement établies sont notamment :
 
-| Contexte / branche | Version produite |
-|---|---|
-| `develop` | `M.m.r-SNAPSHOT` |
-| `project/***` | `M.m.r-SNAPSHOT` |
-| `release/***` | `M.m.r-rc.[build Jenkins]` |
-| `hotfix/***` | `M.m.r-hc.[build Jenkins]` |
-| merge `release/***` → `master` | `M.m.r` PROD |
-| merge `hotfix/***` → `master` | `M.m.r` PROD |
+``` text
+M.m.r-SNAPSHOT
+M.m.r-rc.n
+M.m.r-hc.n
+M.m.r
+```
 
-### Version PROD
+Il faut distinguer :
+
+-   Version déclarée dans `package.json` ;
+-   Version d'artefact construite ou publiée par Jenkins.
 
 Une Version PROD :
 
-- ne possède pas de suffixe ;
-- est publiée dans un espace Nexus spécifique ;
-- possède un Tag Git correspondant ;
-- doit posséder une Milestone portant son numéro ;
-- possède normalement une Release correspondante.
+-   est de forme `M.m.r` ;
+-   n'a pas de suffixe ;
+-   est publiée dans l'espace Nexus PROD ;
+-   possède un Tag Git correspondant ;
+-   doit disposer d'une Milestone `M.m.r` ;
+-   possède normalement une Release GitHub, dont le caractère
+    obligatoire reste à confirmer.
 
-Pour une release ou un hotfix, le merge vers `master` déclenche automatiquement Jenkins.
+**Statut : ÉTABLI, sauf Release GitHub obligatoire.**
 
-À l'issue du job Jenkins, si les stages nécessaires sont réussis, Jenkins produit notamment :
-
-- le Tag Git ;
-- le Package publié dans Nexus PROD.
-
----
+------------------------------------------------------------------------
 
 ## 7. Build Jenkins
 
-Le **Build Jenkins** est une exécution de la CI participant à la construction et à la publication des Versions.
+Le **Build Jenkins** est une exécution technique participant à la
+construction et à la publication des Versions.
 
-Selon le contexte :
+Son numéro intervient dans les suffixes `rc.n` et `hc.n`.
 
-```text
-develop / project/***
-    → M.m.r-SNAPSHOT
+Il reste un objet de source technique et n'est pas nécessairement un
+objet métier autonome du futur modèle normalisé.
 
-release/***
-    → M.m.r-rc.[build]
+**Statut : ACTUEL / technique.**
 
-hotfix/***
-    → M.m.r-hc.[build]
-
-release/*** → master
-    → M.m.r PROD
-
-hotfix/*** → master
-    → M.m.r PROD
-```
-
-Pour les Versions PROD, Jenkins produit les éléments de publication après le merge vers `master`.
-
-Le numéro de build Jenkins participe directement au numéro des Versions `rc` et `hc`.
-
-Le Build Jenkins reste à ce stade un objet technique source et non nécessairement un objet métier autonome du modèle normalisé.
-
----
+------------------------------------------------------------------------
 
 ## 8. Composant
 
-Le **Composant** est une unité fonctionnelle réutilisable appartenant à une Librairie du Design System.
+Le **Composant** est une unité fonctionnelle réutilisable appartenant à
+une Librairie.
 
-Un Composant peut être associé à :
+Il peut être concerné par :
 
-- des Issues ;
-- des Anomalies ;
-- des Audits ;
-- des Versions ;
-- des informations de qualité.
+-   des Issues ;
+-   des Audits ;
+-   des Anomalies ;
+-   des Improvements ;
+-   des Versions ;
+-   des informations de qualité.
 
-Le catalogue des Composants constitue la référence des Composants connus du pipeline.
+Le Catalogue constitue la référence des Composants connus.
 
----
+Le rattachement futur exact du Composant aux Packages d'une Librairie
+multi-Packages reste ouvert.
+
+**Statut : ÉTABLI pour l'objet ; relation Package À CONFIRMER.**
+
+------------------------------------------------------------------------
 
 ## 9. Issue
 
-Une **Issue** est un élément de travail provenant actuellement de GitHub.
+Une **Issue** est un élément de travail actuellement matérialisé dans
+GitHub.
 
-Elle peut notamment posséder :
+Elle peut notamment porter :
 
-- un Issue Type ;
-- des labels ;
-- un statut de workflow ;
-- une vélocité ;
-- une Iteration ;
-- un Milestone ;
-- des relations avec d'autres Issues ;
-- des relations avec des Pull Requests ;
-- un ou plusieurs Composants associés.
+-   Issue Type ;
+-   labels ;
+-   Status ;
+-   Velocity ;
+-   Iteration ;
+-   Milestone ;
+-   relations avec d'autres Issues ;
+-   relations avec des Pull Requests ;
+-   zéro, un ou plusieurs Composants selon sa nature.
 
-Une Issue n'est pas nécessairement une Anomalie.
+Une Issue n'est pas automatiquement une Anomalie.
 
----
+Une Issue qui concerne effectivement un Composant doit porter le label
+correspondant. Une Issue réellement transverse peut ne porter aucun
+Composant.
 
-## 10. Anomalie
+**Statut : ÉTABLI.**
+
+------------------------------------------------------------------------
+
+## 10. Audit
+
+Un **Audit** représente l'évaluation d'un Composant dans un contexte de
+Version.
+
+Aujourd'hui, le travail est matérialisé par une Issue GitHub d'Audit.
+
+Une Issue d'Audit :
+
+-   concerne exactement un Composant ;
+-   peut produire zéro à plusieurs Anomalies ;
+-   peut produire zéro à plusieurs Improvements ;
+-   est réalisée lorsqu'elle est à la fois `Project Status = Done` et
+    `GitHub Issue State = Closed`.
+
+Pour un Audit Accessibilité terminé :
+
+``` text
+0 Anomalie
+→ AUDITÉ & CONFORME
+
+1..n Anomalies
+→ AUDITÉ & NON CONFORME
+```
+
+Les Improvements n'affectent pas ce verdict.
+
+Il reste à décider si `Audit` doit être un objet métier indépendant de
+l'Issue GitHub qui le matérialise.
+
+**Statut : PARTIELLEMENT ÉTABLI --- Q-015.**
+
+------------------------------------------------------------------------
+
+## 11. Famille d'Audit
+
+La **Famille d'Audit** décrit la nature de l'évaluation réalisée.
+
+La nature de l'Issue et la famille sont deux dimensions distinctes :
+
+``` text
+Issue Type = Audit
+Famille     = Accessibilité / RGAA actuellement
+```
+
+La représentation technique de cette famille reste à décider.
+
+**Statut : principe ÉTABLI ; représentation À CONFIRMER.**
+
+------------------------------------------------------------------------
+
+## 12. Campagne d'Audit
+
+Une **Campagne d'Audit** est une abstraction potentielle permettant de
+regrouper plusieurs Audits.
+
+Aujourd'hui, une Milestone peut jouer ce rôle de regroupement pour :
+
+-   une future Version PROD ;
+-   un Audit de rattrapage.
+
+Il n'est pas établi qu'une Campagne doive devenir un objet métier
+autonome.
+
+**Statut : À CONFIRMER --- Q-016.**
+
+------------------------------------------------------------------------
+
+## 13. Anomalie
 
 Une **Anomalie** est un problème identifié sur le Design System.
 
-La manière de l'identifier doit être configurable.
+Pour les Anomalies provenant d'un Audit, le modèle est désormais strict
+:
 
-Une Anomalie peut être caractérisée par :
+-   une Issue GitHub qualifiée comme Anomalie compte pour une Anomalie ;
+-   elle est sous-Issue d'exactement un Audit ;
+-   son Issue Type est `🐛 Bug` ;
+-   elle concerne exactement le même Composant que son Audit parent ;
+-   pour un Audit Accessibilité, elle possède exactement une criticité
+    RGAA et exactement une catégorie `a11y`.
 
-- son Composant ;
-- son statut ;
-- sa criticité ;
-- le domaine de sa criticité ;
-- sa catégorie ;
-- sa date de détection ;
-- sa date de correction ;
-- son origine ;
-- l'Audit éventuel dont elle provient ;
-- les Pull Requests associées ;
-- la Version concernée.
+Une Issue peut regrouper plusieurs occurrences du même problème : le
+dashboard ne cherche pas à compter ces occurrences internes.
 
----
+Pour les Anomalies hors Audit, l'identification configurable, les
+origines et certaines propriétés restent à consolider.
 
-## 11. Amélioration
+**Statut : ÉTABLI pour l'Anomalie d'Audit ; PARTIEL pour l'Anomalie
+générale.**
 
-Une **Amélioration** est une proposition d'amélioration ne correspondant pas nécessairement à une Anomalie ou à une non-conformité.
+------------------------------------------------------------------------
 
-Un Audit peut produire :
+## 14. Improvement
 
-```text
-Audit
-    ├── Anomalies / non-conformités
-    └── Propositions d'amélioration
-```
+Une **Improvement** issue d'un Audit est une proposition d'amélioration
+qui ne constitue pas une non-conformité.
 
----
+Elle :
 
-## 12. Criticité
+-   est une sous-Issue d'exactement un Audit ;
+-   possède l'Issue Type `✨ Feature` ;
+-   concerne exactement le même Composant que l'Audit ;
+-   ne porte aucune criticité RGAA ;
+-   peut porter une catégorisation `a11y`, mais celle-ci est facultative
+    ;
+-   n'affecte pas le verdict de conformité.
 
-La **Criticité** est un niveau d'importance associé à une Anomalie.
+La cardinalité maximale des catégories `a11y` d'une Improvement reste à
+confirmer.
 
-Elle doit être associée à un domaine.
+**Statut : ÉTABLI sauf cardinalité maximale a11y.**
 
-Il faut pouvoir distinguer notamment :
+------------------------------------------------------------------------
 
-- accessibilité / RGAA / WAI-ARIA ;
-- métier ;
-- fonctionnalité ;
-- technique ;
-- Developer Experience ;
-- Designer Experience.
+## 15. Criticité
 
----
+La **Criticité** qualifie la gravité d'un problème dans un domaine
+déterminé.
 
-## 13. Audit
+Les domaines identifiés comprennent :
 
-Un **Audit** est une opération structurée visant à évaluer un périmètre du Design System.
+-   accessibilité / RGAA / WAI-ARIA ;
+-   métier ;
+-   fonctionnalité ;
+-   technique ;
+-   Developer Experience ;
+-   Designer Experience.
 
-L'accessibilité constitue le premier domaine identifié.
+Les labels RGAA `bloquante`, `majeure`, `mineure` sont strictement
+réservés aux Anomalies provenant d'un Audit Accessibilité.
 
-Un Audit peut être relié notamment à :
+**Statut : ÉTABLI.**
 
-- une Campagne ;
-- un Composant ;
-- une Version ;
-- un résultat ;
-- des Anomalies ;
-- des Améliorations.
+------------------------------------------------------------------------
 
----
+## 16. Catégorie a11y
 
-## 14. Campagne d'Audit
+Une **catégorie a11y** décrit une thématique d'accessibilité.
 
-Une **Campagne d'Audit** est un ensemble cohérent d'Audits réalisés dans un même contexte.
+Elle est transverse à la nature et à l'origine de l'Issue.
 
-Elle doit permettre de suivre notamment :
+Elle peut donc apparaître sur :
 
-- les Composants prévus ;
-- les Composants en cours ;
-- les Composants terminés ;
-- les Composants conformes ;
-- les Composants non conformes.
+-   Anomalie d'Audit ;
+-   Improvement d'Audit ;
+-   Issue hors Audit.
 
----
+Elle ne suffit jamais à conclure qu'une Issue est une Anomalie ou
+provient d'un Audit.
 
-## 15. Conformité
+**Statut : ÉTABLI.**
 
-Les états métier minimaux sont :
+------------------------------------------------------------------------
 
-```text
-NON AUDITÉ
-AUDITÉ & CONFORME
-AUDITÉ & NON CONFORME
-```
-
-Un Composant non audité ne doit pas être automatiquement considéré comme non conforme.
-
----
-
-## 16. Pull Request
+## 17. Pull Request
 
 Une **Pull Request** représente une proposition de modification du code.
 
-Une Pull Request peut être reliée à une ou plusieurs Issues.
+Elle peut être liée à une ou plusieurs Issues.
 
-La présence obligatoire ou non d'une Pull Request dépend du type de workflow.
+Son caractère obligatoire dépend du profil de workflow : une règle
+générale ne doit pas être appliquée indistinctement aux Issues STANDARD,
+EPIC, AUDIT, RELEASE ou CONCEPTION.
 
----
+**Statut : objet ÉTABLI ; obligations À FORMALISER.**
 
-## 17. Projet et statut
-
-Le projet GitHub permet notamment de représenter l'état d'avancement d'un élément de travail.
-
-Les statuts actuellement identifiés comprennent :
-
-- Backlog ;
-- Ready ;
-- In progress ;
-- In review ;
-- Done ;
-- Blocked ;
-- Cancelled.
-
----
+------------------------------------------------------------------------
 
 ## 18. Iteration
 
-Une **Iteration** est une période de travail planifiée utilisée pour organiser les travaux.
+Une **Iteration** représente une fenêtre de planification
+opérationnelle, actuellement assimilée au Sprint dans le fonctionnement
+de la Squad.
 
-Elle peut notamment servir à calculer :
+Son usage et son obligation dépendent du statut et du profil de
+workflow.
 
-- nombre d'Issues prévues ;
-- nombre d'Issues terminées ;
-- nombre d'Issues annulées ;
-- report ;
-- vélocité ;
-- capacité ;
-- état du sprint.
+**Statut : ÉTABLI comme objet source ; règles À FORMALISER.**
 
----
+------------------------------------------------------------------------
 
 ## 19. Milestone
 
-Une **Milestone** est un objet GitHub utilisé pour différents types de regroupements.
+Une **Milestone** est un regroupement GitHub dont la sémantique est
+polymorphe.
 
-Les usages identifiés comprennent notamment :
+Elle peut notamment représenter :
 
-- versions ;
-- versions d'Audit ;
-- horizons de planification ;
-- lots de conception.
+-   une Version `M.m.r` ;
+-   un Audit de rattrapage `M.m.r-Audit` ;
+-   un horizon trimestriel ou semestriel ;
+-   un lot de priorité Design.
 
-Une Version PROD doit disposer d'une Milestone portant exactement son numéro.
+Une Milestone doit donc être classifiée avant d'être interprétée.
 
-Cela ne signifie pas que toute Milestone représente une Version PROD.
+`M.m.r-Audit` ne constitue pas une Version supplémentaire.
 
----
+**Statut : ÉTABLI.**
 
-## 20. Tag Git
+------------------------------------------------------------------------
 
-Un **Tag Git** identifie un point du Repository.
+## 20. Release GitHub
 
-Une Version PROD possède un Tag correspondant à son numéro.
+Une **Release GitHub** peut correspondre à une Version PROD.
 
-Pour une release standard ou un hotfix, ce Tag est produit par Jenkins après le merge de la branche vers `master`.
+Son existence est actuellement considérée comme normale mais son
+caractère obligatoire et son mécanisme exact de création ne sont pas
+établis.
 
-```text
-release/*** ─┐
-             ├──> master → Jenkins → Tag Git M.m.r
-hotfix/*** ──┘
+**Statut : À CONFIRMER --- Q-007.**
+
+------------------------------------------------------------------------
+
+## 21. Tag Git
+
+Un **Tag Git** `M.m.r` constitue l'un des éléments permettant
+d'identifier une Version PROD.
+
+Pour le processus nominal établi, Jenkins produit le Tag lors de la
+publication PROD.
+
+La règle de traitement d'un Tag attendu mais absent reste à définir.
+
+**Statut : ÉTABLI pour le nominal ; anomalie À INSTRUIRE.**
+
+------------------------------------------------------------------------
+
+## 22. Application consommatrice
+
+Une **Application** est un produit consommant potentiellement un ou
+plusieurs Packages du Design System.
+
+Le futur modèle devra pouvoir représenter :
+
+``` text
+Application
+└── Package @ Version
 ```
 
----
+puis l'usage éventuel de Composants.
 
-## 21. Release
+Les sources et méthodes de détection ne sont pas définies.
 
-Une **Release** est une information de publication associée au Repository.
+**Statut : FUTUR.**
 
-Pour une Version PROD, une Release correspondante existe normalement.
+------------------------------------------------------------------------
 
-Son caractère systématiquement obligatoire n'est toutefois pas établi.
+## 23. Consommation
 
-Le mécanisme qui crée cette Release n'est pas encore documenté.
+La **Consommation** est un futur objet ou une future relation permettant
+de représenter qu'une Application utilise un Package dans une Version
+donnée.
 
----
+Elle pourra éventuellement porter d'autres informations d'observation ou
+d'environnement.
 
-## 22. Publication Nexus
+Sa forme technique n'est pas arrêtée.
 
-Une **Publication Nexus** correspond à la mise à disposition d'une Version d'un Package dans Nexus.
+**Statut : FUTUR.**
 
-Plusieurs types de Versions peuvent être publiés.
-
-Pour une Version PROD issue d'une release ou d'un hotfix :
-
-```text
-branche release/*** ou hotfix/***
-    ↓ merge
-master
-    ↓
-Jenkins
-    ↓ succès
-Package M.m.r
-    ↓
-Nexus PROD
-```
-
----
-
-## 23. Application consommatrice
-
-Une **Application consommatrice** utilise une ou plusieurs Librairies du Design System.
-
-Une Application utilise un Package dans une Version donnée.
-
-À terme, le système devra notamment distinguer :
-
-- Version PROD ;
-- Version SNAPSHOT ;
-- Release Candidate ;
-- Hotfix Candidate.
-
----
+------------------------------------------------------------------------
 
 ## 24. Snapshot
 
-Un **Snapshot** est une photographie du système à un instant donné.
+Un **Snapshot** représente l'état connu du pipeline à un instant de
+capture.
 
-Il permet de conserver :
+Il contient notamment les données sources projetées, données
+normalisées, résultats DQ et métriques.
 
-- les indicateurs ;
-- leur contexte ;
-- la version du modèle ;
-- la version des règles ;
-- les informations nécessaires à leur interprétation.
+Il ne doit pas être confondu avec un événement métier.
 
----
+**Statut : ÉTABLI techniquement.**
 
-## 25. Indicateur
+------------------------------------------------------------------------
 
-Un **Indicateur** est une mesure calculée à partir du modèle normalisé.
+## 25. Data Quality Issue
 
-Il doit notamment pouvoir exposer :
+Une **Data Quality Issue** signale une incohérence, une absence ou une
+réserve sur les données exploitées.
 
-- sa valeur ;
-- son unité ;
-- son numérateur ;
-- son dénominateur ;
-- son périmètre ;
-- sa période éventuelle ;
-- sa définition ;
-- les entités sources ;
-- sa fiabilité ;
-- les exclusions éventuelles.
+Elle ne corrige pas silencieusement les données sources.
 
----
+Son impact doit être déterminé au niveau des métriques concernées plutôt
+que dégrader arbitrairement toutes les métriques.
 
-## 26. Relation synthétique entre les objets
+**Statut : ÉTABLI comme principe analytique.**
 
-```text
-Repository
-    │
-    ├── branches
-    ├── tags
-    ├── Milestones
-    ├── Releases
-    │
-    └── Librairie
-          │
-          ├── Package
-          │     │
-          │     └── Versions
-          │           ├── PROD
-          │           ├── SNAPSHOT
-          │           ├── Release Candidate
-          │           └── Hotfix Candidate
-          │
-          └── Composants
+------------------------------------------------------------------------
+
+## 26. Objets à ne pas confondre
+
+Le modèle impose notamment les distinctions suivantes :
+
+``` text
+Repository ≠ Librairie
+
+Librairie ≠ Package
+
+Version déclarée ≠ Version d'artefact
+
+Milestone ≠ Version
+
+Issue ≠ Anomalie
+
+Audit métier ? Issue d'Audit
+    → identité exacte encore ouverte
+
+Anomalie ≠ Improvement
+
+criticité RGAA ≠ catégorie a11y
+
+Snapshot ≠ événement métier
 ```
 
-Les chemins de production établis sont :
-
-```text
-release/*** → master → Jenkins → Tag Git + Nexus PROD
-hotfix/***  → master → Jenkins → Tag Git + Nexus PROD
-```
-
-Cette chaîne doit rester traçable dans le futur modèle de données.
+Ces distinctions doivent rester visibles dans le modèle normalisé.
