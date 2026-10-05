@@ -619,3 +619,16 @@ auditedReleaseCandidate
 
 La Milestone reste nécessaire pour rattacher l'Audit à sa Version cible. Elle ne remplace pas le champ explicite de RC auditée.
 
+------------------------------------------------------------------------
+
+## Version --- Catalogue historique applicable
+
+Une Version PROD possède un Catalogue historique applicable.
+
+Pour `M.m.r`, ce Catalogue est reconstruit depuis l'état du Repository
+au Git tag `M.m.r`.
+
+Il représente le périmètre des Components de cette Version et sert
+notamment de dénominateur aux indicateurs historiques de couverture
+d'Audit.
+

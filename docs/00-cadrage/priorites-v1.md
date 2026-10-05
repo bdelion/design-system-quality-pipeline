@@ -167,14 +167,22 @@ L'absence du champ explicite sur un Audit pré-PROD constitue une information ma
 
 ### Q-081 --- Construction du Catalogue historique
 
-**Priorité : BLOQUANT V1 si la V1 restitue des couvertures historiques
-par Version**
+**Priorité : DÉJÀ ÉTABLI**
 
-Une couverture historique ne peut pas être recalculée avec le Catalogue
-courant.
+Pour une Version PROD `M.m.r`, le Catalogue historique applicable est
+reconstruit à partir du contenu du Repository au Git tag `M.m.r`.
 
-Il faut donc savoir comment conserver ou reconstruire le périmètre
-applicable à chaque Version.
+``` text
+Git tag M.m.r
+→ état du Repository
+→ Catalogue historique de M.m.r
+```
+
+Ce Catalogue est le périmètre de référence des indicateurs historiques
+de la Version, notamment le dénominateur de la couverture d'Audit.
+
+Le Catalogue courant ne doit pas être projeté rétroactivement sur les
+anciennes Versions.
 
 ### Q-096 --- Date exacte de Release et source
 

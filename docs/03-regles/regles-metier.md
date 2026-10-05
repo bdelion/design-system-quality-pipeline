@@ -287,3 +287,19 @@ La RC auditée ne doit pas être inférée à partir de la dernière RC construi
 
 L'absence du champ explicite sur un Audit pré-PROD empêche d'identifier précisément l'artefact audité et doit être traitée comme une information manquante / un problème de qualité des données.
 
+------------------------------------------------------------------------
+
+## Catalogue historique d'une Version
+
+Pour toute Version PROD `M.m.r`, le Catalogue historique de référence
+est obtenu depuis le contenu du Repository au Git tag `M.m.r`.
+
+``` text
+historicalCatalogue(M.m.r)
+= catalogue extrait du Repository au tag M.m.r
+```
+
+La présence ultérieure, la modification ou la suppression d'un
+Component dans le Catalogue courant ne doit pas modifier le périmètre
+historique d'une Version déjà publiée.
+

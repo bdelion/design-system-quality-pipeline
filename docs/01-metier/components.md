@@ -192,3 +192,27 @@ Improvement d'Audit
 
 concernent exactement un Component, identique dans la relation Audit →
 sous-Issue.
+
+------------------------------------------------------------------------
+
+## Catalogue historique d'une Version
+
+Pour une Version PROD `M.m.r`, le Catalogue historique applicable est
+reconstruit à partir du contenu du Repository au Git tag `M.m.r`
+correspondant.
+
+``` text
+Git tag M.m.r
+      ↓
+état du Repository à ce tag
+      ↓
+Catalogue des Components de M.m.r
+```
+
+Ce Catalogue historique constitue le périmètre de référence pour les
+indicateurs historiques de la Version, notamment le dénominateur de la
+couverture d'Audit.
+
+Le Catalogue courant ne doit pas être appliqué rétroactivement à une
+ancienne Version.
+

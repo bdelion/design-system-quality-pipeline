@@ -275,3 +275,28 @@ définies.
 Le système de stockage cible des Snapshots reste à décider.
 
 **Statut : À instruire ultérieurement.**
+
+------------------------------------------------------------------------
+
+## Reconstruction du Catalogue historique
+
+Le Catalogue applicable à une Version PROD `M.m.r` est reconstruit à
+partir de l'état du Repository identifié par le Git tag `M.m.r`.
+
+``` text
+Version PROD M.m.r
+        ↓
+Git tag M.m.r
+        ↓
+contenu du Repository
+        ↓
+Catalogue historique applicable
+```
+
+Cette règle permet de reconstruire le périmètre des Components tel qu'il
+existait pour cette Version.
+
+Les indicateurs historiques dépendant du Catalogue, en particulier la
+couverture d'Audit, doivent utiliser ce périmètre et non le Catalogue
+courant.
+

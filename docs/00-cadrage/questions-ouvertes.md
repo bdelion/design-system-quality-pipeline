@@ -3022,6 +3022,30 @@ Version PROD `M.m.r`.
 
 ---
 
+### D-143 --- Reconstruction du Catalogue historique
+
+Pour une Version PROD `M.m.r`, le Catalogue historique applicable est
+reconstruit à partir du contenu du Repository au Git tag `M.m.r`
+correspondant.
+
+``` text
+Git tag M.m.r
+      ↓
+état du Repository à ce tag
+      ↓
+Catalogue historique de M.m.r
+```
+
+Ce Catalogue constitue le périmètre historique de référence de la
+Version, notamment pour le dénominateur de la couverture d'Audit.
+
+Le Catalogue courant ne doit pas être appliqué rétroactivement à une
+ancienne Version.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -4068,15 +4092,15 @@ Ainsi, une Version historique conserve le nombre de Composants qui lui était ap
 
 ---
 
-## Q-081 — Construction de la photographie historique du Catalogue
+### Q-081 --- Construction du Catalogue historique
 
-Chaque Version doit disposer conceptuellement de la photographie du Catalogue de Composants qui lui est applicable.
+Le Catalogue historique d'une Version PROD `M.m.r` est reconstruit à
+partir du contenu du Repository au Git tag `M.m.r`.
 
-Il reste à définir comment cette photographie sera obtenue : donnée persistée au moment de la Version, reconstruction depuis Git ou les exports, snapshot du pipeline, ou autre mécanisme.
+Ce Catalogue est utilisé comme périmètre historique de référence pour
+les indicateurs de la Version.
 
-Cette question est liée à la future fonctionnalité de comparaison entre Versions mais ne doit pas être résolue prématurément.
-
-**Statut : À instruire**
+**Statut : Établi**
 
 ---
 
