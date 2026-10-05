@@ -1100,3 +1100,29 @@ Pour `OldSelect` décommissionné en `1.8.0` :
 Le modèle du Catalogue doit donc porter une information de décommissionnement associée à une Version.
 
 Le comportement en cas de réapparition ultérieure d'un Composant décommissionné reste à définir.
+
+
+### Réactivation exceptionnelle d'un Composant
+
+La réapparition d'un Composant précédemment décommissionné est considérée comme un cas exceptionnel.
+
+Si elle survient, elle ne doit pas être interprétée automatiquement comme une réactivation sur la seule base d'un nom, d'un export ou d'une détection technique.
+
+La réactivation doit être explicitement matérialisée dans le Catalogue.
+
+```text
+OldSelect
+│
+├── actif
+├── décommissionné en 1.8.0
+│
+└── réapparition ultérieure
+        ↓
+   pas de réactivation implicite
+        ↓
+   information explicite dans le Catalogue
+```
+
+Cette règle permet de préserver l'historique et d'éviter qu'un nouveau Composant portant le même nom soit assimilé silencieusement à l'ancien.
+
+La représentation exacte de cette réactivation dans le Catalogue reste à définir.

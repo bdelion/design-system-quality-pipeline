@@ -1379,6 +1379,20 @@ Le décommissionnement est donc une suppression logique et non une suppression d
 
 ---
 
+## D-068 — Réactivation exceptionnelle d'un Composant explicitée dans le Catalogue
+
+La réapparition d'un Composant précédemment décommissionné est considérée comme un cas exceptionnel qui ne devrait normalement pas se produire.
+
+Si ce cas survient, la réactivation ne doit pas être déduite automatiquement de la seule réapparition d'un nom ou d'un export.
+
+Elle doit être indiquée explicitement dans le Catalogue afin de rendre visible le changement de situation du Composant et de préserver son historique.
+
+Le mécanisme exact de représentation de cette réactivation dans le Catalogue reste à définir.
+
+**Statut : Principe établi ; représentation à instruire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2433,9 +2447,21 @@ Cette question est liée à la future fonctionnalité de comparaison entre Versi
 
 ## Q-082 — Réactivation d'un Composant décommissionné
 
-Le Catalogue conserve les Composants décommissionnés avec leur Version de décommissionnement.
+La réapparition d'un Composant décommissionné est considérée comme exceptionnelle.
 
-Il reste à déterminer le comportement attendu si un Composant précédemment décommissionné réapparaît dans une Version ultérieure : réactivation du même Composant historique ou création d'une nouvelle identité de Composant.
+Si elle survient, elle doit être indiquée explicitement dans le Catalogue et ne doit pas être déduite automatiquement de la seule réapparition du nom ou de l'export du Composant.
+
+Le mécanisme exact permettant de représenter cette réactivation reste à définir.
+
+**Statut : Principe établi ; représentation à instruire**
+
+---
+
+## Q-083 — Représentation d'une réactivation dans le Catalogue
+
+Lorsqu'un Composant décommissionné est exceptionnellement réactivé, il faut rendre cette réactivation explicite dans le Catalogue.
+
+Il reste à déterminer quelles informations doivent être portées par le Catalogue, par exemple la Version de réactivation ou un historique des périodes d'activité, sans préjuger à ce stade de la solution retenue.
 
 **Statut : À instruire**
 
