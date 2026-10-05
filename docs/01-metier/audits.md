@@ -2129,3 +2129,20 @@ Ce sont les deux seuls cas identifiés à ce jour, mais cette liste n'est pas co
 Si un autre type apparaît à l'avenir, son comportement devra être défini explicitement. Le pipeline ne devra notamment pas considérer automatiquement une sous-Issue inconnue comme une Anomalie ni lui faire modifier le verdict de conformité.
 
 Les règles actuelles restent donc précises pour Anomalie et Improvement tout en laissant le modèle extensible.
+
+
+### Issue Type obligatoire d'une Anomalie d'Audit
+
+Toute Anomalie créée à partir d'un Audit doit avoir l'Issue Type `🐛 Bug`.
+
+```text
+Audit
+└── Anomalie
+    ├── sous-Issue obligatoire
+    ├── Issue Type = 🐛 Bug
+    └── 🧩 Component:xxx identique à l'Audit
+```
+
+Un autre Issue Type sur une Anomalie d'Audit constitue une incohérence que le pipeline doit pouvoir détecter.
+
+La réciproque n'est pas automatique : une Issue `🐛 Bug` n'est pas nécessairement une Anomalie d'Audit. Son contexte et sa relation avec une Issue d'Audit restent nécessaires pour la qualifier comme telle.

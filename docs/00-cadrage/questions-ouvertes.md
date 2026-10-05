@@ -2591,6 +2591,28 @@ En particulier, une sous-Issue d'un type inconnu ne doit pas être assimilée au
 
 ---
 
+## D-124 — Une Anomalie d'Audit doit avoir l'Issue Type Bug
+
+Toute Anomalie créée à partir d'un Audit doit obligatoirement avoir l'Issue Type `🐛 Bug`.
+
+Son identification structurelle repose donc notamment sur les règles cumulatives suivantes :
+
+```text
+Anomalie d'Audit
+├── sous-Issue de l'Issue d'Audit
+├── Issue Type = 🐛 Bug
+└── exactement 1 🧩 Component:xxx
+    └── identique au Composant de l'Audit parent
+```
+
+Une sous-Issue identifiée comme Anomalie d'Audit mais dont l'Issue Type n'est pas `🐛 Bug` constitue une incohérence à détecter par le pipeline.
+
+Cette règle concerne spécifiquement les Anomalies issues d'un Audit. Elle ne suffit pas, à elle seule, à conclure que toute Issue de type `🐛 Bug` est une Anomalie d'Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2683,18 +2705,15 @@ Le fonctionnement cible réalise l'Audit sur `M.m.r-rc.n` avant la PROD.
 
 ## Q-011 — Définition d'une Anomalie
 
-Dans le contexte d'une sub-Issue créée à partir d'un Audit d'Accessibilité, une Anomalie est actuellement caractérisée par la combinaison suivante :
+Pour une Anomalie issue d'un Audit, plusieurs éléments sont désormais établis :
 
-- Issue Type `🐛 Bug` ;
-- un des labels `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
-- un label `♿ a11y:xxx` ;
-- un label `🧩 Component:xxx` identique à celui de l'Issue d'Audit parente.
+- elle est une sous-Issue de l'Issue d'Audit ;
+- son Issue Type est obligatoirement `🐛 Bug` ;
+- elle porte exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent ;
+- dans le contexte actuel d'Audit Accessibilité, elle porte exactement une criticité RGAA parmi bloquante, majeure ou mineure ;
+- elle porte un label `♿ a11y:xxx` selon le vocabulaire actuellement observé.
 
-Les valeurs `♿ a11y:xxx` actuellement connues sont : `image`, `limite de temps`, `navigation clavier`, `propriétés (nom rôle état)`, `contrastes`, `espacement des caractères`, `contrôle au clavier` et `statut`. Cette liste n'est pas exhaustive.
-
-Cette réponse établit la règle pour les Anomalies issues d'un Audit d'Accessibilité.
-
-La définition générale d'une Anomalie doit rester configurable car sa représentation peut varier selon les repositories, organisations et origines de l'Issue.
+La définition générale d'une Anomalie hors contexte d'Audit reste à instruire.
 
 **Statut : Partiellement établi**
 
