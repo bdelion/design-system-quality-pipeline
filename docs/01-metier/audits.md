@@ -2289,3 +2289,23 @@ Improvement d'Audit Accessibilité
 Le pipeline ne doit donc pas produire d'erreur de cardinalité maximale pour une Improvement sur la seule présence de plusieurs labels `♿ a11y:xxx`.
 
 Ce point devra être confirmé ultérieurement à partir des pratiques réelles ou avec les acteurs concernés.
+
+
+### Criticités RGAA interdites hors Anomalie d'Audit
+
+Les criticités `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` et `🚦 rgaa:mineure` sont exclusivement attachées aux Anomalies provenant d'un Audit Accessibilité.
+
+```text
+Anomalie d'Audit Accessibilité
+└── exactement 1 🚦 rgaa:xxx
+
+Improvement d'Audit
+└── 0 🚦 rgaa:xxx
+
+Issue hors Audit
+└── 0 🚦 rgaa:xxx
+```
+
+Une Issue accessibilité hors Audit peut continuer à être catégorisée avec un ou plusieurs labels `♿ a11y:xxx` selon les règles applicables, mais elle ne doit pas recevoir une criticité RGAA.
+
+Le pipeline peut donc utiliser la présence d'une criticité RGAA hors d'une Anomalie d'Audit Accessibilité comme signal d'incohérence certain.

@@ -2782,6 +2782,41 @@ Le modèle doit pouvoir représenter plusieurs catégories et le pipeline ne doi
 
 ---
 
+## D-132 — Les criticités RGAA sont strictement réservées aux Anomalies provenant d'un Audit
+
+Les trois labels de criticité RGAA actuellement définis :
+
+- `🚦 rgaa:bloquante` ;
+- `🚦 rgaa:majeure` ;
+- `🚦 rgaa:mineure` ;
+
+sont strictement réservés aux **Anomalies provenant d'un Audit Accessibilité**.
+
+Ils ne doivent donc pas être utilisés :
+
+- sur une Improvement issue d'un Audit ;
+- sur une Issue hors Audit, même si cette Issue concerne l'accessibilité ;
+- sur une autre catégorie d'Issue ne correspondant pas à une Anomalie d'Audit Accessibilité.
+
+Le pipeline doit considérer la présence de l'un de ces labels hors de ce contexte comme une incohérence.
+
+Cette règle confirme la distinction entre :
+
+```text
+🚦 rgaa:xxx
+└── criticité d'une Anomalie d'Audit Accessibilité uniquement
+
+♿ a11y:xxx
+└── thématique accessibilité transverse
+    ├── Anomalie d'Audit
+    ├── Improvement d'Audit
+    └── Issue hors Audit
+```
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3440,19 +3475,13 @@ Les règles de cardinalité applicables aux Issues hors Audit restent également
 
 ## Q-058 — Évolution du référentiel de criticité RGAA
 
-Dans le fonctionnement actuel, une Anomalie d'Audit doit porter exactement une criticité parmi :
+Le périmètre d'utilisation des criticités RGAA est désormais établi.
 
-```text
-🚦 rgaa:bloquante
-🚦 rgaa:majeure
-🚦 rgaa:mineure
-```
+Les labels `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` et `🚦 rgaa:mineure` sont strictement réservés aux Anomalies provenant d'un Audit Accessibilité. Ils sont interdits sur les Improvements d'Audit et sur les Issues hors Audit.
 
-La cardinalité `exactement 1` est établie. Le référentiel doit cependant pouvoir évoluer si les pratiques d'Audit changent.
+Le schéma actuel comporte exactement ces trois valeurs. Son éventuelle évolution future reste à traiter comme une évolution explicite du référentiel et ne doit pas être déduite automatiquement.
 
-Il reste à déterminer ultérieurement comment ce référentiel sera configuré et gouverné sans figer ces trois valeurs dans l'implémentation.
-
-**Statut : Règle actuelle établie ; extensibilité à instruire ultérieurement**
+**Statut : Partiellement établi — périmètre actuel établi, évolution future du référentiel à instruire**
 
 ---
 
