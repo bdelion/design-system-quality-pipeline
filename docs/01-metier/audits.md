@@ -2343,3 +2343,21 @@ Une Issue compte donc pour une seule Anomalie même lorsqu'elle décrit plusieur
 Le dashboard ne cherche pas à déterminer le nombre d'occurrences contenues dans une Issue. Il ne doit notamment pas tenter de l'inférer depuis le titre, la description ou les commentaires.
 
 Cette convention garantit que les métriques reposent sur une donnée structurée et vérifiable. Elle implique également que le nombre d'Anomalies affiché représente un nombre d'Issues Anomalie et non un nombre exhaustif d'occurrences techniques de défauts.
+
+
+### Cardinalité entre Audit et Anomalie
+
+Chaque Anomalie provenant d'un Audit appartient à un seul et unique Audit parent.
+
+```text
+Issue d'Audit
+├── 0..n Anomalies
+│   └── chaque Anomalie → exactement 1 Audit parent
+└── 0..n Improvements
+```
+
+Une même Issue Anomalie ne peut donc pas être partagée entre plusieurs Audits.
+
+Cette cardinalité préserve également la temporalité des revalidations : lorsqu'un problème est constaté lors d'un nouvel Audit, une nouvelle Anomalie est créée pour ce nouvel Audit plutôt que de rattacher une Anomalie historique à plusieurs Audits.
+
+Le pipeline doit détecter comme incohérente une Anomalie d'Audit sans parent Audit ou rattachée à plusieurs parents Audit.

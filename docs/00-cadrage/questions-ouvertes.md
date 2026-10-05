@@ -2859,6 +2859,25 @@ En conséquence :
 
 ---
 
+## D-135 — Une Anomalie d'Audit appartient à un seul Audit parent
+
+La relation entre une **Anomalie provenant d'un Audit** et son **Issue d'Audit parent** est stricte du côté de l'Anomalie :
+
+```text
+Audit 1 ── 0..n Anomalies
+Anomalie ── exactement 1 Audit parent
+```
+
+Une même Issue Anomalie ne doit donc jamais être rattachée comme sous-Issue à plusieurs Audits.
+
+Cette règle est cohérente avec le modèle de revalidation déjà établi : si un problème est de nouveau constaté lors d'un nouvel Audit, une **nouvelle Issue Anomalie** est créée et rattachée à ce nouvel Audit. L'ancienne Anomalie n'est pas réutilisée comme enfant du nouvel Audit.
+
+Le pipeline doit considérer comme incohérente toute Anomalie d'Audit ayant zéro parent Audit ou plusieurs parents Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3378,11 +3397,14 @@ Le seul statut Done ou le seul état Closed n'est pas suffisant.
 
 ## Q-050 — Relation Issue d'Audit / Anomalie
 
-Une Anomalie issue d'un Audit doit obligatoirement être une sous-Issue de l'Issue d'Audit qui l'a fait émerger.
+La relation Audit → Anomalie est désormais établie :
 
-Elle doit également porter exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent.
+- une Anomalie provenant d'un Audit doit obligatoirement être une sous-Issue de cet Audit ;
+- elle doit porter exactement un `🧩 Component:xxx`, identique à celui de l'Audit parent ;
+- chaque Anomalie d'Audit appartient à **un seul et unique Audit parent** ;
+- un Audit peut avoir zéro, une ou plusieurs Anomalies.
 
-La relation Audit → Anomalie est donc explicite et contrôlable dans GitHub.
+Lors d'une revalidation, une nouvelle Anomalie est créée si le problème est de nouveau constaté ; l'ancienne Anomalie n'est pas rattachée au nouvel Audit.
 
 **Statut : Établi**
 
