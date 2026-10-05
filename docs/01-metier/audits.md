@@ -2254,3 +2254,20 @@ Anomalie d'Audit Accessibilité
 ```
 
 La cardinalité des labels `♿ a11y:xxx` sur les Improvements d'Audit et les Issues hors Audit reste à confirmer séparément.
+
+
+### Catégorie a11y facultative pour une Improvement d'Audit Accessibilité
+
+Contrairement à une Anomalie d'Audit Accessibilité, une Improvement n'est pas obligée de porter un label `♿ a11y:xxx`.
+
+```text
+Anomalie d'Audit Accessibilité
+└── ♿ a11y:xxx : exactement 1
+
+Improvement d'Audit Accessibilité
+└── ♿ a11y:xxx : facultatif
+```
+
+L'absence de catégorie a11y sur une Improvement est donc valide et ne doit pas être signalée comme une incohérence.
+
+La cardinalité maximale reste à confirmer : il n'est pas encore établi si une Improvement catégorisée doit porter au plus un label `♿ a11y:xxx` ou peut en porter plusieurs.

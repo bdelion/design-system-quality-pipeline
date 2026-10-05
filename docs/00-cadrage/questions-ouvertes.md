@@ -2744,6 +2744,27 @@ Cette règle précise D-128 : l'hypothèse générale sur la cardinalité des la
 
 ---
 
+## D-130 — La catégorie a11y est facultative pour une Improvement d'Audit Accessibilité
+
+Une **Improvement issue d'un Audit Accessibilité** n'est pas obligée de porter un label `♿ a11y:xxx`.
+
+L'absence de catégorie a11y sur une Improvement d'Audit Accessibilité est donc une situation valide et ne constitue pas une incohérence.
+
+La cardinalité minimale est ainsi établie à zéro :
+
+```text
+Improvement d'Audit Accessibilité
+└── ♿ a11y:xxx : facultatif
+```
+
+En revanche, il n'est pas encore établi si une Improvement qui possède une catégorisation a11y doit être limitée à un seul label ou peut en porter plusieurs.
+
+Cette règle se distingue explicitement de celle des Anomalies d'Audit Accessibilité, pour lesquelles exactement un label `♿ a11y:xxx` est obligatoire.
+
+**Statut : Établi pour le caractère facultatif — cardinalité maximale à confirmer**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3387,11 +3408,14 @@ La catégorisation complémentaire envisagée pour les Improvements, par exemple
 
 Les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse et peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit.
 
-Pour une **Anomalie issue d'un Audit Accessibilité**, la cardinalité est désormais établie : elle doit porter **exactement un** label `♿ a11y:xxx`. Zéro ou plusieurs labels constituent une incohérence.
+Les cardinalités suivantes sont désormais établies :
 
-Pour les autres catégories d'Issues, notamment les Improvements d'Audit et les Issues hors Audit, la cardinalité générale reste à confirmer.
+- **Anomalie d'Audit Accessibilité** : exactement un label `♿ a11y:xxx` ;
+- **Improvement d'Audit Accessibilité** : le label `♿ a11y:xxx` est facultatif ; zéro est donc autorisé.
 
-**Statut : Partiellement établi — cardinalité établie pour les Anomalies d'Audit Accessibilité**
+Il reste à confirmer si une Improvement d'Audit Accessibilité qui porte des catégories a11y peut en porter plusieurs, ainsi que les règles applicables aux Issues hors Audit.
+
+**Statut : Partiellement établi — cardinalité maximale des Improvements et règles hors Audit à confirmer**
 
 ---
 
