@@ -303,3 +303,15 @@ La présence ultérieure, la modification ou la suppression d'un
 Component dans le Catalogue courant ne doit pas modifier le périmètre
 historique d'une Version déjà publiée.
 
+------------------------------------------------------------------------
+
+## Date de Release d'une Version
+
+Pour une Version PROD `M.m.r` :
+
+``` text
+releasedAt = date de création du Git tag M.m.r
+```
+
+Cette date est la référence temporelle pour l'état connu au moment de la Release. Les événements postérieurs peuvent enrichir la connaissance actuelle, mais ne doivent pas être projetés rétroactivement.
+

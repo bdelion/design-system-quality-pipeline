@@ -494,3 +494,17 @@ historique par Version
 La prochaine étape doit donc être une courte phase de fermeture de ces
 bloqueurs V1, question par question, sans rouvrir les décisions déjà
 établies.
+
+------------------------------------------------------------------------
+
+## Q-096 --- Date exacte de Release
+
+**Priorité : DÉJÀ ÉTABLI**
+
+Pour une Version PROD `M.m.r`, la date métier de Release est la date de création du Git tag `M.m.r` :
+
+``` text
+releasedAt = GitTag(M.m.r).createdAt
+```
+
+Cette date constitue l'instant de référence pour reconstruire l'état connu à la Release. Les informations produites après `releasedAt` enrichissent la connaissance actuelle mais ne doivent pas être projetées rétroactivement.

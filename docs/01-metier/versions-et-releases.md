@@ -189,3 +189,16 @@ Restent notamment ouvertes ou partielles :
 -   règles en cas de Tag ou Milestone PROD manquants ;
 -   impact des Audits de rattrapage sur les vues actuelles et
     historiques.
+
+------------------------------------------------------------------------
+
+## Date métier de Release
+
+Pour une Version PROD `M.m.r`, la date métier de Release est la date de création du Git tag `M.m.r`.
+
+``` text
+Version.releasedAt = GitTag(M.m.r).createdAt
+```
+
+Cette date constitue l'instant de référence pour déterminer ce qui était connu au moment de la Release. La date de publication Nexus ou l'exécution Jenkins ne se substitue pas à cette référence métier.
+

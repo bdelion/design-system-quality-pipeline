@@ -3046,6 +3046,26 @@ ancienne Version.
 
 ---
 
+### D-144 --- Date métier de Release
+
+Pour une Version PROD `M.m.r`, la date métier de Release est la date de
+création du Git tag `M.m.r`.
+
+``` text
+Version.releasedAt = GitTag(M.m.r).createdAt
+```
+
+Cette date constitue l'instant de référence pour reconstruire l'état
+connu au moment de la Release.
+
+Les informations ou événements postérieurs à `releasedAt` peuvent
+enrichir la connaissance actuelle de la Version, mais ne doivent pas
+être projetés rétroactivement dans l'état à la Release.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -4280,13 +4300,16 @@ La vue historique ne doit pas être recalculée à partir de l'état actuel des 
 
 ---
 
-## Q-096 — Date exacte de référence d'une Version PROD
+### Q-096 --- Date exacte de Release
 
-Le principe de photographie historique à la sortie de la Version est établi.
+La date métier de Release d'une Version PROD `M.m.r` est la date de
+création du Git tag `M.m.r`.
 
-Il reste à préciser quel événement technique fournit la date/heure de référence exacte de cette sortie : création du Git tag PROD, publication de l'artefact dans Nexus PROD, éventuelle GitHub Release, ou une autre source de vérité.
+``` text
+releasedAt = GitTag(M.m.r).createdAt
+```
 
-**Statut : À instruire**
+**Statut : Établi**
 
 ---
 

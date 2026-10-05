@@ -632,3 +632,15 @@ Il représente le périmètre des Components de cette Version et sert
 notamment de dénominateur aux indicateurs historiques de couverture
 d'Audit.
 
+------------------------------------------------------------------------
+
+## Version --- date de Release
+
+Une Version PROD `M.m.r` possède une date métier de Release définie par la date de création de son Git tag `M.m.r`.
+
+``` text
+releasedAt = GitTag(M.m.r).createdAt
+```
+
+`releasedAt` sert d'instant de coupure pour reconstruire l'état connu à la Release.
+

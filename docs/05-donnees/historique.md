@@ -300,3 +300,17 @@ Les indicateurs historiques dépendant du Catalogue, en particulier la
 couverture d'Audit, doivent utiliser ce périmètre et non le Catalogue
 courant.
 
+------------------------------------------------------------------------
+
+## Instant de référence d'une Release
+
+L'instant de référence d'une Version PROD `M.m.r` est la date de création du Git tag `M.m.r`.
+
+``` text
+releasedAt = GitTag(M.m.r).createdAt
+```
+
+Les informations connues jusqu'à `releasedAt` peuvent appartenir à l'état à la Release. Les informations postérieures relèvent de la connaissance actuelle et ne doivent pas être projetées rétroactivement.
+
+Cette règle distingue notamment un Audit pré-PROD déjà réalisé à la Release d'un Audit de rattrapage réalisé après la Release.
+
