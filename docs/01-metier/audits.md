@@ -1845,3 +1845,25 @@ Issue concernant Button
 Ce rattachement commun est nécessaire pour agréger correctement les Issues par Composant et pour croiser ultérieurement ces données avec les Audits, les Anomalies et les usages consommateurs.
 
 L'absence de label Composant ne doit toutefois pas être considérée automatiquement comme une anomalie de données : certaines Issues peuvent être transverses et ne concerner aucun Composant. Les cas métier autorisant cette absence restent à définir.
+
+
+### Issues concernant plusieurs Composants
+
+Une Issue peut concerner plusieurs Composants. Dans ce cas, elle doit porter un label `🧩 Component:xxx` pour chacun des Composants concernés.
+
+```text
+Issue
+├── 🧩 Component:Button
+└── 🧩 Component:Modal
+```
+
+Toutefois, lorsque le travail peut être séparé, la pratique à privilégier est de créer une Issue distincte par Composant afin de permettre un traitement indépendant et, notamment, une PR distincte par Composant.
+
+```text
+Approche privilégiée
+
+Issue Button ──> PR Button
+Issue Modal  ──> PR Modal
+```
+
+Cette préférence améliore la traçabilité `Issue → Composant → PR`, mais n'est pas encore une règle obligatoire. Les véritables Issues multi-Composants restent autorisées.

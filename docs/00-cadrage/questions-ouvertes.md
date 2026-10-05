@@ -2238,6 +2238,41 @@ Cette règle ne signifie pas que toute Issue du Repository doit obligatoirement 
 
 ---
 
+## D-108 — Une Issue multi-Composants porte tous les labels Composant concernés
+
+Lorsqu'une même Issue concerne effectivement plusieurs Composants, elle doit porter un label `🧩 Component:xxx` pour chacun des Composants concernés.
+
+Exemple :
+
+```text
+Issue transverse à Button et Modal
+├── 🧩 Component:Button
+└── 🧩 Component:Modal
+```
+
+L'Issue doit alors être rattachée à chacun de ces Composants dans les analyses par Composant.
+
+**Statut : Établi**
+
+---
+
+## D-109 — Privilégier une Issue distincte par Composant
+
+Même si une Issue multi-Composants est autorisée, la pratique à privilégier est de créer une Issue distincte pour chaque Composant lorsque le travail peut être séparé.
+
+Cette préférence vise notamment à permettre :
+
+- un traitement indépendant de chaque Composant ;
+- une PR distincte pour chaque Composant ;
+- une traçabilité plus précise entre Issue, Composant et PR ;
+- un suivi plus fin de l'avancement et de la résolution.
+
+Cette pratique est une orientation de gouvernance et n'est pas, à ce stade, une règle obligatoire.
+
+**Statut : Orientation établie — non obligatoire**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3607,6 +3642,16 @@ Pour chaque candidat, il faudra préciser son objectif, son interprétation, son
 Il est établi que toute Issue concernant effectivement un Composant doit porter un label `🧩 Component:xxx`.
 
 Il reste à définir les cas métier dans lesquels une Issue peut légitimement être transverse et ne porter aucun label Composant, afin de distinguer ces cas d'une donnée incomplète ou incorrecte.
+
+**Statut : À instruire**
+
+---
+
+## Q-108 — Comptabilisation d'une Issue multi-Composants dans les indicateurs
+
+Une Issue peut exceptionnellement concerner plusieurs Composants et porter plusieurs labels `🧩 Component:xxx`.
+
+Il reste à préciser si, dans l'indicateur `nombre total d'Issues par Composant`, cette Issue doit compter une fois pour chacun des Composants auxquels elle est rattachée.
 
 **Statut : À instruire**
 
