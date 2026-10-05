@@ -566,3 +566,23 @@ Anomalie.detectedAt = GitHub Issue.createdAt
 Cette règle s'applique aux Anomalies issues d'un Audit comme aux
 Anomalies hors Audit. Le modèle ne reconstruit pas une éventuelle
 constatation antérieure à la création de l'Issue.
+
+------------------------------------------------------------------------
+
+## Anomalie --- date de correction
+
+La date métier de correction d'une Anomalie est la date à laquelle
+l'Issue `🐛 Bug` passe au statut Project `Done`.
+
+``` text
+Anomalie.correctedAt = date du passage de l'Issue à Done
+```
+
+Dans le fonctionnement nominal, cet événement doit être cohérent avec
+la fermeture (`Closed`) de l'Issue et le merge de la Pull Request de
+correction lorsqu'une Pull Request est requise.
+
+`Done` reste toutefois l'événement métier de référence pour
+`correctedAt`. Un écart temporel ou d'état avec `Closed` ou avec le merge
+de la Pull Request relève d'un contrôle de cohérence des données et ne
+change pas la définition de `correctedAt`.

@@ -233,3 +233,29 @@ detectedAt = issue.createdAt
 Cette définition est commune aux Anomalies issues d'un Audit et hors
 Audit. Elle fournit le point de départ du calcul du délai
 détection → correction. La date de correction est définie séparément.
+
+------------------------------------------------------------------------
+
+## Date de correction et délai de correction
+
+Pour les indicateurs portant sur les Anomalies :
+
+``` text
+date de correction = date du passage de l'Issue 🐛 Bug à Done
+correctedAt = date du passage à Done
+```
+
+Le délai détection → correction peut donc être défini par :
+
+``` text
+correctionDelay = correctedAt - detectedAt
+                = date(Done) - issue.createdAt
+```
+
+Dans le fonctionnement nominal, la date de `Done` doit être cohérente
+avec la fermeture de l'Issue et le merge de la Pull Request de
+correction lorsqu'une Pull Request est requise.
+
+Un écart entre ces événements n'autorise pas l'indicateur à choisir
+silencieusement une autre date : il doit être traité comme une
+incohérence de données.

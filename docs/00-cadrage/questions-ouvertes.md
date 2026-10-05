@@ -2953,6 +2953,27 @@ reconstruite ou inférée.
 
 ---
 
+### D-140 --- Date de correction d'une Anomalie
+
+La date métier de correction d'une Anomalie est la date à laquelle
+l'Issue `🐛 Bug` passe au statut Project `Done`.
+
+``` text
+Anomalie.correctedAt = date du passage à Done
+```
+
+Dans le fonctionnement nominal, cette date doit être cohérente avec la
+date de fermeture (`Closed`) de l'Issue et la date de merge de la Pull
+Request de correction lorsqu'une Pull Request est requise.
+
+`Done` reste l'événement métier de référence. Un écart avec `Closed` ou
+avec le merge de la Pull Request constitue une incohérence de données à
+signaler.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3088,11 +3109,21 @@ detectedAt = GitHub Issue.createdAt
 
 ---
 
-## Q-014 — Date de correction
+### Q-014 --- Date de correction
 
-Quelle date représente la correction effective d'une Anomalie ?
+La date de correction d'une Anomalie est la date à laquelle l'Issue
+`🐛 Bug` passe au statut Project `Done`.
 
-**Statut : À instruire**
+``` text
+correctedAt = date du passage à Done
+```
+
+Dans le fonctionnement nominal, cette date doit également correspondre à
+la fermeture de l'Issue et au merge de la Pull Request de correction
+lorsqu'une Pull Request est requise.
+
+**Statut : Établi**
+
 
 ---
 

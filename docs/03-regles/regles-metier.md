@@ -228,3 +228,22 @@ detectedAt = issue.createdAt
 ```
 
 Aucune date antérieure supposée de constatation ne doit être inférée.
+
+------------------------------------------------------------------------
+
+## Date de correction d'une Anomalie
+
+La date de correction utilisée par le modèle et les indicateurs est la
+date du passage de l'Issue `🐛 Bug` au statut Project `Done`.
+
+``` text
+correctedAt = date du passage à Done
+```
+
+Dans le fonctionnement nominal, le passage à `Done`, la fermeture
+GitHub (`Closed`) et le merge de la Pull Request de correction doivent
+être cohérents.
+
+La date de `Closed` et la date de merge ne se substituent pas à la date
+de `Done` pour calculer `correctedAt`. Une incohérence entre ces
+événements doit être signalée comme un problème de qualité des données.
