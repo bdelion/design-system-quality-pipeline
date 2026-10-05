@@ -1875,6 +1875,33 @@ La vue par Version doit préserver la lecture historique sans réécrire le pass
 
 ---
 
+## D-090 — Une vue historique de Version restitue l'état à sa date de sortie
+
+Lorsqu'une ancienne Version de Librairie est consultée, les indicateurs doivent restituer l'état historique des Anomalies au moment de la sortie de cette Version.
+
+Une évolution ultérieure de l'Anomalie ne doit pas réécrire les indicateurs historiques de cette Version.
+
+Exemple :
+
+```text
+Sortie de 1.7.0
+Anomalie A : non traitée
+
+Quelques mois plus tard
+Anomalie A : traitée
+
+Consultation actuelle de la vue 1.7.0
+Anomalie A : non traitée
+```
+
+La vue historique doit donc utiliser les informations telles qu'elles étaient connues à la date de mise à disposition de la Version.
+
+La vue `latest`, à l'inverse, sert au pilotage de l'état courant du patrimoine actif.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3093,14 +3120,21 @@ Un Composant décommissionné aujourd'hui peut donc rester visible dans les indi
 
 ## Q-095 — Date de référence des indicateurs d'une ancienne Version
 
-La consultation par Version est établie.
+La vue d'une ancienne Version doit afficher l'état des Anomalies tel qu'il était au moment de la sortie de cette Version.
 
-Il reste à préciser si la vue d'une ancienne Version doit afficher :
+Une Anomalie non traitée lors de la sortie reste donc non traitée dans cette vue historique, même si elle a été corrigée ultérieurement.
 
-- l'état des Anomalies tel qu'il était au moment de la publication de cette Version ;
-- ou l'état actuel de traitement des Anomalies appartenant au périmètre de cette Version.
+La vue historique ne doit pas être recalculée à partir de l'état actuel des Issues.
 
-Ces deux lectures répondent à des besoins historiques différents.
+**Statut : Établi**
+
+---
+
+## Q-096 — Date exacte de référence d'une Version PROD
+
+Le principe de photographie historique à la sortie de la Version est établi.
+
+Il reste à préciser quel événement technique fournit la date/heure de référence exacte de cette sortie : création du Git tag PROD, publication de l'artefact dans Nexus PROD, éventuelle GitHub Release, ou une autre source de vérité.
 
 **Statut : À instruire**
 

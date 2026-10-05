@@ -1550,4 +1550,29 @@ OldSelect : décommissionné
 
 La présence d'un Composant dans une vue historique est déterminée par son appartenance au patrimoine de la Version consultée, et non par son état actuel.
 
-La date de référence à utiliser pour l'état de traitement des Anomalies dans une ancienne Version reste à préciser.
+Pour une ancienne Version, l'état de traitement des Anomalies est celui qui existait au moment de la sortie de cette Version. L'événement technique fournissant la date/heure exacte de cette sortie reste à préciser.
+
+
+### Photographie historique à la sortie d'une Version
+
+Une vue d'ancienne Version doit restituer l'état connu au moment de sa sortie.
+
+```text
+1.7.0 — au moment de sa sortie
+└── Anomalie A : non traitée
+
+Évolution ultérieure
+└── Anomalie A : traitée
+
+Vue historique 1.7.0 consultée aujourd'hui
+└── Anomalie A : non traitée
+```
+
+Les corrections, fermetures ou autres changements intervenus après la sortie de la Version ne doivent pas modifier rétroactivement ses indicateurs historiques.
+
+Cette règle distingue clairement :
+
+- la vue `latest`, orientée pilotage courant du patrimoine actif ;
+- la vue d'une Version passée, orientée photographie historique.
+
+L'événement technique à retenir comme instant exact de sortie PROD reste à déterminer.
