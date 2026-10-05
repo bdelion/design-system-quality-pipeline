@@ -1802,6 +1802,38 @@ Un taux de `100 %` pour une criticité signifie que toutes les Anomalies histori
 
 ---
 
+## D-087 — Agrégation du suivi des Anomalies au niveau de la Librairie
+
+Les indicateurs de traitement définis au niveau du Composant doivent également être calculés au niveau de la Librairie, en agrégeant les Anomalies historiques des Composants appartenant à cette Librairie.
+
+La restitution au niveau Librairie doit inclure :
+
+- le nombre total d'Anomalies historiquement détectées ;
+- le nombre d'Anomalies traitées selon D-081 ;
+- le stock restant ;
+- le taux global de traitement ;
+- la répartition du stock restant par criticité RGAA ;
+- le taux de traitement propre à chaque criticité RGAA.
+
+Exemple :
+
+```text
+Design System React
+
+Anomalies historiques : 250
+Anomalies traitées     : 220
+Stock restant          : 30
+Taux de traitement     : 88 %
+```
+
+La restitution doit permettre de descendre vers les Composants contribuant au stock restant.
+
+Cette agrégation d'Anomalies ne crée pas à elle seule un verdict unique de conformité de la Librairie : les verdicts de conformité restent attachés aux Composants et aux Versions selon les règles établies.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2995,9 +3027,21 @@ Le taux est calculé sur l'historique des Anomalies de la criticité concernée.
 
 ## Q-093 — Agrégation du suivi des Anomalies au niveau supérieur
 
-Les indicateurs de traitement sont maintenant définis au niveau du Composant, globalement et par criticité RGAA.
+Les indicateurs de traitement définis au niveau du Composant doivent être agrégés au niveau de la Librairie.
 
-Il reste à préciser si ces mêmes indicateurs doivent être agrégés directement au niveau de la Librairie, afin d'obtenir notamment son taux global de traitement, son stock restant et sa répartition par criticité.
+La Librairie doit disposer du taux global de traitement, du stock restant et de la ventilation par criticité RGAA, avec les taux propres à chaque criticité.
+
+La restitution doit permettre de retrouver les Composants contribuant aux indicateurs agrégés.
+
+**Statut : Établi**
+
+---
+
+## Q-094 — Périmètre versionné de l'agrégation au niveau Librairie
+
+L'agrégation des Anomalies au niveau de la Librairie est établie.
+
+Il reste à préciser si, dans une vue consacrée à une Version donnée de la Librairie, le stock et les taux doivent rester calculés sur tout l'historique des Composants de la Librairie ou être présentés avec un périmètre spécifique à cette Version.
 
 **Statut : À instruire**
 

@@ -1482,3 +1482,28 @@ Le Dashboard peut ainsi restituer conjointement :
 - le taux de traitement par criticité.
 
 Ces indicateurs décrivent le traitement des Anomalies. Même lorsqu'un niveau atteint `100 %`, ils ne remplacent pas le verdict de conformité issu de l'Audit.
+
+
+### Agrégation au niveau de la Librairie
+
+Les indicateurs de traitement des Anomalies doivent être disponibles au niveau du Composant et au niveau de la Librairie.
+
+Pour une Librairie, le Dashboard agrège les Anomalies historiques de ses Composants et restitue :
+
+```text
+Design System React
+
+Anomalies historiques : 250
+Anomalies traitées     : 220
+Stock restant          : 30
+Taux de traitement     : 88 %
+
+Par criticité
+├── 🚦 rgaa:bloquante : taux + stock restant
+├── 🚦 rgaa:majeure   : taux + stock restant
+└── 🚦 rgaa:mineure   : taux + stock restant
+```
+
+Cette synthèse doit rester traçable : l'utilisateur doit pouvoir identifier les Composants qui contribuent au stock restant de la Librairie.
+
+L'agrégation des Anomalies ne doit pas être confondue avec un verdict de conformité global de la Librairie. Les verdicts restent définis au niveau `Composant × Version` conformément au modèle d'Audit.
