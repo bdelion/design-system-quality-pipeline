@@ -1126,3 +1126,44 @@ OldSelect
 Cette règle permet de préserver l'historique et d'éviter qu'un nouveau Composant portant le même nom soit assimilé silencieusement à l'ancien.
 
 La représentation exacte de cette réactivation dans le Catalogue reste à définir.
+
+
+### Audit réalisé et couverture héritée
+
+Il faut distinguer deux notions :
+
+- **Audit réalisé sur la Version** : un Audit a effectivement été effectué pour le Composant sur cette Version ;
+- **couverture par un Audit applicable** : aucun nouvel Audit n'a nécessairement été réalisé sur la Version, mais un verdict antérieur reste applicable parce que le Composant est inchangé.
+
+Exemple :
+
+```text
+Button@1.7.0
+Audit réalisé
+Verdict : NON CONFORME
+        │
+        └── Button inchangé
+                    ↓
+Button@1.8.0
+Audit réalisé en 1.8.0 : NON
+Couverture héritée      : OUI
+Verdict applicable      : NON CONFORME
+```
+
+`Button@1.8.0` ne doit donc jamais être présenté comme « audité en 1.8.0 ».
+
+Il est néanmoins couvert par un Audit applicable et son verdict courant reste `NON CONFORME`.
+
+Cette distinction précise également le sens de la couverture :
+
+```text
+Couverture d'Audit
+=
+Composants couverts par un Audit applicable
+/
+Composants du Catalogue de la Version
+```
+
+La couverture n'est pas un indicateur de conformité. Un Composant `NON CONFORME` peut parfaitement être couvert.
+
+Le Dashboard devra à terme permettre de comprendre si le verdict applicable provient d'un Audit réalisé sur la Version elle-même ou d'un Audit antérieur encore applicable.

@@ -1393,6 +1393,48 @@ Le mécanisme exact de représentation de cette réactivation dans le Catalogue 
 
 ---
 
+## D-069 — Distinguer Audit réalisé sur une Version et couverture héritée
+
+Un Composant ne doit jamais être présenté comme ayant été audité sur une Version si aucun Audit n'a effectivement été réalisé sur cette Version.
+
+Lorsqu'un Audit antérieur reste applicable à une Version ultérieure parce que le Composant est inchangé, il s'agit d'une **couverture héritée par un Audit applicable**, et non d'un Audit réalisé sur la Version ultérieure.
+
+Exemple :
+
+```text
+Button@1.7.0
+Audit réalisé → NON CONFORME
+        │
+        └── Button inchangé en 1.8.0
+                    ↓
+Button@1.8.0
+aucun Audit réalisé en 1.8.0
+mais verdict antérieur toujours applicable
+→ NON CONFORME
+```
+
+Le verdict hérité reste applicable tant qu'aucun nouvel Audit ne produit un nouveau verdict pour le Composant.
+
+Les indicateurs et le Dashboard doivent préserver cette distinction afin de ne pas créer un historique d'Audit fictif.
+
+**Statut : Établi**
+
+---
+
+## D-070 — La couverture peut inclure un verdict antérieur non conforme
+
+Un Composant couvert par un Audit antérieur encore applicable participe à la couverture d'Audit de la Version courante, même si le verdict applicable est `NON CONFORME`.
+
+La couverture mesure donc l'existence d'un verdict d'Audit applicable, et non la conformité du Composant.
+
+La conformité est calculée séparément à partir des verdicts applicables.
+
+Il convient, lorsque le contexte peut être ambigu, de privilégier le libellé **« Composants couverts par un Audit applicable »** plutôt que **« Composants audités dans la Version »**.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2462,6 +2504,16 @@ Le mécanisme exact permettant de représenter cette réactivation reste à déf
 Lorsqu'un Composant décommissionné est exceptionnellement réactivé, il faut rendre cette réactivation explicite dans le Catalogue.
 
 Il reste à déterminer quelles informations doivent être portées par le Catalogue, par exemple la Version de réactivation ou un historique des périodes d'activité, sans préjuger à ce stade de la solution retenue.
+
+**Statut : À instruire**
+
+---
+
+## Q-084 — Restitution de l'origine du verdict applicable
+
+Lorsqu'un verdict de conformité applicable à une Version provient d'un Audit réalisé sur une Version antérieure, il reste à préciser comment le Dashboard doit rendre cette origine visible.
+
+Par exemple, il pourrait distinguer un Audit réalisé directement sur la Version d'une couverture héritée depuis une Version antérieure, sans préjuger à ce stade de la représentation UX retenue.
 
 **Statut : À instruire**
 
