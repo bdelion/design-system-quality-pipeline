@@ -1754,3 +1754,19 @@ Ce suivi doit permettre à la Squad d'identifier des signaux susceptibles de jus
 - plus généralement, la facilité d'utilisation et d'intégration du Design System.
 
 Ces indicateurs doivent rester séparés des indicateurs de qualité intrinsèque du Design System.
+
+
+### Ventilation par Composant
+
+Les erreurs d'intégration client doivent être ventilées par Composant dans la vue Squad.
+
+```text
+Erreurs d'intégration client
+├── DatePicker : 12
+├── Select     : 8
+└── Modal      : 2
+```
+
+Cette restitution permet de repérer les Composants sur lesquels les consommateurs rencontrent le plus fréquemment des difficultés et d'orienter les actions de documentation, formation ou accompagnement.
+
+Le volume brut ne doit toutefois pas être interprété automatiquement comme un niveau de mauvaise qualité du Composant : un Composant très utilisé peut naturellement générer davantage de remontées. La future prise en compte du niveau d'usage des Composants reste à préciser.

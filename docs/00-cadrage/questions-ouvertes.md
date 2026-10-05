@@ -2092,6 +2092,33 @@ Pilotage Squad / expérience d'intégration
 
 ---
 
+## D-099 — Ventiler les erreurs d'intégration client par Composant
+
+Dans la vue de pilotage destinée à la Squad, les Issues `Cancelled` parce qu'elles correspondent à une erreur d'implémentation côté client doivent pouvoir être regroupées et comptabilisées par Composant.
+
+Exemple :
+
+```text
+Erreurs d'intégration client par Composant
+
+DatePicker : 12
+Select     : 8
+Modal      : 2
+```
+
+Cette ventilation doit permettre d'identifier les Composants qui génèrent le plus de difficultés d'intégration chez les consommateurs et d'orienter les actions de la Squad, notamment sur :
+
+- la documentation ;
+- la formation ;
+- l'accompagnement ;
+- la facilité d'utilisation et d'intégration.
+
+Cet indicateur reste distinct des indicateurs d'Anomalies confirmées et ne constitue pas, à lui seul, une mesure de défaut ou de non-conformité du Composant.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3400,9 +3427,21 @@ Elles servent notamment à identifier des besoins d'amélioration de la document
 
 ## Q-103 — Ventilation des erreurs d'intégration client pour la Squad
 
-Le suivi séparé des remontées `Cancelled` pour erreur d'implémentation client est établi.
+La vue Squad doit permettre de ventiler par Composant les remontées `Cancelled` parce qu'elles correspondent à une erreur d'implémentation côté client.
 
-Il reste à préciser si la vue Squad doit permettre de ventiler ces remontées par Composant afin d'identifier les Composants qui génèrent le plus de difficultés d'intégration côté consommateurs.
+Cette ventilation sert à identifier les Composants qui génèrent le plus de difficultés d'intégration et à orienter les actions de documentation, formation et accompagnement.
+
+Elle reste séparée des indicateurs de qualité intrinsèque du Design System.
+
+**Statut : Établi**
+
+---
+
+## Q-104 — Normalisation par le niveau d'usage du Composant
+
+Le nombre de remontées d'erreurs d'intégration par Composant est établi.
+
+Il reste à préciser si, lorsque les données de consommation seront disponibles, cet indicateur devra également être rapporté au niveau d'usage du Composant afin de distinguer un Composant réellement difficile à intégrer d'un Composant qui génère davantage de remontées simplement parce qu'il est beaucoup plus utilisé.
 
 **Statut : À instruire**
 
