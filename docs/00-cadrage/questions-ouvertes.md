@@ -2676,6 +2676,36 @@ Cette règle concerne le schéma actuel de criticité RGAA associé aux Audits A
 
 ---
 
+## D-127 — Les labels a11y sont transverses à la nature et à l'origine des Issues
+
+Les labels `♿ a11y:xxx` décrivent une **thématique ou un domaine d'accessibilité** concerné par une Issue.
+
+Ils ne sont pas réservés aux Anomalies d'Audit et peuvent notamment être utilisés sur :
+
+- une Anomalie issue d'un Audit ;
+- une Improvement issue d'un Audit ;
+- une Issue qui n'est pas issue d'un Audit, par exemple lors de la mise au point d'un nouveau Composant.
+
+Le modèle doit donc distinguer explicitement plusieurs dimensions :
+
+```text
+Issue
+├── nature
+│   └── Issue Type
+├── origine / contexte
+│   └── Audit ou hors Audit
+├── rattachement
+│   └── 🧩 Component:xxx
+└── thématique accessibilité
+    └── ♿ a11y:xxx
+```
+
+La présence d'un label `♿ a11y:xxx` ne permet donc pas, à elle seule, de conclure qu'une Issue est une Anomalie, une Improvement ou qu'elle provient d'un Audit.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3317,21 +3347,13 @@ La catégorisation complémentaire envisagée pour les Improvements, par exemple
 
 ## Q-057 — Cardinalité des catégories Accessibilité d’une Anomalie
 
-L’hypothèse métier actuelle est qu’une Anomalie issue d’un Audit d’Accessibilité ne porte qu’un seul label de catégorie `♿ a11y:xxx`.
+Il est désormais établi que les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse.
 
-Cette hypothèse n’est toutefois pas suffisamment confirmée par l’observation des Audits déjà réalisés pour devenir une règle métier.
+Ils peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit, notamment lors de la mise au point d'un nouveau Composant.
 
-Tant que cette cardinalité n’est pas vérifiée, le modèle ne doit pas rejeter une Anomalie uniquement parce qu’elle porte plusieurs labels `♿ a11y:xxx`.
+La cardinalité exacte reste à confirmer : il n'est pas encore établi si une même Issue peut ou doit porter un seul ou plusieurs labels `♿ a11y:xxx`.
 
-Il reste à vérifier sur les Audits réels si la cardinalité attendue est bien :
-
-```text
-1 Anomalie d’Audit
-=
-exactement 1 catégorie ♿ a11y:xxx
-```
-
-**Statut : Hypothèse à confirmer**
+**Statut : Partiellement établi**
 
 ---
 

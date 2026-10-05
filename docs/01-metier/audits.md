@@ -2194,3 +2194,22 @@ Le pipeline doit donc signaler comme incohérente toute Improvement d'Audit port
 Cette règle renforce la séparation métier entre les deux catégories : une Anomalie représente une non-conformité qualifiée par une criticité RGAA, tandis qu'une Improvement n'est pas une Anomalie et n'affecte pas le verdict de conformité.
 
 Un éventuel futur mécanisme de qualification ou de priorité propre aux Improvements reste distinct et devra être défini explicitement s'il devient nécessaire.
+
+
+### Labels a11y transverses
+
+Les labels `♿ a11y:xxx` ne caractérisent pas la nature d'une Issue. Ils indiquent la thématique d'accessibilité concernée.
+
+Ils peuvent donc être utilisés dans plusieurs contextes :
+
+```text
+♿ a11y:xxx
+├── Anomalie d'Audit
+├── Improvement d'Audit
+└── Issue hors Audit
+    └── par exemple mise au point d'un nouveau Composant
+```
+
+La présence d'un tel label ne permet pas de déduire l'Issue Type ni l'origine Audit de l'Issue.
+
+Cette dimension doit rester distincte des criticités RGAA : contrairement aux labels `♿ a11y:xxx`, les criticités `🚦 rgaa:bloquante`, `majeure` et `mineure` sont réservées aux Anomalies d'Audit dans le modèle actuel.
