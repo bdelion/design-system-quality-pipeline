@@ -2448,6 +2448,64 @@ Cette règle est spécifique aux Issues d'Audit. Les Issues classiques peuvent e
 
 ---
 
+## D-118 — Contrôler la cohérence du Composant des Anomalies d'Audit
+
+Une Anomalie issue d'un Audit doit obligatoirement porter **un et un seul** label `🧩 Component:xxx`.
+
+Ce Composant doit être **identique au Composant de l'Issue d'Audit parente**.
+
+Le pipeline doit donc pouvoir détecter au minimum les incohérences suivantes :
+
+- aucun label `🧩 Component:xxx` sur l'Anomalie ;
+- plusieurs labels `🧩 Component:xxx` sur l'Anomalie ;
+- un unique Composant sur l'Anomalie, mais différent de celui de l'Audit parent.
+
+Exemple :
+
+```text
+Audit Button
+└── 🧩 Component:Button
+
+Anomalie
+└── 🧩 Component:Button
+    → cohérent
+```
+
+```text
+Audit Button
+└── 🧩 Component:Button
+
+Anomalie
+└── 🧩 Component:Modal
+    → incohérent
+```
+
+Ce contrôle sert explicitement à détecter les erreurs de rattachement dans les données.
+
+**Statut : Établi**
+
+---
+
+## D-119 — Contrôler la cohérence du Composant des Improvements d'Audit
+
+Une Improvement issue d'un Audit doit obligatoirement porter **un et un seul** label `🧩 Component:xxx`.
+
+Ce Composant doit être **identique au Composant de l'Issue d'Audit parente**.
+
+Le pipeline doit donc détecter au minimum les incohérences suivantes :
+
+- aucun label `🧩 Component:xxx` sur l'Improvement ;
+- plusieurs labels `🧩 Component:xxx` sur l'Improvement ;
+- un unique Composant sur l'Improvement, mais différent de celui de l'Audit parent.
+
+Cette règle de rattachement est identique à celle des Anomalies d'Audit.
+
+Elle ne modifie toutefois pas la sémantique de conformité : contrairement à une Anomalie, une Improvement ne rend pas l'Audit non conforme et n'entre pas dans le calcul du verdict de conformité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2970,25 +3028,15 @@ Le seul statut Done ou le seul état Closed n'est pas suffisant.
 
 ## Q-050 — Relation Issue d'Audit / Anomalie
 
-Une Anomalie découverte pendant un Audit est reliée à l'Issue d'Audit sous forme de sub-Issue.
+La relation entre une Issue d'Audit et ses Anomalies est utilisée pour la traçabilité de l'Audit.
 
-```text
-Issue d'Audit
-    ├── Sub-Issue Anomalie A
-    ├── Sub-Issue Amélioration B
-    └── ...
-```
+Pour le rattachement au Composant, une Anomalie d'Audit doit porter exactement un label `🧩 Component:xxx`, identique à celui de l'Issue d'Audit parente.
 
-Dans le contexte d'un Audit d'Accessibilité, une sub-Issue d'Anomalie possède actuellement :
+Le pipeline doit contrôler cette cohérence afin de détecter les erreurs de rattachement.
 
-- l'Issue Type `🐛 Bug` ;
-- un des labels `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
-- un label `♿ a11y:xxx` ;
-- le même label `🧩 Component:xxx` que l'Issue d'Audit parente.
+Les autres détails éventuels de modélisation de la relation Audit → Anomalie restent à instruire s'ils deviennent nécessaires.
 
-Une sub-Issue d'Amélioration utilise l'Issue Type `✨ Feature` et le même label Component que l'Audit parent. Sa catégorisation complémentaire reste à définir.
-
-**Statut : Établi pour la relation et la classification des Anomalies ; catégorisation des Améliorations à instruire**
+**Statut : Partiellement établi**
 
 ---
 
