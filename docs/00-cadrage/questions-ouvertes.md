@@ -2706,6 +2706,22 @@ La présence d'un label `♿ a11y:xxx` ne permet donc pas, à elle seule, de con
 
 ---
 
+## D-128 — Un seul label a11y par Issue est l'hypothèse métier actuelle
+
+L'hypothèse métier actuelle est qu'une Issue porte normalement **au plus un** label `♿ a11y:xxx`.
+
+Cette cardinalité n'est toutefois pas suffisamment confirmée pour devenir une règle métier stricte ou un contrôle de qualité bloquant.
+
+En conséquence :
+
+- le modèle doit continuer à tolérer techniquement plusieurs labels `♿ a11y:xxx` tant que la règle n'est pas confirmée ;
+- la présence de plusieurs labels `♿ a11y:xxx` ne doit pas être déclarée automatiquement comme une erreur certaine ;
+- la cardinalité devra être confirmée à partir du processus réel, de l'historique des Issues ou avec l'auditeur.
+
+**Statut : Hypothèse métier à confirmer**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3347,13 +3363,15 @@ La catégorisation complémentaire envisagée pour les Improvements, par exemple
 
 ## Q-057 — Cardinalité des catégories Accessibilité d’une Anomalie
 
-Il est désormais établi que les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse.
+Il est établi que les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse.
 
 Ils peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit, notamment lors de la mise au point d'un nouveau Composant.
 
-La cardinalité exacte reste à confirmer : il n'est pas encore établi si une même Issue peut ou doit porter un seul ou plusieurs labels `♿ a11y:xxx`.
+L'hypothèse métier actuelle est qu'une Issue porte normalement au plus un label `♿ a11y:xxx`, mais ce point n'est pas suffisamment certain pour constituer une règle stricte.
 
-**Statut : Partiellement établi**
+La cardinalité doit être confirmée à partir des pratiques réelles, des données historiques ou avec l'auditeur. En attendant, plusieurs labels doivent être tolérés techniquement et ne doivent pas être classés automatiquement comme une erreur certaine.
+
+**Statut : Partiellement établi — cardinalité à confirmer**
 
 ---
 

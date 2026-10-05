@@ -2213,3 +2213,19 @@ Ils peuvent donc être utilisés dans plusieurs contextes :
 La présence d'un tel label ne permet pas de déduire l'Issue Type ni l'origine Audit de l'Issue.
 
 Cette dimension doit rester distincte des criticités RGAA : contrairement aux labels `♿ a11y:xxx`, les criticités `🚦 rgaa:bloquante`, `majeure` et `mineure` sont réservées aux Anomalies d'Audit dans le modèle actuel.
+
+
+### Cardinalité des labels a11y
+
+L'hypothèse métier actuelle est qu'une Issue porte normalement au plus un label `♿ a11y:xxx`.
+
+Cette hypothèse n'est pas encore suffisamment confirmée pour devenir une contrainte stricte.
+
+```text
+Issue
+├── 0 label ♿ a11y:xxx  → possible selon le contexte
+├── 1 label ♿ a11y:xxx  → situation attendue lorsqu'une catégorie a11y s'applique
+└── > 1 labels           → à vérifier, pas encore une erreur certaine
+```
+
+Le modèle doit donc rester techniquement capable de représenter plusieurs catégories tant que la cardinalité n'a pas été confirmée. Un futur contrôle de qualité pourra être renforcé lorsque cette règle sera stabilisée.
