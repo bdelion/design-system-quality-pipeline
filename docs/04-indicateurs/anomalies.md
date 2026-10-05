@@ -176,3 +176,46 @@ est un besoin futur.
 
 La source permettant de connaître les Applications consommatrices et le
 nombre d'occurrences n'est pas encore définie.
+
+------------------------------------------------------------------------
+
+## Origine des Anomalies
+
+### V1
+
+La ventilation d'origine est limitée à :
+
+``` text
+Audit
+Hors Audit
+```
+
+Aucun indicateur V1 ne doit subdiviser `Hors Audit` sans règle métier
+supplémentaire.
+
+### V2 --- à challenger
+
+Une évolution pourra chercher à caractériser plus finement la provenance
+des Anomalies hors Audit.
+
+Une première dimension métier identifiée est :
+
+``` text
+remontée depuis la Squad
+vs
+remontée depuis l'extérieur de la Squad
+```
+
+D'autres dimensions et indicateurs pourront être étudiés, mais ils ne
+sont pas encore définis.
+
+Avant de les introduire, il faudra notamment préciser :
+
+- la valeur métier recherchée ;
+- la source permettant de déterminer l'origine ;
+- la fiabilité de cette source ;
+- les catégories utiles ;
+- les indicateurs réellement actionnables.
+
+Ces éléments ne font pas partie du contrat V1.
+

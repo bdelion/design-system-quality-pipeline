@@ -392,25 +392,27 @@ explicitement à partir de la décision `D-xxx` correspondante.
 
 ------------------------------------------------------------------------
 
-# 8. Cas particulier : Q-012
+# 8. Q-012 — Origine d'une Anomalie
 
-`Q-012 — Origine d'une Anomalie` reste ouverte.
+**Priorité V1 : DÉJÀ ÉTABLI**
 
-Pour la V1, il n'est pas nécessaire de construire immédiatement une
-taxonomie exhaustive des origines si le modèle sait au minimum
-distinguer :
+Pour la V1, deux origines suffisent :
 
 ``` text
-Anomalie issue d'un Audit
-Anomalie non issue d'un Audit
+AUDIT
+HORS_AUDIT
 ```
 
-La taxonomie détaillée peut évoluer ultérieurement.
+`HORS_AUDIT` n'est pas détaillé davantage.
 
-**Priorité proposée : V1.1**, sauf si une visualisation V1 exige une
-ventilation détaillée par origine.
+**Évolution V2 : À CHALLENGER**
 
-------------------------------------------------------------------------
+La provenance des Anomalies hors Audit pourra être enrichie. Le besoin
+identifié comprend notamment la distinction entre une remontée provenant
+de la Squad et une remontée extérieure à la Squad.
+
+D'autres dimensions et indicateurs restent à challenger avant de définir
+une taxonomie V2.
 
 # 9. Cas particulier : Q-035
 

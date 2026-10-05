@@ -193,3 +193,26 @@ Les contraintes spécifiques RGAA --- criticité, catégorie a11y et
 Component identique à l'Audit --- s'appliquent aux Anomalies d'Audit
 Accessibilité et ne doivent pas être imposées aux Anomalies hors Audit.
 
+------------------------------------------------------------------------
+
+## Origine d'une Anomalie
+
+En V1 :
+
+``` text
+Issue Type = 🐛 Bug
+ET sub-Issue d'un Audit
+→ origine = AUDIT
+
+Issue Type = 🐛 Bug
+ET pas sub-Issue d'un Audit
+→ origine = HORS_AUDIT
+```
+
+`HORS_AUDIT` est une origine terminale pour les règles V1 : aucune
+sous-catégorie ne doit être inférée à partir de l'auteur, des labels, de
+l'équipe ou du contenu de l'Issue.
+
+Une classification plus fine est réservée à une évolution V2 après
+définition explicite des dimensions métier et des sources fiables.
+

@@ -2916,6 +2916,26 @@ pas sa nature.
 
 ---
 
+### D-138 --- Origine d'une Anomalie en V1
+
+Pour la V1, le modèle distingue deux origines d'Anomalie :
+
+``` text
+AUDIT
+HORS_AUDIT
+```
+
+Une Anomalie `HORS_AUDIT` n'est pas subdivisée davantage en V1.
+
+Pour une V2, la provenance des Anomalies hors Audit devra être
+réexaminée. Une dimension déjà identifiée est la distinction entre une
+remontée provenant de la Squad et une remontée provenant de l'extérieur
+de la Squad. D'autres dimensions et indicateurs restent à challenger.
+
+**Statut : Établi pour la V1**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3019,11 +3039,22 @@ La relation d'Audit distingue l'origine de l'Anomalie.
 
 ---
 
-## Q-012 — Origine d'une Anomalie
+### Q-012 --- Origine d'une Anomalie
 
-Quelles origines doivent être distinguées ?
+Pour la V1, deux origines sont distinguées :
 
-**Statut : À instruire**
+``` text
+AUDIT
+HORS_AUDIT
+```
+
+Aucune taxonomie plus détaillée de `HORS_AUDIT` n'est nécessaire en V1.
+
+Pour une V2, il faudra challenger une qualification plus fine de la
+provenance, notamment interne ou externe à la Squad, ainsi que les
+indicateurs associés.
+
+**Statut : Établi pour la V1 --- évolution V2 à instruire**
 
 ---
 

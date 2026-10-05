@@ -531,3 +531,24 @@ Anomalie
 La relation à l'Audit qualifie l'origine de l'Anomalie ; elle ne change
 pas la nature `Anomalie` de l'Issue.
 
+------------------------------------------------------------------------
+
+## Anomalie --- origine en V1
+
+Pour la V1, l'origine d'une Anomalie est volontairement limitée à deux
+valeurs métier :
+
+``` text
+AUDIT
+HORS_AUDIT
+```
+
+Une Anomalie `HORS_AUDIT` n'est pas subdivisée davantage en V1.
+
+La provenance plus détaillée d'une Anomalie hors Audit constitue un
+besoin V2. Les dimensions à challenger comprennent notamment le fait
+qu'une Anomalie soit remontée depuis l'extérieur de la Squad ou depuis
+la Squad elle-même.
+
+La taxonomie V2 et les indicateurs associés ne sont pas encore définis.
+
