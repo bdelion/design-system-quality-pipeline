@@ -2065,6 +2065,33 @@ Cette règle est une règle de workflow obligatoire.
 
 ---
 
+## D-098 — Suivre séparément les erreurs d'intégration client dans la vue Squad
+
+Les Issues passées à `Cancelled` parce que la Squad a confirmé une erreur d'implémentation côté client doivent être suivies dans les éléments de pilotage destinés à la Squad.
+
+Elles ne doivent pas être comptabilisées comme des Anomalies confirmées du Design System et ne doivent donc pas dégrader les indicateurs de qualité intrinsèque du Design System.
+
+Elles constituent en revanche un signal sur l'expérience d'intégration des consommateurs et peuvent conduire la Squad à mener des actions telles que :
+
+- améliorer la documentation ;
+- renforcer la formation ;
+- améliorer l'accompagnement des consommateurs ;
+- identifier plus largement des difficultés récurrentes d'utilisation ou d'intégration.
+
+Le Dashboard doit donc conserver une lecture distincte entre :
+
+```text
+Qualité du Design System
+└── Anomalies confirmées du Design System
+
+Pilotage Squad / expérience d'intégration
+└── remontées Cancelled pour erreur d'implémentation client
+```
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3361,9 +3388,21 @@ Ce comportement constitue une règle de workflow.
 
 ## Q-102 — Traitement des remontées Cancelled dans les indicateurs
 
-Le statut `Cancelled` est obligatoire lorsque la remontée correspond uniquement à une erreur d'implémentation côté client.
+Les Issues `Cancelled` parce qu'elles correspondent à une erreur d'implémentation côté client doivent être suivies séparément dans les éléments de pilotage destinés à la Squad.
 
-Il reste à préciser si le Dashboard doit néanmoins compter séparément ces remontées `Cancelled` comme un indicateur de consommation du Design System, par exemple pour identifier des difficultés récurrentes d'intégration ou de documentation côté clients.
+Elles ne constituent pas des Anomalies confirmées du Design System et ne doivent pas dégrader ses indicateurs de qualité.
+
+Elles servent notamment à identifier des besoins d'amélioration de la documentation, de formation et d'accompagnement des consommateurs.
+
+**Statut : Établi**
+
+---
+
+## Q-103 — Ventilation des erreurs d'intégration client pour la Squad
+
+Le suivi séparé des remontées `Cancelled` pour erreur d'implémentation client est établi.
+
+Il reste à préciser si la vue Squad doit permettre de ventiler ces remontées par Composant afin d'identifier les Composants qui génèrent le plus de difficultés d'intégration côté consommateurs.
 
 **Statut : À instruire**
 

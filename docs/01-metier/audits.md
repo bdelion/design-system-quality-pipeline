@@ -1723,3 +1723,34 @@ Analyse Squad
 L'Issue reste utile comme trace de la remontée et de sa qualification, mais elle ne constitue pas une Anomalie confirmée du Design System.
 
 L'éventuel usage analytique de ces remontées `Cancelled` pour mesurer les difficultés d'intégration des consommateurs reste à définir.
+
+
+### Suivi Squad des erreurs d'intégration client
+
+Les remontées qualifiées comme erreurs d'implémentation côté client et passées obligatoirement à `Cancelled` doivent rester visibles dans le pilotage de la Squad.
+
+Elles sont exclues des Anomalies confirmées du Design System, mais constituent un indicateur distinct de l'expérience d'intégration des consommateurs.
+
+```text
+Remontées clients
+      │
+      ▼
+Qualification Squad
+      │
+      ├── défaut Design System
+      │      └── Anomalie DS
+      │          └── indicateurs qualité
+      │
+      └── erreur d'implémentation client
+             └── Cancelled
+                 └── indicateurs Squad d'intégration
+```
+
+Ce suivi doit permettre à la Squad d'identifier des signaux susceptibles de justifier des actions sur :
+
+- la documentation ;
+- la formation ;
+- l'accompagnement des consommateurs ;
+- plus généralement, la facilité d'utilisation et d'intégration du Design System.
+
+Ces indicateurs doivent rester séparés des indicateurs de qualité intrinsèque du Design System.
