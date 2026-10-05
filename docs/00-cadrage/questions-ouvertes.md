@@ -2645,6 +2645,37 @@ Cette classification reste extensible conformément à D-123.
 
 ---
 
+## D-126 — Les criticités RGAA sont réservées aux Anomalies d'Audit
+
+Les labels de criticité RGAA actuellement définis sont réservés aux **Anomalies d'Audit** :
+
+- `🚦 rgaa:bloquante` ;
+- `🚦 rgaa:majeure` ;
+- `🚦 rgaa:mineure`.
+
+Une Improvement issue d'un Audit ne doit porter **aucun** de ces labels.
+
+Le pipeline doit donc contrôler les règles complémentaires suivantes :
+
+```text
+Anomalie d'Audit
+└── exactement 1 criticité RGAA
+    ├── bloquante
+    ├── majeure
+    └── mineure
+
+Improvement d'Audit
+└── 0 criticité RGAA
+```
+
+La présence d'une criticité RGAA sur une Improvement d'Audit constitue une incohérence à détecter.
+
+Cette règle concerne le schéma actuel de criticité RGAA associé aux Audits Accessibilité. Elle ne préjuge pas d'un éventuel futur système de qualification propre aux Improvements.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3275,6 +3306,7 @@ Pour une Improvement issue d'un Audit, plusieurs éléments sont désormais éta
 - elle est obligatoirement une sous-Issue de l'Issue d'Audit ;
 - son Issue Type est obligatoirement `✨ Feature` ;
 - elle porte exactement un label `🧩 Component:xxx`, identique à celui de l'Audit parent ;
+- elle ne porte aucune criticité `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` ou `🚦 rgaa:mineure` ;
 - elle n'intervient pas dans le verdict de conformité.
 
 La catégorisation complémentaire envisagée pour les Improvements, par exemple via de futurs labels de famille, reste à instruire.

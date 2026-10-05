@@ -2172,3 +2172,25 @@ Improvement d'Audit → ✨ Feature
 ```
 
 Cette classification reste ouverte à de futurs types de sous-Issues d'Audit, qui devront être définis explicitement avant leur prise en compte.
+
+
+### Criticité RGAA réservée aux Anomalies
+
+Les criticités RGAA actuellement utilisées dans les Audits Accessibilité sont réservées aux Anomalies :
+
+```text
+Anomalie d'Audit
+└── exactement 1
+    ├── 🚦 rgaa:bloquante
+    ├── 🚦 rgaa:majeure
+    └── 🚦 rgaa:mineure
+
+Improvement d'Audit
+└── aucune criticité RGAA
+```
+
+Le pipeline doit donc signaler comme incohérente toute Improvement d'Audit portant l'un de ces labels.
+
+Cette règle renforce la séparation métier entre les deux catégories : une Anomalie représente une non-conformité qualifiée par une criticité RGAA, tandis qu'une Improvement n'est pas une Anomalie et n'affecte pas le verdict de conformité.
+
+Un éventuel futur mécanisme de qualification ou de priorité propre aux Improvements reste distinct et devra être défini explicitement s'il devient nécessaire.
