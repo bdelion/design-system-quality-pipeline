@@ -2309,3 +2309,22 @@ Issue hors Audit
 Une Issue accessibilité hors Audit peut continuer à être catégorisée avec un ou plusieurs labels `♿ a11y:xxx` selon les règles applicables, mais elle ne doit pas recevoir une criticité RGAA.
 
 Le pipeline peut donc utiliser la présence d'une criticité RGAA hors d'une Anomalie d'Audit Accessibilité comme signal d'incohérence certain.
+
+
+### Granularité de création des Anomalies
+
+Lorsqu'un même problème d'accessibilité est observé plusieurs fois dans un même Composant au cours d'un Audit, l'auditeur peut choisir de le représenter par une seule Issue Anomalie ou par plusieurs Issues distinctes.
+
+```text
+Même problème observé à plusieurs endroits
+├── 1 Issue Anomalie regroupant plusieurs occurrences
+└── plusieurs Issues Anomalie distinctes
+```
+
+Le modèle ne doit donc pas imposer de relation `1 problème = 1 Issue`.
+
+Pour les indicateurs fondés sur GitHub, l'unité de comptage reste l'**Issue Anomalie**. Le nombre d'Issues ne doit pas être présenté comme le nombre exact d'occurrences du défaut dans le Composant.
+
+Le pipeline ne doit pas fusionner ou dédupliquer automatiquement plusieurs Anomalies au motif qu'elles paraissent concerner le même problème.
+
+La possibilité de mesurer séparément le nombre d'occurrences regroupées dans une même Anomalie reste à instruire.

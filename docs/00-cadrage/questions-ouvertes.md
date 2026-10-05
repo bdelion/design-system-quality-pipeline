@@ -2817,6 +2817,25 @@ Cette règle confirme la distinction entre :
 
 ---
 
+## D-133 — Un même problème peut être regroupé dans une ou plusieurs Anomalies d'Audit
+
+Lors d'un même Audit d'un Composant, si un même problème d'accessibilité est constaté à plusieurs endroits, l'auditeur peut :
+
+- créer une seule Anomalie regroupant plusieurs occurrences du problème ;
+- ou créer plusieurs Anomalies distinctes.
+
+Il n'existe donc pas de cardinalité métier imposée entre un problème constaté et le nombre d'Issues Anomalie créées.
+
+Conséquence pour les indicateurs :
+
+- une Issue Anomalie représente une Anomalie comptabilisée dans les indicateurs fondés sur les Issues ;
+- le nombre d'Issues Anomalie ne doit pas être interprété comme le nombre exact d'occurrences techniques ou visuelles d'un défaut dans le Composant ;
+- aucune déduplication ou fusion automatique d'Anomalies ne doit être effectuée au motif qu'elles semblent décrire le même problème.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -4237,6 +4256,16 @@ Les premières dimensions identifiées restent notamment : Composant, présence/
 D'autres types pourront éventuellement apparaître à l'avenir. Ils devront alors être instruits explicitement avant d'être intégrés aux règles de conformité et aux indicateurs.
 
 **Statut : À instruire si le besoin apparaît**
+
+---
+
+## Q-114 — Nombre d'occurrences regroupées dans une Anomalie d'Audit
+
+Lorsqu'une seule Issue Anomalie regroupe plusieurs occurrences d'un même problème dans un Composant, il reste à déterminer si le nombre ou le détail de ces occurrences est représenté de manière structurée et exploitable.
+
+Tant que ce point n'est pas établi, les indicateurs doivent compter les **Issues Anomalie** et ne pas prétendre mesurer le nombre exact d'occurrences du défaut.
+
+**Statut : À instruire**
 
 ---
 
