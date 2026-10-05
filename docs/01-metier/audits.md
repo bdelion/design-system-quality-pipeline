@@ -2229,3 +2229,28 @@ Issue
 ```
 
 Le modèle doit donc rester techniquement capable de représenter plusieurs catégories tant que la cardinalité n'a pas été confirmée. Un futur contrôle de qualité pourra être renforcé lorsque cette règle sera stabilisée.
+
+
+### Catégorie a11y obligatoire pour une Anomalie d'Audit Accessibilité
+
+Une Anomalie issue d'un Audit Accessibilité doit porter exactement un label `♿ a11y:xxx`.
+
+```text
+Anomalie d'Audit Accessibilité
+├── 0 label ♿ a11y:xxx  → incohérent
+├── 1 label ♿ a11y:xxx  → conforme à la règle
+└── > 1 labels           → incohérent
+```
+
+Cette contrainte s'ajoute aux autres règles structurelles déjà établies pour une Anomalie d'Audit :
+
+```text
+Anomalie d'Audit Accessibilité
+├── sous-Issue de l'Audit
+├── Issue Type = 🐛 Bug
+├── exactement 1 🧩 Component:xxx, identique à l'Audit
+├── exactement 1 criticité 🚦 rgaa:xxx
+└── exactement 1 catégorie ♿ a11y:xxx
+```
+
+La cardinalité des labels `♿ a11y:xxx` sur les Improvements d'Audit et les Issues hors Audit reste à confirmer séparément.

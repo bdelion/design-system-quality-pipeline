@@ -2722,6 +2722,28 @@ En conséquence :
 
 ---
 
+## D-129 — Une Anomalie d'Audit Accessibilité doit avoir exactement un label a11y
+
+Toute **Anomalie issue d'un Audit Accessibilité** doit obligatoirement porter **exactement un** label `♿ a11y:xxx`.
+
+La cardinalité est donc stricte pour ce sous-ensemble :
+
+```text
+Anomalie d'Audit Accessibilité
+└── ♿ a11y:xxx : exactement 1
+```
+
+Le pipeline doit détecter comme incohérentes les situations suivantes :
+
+- aucun label `♿ a11y:xxx` ;
+- plusieurs labels `♿ a11y:xxx`.
+
+Cette règle précise D-128 : l'hypothèse générale sur la cardinalité des labels a11y reste à confirmer pour les autres catégories d'Issues, mais elle est désormais établie pour les Anomalies d'Audit Accessibilité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3363,15 +3385,13 @@ La catégorisation complémentaire envisagée pour les Improvements, par exemple
 
 ## Q-057 — Cardinalité des catégories Accessibilité d’une Anomalie
 
-Il est établi que les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse.
+Les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse et peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit.
 
-Ils peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit, notamment lors de la mise au point d'un nouveau Composant.
+Pour une **Anomalie issue d'un Audit Accessibilité**, la cardinalité est désormais établie : elle doit porter **exactement un** label `♿ a11y:xxx`. Zéro ou plusieurs labels constituent une incohérence.
 
-L'hypothèse métier actuelle est qu'une Issue porte normalement au plus un label `♿ a11y:xxx`, mais ce point n'est pas suffisamment certain pour constituer une règle stricte.
+Pour les autres catégories d'Issues, notamment les Improvements d'Audit et les Issues hors Audit, la cardinalité générale reste à confirmer.
 
-La cardinalité doit être confirmée à partir des pratiques réelles, des données historiques ou avec l'auditeur. En attendant, plusieurs labels doivent être tolérés techniquement et ne doivent pas être classés automatiquement comme une erreur certaine.
-
-**Statut : Partiellement établi — cardinalité à confirmer**
+**Statut : Partiellement établi — cardinalité établie pour les Anomalies d'Audit Accessibilité**
 
 ---
 
