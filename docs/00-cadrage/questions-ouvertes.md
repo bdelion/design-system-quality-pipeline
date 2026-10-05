@@ -1772,6 +1772,36 @@ Elle ne change pas le verdict de conformité.
 
 ---
 
+## D-086 — Taux de traitement par criticité RGAA
+
+Pour les Anomalies d'accessibilité disposant d'une criticité RGAA, le Dashboard doit calculer et afficher un taux de traitement propre à chaque niveau de criticité.
+
+Pour une criticité donnée :
+
+```text
+Taux de traitement de la criticité
+=
+nombre d'Anomalies historiques de cette criticité traitées
+-----------------------------------------------------------
+nombre total d'Anomalies historiques de cette criticité
+```
+
+Exemple :
+
+```text
+🚦 rgaa:bloquante : 100 % (3/3) — stock restant : 0
+🚦 rgaa:majeure   :  75 % (6/8) — stock restant : 2
+🚦 rgaa:mineure   :  40 % (2/5) — stock restant : 3
+```
+
+Cette lecture complète le taux global du Composant et la répartition du stock restant.
+
+Un taux de `100 %` pour une criticité signifie que toutes les Anomalies historiquement détectées à ce niveau sont traitées selon D-081. Il ne constitue pas un verdict de conformité.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2950,9 +2980,24 @@ Le Dashboard doit également afficher le stock restant en valeur absolue et, pou
 
 ## Q-092 — Périmètre de la ventilation par criticité RGAA
 
-La ventilation du stock restant par `🚦 rgaa:bloquante`, `🚦 rgaa:majeure` et `🚦 rgaa:mineure` est établie pour les Anomalies issues des Audits d'accessibilité.
+Pour les Anomalies issues des Audits d'accessibilité, le Dashboard doit afficher, pour chaque niveau `🚦 rgaa:xxx` :
 
-Il reste à déterminer si le Dashboard doit afficher uniquement les effectifs par niveau ou également un taux de traitement propre à chaque niveau de criticité.
+- le nombre historique d'Anomalies ;
+- le nombre d'Anomalies traitées ;
+- le stock restant ;
+- le taux de traitement propre à cette criticité.
+
+Le taux est calculé sur l'historique des Anomalies de la criticité concernée.
+
+**Statut : Établi**
+
+---
+
+## Q-093 — Agrégation du suivi des Anomalies au niveau supérieur
+
+Les indicateurs de traitement sont maintenant définis au niveau du Composant, globalement et par criticité RGAA.
+
+Il reste à préciser si ces mêmes indicateurs doivent être agrégés directement au niveau de la Librairie, afin d'obtenir notamment son taux global de traitement, son stock restant et sa répartition par criticité.
 
 **Statut : À instruire**
 

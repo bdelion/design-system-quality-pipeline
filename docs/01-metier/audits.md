@@ -1454,3 +1454,31 @@ Stock restant : 5
 Cette ventilation permet de distinguer la quantité de dette restante de sa criticité.
 
 Ni le taux de traitement, ni la diminution du stock, ni sa ventilation ne remplacent le verdict de conformité issu d'un Audit.
+
+
+### Taux de traitement par criticité RGAA
+
+Le suivi du stock restant est complété par un taux de traitement historique propre à chaque criticité RGAA.
+
+```text
+🚦 rgaa:bloquante : 100 % (3/3) — 0 restante
+🚦 rgaa:majeure   :  75 % (6/8) — 2 restantes
+🚦 rgaa:mineure   :  40 % (2/5) — 3 restantes
+```
+
+Pour chaque criticité :
+
+```text
+Anomalies historiques traitées de la criticité
+-----------------------------------------------
+Total des Anomalies historiques de la criticité
+```
+
+Le Dashboard peut ainsi restituer conjointement :
+
+- le taux global de traitement du Composant ;
+- le stock global restant ;
+- le stock restant par criticité ;
+- le taux de traitement par criticité.
+
+Ces indicateurs décrivent le traitement des Anomalies. Même lorsqu'un niveau atteint `100 %`, ils ne remplacent pas le verdict de conformité issu de l'Audit.
