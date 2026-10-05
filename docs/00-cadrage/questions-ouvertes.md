@@ -2224,6 +2224,20 @@ Il reste un ratio candidat et n'est pas encore validé comme KPI définitif.
 
 ---
 
+## D-107 — Le label Composant est obligatoire pour toute Issue concernant un Composant
+
+Toute Issue qui concerne effectivement un Composant doit obligatoirement porter le label correspondant `🧩 Component:xxx`, quel que soit son Issue Type.
+
+Cette règle s'applique donc notamment aux `Bug`, `Feature`, `Task` et aux autres types d'Issue dès lors qu'ils concernent un Composant.
+
+Le label Composant constitue le mécanisme métier commun permettant de rattacher l'Issue au Composant et d'alimenter les indicateurs par Composant, notamment le nombre total d'Issues tous types confondus.
+
+Cette règle ne signifie pas que toute Issue du Repository doit obligatoirement être rattachée à un Composant : certaines Issues peuvent être transverses. La qualification des cas où l'absence de label Composant est légitime reste à instruire.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3583,6 +3597,16 @@ Premières propositions à étudier, sans les considérer comme des KPI validés
 - déclinaisons éventuelles par type d'Issue ou par criticité lorsque cela a un sens métier.
 
 Pour chaque candidat, il faudra préciser son objectif, son interprétation, son périmètre, son unité de restitution et ses biais éventuels.
+
+**Statut : À instruire**
+
+---
+
+## Q-107 — Cas où une Issue peut légitimement ne concerner aucun Composant
+
+Il est établi que toute Issue concernant effectivement un Composant doit porter un label `🧩 Component:xxx`.
+
+Il reste à définir les cas métier dans lesquels une Issue peut légitimement être transverse et ne porter aucun label Composant, afin de distinguer ces cas d'une donnée incomplète ou incorrecte.
 
 **Statut : À instruire**
 

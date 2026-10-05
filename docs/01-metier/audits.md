@@ -1830,3 +1830,18 @@ D'autres ratios candidats doivent également être étudiés, notamment autour :
 Aucun de ces ratios ne doit être interprété comme un score de qualité tant que sa définition et ses biais n'ont pas été instruits.
 
 La collecte et le dénombrement technique des usages restent différés.
+
+
+### Rattachement obligatoire d'une Issue à son Composant
+
+Toute Issue qui concerne effectivement un Composant doit obligatoirement porter le label `🧩 Component:xxx`, indépendamment de son Issue Type.
+
+```text
+Issue concernant Button
+├── Issue Type : Bug | Feature | Task | ...
+└── Label obligatoire : 🧩 Component:Button
+```
+
+Ce rattachement commun est nécessaire pour agréger correctement les Issues par Composant et pour croiser ultérieurement ces données avec les Audits, les Anomalies et les usages consommateurs.
+
+L'absence de label Composant ne doit toutefois pas être considérée automatiquement comme une anomalie de données : certaines Issues peuvent être transverses et ne concerner aucun Composant. Les cas métier autorisant cette absence restent à définir.
