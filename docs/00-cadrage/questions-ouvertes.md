@@ -1525,6 +1525,42 @@ Cette page est une aide au pilotage et ne décide pas automatiquement de la cré
 
 ---
 
+## D-075 — États de qualification d'une évolution vis-à-vis d'un Audit
+
+Pour un Composant détecté comme `ÉVOLUÉ`, le suivi du patrimoine utilise trois états de qualification du besoin d'Audit :
+
+- `À ÉVALUER` ;
+- `AUDIT À FAIRE` ;
+- `AUDIT NON NÉCESSAIRE`.
+
+Lorsqu'une évolution est détectée automatiquement, la qualification initiale est `À ÉVALUER`.
+
+Le passage vers `AUDIT À FAIRE` ou `AUDIT NON NÉCESSAIRE` résulte d'une décision de la Squad.
+
+Ces états sont distincts de l'état patrimonial du Composant (`NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ`, `DÉCOMMISSIONNÉ`) et du verdict de conformité (`CONFORME`, `NON CONFORME`, etc.).
+
+Exemple :
+
+```text
+Button@1.8.0
+
+État patrimoine        : ÉVOLUÉ
+Qualification Audit    : À ÉVALUER
+Verdict applicable     : CONFORME
+
+Après analyse de la Squad :
+
+État patrimoine        : ÉVOLUÉ
+Qualification Audit    : AUDIT NON NÉCESSAIRE
+Verdict applicable     : CONFORME
+```
+
+Le pipeline ne doit pas décider automatiquement entre `AUDIT À FAIRE` et `AUDIT NON NÉCESSAIRE`.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2623,9 +2659,25 @@ Le pipeline ne doit donc pas déduire `NON AUDITÉ` de la seule présence d'une 
 
 ## Q-086 — États de qualification d'une évolution vis-à-vis d'un Audit
 
-La page cible de suivi du patrimoine doit permettre à la Squad de qualifier l'impact d'une évolution sur le besoin d'un nouvel Audit.
+Pour un Composant `ÉVOLUÉ`, trois états sont retenus :
 
-Il reste à définir les états métier nécessaires à cette qualification, notamment pour distinguer une évolution encore à examiner d'une évolution explicitement considérée comme sans impact sur le périmètre d'Audit.
+- `À ÉVALUER` ;
+- `AUDIT À FAIRE` ;
+- `AUDIT NON NÉCESSAIRE`.
+
+La détection automatique d'une évolution initialise la qualification à `À ÉVALUER`.
+
+La Squad décide ensuite explicitement si un nouvel Audit est à faire ou s'il n'est pas nécessaire.
+
+**Statut : Établi**
+
+---
+
+## Q-087 — Qualification initiale d'un nouveau Composant
+
+Les états de qualification du besoin d'Audit sont établis pour les Composants `ÉVOLUÉ`.
+
+Il reste à préciser si un Composant `NOUVEAU` doit lui aussi être initialisé à `À ÉVALUER`, ou si sa création entraîne une autre qualification initiale.
 
 **Statut : À instruire**
 

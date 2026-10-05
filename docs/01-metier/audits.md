@@ -1236,3 +1236,45 @@ Elle devra permettre de visualiser les évolutions entre Versions et d'aider la 
 Pour un cas tel que `Button@1.8.0`, la Squad devra pouvoir matérialiser qu'une évolution détectée n'impacte pas le périmètre d'Audit et que le Composant n'est donc pas à auditer pour cette évolution.
 
 La terminologie exacte et les états de cette qualification restent à définir.
+
+
+### États de qualification du besoin d'Audit
+
+Pour un Composant `ÉVOLUÉ`, la page de suivi du patrimoine utilise trois états :
+
+| Qualification | Signification |
+| --- | --- |
+| `À ÉVALUER` | L'évolution a été détectée mais la Squad n'a pas encore statué sur le besoin d'un nouvel Audit. |
+| `AUDIT À FAIRE` | La Squad considère que l'évolution nécessite un nouvel Audit. |
+| `AUDIT NON NÉCESSAIRE` | La Squad considère que l'évolution n'impacte pas le périmètre nécessitant un nouvel Audit. |
+
+La détection automatique d'une évolution initialise la qualification à `À ÉVALUER`.
+
+```text
+Détection Git
+    ↓
+ÉVOLUÉ
+    ↓
+À ÉVALUER
+    ↓
+Décision Squad
+   /       \
+  /         \
+AUDIT      AUDIT
+À FAIRE    NON NÉCESSAIRE
+```
+
+Trois dimensions doivent rester séparées :
+
+```text
+État patrimoine
+NOUVEAU / ÉVOLUÉ / INCHANGÉ / DÉCOMMISSIONNÉ
+
+Qualification du besoin d'Audit
+À ÉVALUER / AUDIT À FAIRE / AUDIT NON NÉCESSAIRE
+
+Verdict de conformité
+CONFORME / NON CONFORME / ...
+```
+
+Le pipeline peut détecter l'évolution et initialiser `À ÉVALUER`, mais seule la Squad décide entre `AUDIT À FAIRE` et `AUDIT NON NÉCESSAIRE`.
