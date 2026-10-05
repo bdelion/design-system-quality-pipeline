@@ -2273,6 +2273,30 @@ Cette pratique est une orientation de gouvernance et n'est pas, à ce stade, une
 
 ---
 
+## D-110 — Une Issue multi-Composants compte une fois pour chaque Composant concerné
+
+Lorsqu'une Issue porte plusieurs labels `🧩 Component:xxx`, elle doit être comptabilisée une fois dans les indicateurs de chacun des Composants auxquels elle est rattachée.
+
+Exemple :
+
+```text
+Issue #123
+├── 🧩 Component:Button
+└── 🧩 Component:Modal
+
+Indicateurs par Composant :
+Button : +1 Issue
+Modal  : +1 Issue
+```
+
+Cette règle concerne les agrégations par Composant.
+
+L'Issue reste néanmoins une seule Issue GitHub. Les totaux par Composant ne doivent donc pas être additionnés naïvement pour calculer un total global au niveau Repository ou Bibliothèque, car une Issue multi-Composants serait alors comptée plusieurs fois.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -3649,11 +3673,21 @@ Il reste à définir les cas métier dans lesquels une Issue peut légitimement 
 
 ## Q-108 — Comptabilisation d'une Issue multi-Composants dans les indicateurs
 
-Une Issue peut exceptionnellement concerner plusieurs Composants et porter plusieurs labels `🧩 Component:xxx`.
+Une Issue portant plusieurs labels `🧩 Component:xxx` doit compter une fois dans les indicateurs de chacun des Composants concernés.
 
-Il reste à préciser si, dans l'indicateur `nombre total d'Issues par Composant`, cette Issue doit compter une fois pour chacun des Composants auxquels elle est rattachée.
+Elle reste toutefois une seule Issue GitHub au niveau global.
 
-**Statut : À instruire**
+**Statut : Établi**
+
+---
+
+## Q-109 — Comptage global des Issues au niveau Bibliothèque
+
+Une Issue multi-Composants compte une fois pour chacun de ses Composants dans les indicateurs par Composant, tout en restant une seule Issue GitHub.
+
+Il reste à confirmer que le nombre total d'Issues au niveau Bibliothèque doit correspondre au nombre d'Issues GitHub distinctes, sans additionner les totaux calculés par Composant.
+
+**Statut : À confirmer**
 
 ---
 

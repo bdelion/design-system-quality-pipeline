@@ -1867,3 +1867,21 @@ Issue Modal  ──> PR Modal
 ```
 
 Cette préférence améliore la traçabilité `Issue → Composant → PR`, mais n'est pas encore une règle obligatoire. Les véritables Issues multi-Composants restent autorisées.
+
+
+### Comptabilisation d'une Issue multi-Composants
+
+Une Issue multi-Composants contribue une fois aux indicateurs de chaque Composant auquel elle est rattachée.
+
+```text
+Issue #123
+├── 🧩 Component:Button
+└── 🧩 Component:Modal
+
+Vue Button : +1
+Vue Modal  : +1
+```
+
+Cette règle permet à chaque vue Composant de refléter toutes les Issues qui le concernent.
+
+L'Issue conserve toutefois son identité unique. Une agrégation globale ne doit pas déduire le nombre d'Issues en additionnant directement les compteurs par Composant, sous peine de compter plusieurs fois les Issues multi-Composants.
