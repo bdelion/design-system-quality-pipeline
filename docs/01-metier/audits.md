@@ -1167,3 +1167,32 @@ Composants du Catalogue de la Version
 La couverture n'est pas un indicateur de conformité. Un Composant `NON CONFORME` peut parfaitement être couvert.
 
 Le Dashboard devra à terme permettre de comprendre si le verdict applicable provient d'un Audit réalisé sur la Version elle-même ou d'un Audit antérieur encore applicable.
+
+
+### Héritage transitif d'un verdict applicable
+
+Un verdict d'Audit applicable peut être propagé à plusieurs Versions successives lorsque le Composant reste inchangé.
+
+Il n'existe pas de limite exprimée en nombre de Versions.
+
+```text
+Button@1.7.0
+Audit réalisé
+Verdict : NON CONFORME
+        │
+        ├── Button inchangé en 1.8.0
+        │       ├── Audit 1.8.0 : NON
+        │       └── verdict applicable : NON CONFORME
+        │
+        └── Button inchangé en 1.9.0
+                ├── Audit 1.9.0 : NON
+                └── verdict applicable : NON CONFORME
+```
+
+Le verdict conserve toujours son origine réelle : dans cet exemple, l'Audit de `1.7.0`.
+
+Le Dashboard et les indicateurs ne doivent donc jamais transformer cette propagation en Audits fictifs sur `1.8.0` ou `1.9.0`.
+
+L'héritage continue tant que le Composant reste inchangé et qu'aucun nouvel Audit terminé ne fournit un nouveau verdict applicable.
+
+Le comportement à adopter lorsque le Composant évolue et qu'aucun nouvel Audit n'est encore disponible reste à préciser.

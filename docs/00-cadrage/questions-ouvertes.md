@@ -1435,6 +1435,38 @@ Il convient, lorsque le contexte peut être ambigu, de privilégier le libellé 
 
 ---
 
+## D-071 — Héritage transitif d'un verdict d'Audit applicable
+
+Un verdict d'Audit antérieur peut rester applicable à plusieurs Versions successives sans limite prédéfinie du nombre de Versions traversées.
+
+Cette propagation reste valable tant que :
+
+- le Composant reste inchangé entre les Versions concernées ;
+- aucun nouvel Audit terminé ne produit un nouveau verdict applicable au Composant.
+
+Cette règle s'applique notamment à un verdict `NON CONFORME`.
+
+Exemple :
+
+```text
+Button@1.7.0
+Audit réalisé → NON CONFORME
+        │
+        ├── inchangé en 1.8.0
+        │       → verdict applicable : NON CONFORME
+        │
+        └── inchangé en 1.9.0
+                → verdict applicable : NON CONFORME
+```
+
+Aucun Audit ne doit être inventé pour `1.8.0` ou `1.9.0`. Le verdict applicable conserve comme origine l'Audit effectivement réalisé sur `1.7.0`.
+
+Un nouvel Audit terminé remplace ce verdict pour le périmètre auquel son nouveau verdict est applicable.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
@@ -2514,6 +2546,16 @@ Il reste à déterminer quelles informations doivent être portées par le Catal
 Lorsqu'un verdict de conformité applicable à une Version provient d'un Audit réalisé sur une Version antérieure, il reste à préciser comment le Dashboard doit rendre cette origine visible.
 
 Par exemple, il pourrait distinguer un Audit réalisé directement sur la Version d'une couverture héritée depuis une Version antérieure, sans préjuger à ce stade de la représentation UX retenue.
+
+**Statut : À instruire**
+
+---
+
+## Q-085 — Rupture de l'héritage lorsqu'un Composant évolue
+
+L'héritage d'un verdict reste applicable tant que le Composant est inchangé.
+
+Il reste à préciser l'état de conformité à afficher pour une nouvelle Version lorsque le Composant évolue et qu'aucun nouvel Audit n'a encore été réalisé sur cette nouvelle version du Composant.
 
 **Statut : À instruire**
 
