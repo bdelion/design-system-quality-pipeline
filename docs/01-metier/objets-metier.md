@@ -260,6 +260,16 @@ Conformément à D-177, les variantes de statut Project sont reconnues par égal
 
 Conformément à D-178, une correspondance avec plusieurs notions canoniques ne produit aucun choix automatique : la valeur brute est conservée, la notion canonique reste absente, les candidats sont signalés et une Data Quality non bloquante est produite.
 
+Conformément à D-179, une Iteration GitHub Projects conserve au minimum son identifiant, son titre, sa date de début et sa durée ou sa date de fin lorsque GitHub fournit ces informations. Une donnée absente n’est jamais inventée.
+
+Conformément à D-180, l’Iteration est portée par le contexte du Project qui l’attribue à l’Issue. Une Issue présente dans plusieurs Projects peut donc avoir des Iterations différentes sans fusion implicite.
+
+Conformément à D-181, `Velocity` conserve séparément sa valeur brute et une valeur numérique normalisée lorsqu’une conversion valide est possible. La représentation numérique ne remplace jamais la donnée source.
+
+Conformément à D-182, une `Velocity` renseignée mais non interprétable conserve sa valeur brute, ne produit aucune valeur numérique et déclenche une Data Quality non bloquante sans interrompre le pipeline.
+
+Conformément à D-183, `Scheduling` conserve systématiquement sa valeur brute telle que collectée dans le contexte du Project. Toute interprétation ou canonicalisation reste séparée de cette valeur source.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---

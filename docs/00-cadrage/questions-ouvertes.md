@@ -3538,6 +3538,56 @@ Aucune priorité implicite entre notions canoniques n’est autorisée. Le numé
 **Statut : Établi**
 
 
+### D-179 — Conservation des données source de l’Iteration GitHub Projects
+
+Lorsqu’une `Issue` possède une Iteration GitHub Projects, le modèle normalisé conserve au minimum son identifiant, son titre, sa date de début et sa durée ou sa date de fin lorsque ces informations sont fournies par GitHub.
+
+Ces propriétés sont des faits source de l’Iteration et ne doivent pas être réduites au seul titre affiché.
+
+Le contrat d’Iteration doit permettre de représenter l’absence d’une information que GitHub ne fournit pas, sans inventer de valeur.
+
+**Statut : Établi**
+
+
+### D-180 — Rattachement de l’Iteration au contexte GitHub Project
+
+L’Iteration d’une `Issue` est conservée dans le contexte du GitHub Project qui la porte et non comme une propriété globale unique de l’Issue.
+
+Cette règle prolonge D-172 : si une même Issue appartient à plusieurs Projects, chacun peut porter une Iteration différente sans ambiguïté ni fusion implicite.
+
+**Statut : Établi**
+
+
+### D-181 — Séparation de la Velocity brute et de la valeur numérique normalisée
+
+Lorsqu’une valeur `Velocity` est présente dans GitHub Projects, le modèle normalisé conserve sa valeur brute et, lorsqu’elle est interprétable comme un nombre valide, une valeur numérique normalisée distincte.
+
+La valeur numérique ne remplace jamais la valeur brute. Cette séparation permet de préserver la donnée source tout en fournissant une représentation directement exploitable par les règles métier et les analyses.
+
+**Statut : Établi**
+
+
+### D-182 — Traitement d’une Velocity non interprétable
+
+Lorsqu’une valeur brute `Velocity` est renseignée mais ne peut pas être interprétée comme un nombre valide, la valeur brute est conservée et aucune valeur numérique normalisée n’est produite.
+
+Le pipeline poursuit son exécution et une Data Quality non bloquante signale l’anomalie de donnée.
+
+Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
+
+**Statut : Établi**
+
+
+### D-183 — Conservation systématique de la valeur brute Scheduling
+
+Lorsqu’une valeur `Scheduling` est présente dans GitHub Projects, sa valeur brute telle que collectée est systématiquement conservée dans le contexte du Project qui la porte.
+
+Toute interprétation, validation ou canonicalisation actuelle ou future de `Scheduling` reste distincte de cette valeur source et ne doit jamais l’écraser.
+
+**Statut : Établi**
+
+
+
 
 
 

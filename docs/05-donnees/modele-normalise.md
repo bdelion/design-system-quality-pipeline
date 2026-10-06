@@ -94,6 +94,17 @@ Conformément à D-177, la reconnaissance des variantes utilise une égalité st
 
 Conformément à D-178, une valeur brute correspondant à plusieurs notions canoniques conserve uniquement sa valeur source ; aucune notion canonique n’est choisie, les candidats sont exposés au diagnostic et une Data Quality non bloquante est émise.
 
+Conformément à D-179, l’Iteration conserve au minimum son identifiant, son titre, sa date de début et sa durée ou sa date de fin lorsque ces données sont fournies par GitHub. Les propriétés non fournies restent absentes.
+
+Conformément à D-180, l’Iteration est une propriété du contexte Project associé à l’Issue et non une propriété globale unique de l’Issue.
+
+Conformément à D-181, `Velocity` sépare sa valeur brute de sa valeur numérique normalisée optionnelle. La valeur numérique n’existe que lorsque la donnée brute est interprétable comme un nombre valide.
+
+Conformément à D-182, une `Velocity` brute non interprétable est conservée sans valeur numérique normalisée et produit une Data Quality non bloquante.
+
+Conformément à D-183, `Scheduling` conserve systématiquement sa valeur brute dans son contexte Project ; toute représentation interprétée ou canonique reste distincte.
+
+
 
 
 

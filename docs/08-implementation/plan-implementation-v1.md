@@ -310,6 +310,12 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-176, recalculer la notion canonique du statut Project à chaque exécution depuis la valeur brute et la configuration courante ;
 - conformément à D-177, reconnaître les variantes de statut Project par égalité stricte sur la valeur complète après `trim`, sans distinction de casse et sans matching par sous-chaîne ;
 - conformément à D-178, ne choisir aucun statut canonique en cas d’ambiguïté, conserver le brut, exposer les candidats et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+- conformément à D-179, conserver pour chaque Iteration son identifiant, son titre, sa date de début et sa durée/date de fin lorsqu’ils sont fournis par GitHub ;
+- conformément à D-180, porter l’Iteration dans le contexte du Project qui l’attribue et ne pas la fusionner au niveau global de l’Issue ;
+- conformément à D-181, conserver séparément la valeur brute de `Velocity` et sa valeur numérique normalisée optionnelle ;
+- conformément à D-182, conserver une `Velocity` invalide sans valeur numérique et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+- conformément à D-183, conserver systématiquement la valeur brute de `Scheduling` dans son contexte Project et séparer toute interprétation future ;
+
 
 
 
