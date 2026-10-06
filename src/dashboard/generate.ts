@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stringify } from 'yaml';
-import type { Analytics, AnomalyStatus, AuditStatus, Component, DataQualityStatus, Metric, Severity, Snapshot } from '../domain/types.js';
+import type { AnomalyStatus, AuditStatus, Component, DataQualityStatus, Metric, Severity, Snapshot } from '../domain/types.js';
 
 const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.meta.url)));
 
@@ -548,13 +548,9 @@ function componentAuditRow(snapshot: Snapshot, component: Component, repositoryN
 }
 
 /** Rend une carte KPI avec sa valeur, son ratio et sa définition. */
-function kpiCard(label: string, value: { value: number | 'unknown'; numerator: number | 'unknown'; denominator: number | 'unknown'; reliability: string; definition: string }, href: string): string { const display = value.value === 'unknown' ? '—' : value.value; const ratio = typeof value.numerator === 'number' && typeof value.denominator === 'number' && value.denominator > 0 && label !== 'Anomalies déclarées' ? `${Math.round((value.numerator / value.denominator) * 100)}%` : `${value.numerator}/${value.denominator}`; return `<a class="kpi-card" href="${href}"><span class="kpi-label">${label}</span><strong>${display}</strong><span class="kpi-ratio">${ratio} · ${qualityLabel(value.reliability as DataQualityStatus)}</span><span class="kpi-definition">${value.definition}</span></a>`; }
 /** Rend une carte dédiée aux délais exprimés en jours. */
-function delayCard(label: string, value: { value: number | 'unknown'; denominator: number | 'unknown'; reliability: string; definition: string }, href: string): string { const display = value.value === 'unknown' ? '—' : `${value.value} j`; const sample = typeof value.denominator === 'number' ? `${value.denominator} anomalie${value.denominator === 1 ? '' : 's'} corrigée${value.denominator === 1 ? '' : 's'}` : 'échantillon inconnu'; return `<a class="kpi-card" href="${href}"><span class="kpi-label">${label}</span><strong>${display}</strong><span class="kpi-ratio">${sample} · ${qualityLabel(value.reliability as DataQualityStatus)}</span><span class="kpi-definition">${value.definition}</span></a>`; }
 /** Rend les barres de répartition par criticité avec leurs filtres. */
-function criticalityBars(analytics: Analytics): string { const values: Array<[string, string]> = [['blocking', 'bloquante'], ['major', 'majeure'], ['minor', 'mineure']]; return values.map(([key, label]) => linkedBar(label, analytics.anomaliesByCriticality[key] ?? 0, `anomalies.html?criticality=${encodeURIComponent(key)}`)).join(''); }
 /** Rend les barres de répartition par catégorie d'accessibilité. */
-function categoryBars(analytics: Analytics): string { return Object.entries(analytics.anomaliesByCategory).sort(([, left], [, right]) => Number(right) - Number(left)).map(([category, value]) => linkedBar(category, value, `anomalies.html?category=${encodeURIComponent(category)}`)).join('') || '<p class="muted">Aucune catégorie détectée.</p>'; }
 /** Construit la comparaison des repositories dans la page d'accueil. */
 function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
   return snapshot.normalizedData.libraries.map((library) => {
@@ -594,7 +590,6 @@ function auditStatusLabel(value: AuditStatus): string { return ({ not_evaluated:
 /** Traduit le niveau de sévérité d'une alerte qualité. */
 function severityLabel(value: Severity): string { return ({ INFO: 'information', WARNING: 'avertissement', ERROR: 'erreur' })[value]; }
 /** Traduit l'origine de découverte d'un composant. */
-function discoveryLabel(value: 'catalogue' | 'github' | 'suggested'): string { return ({ catalogue: 'catalogue', github: 'GitHub', suggested: 'suggestion' })[value]; }
 /** Échappe les valeurs avant leur insertion dans le HTML généré. */
 function escapeHtml(value: string): string { return value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character] ?? character); }
 
