@@ -2,7 +2,7 @@
 
 ## 1. Objet
 
-Cette analyse confronte le modèle métier consolidé jusqu'à D-145 au code
+Cette analyse confronte le modèle métier consolidé jusqu'à D-146 au code
 présent dans le ZIP
 `design-system-quality-pipeline-feature-chatgpt-review-20261003.zip`.
 
@@ -73,6 +73,7 @@ reposent actuellement sur des hypothèses métier devenues obsolètes.
 | Décision / règle cible | État actuel | Écart | Action V1 | Priorité |
 |---|---|---|---|:---:|
 | D-145 : toutes les Issues sont conservées dans le modèle normalisé | Absent | `NormalizedData` ne contient pas de collection générique d’Issues ; seules certaines Issues produisent des objets spécialisés | Ajouter une entité normalisée `Issue` et une collection `issues` sans supprimer les objets spécialisés dérivés | P0 |
+| D-146 : le type collecté est conservé sur l’Issue normalisée | Absent avec l’entité `Issue` cible | Le RAW porte déjà `issueType`, mais aucune entité générique `Issue` normalisée ne permet aujourd’hui de le conserver pour toutes les Issues | Ajouter `Issue.issueType` au contrat normalisé et préserver la valeur collectée pendant `RawIssue → Issue` ; la liste définitive des valeurs reste à instruire | P0 |
 | D-137 : toute Issue `🐛 Bug` est une Anomalie | Partiel | Le normalizer reconnaît les BUG, mais son modèle suppose un Audit et un Component | Rendre l'Anomalie autonome d'un Audit | P0 |
 | D-138 : origine `AUDIT` / `HORS_AUDIT` | Absent | Aucun champ d'origine ; `auditId` obligatoire | Ajouter `origin` ; rendre `auditId` optionnel | P0 |
 | D-107/108 : Issue générale 0..n Components | Contradictoire | `RawIssue.component?: string` ne porte qu'un Component | Passer à une collection de Components | P0 |
@@ -406,7 +407,7 @@ vérifiée **avant tout refactor**.
 
 -   faire évoluer fixtures ;
 -   anonymiser les nouveaux champs ;
--   tests unitaires des décisions D-137→D-145 ;
+-   tests unitaires des décisions D-137→D-146 ;
 -   tests d'intégration multi-repositories ;
 -   scénarios pré-PROD / catch-up / hors Audit / historique.
 

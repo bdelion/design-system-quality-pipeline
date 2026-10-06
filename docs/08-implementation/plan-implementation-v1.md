@@ -42,7 +42,7 @@ L’ordre d’implémentation est volontaire : les couches aval ne doivent pas c
 
 L’ordre de priorité est le suivant :
 
-1. décisions métier consolidées D-001 à D-145 ;
+1. décisions métier consolidées D-001 à D-146 ;
 2. documentation métier et règles consolidées ;
 3. contrat de données cible ;
 4. code et tests existants ;
@@ -214,7 +214,7 @@ Une branche de référence verte sur laquelle le refactor métier peut commencer
 
 Faire évoluer les contrats TypeScript afin que le modèle puisse représenter les décisions métier V1 sans dépendre encore de la disponibilité réelle des données GitHub.
 
-Les décisions particulièrement concernées sont D-107, D-108 et D-117 à D-145.
+Les décisions particulièrement concernées sont D-107, D-108 et D-117 à D-146.
 
 ### 6.2 Prérequis
 
@@ -278,7 +278,9 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - une `Issue` normalisée peut ne produire aucun objet métier spécialisé ;
 - lorsqu'un `Audit`, une `Anomaly` ou une Improvement d'Audit est dérivé d'une Issue, l'`Issue` normalisée reste présente ;
 - la relation entre l'Issue et l'objet spécialisé dérivé doit rester traçable ;
-- aucun choix supplémentaire sur la représentation de `issueType` n'est figé par D-145.
+- conformément à D-146, l’`Issue` normalisée conserve le type collecté dans un champ `issueType` ;
+- `RawIssue → Issue` doit préserver cette information sans la recalculer ;
+- la liste définitive des valeurs autorisées de `issueType` n’est pas figée par D-146.
 
 #### Anomaly
 

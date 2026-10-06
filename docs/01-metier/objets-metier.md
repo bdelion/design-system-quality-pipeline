@@ -198,10 +198,11 @@ Une Issue qui concerne effectivement un Composant doit porter le label
 correspondant. Une Issue réellement transverse peut ne porter aucun
 Composant.
 
-La représentation exacte de l'identité et du type de l'`Issue`
-normalisée reste à préciser.
+L’`Issue` normalisée conserve son type d’Issue GitHub/métier collecté dans un champ `issueType`. Ce type participe, avec les relations de l’Issue et les autres règles métier applicables, à la dérivation éventuelle des objets spécialisés.
 
-**Statut : ÉTABLI pour la conservation exhaustive ; contrat détaillé À CONFIRMER.**
+La liste définitive des valeurs autorisées de `issueType` et leur sémantique détaillée restent à préciser.
+
+**Statut : ÉTABLI pour la conservation exhaustive et la conservation du type ; valeurs de `issueType` À CONFIRMER.**
 
 ------------------------------------------------------------------------
 

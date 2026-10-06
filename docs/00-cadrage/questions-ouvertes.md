@@ -3092,6 +3092,30 @@ La représentation exacte de l'identité et du type d'une `Issue` normalisée re
 
 ---
 
+### D-146 --- Conservation du type d’Issue dans le modèle normalisé
+
+L’entité normalisée générique `Issue` conserve le type d’Issue GitHub/métier collecté dans un champ `issueType`.
+
+Ce type constitue une propriété de l’Issue normalisée et participe, avec les relations de l’Issue et les autres règles métier applicables, à la dérivation éventuelle des objets spécialisés.
+
+``` text
+RawIssue
+   ↓
+Issue.issueType
+   ├── peut contribuer à dériver un Audit
+   ├── peut contribuer à dériver une Anomalie
+   ├── peut contribuer à dériver une Improvement d’Audit
+   └── peut ne conduire à aucune spécialisation
+```
+
+La normalisation ne doit donc pas perdre le type collecté, y compris lorsqu’une Issue ne produit aucun objet métier spécialisé.
+
+La liste définitive des valeurs autorisées de `issueType` et leur sémantique détaillée ne sont pas fixées par D-146 et doivent être instruites séparément.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package

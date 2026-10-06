@@ -34,6 +34,8 @@ objets spécialisés tels que `Audit`, `Anomaly` ou une Improvement
 d'Audit sont dérivés des Issues concernées sans supprimer leur
 représentation générique.
 
+Conformément à D-146, cette entité générique conserve le type d’Issue GitHub/métier collecté dans un champ `issueType`. Ce champ fait partie du contrat normalisé de l’Issue et ne doit pas être perdu pendant la transformation `RawIssue → Issue`. Sa liste définitive de valeurs reste à préciser.
+
 Les décisions métier ont également établi ou introduit des concepts
 supplémentaires, notamment autour des Packages, Versions, Improvements,
 Catalogues historiques et Audits applicables. Leur traduction dans le
