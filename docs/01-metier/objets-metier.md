@@ -280,6 +280,20 @@ Conformément à D-187, toutes les transitions disponibles sont conservées, y c
 
 Conformément à D-188, un historique insuffisant ne conduit jamais à inventer `correctedAt`, `completedAt` ou une autre date métier. Les données disponibles sont conservées, la date indéterminable reste absente et une Data Quality non bloquante est produite.
 
+Conformément à D-189, D-190 et D-191, `Audit`, `Anomaly` et `AuditImprovement` sont des spécialisations qui référencent l’`Issue` générique par `issueId` sans recopier les faits GitHub communs.
+
+Conformément à D-192, ces spécialisations possèdent respectivement `auditId`, `anomalyId` et `auditImprovementId`, identifiants métier propres, stables et distincts de `issueId`.
+
+Conformément à D-193, une `Anomaly` d’origine `AUDIT` porte l’`auditId` de son Audit lorsque la relation est valide, tandis qu’une anomalie `HORS_AUDIT` n’en porte pas. Une relation Audit attendue mais invalide reste distinguable par la Data Quality.
+
+Conformément à D-194, une `AuditImprovement` porte obligatoirement l’`auditId` de son Audit parent ; aucun rattachement artificiel n’est créé lorsqu’une relation valide ne peut pas être établie.
+
+Conformément à D-195, `Audit` porte explicitement son unique `componentId`. Conformément à D-196, une `Anomaly` d’origine `AUDIT` porte également le `componentId` associé à son Audit lorsque la relation est valide.
+
+Conformément à D-197, une divergence de Component entre l’Issue enfant et l’Audit parent n’est jamais corrigée silencieusement : les faits source sont conservés et une Data Quality non bloquante signale le conflit.
+
+Conformément à D-198, une Issue `Bug` reste matérialisée en `Anomaly` même si son parent Audit attendu est absent ou invalide. Aucun `auditId` artificiel n’est créé et une Data Quality non bloquante signale la relation impossible à établir.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---

@@ -3636,6 +3636,115 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après
 **Statut : Établi**
 
 
+### D-189 — Audit comme spécialisation référencée de l’Issue
+
+Un `Audit` normalisé référence son `Issue` générique via `issueId`.
+
+Les données GitHub communes telles que le titre, l’état, les labels, l’URL, les dates natives et les données Projects restent portées par `Issue` et ne sont pas recopiées dans `Audit`.
+
+`Audit` porte uniquement son identité et ses propriétés ou relations métier spécifiques.
+
+**Statut : Établi**
+
+
+### D-190 — Anomaly comme spécialisation référencée de l’Issue
+
+Une `Anomaly` normalisée référence son `Issue` générique via `issueId`.
+
+Les faits GitHub communs restent portés par `Issue` et ne sont pas dupliqués dans `Anomaly`.
+
+`Anomaly` porte uniquement son identité et les propriétés ou relations nécessaires à son interprétation métier.
+
+**Statut : Établi**
+
+
+### D-191 — AuditImprovement comme spécialisation référencée de l’Issue
+
+Une `AuditImprovement` normalisée référence son `Issue` générique via `issueId`.
+
+Les faits GitHub communs restent portés par `Issue`. `AuditImprovement` ne duplique pas le titre, l’état, les labels, l’URL ou les autres propriétés génériques déjà conservées par l’Issue.
+
+**Statut : Établi**
+
+
+### D-192 — Identifiants métier propres aux spécialisations
+
+`Audit`, `Anomaly` et `AuditImprovement` disposent chacun d’un identifiant métier propre et stable, respectivement `auditId`, `anomalyId` et `auditImprovementId`.
+
+Ces identifiants sont distincts de `issueId`, qui reste la référence vers l’Issue GitHub normalisée sous-jacente.
+
+La stratégie concrète de génération de ces identifiants doit être déterministe et ne doit pas rompre leur stabilité entre exécutions pour une même entité source.
+
+**Statut : Établi**
+
+
+### D-193 — Relation optionnelle Anomaly vers Audit selon son origine
+
+Une `Anomaly` d’origine `AUDIT` porte explicitement l’`auditId` de l’Audit auquel elle est rattachée lorsque cette relation est valide.
+
+Une `Anomaly` d’origine `HORS_AUDIT` ne porte pas d’`auditId`.
+
+L’absence d’`auditId` peut également représenter une anomalie dont la relation attendue vers un Audit n’a pas pu être validée ; cette situation est distinguée par la Data Quality et ne doit pas être confondue avec une origine `HORS_AUDIT` valide.
+
+**Statut : Établi**
+
+
+### D-194 — Relation obligatoire AuditImprovement vers Audit
+
+Une `AuditImprovement` est une amélioration rattachée à un Audit et porte obligatoirement l’`auditId` de son Audit parent.
+
+Une Issue Feature qui ne permet pas d’établir une relation valide avec un Audit ne doit pas être artificiellement rattachée à un Audit. Son traitement spécialisé éventuel doit respecter les règles de qualification et de Data Quality applicables.
+
+**Statut : Établi**
+
+
+### D-195 — Component explicite sur Audit
+
+Un `Audit` porte explicitement `componentId`.
+
+Cette propriété est cohérente avec la règle métier selon laquelle un Audit concerne exactement un Component. Elle reste directement exploitable sans devoir recalculer le Component depuis les labels de l’Issue générique.
+
+La valeur doit être validée à partir des faits source et des règles de reconnaissance des Components.
+
+**Statut : Établi**
+
+
+### D-196 — Component explicite sur une Anomaly d’Audit
+
+Une `Anomaly` d’origine `AUDIT` porte explicitement le `componentId` associé à son Audit lorsque la relation est valide.
+
+Cette propriété rend la spécialisation directement exploitable tout en restant validée par rapport à l’Audit parent et aux faits source de l’Issue.
+
+Elle ne doit pas masquer une éventuelle incohérence entre le Component porté par l’Issue enfant et celui de l’Audit.
+
+**Statut : Établi**
+
+
+### D-197 — Gestion d’une incohérence de Component entre Audit et anomalie
+
+Si les faits source de l’Issue enfant indiquent un Component différent de celui de l’Audit parent, le pipeline conserve les faits source et ne corrige pas automatiquement le Component.
+
+L’incohérence est signalée par une Data Quality non bloquante. Les données dérivées ne doivent pas masquer le conflit.
+
+Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
+
+**Statut : Établi**
+
+
+### D-198 — Conservation d’une Anomaly malgré un parent Audit absent ou invalide
+
+Une Issue reconnue comme `Bug` reste matérialisée en `Anomaly` même lorsqu’une relation attendue vers un Audit est absente ou invalide.
+
+Dans ce cas, aucun `auditId` invalide ou artificiel n’est produit. Les faits source et l’Anomaly sont conservés, et une Data Quality non bloquante signale l’impossibilité d’établir la relation attendue.
+
+Cette situation ne doit pas entraîner la disparition de l’anomalie du modèle normalisé. Elle doit également rester distinguable d’une anomalie `HORS_AUDIT` correctement qualifiée.
+
+Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
+
+**Statut : Établi**
+
+
+
 
 
 

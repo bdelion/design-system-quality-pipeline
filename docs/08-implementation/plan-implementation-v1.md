@@ -320,6 +320,15 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-186, appliquer aux statuts historiques les mêmes règles de canonicalisation que pour le statut courant en conservant les valeurs brutes ;
 - conformément à D-187, conserver toutes les transitions disponibles, y compris les passages multiples à `Done` et les sorties de `Done` ;
 - conformément à D-188, ne jamais inventer une date métier lorsque l’historique est insuffisant et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+- conformément à D-189, D-190 et D-191, modéliser `Audit`, `Anomaly` et `AuditImprovement` comme spécialisations référencées de `Issue` via `issueId`, sans duplication des faits GitHub communs ;
+- conformément à D-192, définir des identifiants métier stables et déterministes `auditId`, `anomalyId` et `auditImprovementId`, distincts de `issueId` ;
+- conformément à D-193, porter `auditId` uniquement lorsque la relation d’une anomalie d’Audit est valide et distinguer ce cas d’une anomalie `HORS_AUDIT` ;
+- conformément à D-194, exiger un Audit parent valide pour matérialiser une `AuditImprovement` ;
+- conformément à D-195, porter explicitement l’unique `componentId` sur `Audit` ;
+- conformément à D-196, porter explicitement le `componentId` sur une anomalie d’Audit lorsque la relation est valide ;
+- conformément à D-197, conserver les faits source et produire une Data Quality non bloquante en cas de divergence de Component entre Audit et anomalie ;
+- conformément à D-198, matérialiser toute Issue `Bug` en `Anomaly` même si son parent Audit attendu est absent ou invalide, sans créer d’`auditId` artificiel et avec une Data Quality non bloquante ;
+
 
 
 

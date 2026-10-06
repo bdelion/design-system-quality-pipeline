@@ -114,6 +114,21 @@ Conformément à D-187, l’historique conserve toutes les transitions disponibl
 
 Conformément à D-188, lorsqu’un historique insuffisant empêche d’établir une date métier, aucune date n’est inventée : la valeur dérivée reste absente et une Data Quality non bloquante est émise.
 
+Conformément à D-189, D-190 et D-191, les objets `Audit`, `Anomaly` et `AuditImprovement` référencent l’`Issue` générique par `issueId` et ne dupliquent pas ses faits GitHub communs.
+
+Conformément à D-192, ils disposent respectivement de `auditId`, `anomalyId` et `auditImprovementId`, identifiants métier propres et stables, distincts de `issueId`.
+
+Conformément à D-193, `Anomaly.auditId` n’est présent pour une anomalie d’Audit que lorsque la relation vers l’Audit est valide. Une anomalie `HORS_AUDIT` n’en porte pas ; une relation attendue mais invalide reste signalée séparément.
+
+Conformément à D-194, une `AuditImprovement` possède obligatoirement un `auditId` valide pour être matérialisée comme telle.
+
+Conformément à D-195, `Audit` expose explicitement son unique `componentId`. Conformément à D-196, une anomalie d’Audit expose également le `componentId` associé à l’Audit lorsque la relation est valide.
+
+Conformément à D-197, une divergence entre le Component de l’Issue enfant et celui de l’Audit parent conserve les faits source sans correction automatique et produit une Data Quality non bloquante.
+
+Conformément à D-198, une Issue `Bug` continue de produire une `Anomaly` si un parent Audit attendu est absent ou invalide. Dans ce cas, aucun `auditId` artificiel n’est créé et l’incohérence est signalée.
+
+
 
 
 
