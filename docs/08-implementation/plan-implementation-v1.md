@@ -287,6 +287,7 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-149, l’Issue normalisée porte séparément la valeur brute GitHub et la notion canonique reconnue ; la canonicalisation ne remplace jamais la valeur brute ;
 - conformément à D-150, la notion canonique est optionnelle lorsqu’aucune correspondance n’est reconnue ; ne pas utiliser `UNKNOWN` comme valeur de repli ;
 - conformément à D-151, recalculer la notion canonique à chaque pipeline depuis la valeur brute et la configuration courante ; une évolution des mots-clés doit pouvoir reclassifier une Issue existante et recalculer les objets métier dérivés ;
+- conformément à D-152, si plusieurs notions canoniques correspondent, laisser `issueType` absent, n’appliquer aucune priorité implicite et produire une réserve Data Quality contenant la valeur brute, les candidats et le lien vers l’Issue ;
 - cette situation ne bloque pas le pipeline et doit produire une réserve Data Quality « issueType à déclarer » ;
 - cette réserve doit contenir au minimum la valeur brute non reconnue et un lien vers l’Issue GitHub concernée ;
 - la liste définitive des notions canoniques reste à instruire.

@@ -3217,6 +3217,25 @@ La notion canonique ne constitue donc pas une donnée historique figée et ne do
 
 **Statut : Établi**
 
+---
+
+### D-152 --- Absence de priorité implicite en cas de correspondance ambiguë d’Issue Type
+
+Lorsqu’une valeur brute d’Issue Type correspond à plusieurs notions canoniques au regard de la configuration `github.issueTypes.keywords`, le pipeline ne choisit aucune notion automatiquement.
+
+Dans ce cas :
+
+- la valeur brute reste conservée ;
+- `issueType` reste absent ;
+- aucune règle de priorité implicite entre les notions canoniques n’est appliquée ;
+- la Data Quality produit une réserve non bloquante signalant une configuration ambiguë ;
+- cette réserve contient au minimum la valeur brute, l’ensemble des notions canoniques candidates et un lien vers l’Issue GitHub concernée.
+
+La correction attendue porte sur la configuration de reconnaissance afin de rendre la correspondance non ambiguë.
+
+**Statut : Établi**
+
+
 
 
 ---

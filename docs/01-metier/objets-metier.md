@@ -210,6 +210,8 @@ Conformément à D-150, lorsqu’aucune notion canonique n’est reconnue, cette
 
 Conformément à D-151, la notion canonique est recalculée à chaque exécution du pipeline à partir de la valeur brute et de la configuration courante. Une évolution des mots-clés peut donc reclassifier une Issue existante et modifier les objets métier spécialisés qui en sont dérivés, sans modification de l’Issue GitHub source.
 
+Conformément à D-152, si plusieurs notions canoniques correspondent à une même valeur brute, aucune n’est retenue : `issueType` reste absent. Le pipeline n’applique aucune priorité implicite et signale l’ambiguïté en Data Quality avec la valeur brute, les notions candidates et le lien vers l’Issue source.
+
 La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
 
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation du type brut, sa séparation de la notion canonique et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
