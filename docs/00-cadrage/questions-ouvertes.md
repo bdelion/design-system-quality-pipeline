@@ -3203,6 +3203,20 @@ La valeur canonique `UNKNOWN` ne doit pas être utilisée pour masquer l’absen
 
 **Statut : Établi**
 
+---
+
+### D-151 --- Recalcul de la notion canonique avec la configuration courante
+
+La notion canonique d’Issue Type est une interprétation dérivée et recalculable. À chaque exécution du pipeline, elle est recalculée à partir de la valeur brute conservée sur l’Issue et de la configuration courante `github.issueTypes.keywords`.
+
+Une évolution de cette configuration peut donc modifier la notion canonique d’une Issue existante sans que l’Issue GitHub elle-même ait changé.
+
+Par exemple, si `Accessibility bug` n’était initialement associé à aucune notion, puis est ajouté aux mots-clés de `BUG`, l’exécution suivante conserve `rawIssueType = "Accessibility bug"` et produit `issueType = BUG`. Les objets métier dérivés doivent alors être recalculés en cohérence avec cette nouvelle classification ; l’Issue peut notamment devenir une `Anomaly`.
+
+La notion canonique ne constitue donc pas une donnée historique figée et ne doit pas être persistée comme une vérité indépendante de la configuration qui a servi à la calculer.
+
+**Statut : Établi**
+
 
 
 ---

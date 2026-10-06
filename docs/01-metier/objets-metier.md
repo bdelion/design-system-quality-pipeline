@@ -208,6 +208,8 @@ Conformément à D-149, l’Issue distingue explicitement la valeur brute d’Is
 
 Conformément à D-150, lorsqu’aucune notion canonique n’est reconnue, cette propriété est absente. Aucune valeur canonique `UNKNOWN` n’est injectée comme valeur de repli ; la valeur brute et la réserve Data Quality définie par D-148 portent explicitement cette situation.
 
+Conformément à D-151, la notion canonique est recalculée à chaque exécution du pipeline à partir de la valeur brute et de la configuration courante. Une évolution des mots-clés peut donc reclassifier une Issue existante et modifier les objets métier spécialisés qui en sont dérivés, sans modification de l’Issue GitHub source.
+
 La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
 
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation du type brut, sa séparation de la notion canonique et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
