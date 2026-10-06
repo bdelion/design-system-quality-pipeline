@@ -2945,6 +2945,9 @@ de la Squad. D'autres dimensions et indicateurs restent à challenger.
 
 ---
 
+
+> **Extension :** D-237 ajoute `UNDETERMINED` aux valeurs canoniques de `Anomaly.origin` pour les relations vers un Audit suggérées mais non validables.
+
 ### D-139 --- Date de détection d'une Anomalie
 
 La date métier de détection d'une Anomalie est la date de création de
@@ -3987,6 +3990,112 @@ Une anomalie d’origine `HORS_AUDIT` ne modifie pas directement le verdict de c
 Si un Component appartient au Catalogue historique d’une Version mais ne possède aucun Audit terminé applicable, son état est `NON_COUVERT` / non évalué. Il ne doit jamais être assimilé à `NON_CONFORME`.
 
 **Statut : Établi**
+
+
+### D-229 — Issue Audit sans Component reconnu
+
+Si une Issue reconnue comme Audit ne possède aucun Component reconnu, l’Issue générique est conservée mais aucun `Audit` métier valide n’est matérialisé. Aucun Component n’est inventé. Une Data Quality non bloquante signale l’absence du Component requis. Son identifiant `DQ-xxx` sera attribué en I5.
+
+**Statut : Établi**
+
+
+### D-230 — Issue Audit avec plusieurs Components reconnus
+
+Si une Issue reconnue comme Audit possède plusieurs Components reconnus, l’Issue générique est conservée mais aucun `Audit` métier valide n’est matérialisé. Le pipeline ne sélectionne jamais arbitrairement un Component. Une Data Quality non bloquante signale la violation de cardinalité. Son identifiant `DQ-xxx` sera attribué en I5.
+
+**Statut : Établi**
+
+
+### D-231 — Issue Audit sans Version PROD cible déterminable
+
+Si la Version PROD cible d’une Issue Audit ne peut pas être déterminée, l’Issue générique est conservée mais aucun `Audit` métier complet et valide n’est matérialisé. Aucune Version cible n’est inventée. Une Data Quality non bloquante signale l’information manquante. Son identifiant `DQ-xxx` sera attribué en I5.
+
+**Statut : Établi**
+
+
+### D-232 — Conservation des anomalies enfants d’un Audit invalide
+
+Lorsqu’une Issue Audit parente existe mais ne peut pas être matérialisée comme `Audit` valide, ses Issues `Bug` enfants restent conservées et sont matérialisées comme `Anomaly`. Aucun `auditId` invalide ou artificiel n’est produit. Les Data Quality correspondant à l’Audit invalide et à la relation d’anomalie non validable sont conservées.
+
+**Statut : Établi**
+
+
+### D-233 — Feature enfant sans Audit parent valide
+
+Une Issue `Feature` dont l’Audit parent est absent ou invalide reste conservée comme `Issue` générique mais n’est pas matérialisée en `AuditImprovement`. Un `AuditImprovement` exige un Audit parent valide conformément à D-194. Une Data Quality non bloquante peut signaler la relation attendue non validable.
+
+**Statut : Établi**
+
+
+### D-234 — Bug rattaché à plusieurs Audits valides
+
+Si une Issue `Bug` est sous-Issue de plusieurs Audits valides, l’`Anomaly` est conservée mais la relation vers l’Audit est considérée ambiguë. Aucun `auditId` n’est sélectionné automatiquement. Une Data Quality non bloquante expose l’ambiguïté et les Audits candidats.
+
+**Statut : Établi**
+
+
+### D-235 — Feature rattachée à plusieurs Audits valides
+
+Si une Issue `Feature` est sous-Issue de plusieurs Audits valides, aucune `AuditImprovement` n’est matérialisée tant que la relation vers l’Audit n’est pas univoque. L’Issue générique reste conservée et une Data Quality non bloquante expose l’ambiguïté et les Audits candidats.
+
+**Statut : Établi**
+
+
+### D-236 — Origine indéterminée d’une anomalie à relation Audit non validable
+
+Lorsqu’une Issue `Bug` présente une relation qui suggère une origine Audit mais que cette relation ne peut pas être validée, son origine n’est pas artificiellement classée `HORS_AUDIT`. L’anomalie est conservée avec une origine indéterminée et la Data Quality appropriée.
+
+**Statut : Établi**
+
+
+### D-237 — Trois valeurs canoniques pour Anomaly.origin
+
+Le contrat normalisé de `Anomaly.origin` accepte trois valeurs canoniques : `AUDIT`, `HORS_AUDIT` et `UNDETERMINED`. `UNDETERMINED` représente les situations où les faits source suggèrent une relation d’Audit mais ne permettent pas de la valider. Cette décision étend D-138.
+
+**Statut : Établi**
+
+
+### D-238 — Cardinalité Component des anomalies HORS_AUDIT
+
+Une `Anomaly` d’origine `HORS_AUDIT` n’impose pas exactement un Component. Elle conserve le rattachement 0..n Components dérivé de son Issue générique.
+
+**Statut : Établi**
+
+
+### D-239 — Cardinalité Component des anomalies UNDETERMINED
+
+Une `Anomaly` d’origine `UNDETERMINED` conserve également les 0..n Components dérivés de son Issue générique. Le pipeline ne sélectionne pas artificiellement un Component.
+
+**Statut : Établi**
+
+
+### D-240 — Unicité des spécialisations par Issue
+
+Une Issue GitHub donnée peut produire au maximum une instance de chaque spécialisation métier qui lui est applicable. Une ambiguïté ou une cardinalité source invalide ne doit jamais être résolue en dupliquant `Audit`, `Anomaly` ou `AuditImprovement`.
+
+**Statut : Établi**
+
+
+### D-241 — Intégrité référentielle du modèle normalisé
+
+Toute référence normalisée telle que `issueId`, `auditId`, `componentId`, `versionId` ou `milestoneId` doit pointer vers une entité réellement présente dans le dataset normalisé lorsque la relation est matérialisée. Si une relation attendue ne peut pas être résolue, aucune référence orpheline n’est créée : la référence reste absente et une Data Quality non bloquante signale l’incohérence.
+
+**Statut : Établi**
+
+
+### D-242 — Déterminisme de la normalisation
+
+À dataset brut et configuration identiques, la normalisation produit les mêmes identifiants métier, classifications et relations, indépendamment de l’ordre des objets collectés. La génération des identifiants et les règles de résolution ne dépendent ni de l’ordre d’itération ni d’un état d’exécution non déterministe.
+
+**Statut : Établi**
+
+
+### D-243 — Clôture conditionnelle du lot I1 avant implémentation
+
+I1 est fonctionnellement spécifié lorsque ses décisions permettent de définir les contrats TypeScript sans ambiguïté métier bloquante. Avant de déclarer I1 `GREEN` et de modifier le code, un checkpoint final est réalisé sur un ZIP complet et à jour du repository contenant les décisions appliquées jusqu’à D-243. Il vérifie au minimum décisions actives/supplantées, documentation, configuration, contrats TypeScript existants, tests et fixtures. Les questions non bloquantes restantes sont reportées aux lots I2 à I9.
+
+**Statut : Établi**
+
 
 
 

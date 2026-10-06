@@ -358,6 +358,21 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-226, correction d’une anomalie insuffisante pour rétablir la conformité;
 - conformément à D-227, anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit;
 - conformément à D-228, état NON_COUVERT en absence d’Audit terminé applicable;
+- conformément à D-229, issue Audit sans Component reconnu;
+- conformément à D-230, issue Audit avec plusieurs Components reconnus;
+- conformément à D-231, issue Audit sans Version PROD cible déterminable;
+- conformément à D-232, conservation des anomalies enfants d’un Audit invalide;
+- conformément à D-233, feature enfant sans Audit parent valide;
+- conformément à D-234, bug rattaché à plusieurs Audits valides;
+- conformément à D-235, feature rattachée à plusieurs Audits valides;
+- conformément à D-236, origine indéterminée d’une anomalie à relation Audit non validable;
+- conformément à D-237, trois valeurs canoniques pour Anomaly.origin;
+- conformément à D-238, cardinalité Component des anomalies HORS_AUDIT;
+- conformément à D-239, cardinalité Component des anomalies UNDETERMINED;
+- conformément à D-240, unicité des spécialisations par Issue;
+- conformément à D-241, intégrité référentielle du modèle normalisé;
+- conformément à D-242, déterminisme de la normalisation;
+- conformément à D-243, clôture conditionnelle du lot I1 avant implémentation;
 
 
 
@@ -1551,3 +1566,7 @@ La V1 peut être considérée comme implémentée lorsque les conditions suivant
 - le dashboard restitue ces informations sans recalculer les règles métier ;
 - les scénarios structurants sont couverts par une fixture V1 et des tests automatisés ;
 - `typecheck`, `lint`, `test` et `build` sont verts en CI.
+
+### Checkpoint de clôture I1
+
+Conformément à D-243, I1 n’est déclaré `GREEN` qu’après revue d’un ZIP complet et à jour du repository intégrant les décisions jusqu’à D-243. Cette revue contrôle les décisions actives et supplantées, la documentation, la configuration, les contrats TypeScript existants, les tests et les fixtures avant toute évolution du code.

@@ -527,3 +527,18 @@ dashboard.
 | D-226 : Correction d’une anomalie insuffisante pour rétablir la conformité | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-226 | P0 |
 | D-227 : Anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-227 | P0 |
 | D-228 : État NON_COUVERT en absence d’Audit terminé applicable | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-228 | P0 |
+| D-229 : Issue Audit sans Component reconnu | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-229 | P0 |
+| D-230 : Issue Audit avec plusieurs Components reconnus | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-230 | P0 |
+| D-231 : Issue Audit sans Version PROD cible déterminable | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-231 | P0 |
+| D-232 : Conservation des anomalies enfants d’un Audit invalide | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-232 | P0 |
+| D-233 : Feature enfant sans Audit parent valide | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-233 | P0 |
+| D-234 : Bug rattaché à plusieurs Audits valides | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-234 | P0 |
+| D-235 : Feature rattachée à plusieurs Audits valides | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-235 | P0 |
+| D-236 : Origine indéterminée d’une anomalie à relation Audit non validable | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-236 | P0 |
+| D-237 : Trois valeurs canoniques pour Anomaly.origin | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-237 | P0 |
+| D-238 : Cardinalité Component des anomalies HORS_AUDIT | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-238 | P0 |
+| D-239 : Cardinalité Component des anomalies UNDETERMINED | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-239 | P0 |
+| D-240 : Unicité des spécialisations par Issue | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-240 | P0 |
+| D-241 : Intégrité référentielle du modèle normalisé | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-241 | P0 |
+| D-242 : Déterminisme de la normalisation | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-242 | P0 |
+| D-243 : Clôture conditionnelle du lot I1 avant implémentation | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-243 | P0 |
