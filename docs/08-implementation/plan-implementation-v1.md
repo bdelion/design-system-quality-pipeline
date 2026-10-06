@@ -315,6 +315,12 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-181, conserver séparément la valeur brute de `Velocity` et sa valeur numérique normalisée optionnelle ;
 - conformément à D-182, conserver une `Velocity` invalide sans valeur numérique et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
 - conformément à D-183, conserver systématiquement la valeur brute de `Scheduling` dans son contexte Project et séparer toute interprétation future ;
+- conformément à D-184, collecter et conserver l’historique des changements de statut dans chaque contexte GitHub Project ;
+- conformément à D-185, conserver pour chaque transition le Project, le statut brut précédent lorsqu’il est disponible, le nouveau statut brut et la date/heure ;
+- conformément à D-186, appliquer aux statuts historiques les mêmes règles de canonicalisation que pour le statut courant en conservant les valeurs brutes ;
+- conformément à D-187, conserver toutes les transitions disponibles, y compris les passages multiples à `Done` et les sorties de `Done` ;
+- conformément à D-188, ne jamais inventer une date métier lorsque l’historique est insuffisant et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+
 
 
 

@@ -104,6 +104,17 @@ Conformément à D-182, une `Velocity` brute non interprétable est conservée s
 
 Conformément à D-183, `Scheduling` conserve systématiquement sa valeur brute dans son contexte Project ; toute représentation interprétée ou canonique reste distincte.
 
+Conformément à D-184, chaque contexte Project conserve l’historique disponible des changements de statut de l’Issue.
+
+Conformément à D-185, chaque transition contient au minimum le Project concerné, le statut brut précédent lorsqu’il est disponible, le nouveau statut brut et la date/heure de transition. Les données non fournies restent absentes.
+
+Conformément à D-186, les statuts historiques utilisent les mêmes mécanismes de séparation brut/canonique, de recalcul, de matching strict et de gestion des ambiguïtés que le statut Project courant.
+
+Conformément à D-187, l’historique conserve toutes les transitions disponibles sans réduire plusieurs passages à `Done` à un événement unique.
+
+Conformément à D-188, lorsqu’un historique insuffisant empêche d’établir une date métier, aucune date n’est inventée : la valeur dérivée reste absente et une Data Quality non bloquante est émise.
+
+
 
 
 

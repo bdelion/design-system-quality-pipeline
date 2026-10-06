@@ -270,6 +270,16 @@ Conformément à D-182, une `Velocity` renseignée mais non interprétable conse
 
 Conformément à D-183, `Scheduling` conserve systématiquement sa valeur brute telle que collectée dans le contexte du Project. Toute interprétation ou canonicalisation reste séparée de cette valeur source.
 
+Conformément à D-184, chaque contexte GitHub Project conserve l’historique des changements de statut de l’Issue, et pas uniquement son statut courant.
+
+Conformément à D-185, une transition conserve au minimum le Project concerné, le statut brut précédent lorsqu’il est disponible, le nouveau statut brut et la date/heure de transition. Une donnée non fournie n’est pas inventée.
+
+Conformément à D-186, les statuts historiques sont canonicalisés avec les mêmes règles que le statut courant tout en conservant systématiquement leurs valeurs brutes.
+
+Conformément à D-187, toutes les transitions disponibles sont conservées, y compris plusieurs entrées dans `Done` et les sorties ultérieures de `Done`. La sélection d’une transition pertinente relève des règles métier aval.
+
+Conformément à D-188, un historique insuffisant ne conduit jamais à inventer `correctedAt`, `completedAt` ou une autre date métier. Les données disponibles sont conservées, la date indéterminable reste absente et une Data Quality non bloquante est produite.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---

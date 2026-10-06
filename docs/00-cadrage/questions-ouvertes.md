@@ -3587,6 +3587,56 @@ Toute interprétation, validation ou canonicalisation actuelle ou future de `Sch
 **Statut : Établi**
 
 
+### D-184 — Conservation de l’historique des statuts GitHub Projects
+
+Le modèle normalisé conserve l’historique des changements de statut GitHub Projects d’une `Issue`, et pas uniquement son statut courant.
+
+Cet historique appartient au contexte du Project concerné. Il fournit notamment les faits nécessaires au calcul de dates métier telles que `correctedAt` et `completedAt` sans les déduire du seul état courant.
+
+**Statut : Établi**
+
+
+### D-185 — Contenu minimal d’une transition de statut Project
+
+Chaque transition de statut GitHub Projects conserve au minimum le Project concerné, le statut brut précédent, le nouveau statut brut et la date/heure de transition.
+
+Lorsqu’une information précédente n’est pas fournie par la source, elle reste absente et aucune valeur n’est inventée.
+
+Ces données constituent les faits source de la transition et restent distinctes des interprétations canoniques.
+
+**Statut : Établi**
+
+
+### D-186 — Canonicalisation des statuts dans l’historique Project
+
+Les statuts présents dans l’historique GitHub Projects sont canonicalisés selon les mêmes règles que le statut Project courant définies par D-175 à D-178.
+
+Les valeurs brutes historiques restent toujours conservées. La canonicalisation est recalculée avec la configuration courante, utilise une correspondance stricte et ne choisit aucune notion canonique en cas d’ambiguïté.
+
+**Statut : Établi**
+
+
+### D-187 — Conservation exhaustive des transitions Project
+
+Toutes les transitions de statut GitHub Projects disponibles sont conservées dans l’historique normalisé.
+
+En particulier, plusieurs passages à `Done`, ainsi que les sorties ultérieures de `Done`, ne sont pas réduits au premier ou au dernier événement. Les règles métier sélectionnent ensuite la ou les transitions pertinentes selon leur besoin.
+
+**Statut : Établi**
+
+
+### D-188 — Gestion d’un historique Project incomplet ou indisponible
+
+Lorsque l’historique GitHub Projects disponible est insuffisant pour déterminer une date métier requise, le pipeline conserve toutes les données effectivement disponibles et n’invente aucune date.
+
+La date métier concernée reste absente lorsqu’elle ne peut pas être établie de manière fiable. Le pipeline poursuit son exécution et une Data Quality non bloquante signale l’insuffisance de l’historique.
+
+Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
+
+**Statut : Établi**
+
+
+
 
 
 
