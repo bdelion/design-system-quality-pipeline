@@ -3148,6 +3148,25 @@ Ainsi :
 
 ---
 
+### D-148 --- Conservation et signalement des Issue Types non déclarés
+
+Lorsqu’une Issue GitHub porte une valeur d’Issue Type qui ne correspond à aucune notion reconnue par la configuration globale `github.issueTypes.keywords`, l’Issue reste conservée dans le modèle normalisé et sa valeur brute d’Issue Type est préservée.
+
+L’absence de reconnaissance ne doit donc ni supprimer l’Issue, ni remplacer silencieusement la valeur collectée, ni bloquer le pipeline.
+
+La Data Quality doit produire un élément explicite **« issueType à déclarer »** permettant d’identifier et de corriger la configuration. Cet élément doit contenir au minimum :
+
+- la valeur brute de l’Issue Type non reconnue ;
+- un lien vers l’Issue GitHub concernée.
+
+Si plusieurs Issues portent la même valeur non déclarée, chacune reste traçable jusqu’à son Issue source. Les modalités de regroupement ou de présentation de ces éléments dans le dashboard pourront être précisées lors du lot Data Quality.
+
+L’identifiant `DQ-xxx` de cette règle n’est pas attribué à ce stade. Il sera fixé au lot I5 après vérification du registre DQ canonique.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package

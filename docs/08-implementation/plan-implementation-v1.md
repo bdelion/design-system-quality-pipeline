@@ -283,7 +283,10 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-147, les Issue Types constituent un vocabulaire global au système, et non une configuration par repository ;
 - les valeurs observées peuvent être inventoriées depuis l’ensemble des Issues collectées ;
 - la reconnaissance métier repose sur une configuration globale associant chaque notion canonique à une ou plusieurs valeurs ou mots-clés acceptés, dans la continuité de `github.issueTypes.keywords` dans `system.yaml` ;
-- la liste définitive des notions canoniques et le traitement d’une valeur non reconnue restent à instruire.
+- conformément à D-148, une valeur non reconnue reste conservée sous sa forme brute sur l’Issue normalisée ;
+- cette situation ne bloque pas le pipeline et doit produire une réserve Data Quality « issueType à déclarer » ;
+- cette réserve doit contenir au minimum la valeur brute non reconnue et un lien vers l’Issue GitHub concernée ;
+- la liste définitive des notions canoniques reste à instruire.
 
 #### Anomaly
 
@@ -846,7 +849,8 @@ Les identifiants des nouvelles règles ne doivent être attribués qu’après v
 - Audit `Closed` non `Done` ;
 - Anomalie `Done` incohérente avec `Closed` ou la PR selon le profil applicable ;
 - tag PROD absent ;
-- Catalogue historique indisponible.
+- Catalogue historique indisponible ;
+- Issue Type observé mais non reconnu par `github.issueTypes.keywords` : produire « issueType à déclarer » avec la valeur brute et le lien vers l’Issue concernée, sans bloquer le pipeline.
 
 ### 10.5 Tests à écrire
 
@@ -858,6 +862,7 @@ Dans `tests/quality-rules.test.ts` :
 - un Audit avec zéro ou plusieurs Components est signalé ;
 - un Audit pré-PROD sans RC est signalé ;
 - une incohérence Done/Closed est signalée ;
+- un Issue Type non déclaré conserve sa valeur brute et produit une réserve « issueType à déclarer » contenant la valeur et le lien vers l’Issue source ;
 - un tag manquant affecte uniquement les métriques qui dépendent de la Version historique ;
 - un Catalogue historique manquant ne transforme pas le dénominateur en zéro ;
 - les données restent dans le snapshot même lorsqu’elles sont exclues d’une métrique.
