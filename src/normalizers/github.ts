@@ -155,12 +155,21 @@ export function normalizeGithub(
         ...(issue.parents.length === 1 ? { parentIssueId: issue.parents[0] } : {}),
         subIssueIds: [],
         linkedPullRequestIds: [...issue.linkedPullRequestIds],
-        projectContexts: (issue.projectStatuses ?? []).map((projectStatus) => ({
-          projectId: projectStatus.projectId,
-          projectName: projectStatus.projectName,
-          rawStatus: projectStatus.status,
-          statusHistory: []
-        })),
+        projectContexts: (issue.projectStatuses ?? []).map((projectStatus) => {
+          const velocity = projectStatus.rawVelocity !== undefined
+            ? numericProjectValue(projectStatus.rawVelocity)
+            : undefined;
+          return {
+            projectId: projectStatus.projectId,
+            projectName: projectStatus.projectName,
+            rawStatus: projectStatus.status,
+            ...(projectStatus.iteration ? { iteration: { ...projectStatus.iteration } } : {}),
+            ...(projectStatus.rawVelocity !== undefined ? { rawVelocity: projectStatus.rawVelocity } : {}),
+            ...(velocity !== undefined ? { velocity } : {}),
+            ...(projectStatus.rawScheduling !== undefined ? { rawScheduling: projectStatus.rawScheduling } : {}),
+            statusHistory: []
+          };
+        }),
         provenance: { source: 'github', sourceId: issue.id, collectedAt: raw.collectedAt },
         dataQualityStatus: collectedStatus
       });
@@ -357,6 +366,14 @@ function criticalityValue(
  * their legacy issueType is used only to keep the migration executable until
  * those fixtures are recollected. It is deliberately not copied into Issue.
  */
+function numericProjectValue(value: string | number): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function prodVersionNumber(value: string | undefined): string | undefined {
   if (!value) return undefined;
   const normalized = value.trim();

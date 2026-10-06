@@ -39,8 +39,11 @@ function anonymizeProjectStatus(status: RawProjectStatus, map: StableMapper, opt
     projectName: options.strictText
       ? `project-${map('project-name', status.projectName, 'anon')}`
       : sanitizeText(status.projectName, options).value,
-    // Project status is analytical business data and must remain unchanged.
-    status: status.status
+    // Project workflow values are analytical business data and must remain unchanged.
+    status: status.status,
+    ...(status.iteration ? { iteration: { ...status.iteration } } : {}),
+    ...(status.rawVelocity !== undefined ? { rawVelocity: status.rawVelocity } : {}),
+    ...(status.rawScheduling !== undefined ? { rawScheduling: status.rawScheduling } : {})
   };
 }
 

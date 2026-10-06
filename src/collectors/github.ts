@@ -40,6 +40,9 @@ interface GithubProjectStatus {
   projectId: string;
   projectName: string;
   status: string;
+  iteration?: { iterationId: string; title: string; startDate?: string; durationDays?: number; endDate?: string };
+  rawVelocity?: string | number;
+  rawScheduling?: string | number;
 }
 
 interface GithubProjectCard {
@@ -267,9 +270,35 @@ async function issueDataFromGraphql(
                     nodes {
                       ... on ProjectV2ItemFieldSingleSelectValue {
                         name
-
                         field {
                           ... on ProjectV2SingleSelectField {
+                            name
+                          }
+                        }
+                      }
+                      ... on ProjectV2ItemFieldIterationValue {
+                        iterationId
+                        title
+                        startDate
+                        duration
+                        field {
+                          ... on ProjectV2IterationField {
+                            name
+                          }
+                        }
+                      }
+                      ... on ProjectV2ItemFieldNumberValue {
+                        number
+                        field {
+                          ... on ProjectV2Field {
+                            name
+                          }
+                        }
+                      }
+                      ... on ProjectV2ItemFieldTextValue {
+                        text
+                        field {
+                          ... on ProjectV2Field {
                             name
                           }
                         }
@@ -317,6 +346,12 @@ async function issueDataFromGraphql(
               fieldValues?: {
                 nodes?: Array<{
                   name?: string;
+                  number?: number;
+                  text?: string;
+                  iterationId?: string;
+                  title?: string;
+                  startDate?: string;
+                  duration?: number;
                   field?: {
                     name?: string;
                   };
@@ -370,12 +405,11 @@ async function issueDataFromGraphql(
 
       const project = item?.project;
 
-      const status =
-        item?.fieldValues?.nodes?.find(
-          field =>
-            field.field?.name?.toLowerCase() === 'status'
-            && field.name
-        );
+      const fields = item?.fieldValues?.nodes ?? [];
+      const status = fields.find(field => field.field?.name?.trim().toLowerCase() === 'status' && field.name);
+      const iteration = fields.find(field => field.field?.name?.trim().toLowerCase() === 'iteration' && field.iterationId && field.title);
+      const velocity = fields.find(field => field.field?.name?.trim().toLowerCase() === 'velocity');
+      const scheduling = fields.find(field => field.field?.name?.trim().toLowerCase() === 'scheduling');
 
       return (
         project?.id &&
@@ -385,7 +419,17 @@ async function issueDataFromGraphql(
         ? [{
           projectId: project.id,
           projectName: project.title,
-          status: status.name
+          status: status.name,
+          ...(iteration?.iterationId && iteration.title ? {
+            iteration: {
+              iterationId: iteration.iterationId,
+              title: iteration.title,
+              ...(iteration.startDate ? { startDate: iteration.startDate } : {}),
+              ...(iteration.duration !== undefined ? { durationDays: iteration.duration } : {})
+            }
+          } : {}),
+          ...(velocity?.number !== undefined ? { rawVelocity: velocity.number } : velocity?.text !== undefined ? { rawVelocity: velocity.text } : {}),
+          ...(scheduling?.name !== undefined ? { rawScheduling: scheduling.name } : scheduling?.number !== undefined ? { rawScheduling: scheduling.number } : scheduling?.text !== undefined ? { rawScheduling: scheduling.text } : {})
         }]
         : [];
 

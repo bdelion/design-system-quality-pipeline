@@ -64,7 +64,12 @@ describe('collecteur GitHub', () => {
     globalThis.fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       if (url === 'https://api.github.com/graphql') {
-        return new Response(JSON.stringify({ data: { repository: { issue: { closedByPullRequestsReferences: { nodes: [{ id: 900, number: 42 }] }, projectItems: { nodes: [{ project: { id: 'project-1', title: 'Quality' }, fieldValues: { nodes: [{ name: 'Cancelled', field: { name: 'Status' } }] } }] } } } } }), { status: 200 });
+        return new Response(JSON.stringify({ data: { repository: { issue: { closedByPullRequestsReferences: { nodes: [{ id: 900, number: 42 }] }, projectItems: { nodes: [{ project: { id: 'project-1', title: 'Quality' }, fieldValues: { nodes: [
+                  { name: 'Cancelled', field: { name: 'Status' } },
+                  { iterationId: 'iteration-7', title: 'Sprint 7', startDate: '2026-09-28', duration: 14, field: { name: 'Iteration' } },
+                  { number: 5, field: { name: 'Velocity' } },
+                  { name: '2', field: { name: 'Scheduling' } }
+                ] } }] } } } } }), { status: 200 });
       }
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
@@ -86,6 +91,13 @@ describe('collecteur GitHub', () => {
     const config = await loadConfig();
     const dataset = await collectGithub({ token: 'test-token', owner: 'acme', repositories: ['design-system'], apiUrl: 'https://api.github.com', graphqlUrl: 'https://api.github.com/graphql', rules: config.github });
     expect(dataset.repositories[0]?.issues[0]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
-    expect(dataset.repositories[0]?.issues[0]?.projectStatuses).toEqual([{ projectId: 'project-1', projectName: 'Quality', status: 'Cancelled' }]);
+    expect(dataset.repositories[0]?.issues[0]?.projectStatuses).toEqual([{
+      projectId: 'project-1',
+      projectName: 'Quality',
+      status: 'Cancelled',
+      iteration: { iterationId: 'iteration-7', title: 'Sprint 7', startDate: '2026-09-28', durationDays: 14 },
+      rawVelocity: 5,
+      rawScheduling: '2'
+    }]);
   });
 });

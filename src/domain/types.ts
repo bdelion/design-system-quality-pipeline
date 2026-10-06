@@ -69,6 +69,9 @@ export interface RawProjectStatus {
   projectId: string;
   projectName: string;
   status: string;
+  iteration?: ProjectIteration;
+  rawVelocity?: string | number;
+  rawScheduling?: string | number;
 }
 
 /** Milestone GitHub rattachée à une issue. */
