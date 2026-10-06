@@ -3370,6 +3370,18 @@ Cette information appartient au socle générique de l’Issue, indépendamment 
 **Statut : Établi**
 
 
+### D-163 — Conservation des statuts GitHub Projects de l’Issue normalisée
+
+Toute `Issue` normalisée conserve ses rattachements et statuts GitHub Projects dans une propriété `projectStatuses`.
+
+Cette information appartient au socle générique de l’Issue et reste conservée même lorsqu’elle n’est pas immédiatement utilisée pour dériver une spécialisation métier telle que `Audit` ou `Anomaly`.
+
+Les statuts GitHub Projects, par exemple `Backlog`, `Ready`, `In progress`, `In review` ou `Done`, restent distincts de `state: 'OPEN' | 'CLOSED'`, qui représente l’état natif GitHub de l’Issue.
+
+**Statut : Établi**
+
+
+
 
 
 

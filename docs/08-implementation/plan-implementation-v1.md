@@ -294,6 +294,7 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-160, conserver et propager `repositoryId` dans chaque `Issue` normalisée, en plus de `libraryId`, sans déduire la provenance repository de la seule relation Library/repository ;
 - conformément à D-161, conserver et propager `url: string` dans chaque `Issue` normalisée ; utiliser cette URL source pour les liens du dashboard et de la Data Quality plutôt que la reconstruire ;
 - conformément à D-162, conserver et propager `milestoneId?` dans chaque `Issue` normalisée comme référence vers la `Milestone` normalisée, sans dupliquer ses propriétés ;
+- conformément à D-163, conserver et propager `projectStatuses` dans chaque `Issue` normalisée ; préserver ces statuts GitHub Projects indépendamment des spécialisations métier et les maintenir distincts de `state` ;
 - conformément à D-151, recalculer la notion canonique à chaque pipeline depuis la valeur brute et la configuration courante ; une évolution des mots-clés doit pouvoir reclassifier une Issue existante et recalculer les objets métier dérivés ;
 - conformément à D-152, si plusieurs notions canoniques correspondent, laisser `issueType` absent, n’appliquer aucune priorité implicite et produire une réserve Data Quality contenant la valeur brute, les candidats et le lien vers l’Issue ;
 - conformément à D-153, traiter les entrées de `github.issueTypes.keywords` comme des variantes complètes explicitement autorisées, sans recherche implicite par sous-chaîne ;

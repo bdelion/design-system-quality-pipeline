@@ -68,6 +68,8 @@ Conformément à D-161, `Issue` contient également `url: string`, correspondant
 
 Conformément à D-162, `Issue` contient également `milestoneId?: string`. Cette propriété référence la `Milestone` normalisée associée lorsqu’elle existe ; elle ne duplique pas les données de la Milestone et reste indépendante de l’usage métier qui sera fait de ce rattachement.
 
+Conformément à D-163, `Issue` conserve également `projectStatuses`, représentant ses rattachements et statuts GitHub Projects. Cette collection reste distincte de `state: 'OPEN' | 'CLOSED'` et est conservée même lorsqu’aucune spécialisation métier ne l’exploite.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

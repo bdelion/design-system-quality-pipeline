@@ -234,6 +234,8 @@ Conformément à D-161, toute `Issue` normalisée conserve explicitement son URL
 
 Conformément à D-162, toute `Issue` normalisée conserve son rattachement éventuel à une Milestone dans `milestoneId?: string`. La `Milestone` demeure un objet normalisé distinct : l’Issue porte sa référence sans dupliquer ses propriétés. Ce rattachement est conservé pour toutes les Issues, indépendamment de son interprétation métier ultérieure.
 
+Conformément à D-163, toute `Issue` normalisée conserve également ses rattachements et statuts GitHub Projects dans `projectStatuses`. Cette donnée générique est préservée même lorsqu’elle n’est pas utilisée par une spécialisation métier. Les statuts Projects restent distincts de `state`, qui représente uniquement l’état natif `OPEN` ou `CLOSED` de l’Issue.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---
