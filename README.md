@@ -1,17 +1,14 @@
 # Design System Quality Pipeline
 
-Pipeline Node.js + TypeScript de collecte, contrôle et analyse de la
-qualité de Design Systems à partir de données GitHub.
+Pipeline Node.js + TypeScript, en lecture seule côté GitHub, destiné au suivi de la qualité de plusieurs librairies de Design System.
 
-Le projet collecte les données en lecture seule, les projette dans un
-modèle métier minimal, contrôle leur qualité, calcule les indicateurs,
-produit des snapshots et génère un dashboard HTML statique.
+Le projet collecte des données GitHub, les normalise dans un modèle métier, contrôle leur qualité, calcule des indicateurs, produit des snapshots et génère un dashboard HTML statique.
 
-La documentation détaillée est disponible dans [`docs/`](docs/index.md).
+> **État du projet :** la documentation métier V1 a été consolidée jusqu'à D-243. Le code présent dans la branche reflète encore le modèle antérieur sur plusieurs points ; le plan d'implémentation V1 décrit la migration à réaliser. Une décision métier établie n'est donc pas nécessairement déjà implémentée.
 
----
+La porte d'entrée de la documentation est [`docs/README.md`](docs/README.md).
 
-## Vue d'ensemble
+## Pipeline actuel
 
 ```text
 GitHub / Fixture
@@ -35,69 +32,95 @@ GitHub / Fixture
  Dashboard statique
 ```
 
-Les principes structurants sont :
+Principes structurants :
 
-- le modèle RAW ne conserve que les données utiles au pipeline ;
-- les données inconnues ou invalides ne sont pas transformées
-    silencieusement en `0`, `false` ou « conforme » ;
-- les contrôles de qualité sont associés à leur impact réel sur les
-    indicateurs ;
-- les KPI exposent leur périmètre et leur fiabilité ;
-- les snapshots permettent de comparer les états successifs et de
-    calculer les flux ;
-- le pipeline reste déterministe et rejouable à partir des données
-    collectées et des versions de règles.
+- collecte GitHub en lecture seule ;
+- conservation explicite des données nécessaires au diagnostic ;
+- absence de conversion silencieuse d'une donnée inconnue ou invalide en `0`, `false` ou « conforme » ;
+- contrôles Data Quality non bloquants lorsqu'une donnée métier est incomplète mais exploitable ;
+- KPI accompagnés de leur périmètre et de leur fiabilité ;
+- snapshots rejouables et comparables ;
+- normalisation déterministe à dataset brut et configuration identiques.
+
+## Cible V1 en cours d'implémentation
+
+Le modèle cible distingue notamment :
+
+- `Issue`, conservée comme fait GitHub générique ;
+- `Audit`, `Anomaly` et `AuditImprovement`, spécialisations référencées de l'Issue ;
+- `Version`, identifiée par la version PROD canonique et son Git tag ;
+- `Component`, avec identité métier stable ;
+- la relation historique `Component × Version` issue du Catalogue au tag de la Version ;
+- les contextes GitHub Projects et leur historique de statuts ;
+- `Anomaly.origin = AUDIT | HORS_AUDIT | UNDETERMINED`.
+
+Pour un couple `Component × Version`, la couverture nécessite au moins un Audit terminé applicable. Le verdict courant est calculé à partir de **l'ensemble des Audits terminés applicables**. Un Audit incomplet ne modifie pas le verdict acquis et la seule correction d'une anomalie ne rétablit pas la conformité : un nouvel Audit terminé applicable doit la valider.
+
+La définition normative et le plan de migration sont documentés dans :
+
+- [`docs/00-cadrage/questions-ouvertes.md`](docs/00-cadrage/questions-ouvertes.md) — registre stable des décisions `D-xxx` et questions `Q-xxx` ;
+- [`docs/01-metier/objets-metier.md`](docs/01-metier/objets-metier.md) — objets métier consolidés ;
+- [`docs/05-donnees/modele-normalise.md`](docs/05-donnees/modele-normalise.md) — modèle normalisé cible ;
+- [`docs/08-implementation/plan-implementation-v1.md`](docs/08-implementation/plan-implementation-v1.md) — séquence d'implémentation V1.
 
 ## Prérequis
 
-- Node.js 20 ou supérieur ;
-- npm ;
-- terminal ouvert à la racine du projet.
+- Node.js **22.15.0 ou supérieur** ;
+- version de référence du repository : **22.23.3** (`.nvmrc`) ;
+- npm.
 
-Vérification :
+Sous Windows avec `nvm-windows` :
 
-```bash
+```powershell
+nvm install 22.23.3
+nvm use 22.23.3
 node --version
 npm --version
 ```
 
-## Installation
+Si PowerShell bloque `npm.ps1`, utiliser `npm.cmd`.
+
+## Installation et vérifications
+
+Installation reproductible depuis le lockfile :
 
 ```bash
-npm install
+npm ci
 ```
 
-Vérifier ensuite le projet :
+Gates de qualité :
 
 ```bash
 npm run typecheck
-npm test
 npm run lint
+npm test
+npm run build
 ```
 
-## Exécution du pipeline
+## Exécuter le pipeline
 
-La commande principale est :
+La source par défaut est la fixture de démonstration `fixtures/github.json` :
 
 ```bash
 npm run pipeline
 ```
 
-Elle enchaîne les principales étapes du pipeline :
+Pour exécuter le pipeline sur la fixture réaliste anonymisée de référence :
 
-1. chargement de la configuration ;
-2. collecte de la source ;
-3. normalisation ;
-4. contrôles de qualité ;
-5. calcul des KPI ;
-6. création du snapshot ;
-7. génération du dashboard.
+```bash
+npm run pipeline --   --source fixture   --fixture fixtures/my-real-dataset-anonymized.json
+```
 
-Une exécution peut être `COMPLETE` ou `PARTIAL`. `PARTIAL` signifie que
-le traitement est terminé mais que certaines données ou métriques sont
-affectées par des réserves de qualité.
+Cette fixture est associée à :
 
-### Exécuter les étapes séparément
+```text
+config/system.my-real-dataset-anonymized.yaml
+config/catalogue.my-real-dataset-anonymized.yaml
+```
+
+Les petites fixtures synthétiques restent adaptées aux tests unitaires ciblés ; `fixtures/my-real-dataset-anonymized.json` constitue la référence réaliste pour les tests d'intégration, métier et de non-régression.
+
+### Étapes disponibles
 
 ```bash
 npm run collect
@@ -105,60 +128,21 @@ npm run validate
 npm run analyze
 npm run snapshot
 npm run dashboard
-```
-
-## Dashboard
-
-Après une exécution du pipeline, le dashboard statique est disponible
-dans :
-
-```text
-data/dashboard/index.html
-```
-
-Il comprend notamment :
-
-- **Vue d'ensemble** : principaux KPI, criticités, qualité des données
-    et délais ;
-- **Anomalies** : détail des anomalies et de leur qualité de données ;
-- **Audits** : composants, audits et résultats ;
-- **Cartographie** : relations repository → composant → audit →
-    anomalie → PR ;
-- **Historique** : évolution entre snapshots comparables.
-
-Le dashboard ne nécessite ni serveur applicatif ni base de données.
-
-## Sources de données
-
-### Fixture locale
-
-Une fixture permet d'exécuter le pipeline sans accès à GitHub.
-
-```bash
 npm run pipeline
 ```
 
-La configuration de démonstration utilise les fichiers de configuration
-et fixtures présents dans le dépôt.
+Le pipeline produit un statut `COMPLETE` ou `PARTIAL`. `PARTIAL` signifie que l'exécution est terminée mais que certaines données ou métriques portent des réserves de qualité.
 
-### GitHub
+## Collecte GitHub
 
-Un collecteur GitHub REST est disponible en lecture seule.
-
-Définir le token uniquement dans l'environnement :
+Le collecteur GitHub est en lecture seule. Le token est fourni uniquement par l'environnement :
 
 ```powershell
 $env:GITHUB_TOKEN = "..."
+npm.cmd run collect -- --source github --output data/raw/my-real-dataset.json
 ```
 
-Puis :
-
-```bash
-npm run collect -- --source github
-npm run pipeline -- --source github
-```
-
-Pour GitHub Enterprise, les URLs API/web sont configurées dans `.env` :
+Pour GitHub Enterprise, les URLs sont configurées dans `.env` :
 
 ```text
 GITHUB_API_URL=...
@@ -166,329 +150,117 @@ GITHUB_GRAPHQL_URL=...
 GITHUB_URL=...
 ```
 
-Le token n'est pas écrit dans les snapshots, les logs ou le dashboard.
+Le fichier `.env` et les données RAW réelles ne doivent pas être versionnés.
 
-La collecte gère notamment la pagination et les retries contrôlés. Les
-relations entre issues et pull requests sont également exploitées
-lorsqu'elles sont disponibles.
+## Anonymisation et validation d'une fixture réelle
 
-## Anonymisation des données réelles
-
-Le projet fournit une chaîne dédiée pour transformer un RAW réel en
-fixture partageable.
+Chaîne recommandée :
 
 ```bash
-npm run fixture:anonymize -- \
-  --input data/raw/my-real-dataset.json \
-  --output fixtures/github-real-anonymized.json
+npm run fixture:anonymize --   --input data/raw/my-real-dataset.json   --output fixtures/my-real-dataset-anonymized.json
 ```
 
-L'anonymisation est déterministe à partir d'une seed.
+L'anonymisation génère également les configurations associées à la fixture. Elle est déterministe à partir de sa seed.
 
-Elle anonymise notamment :
+Validation :
 
-- identifiants ;
-- noms et propriétaires de repositories ;
-- numéros techniques ;
-- dates ;
-- textes libres ;
-- noms de projets ;
-- relations associées.
+```bash
+npm run fixture:validate --   --input fixtures/my-real-dataset-anonymized.json
+```
 
-Certaines données métier sont volontairement conservées exactement car
-elles ont une signification analytique :
-
-- `labels` ;
-- `state` ;
-- `issueType` ;
-- `projectStatuses[].status` ;
-- `milestone.title` ;
-- `milestone.state`.
-
-Le collecteur et l'anonymiseur reconstruisent explicitement le modèle
-RAW : les objets riches provenant de l'API GitHub ne sont pas recopiés
-tels quels.
-
-### Manifeste de traçabilité RAW
-
-Depuis V7, l'anonymisation produit par défaut un manifeste local :
+Un rapport Markdown est produit à côté de la fixture. Un manifeste local de traçabilité RAW peut également être généré :
 
 ```text
-fixtures/github-real-anonymized.json.trace.json
+fixtures/my-real-dataset-anonymized.json.trace.json
 ```
 
-Il permet de relier :
+Ce manifeste peut contenir des identifiants de la source réelle. Il est local uniquement et les fichiers `*.trace.json` sont exclus par `.gitignore`.
 
-```text
-fixture anonymisée
-      ↓
-sourcePath JSON
-      ↓
-identifiant de l'entité RAW
-```
-
-Il contient également les relations entre issues et pull requests et
-indique si une cible existait dans le RAW source.
-
-Ce fichier peut contenir des identifiants issus de la source réelle. Il
-est donc **local uniquement** et ne doit pas être partagé ou versionné.
-
-Les fichiers `*.trace.json` sont exclus du dépôt par `.gitignore`.
-
-Pour désactiver sa génération :
+Pour enrichir le rapport de validation avec cette trace :
 
 ```bash
-npm run fixture:anonymize -- \
-  --input <raw.json> \
-  --output <fixture.json> \
-  --no-trace
+npm run fixture:validate --   --input fixtures/my-real-dataset-anonymized.json   --trace fixtures/my-real-dataset-anonymized.json.trace.json
 ```
 
-Un chemin explicite peut être fourni avec :
+Voir [`docs/08-implementation/anonymisation.md`](docs/08-implementation/anonymisation.md) et [`docs/08-implementation/fixtures.md`](docs/08-implementation/fixtures.md).
 
-```bash
---trace-output <path>
-```
+## Dashboard et sorties
 
-## Validation d'une fixture
-
-```bash
-npm run fixture:validate -- \
-  --input fixtures/github-real-anonymized.json
-```
-
-La validation contrôle notamment :
-
-- la présence de données sensibles résiduelles ;
-- les relations entre entités ;
-- la cohérence des références ;
-- les éléments susceptibles d'empêcher une fixture d'être considérée
-    comme partageable.
-
-Un rapport Markdown est généré par défaut à côté de la fixture :
-
-```text
-fixtures/github-real-anonymized.json.validation.md
-```
-
-Un emplacement peut être précisé avec :
-
-```bash
---report <path>
-```
-
-### Rapport enrichi avec la trace RAW
-
-Pour analyser une anomalie de fixture avec son origine dans les données
-réelles :
-
-```bash
-npm run fixture:validate -- \
-  --input fixtures/github-real-anonymized.json \
-  --trace fixtures/github-real-anonymized.json.trace.json
-```
-
-Le rapport peut alors indiquer :
-
-- le chemin JSON dans la fixture ;
-- le fichier RAW source ;
-- le `sourcePath` correspondant ;
-- l'identifiant RAW de l'entité ;
-- l'identifiant RAW de la référence ;
-- si la cible était présente ou absente du RAW.
-
-Cela permet notamment de distinguer une référence réellement absente de
-la source d'un problème introduit pendant l'anonymisation.
-
-### Détection des données sensibles
-
-La détection est désormais consciente du contexte des champs.
-
-Les valeurs structurées connues, notamment les timestamps ISO, ne sont
-pas interprétées comme des numéros de téléphone. Les champs libres
-restent analysés afin de ne pas masquer un véritable numéro présent dans
-un texte.
-
-Le contrôle distingue ainsi mieux :
-
-```text
-date structurée
-≠
-numéro de téléphone
-```
-
-tout en conservant une détection des données sensibles dans les textes
-qui peuvent réellement en contenir.
-
-## Architecture du code
-
-```text
-config/                 Configuration du système et des règles
-fixtures/               Fixtures locales et données de démonstration
-src/
-  collectors/           Collecte RAW
-  normalizers/          Normalisation vers le modèle métier
-  quality/               Contrôles Data Quality
-  analytics/             Calcul des KPI
-  snapshots/             Snapshots et comparaison historique
-  dashboard/             Génération du dashboard statique
-  anonymization/         Anonymisation et validation des fixtures
-  cli.ts                 Interface en ligne de commande
-tests/                  Tests unitaires et contractuels
-data/current/            Résultats courants
-data/runs/               Historique des snapshots
-docs/                   Documentation technique détaillée
-```
-
-## Commandes disponibles
-
----
-  Commande                            Rôle
-  ----------------------------------- -----------------------------------
-  `npm run collect`                   Collecte les données RAW
-
-  `npm run validate`                  Valide configuration et données
-
-  `npm run analyze`                   Normalise, contrôle la qualité et
-                                      calcule les KPI
-
-  `npm run snapshot`                  Produit un snapshot
-
-  `npm run dashboard`                 Génère le dashboard
-
-  `npm run pipeline`                  Exécute le pipeline complet
-
-  `npm run fixture:anonymize`         Génère une fixture anonymisée
-
-  `npm run fixture:validate`          Valide une fixture anonymisée
-
-  `npm run typecheck`                 Vérifie les types TypeScript
-
-  `npm test`                          Exécute les tests
-
-  `npm run lint`                      Exécute ESLint
----
-
-## Historique et flux
-
-Les métriques d'état courant et les métriques d'évolution sont
-distinguées.
-
-Les métriques de **stock** décrivent l'état à la date du snapshot :
-anomalies ouvertes, en cours, corrigées, etc.
-
-Les métriques de **flux** décrivent les évolutions entre deux snapshots
-comparables : éléments créés, corrigés, rouverts ou annulés.
-
-Les flux ne sont calculés que lorsqu'un snapshot précédent comparable
-est disponible.
-
-## Data Quality
-
-Les contrôles `DQ-*` ne rendent pas automatiquement tous les KPI
-invalides.
-
-Une anomalie de qualité peut :
-
-- exclure certaines données d'un indicateur ;
-- réduire la fiabilité d'une métrique ;
-- laisser les autres métriques inchangées ;
-- rendre une métrique indisponible lorsqu'elle ne peut plus être
-    calculée correctement.
-
-Le détail des règles, sévérités, périmètres et impacts est documenté
-dans [`docs/quality-rules.md`](docs/quality-rules.md).
-
-## Documentation
-
-Le README reste volontairement synthétique. Pour les détails techniques
-:
-
-- [`docs/index.md`](docs/index.md) --- index de la documentation ;
-- [`docs/architecture.md`](docs/architecture.md) --- architecture ;
-- [`docs/workflow.md`](docs/workflow.md) --- déroulement d'une
-    exécution ;
-- [`docs/data-flows.md`](docs/data-flows.md) --- flux de données ;
-- [`docs/data-model.md`](docs/data-model.md) --- modèle de données ;
-- [`docs/catalogue.md`](docs/catalogue.md) --- catalogue ;
-- [`docs/github-collector.md`](docs/github-collector.md) --- collecte
-    GitHub ;
-- [`docs/analytics.md`](docs/analytics.md) --- calcul des KPI ;
-- [`docs/snapshots-dashboard.md`](docs/snapshots-dashboard.md) ---
-    snapshots et dashboard ;
-- [`docs/testing.md`](docs/testing.md) --- stratégie de tests ;
-- [`docs/quality-rules.md`](docs/quality-rules.md) --- règles Data
-    Quality.
-
-Les fichiers de configuration et le code restent les sources de vérité
-exécutables ; la documentation décrit leurs contrats et leur intention.
-
-## Dépannage
-
-### `npm` ou `node` n'est pas reconnu
-
-Installer Node.js 20+ et rouvrir le terminal.
-
-### Le typecheck échoue
-
-```bash
-npm run typecheck
-```
-
-Corriger les erreurs TypeScript avant de relancer le pipeline.
-
-### Le dashboard semble ancien
-
-Regénérer le dashboard :
-
-```bash
-npm run dashboard
-```
-
-Puis rouvrir :
+Après génération, le dashboard statique est disponible dans :
 
 ```text
 data/dashboard/index.html
 ```
 
-### Le pipeline retourne `PARTIAL`
+Les données courantes et l'historique des exécutions sont produits sous :
 
-Ce n'est pas nécessairement une erreur d'exécution. Consulter les
-alertes Data Quality dans le dashboard et la documentation des règles
-`DQ-*`.
-
-### Une fixture est déclarée invalide
-
-Générer ou consulter le rapport :
-
-```bash
-npm run fixture:validate -- \
-  --input <fixture.json> \
-  --report <fixture.json.validation.md>
+```text
+data/current/
+data/runs/
 ```
 
-Pour remonter jusqu'aux données d'origine, utiliser également le
-manifeste `.trace.json`.
+Le dashboard est une projection du modèle et des analytics. Il ne doit pas recalculer les règles métier.
 
-## Sécurité et données sensibles
+## Structure du repository
+
+```text
+config/                  Configuration du système, du catalogue et des règles
+fixtures/                Fixtures locales et anonymisées
+src/
+  collectors/            Collecte RAW
+  normalizers/           Normalisation métier
+  quality/               Contrôles Data Quality
+  analytics/             Métriques et KPI
+  snapshots/             Snapshots et comparaison
+  dashboard/             Dashboard statique
+  anonymization/         Anonymisation et validation
+  domain/                Contrats de données
+  cli.ts                 CLI
+tests/                   Tests
+docs/                    Documentation courante
+specifications/          Sources métier et matériaux de conception
+presentation/            Supports de présentation
+```
+
+## Documentation
+
+Le README reste volontairement synthétique. Utiliser [`docs/README.md`](docs/README.md) comme index.
+
+Parcours principaux :
+
+| Besoin | Document |
+|---|---|
+| Vision et périmètre | [`docs/00-cadrage/vision.md`](docs/00-cadrage/vision.md) |
+| Décisions et questions | [`docs/00-cadrage/questions-ouvertes.md`](docs/00-cadrage/questions-ouvertes.md) |
+| Modèle métier | [`docs/01-metier/modele-metier.md`](docs/01-metier/modele-metier.md) |
+| Audits | [`docs/01-metier/audits.md`](docs/01-metier/audits.md) |
+| Workflow GitHub | [`docs/02-workflow/README.md`](docs/02-workflow/README.md) |
+| Règles | [`docs/03-regles/README.md`](docs/03-regles/README.md) |
+| Indicateurs | [`docs/04-indicateurs/catalogue-indicateurs.md`](docs/04-indicateurs/catalogue-indicateurs.md) |
+| Architecture des données | [`docs/05-donnees/architecture-donnees.md`](docs/05-donnees/architecture-donnees.md) |
+| Architecture logicielle | [`docs/06-architecture/architecture.md`](docs/06-architecture/architecture.md) |
+| Développement | [`docs/08-implementation/guide-developpement.md`](docs/08-implementation/guide-developpement.md) |
+| Plan V1 | [`docs/08-implementation/plan-implementation-v1.md`](docs/08-implementation/plan-implementation-v1.md) |
+| Data Quality | [`docs/quality-rules.md`](docs/quality-rules.md) |
+
+`specifications/` conserve les sources et demandes ayant alimenté le cadrage ; il ne remplace pas la documentation normative courante.
+
+## Sécurité
 
 Ne jamais versionner :
 
 - tokens GitHub ;
-- fichiers RAW issus d'un environnement réel ;
+- `.env` contenant des secrets ;
+- RAW issus d'un environnement réel ;
 - manifestes de trace RAW ;
 - fichiers contenant des données personnelles ou confidentielles.
 
-Utiliser `.env` pour les secrets et conserver les traces RAW localement.
+## État d'implémentation
 
----
+La branche contient une baseline exécutable du pipeline et une documentation V1 plus avancée que le modèle TypeScript actuellement implémenté.
 
-**Version du projet :** `0.1.0`\
-**Stack :** Node.js · TypeScript · Commander · Vitest · ESLint\
-**Modèle :** Design System Quality V2.1
+La prochaine étape est l'implémentation des contrats métier I1 dans `src/domain/types.ts` et la normalisation associée, puis l'enrichissement progressif de la collecte GitHub, du Catalogue historique, de la Data Quality, des analytics et du dashboard conformément au plan V1.
 
-## Documentation V11
-
-La documentation structurée V11 est disponible dans [`docs/README.md`](docs/README.md). Les supports de présentation sont dans [`presentation/README.md`](presentation/README.md).
-
-La documentation distingue explicitement faits implémentés, règles métier, propositions et questions ouvertes. Elle ne doit pas être considérée comme une nouvelle source de vérité fonctionnelle tant que les points marqués « à confirmer » n'ont pas été arbitrés.
+**Version du package :** `0.1.0`
+**Stack :** Node.js 22 · TypeScript · Commander · Vitest · ESLint
+**Modèle configuré actuel :** `2.1`

@@ -913,9 +913,9 @@ La date de réalisation de l'Audit correspond à l'instant où la seconde de ces
 
 Cette date permet notamment d'ordonner plusieurs Audits portant sur le même couple `Composant × Version`.
 
-Pour déterminer l'état de conformité courant, l'Audit ayant la date de réalisation la plus récente est considéré comme le dernier Audit réalisé.
+La date reste utile pour l'historique et l'ordonnancement des Audits. Elle ne sert plus à sélectionner à elle seule le verdict courant : D-222 impose désormais un calcul sur l'ensemble des Audits terminés applicables.
 
-**Statut : Établi**
+**Statut : Établi pour la date de réalisation ; règle de sélection du dernier Audit supplantée par D-222**
 
 ---
 
@@ -4955,15 +4955,18 @@ Il reste à définir son nom, ses états, ses conditions de calcul, le rattachem
 
 ---
 
-### Q-067 — Ordonnancement de plusieurs Audits d'un même Composant et d'une même Version
+### Q-067 — Traitement de plusieurs Audits d'un même Composant et d'une même Version
 
-Le dernier Audit réalisé détermine l'état de conformité courant du couple `Composant × Version`.
+La règle historique qui sélectionnait le dernier Audit réalisé a été
+supplantée par D-222.
 
-Un Audit étant considéré comme terminé uniquement lorsque `Project Status = Done` et `GitHub Issue State = Closed`, sa date de réalisation correspond à l'instant où la seconde de ces deux conditions est satisfaite.
+Le verdict courant du couple `Component × Version` est désormais calculé
+à partir de **l'ensemble des Audits terminés applicables**. La date de
+réalisation définie par D-047 reste utile pour l'historique et
+l'ordonnancement, mais elle ne sert plus à sélectionner un unique Audit
+comme source du verdict courant.
 
-Plusieurs Audits portant sur le même couple sont donc ordonnés selon cette date de réalisation. Celui dont la date de réalisation est la plus récente porte le verdict de conformité courant.
-
-**Statut : Établi**
+**Statut : Supplanté par D-222**
 
 ---
 
@@ -4979,23 +4982,21 @@ Il reste à vérifier que la source GitHub collectée permet d'obtenir de maniè
 
 ### Q-069 — Présentation d'un Audit en cours à côté du verdict courant
 
-Pour un même couple `Composant × Version`, le dashboard doit afficher simultanément :
+Pour un même couple `Component × Version`, le dashboard doit pouvoir
+afficher simultanément :
 
-- la conformité courante issue du dernier Audit terminé ;
-- l'existence d'un nouvel Audit en cours, lorsqu'il existe.
+- le verdict courant calculé à partir de l'ensemble des Audits terminés
+  applicables conformément à D-222 ;
+- l'existence éventuelle d'un nouvel Audit en cours.
 
-Exemple :
+Un Audit incomplet ne contribue pas au verdict courant conformément à
+D-223.
 
-```text
-Conformité courante : CONFORME
-Nouvel Audit : EN COURS
-```
+Le principe métier est établi. La représentation UX exacte reste à
+instruire : badge séparé, statut secondaire, lien vers l'Issue d'Audit,
+date d'activité ou combinaison de ces éléments.
 
-Le principe métier est établi : ces deux informations sont distinctes et doivent pouvoir coexister.
-
-Il reste uniquement à définir leur représentation UX exacte dans le dashboard : badge séparé, statut secondaire, lien vers l'Issue d'Audit, date du dernier verdict, ou combinaison de ces éléments.
-
-**Statut : Principe établi ; représentation UX à instruire**
+**Statut : Principe établi par D-222 et D-223 ; représentation UX à instruire**
 
 ---
 

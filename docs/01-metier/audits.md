@@ -16,8 +16,9 @@ résultat
 temporalité
 ```
 
-La question de savoir si `Audit` doit être un objet métier distinct de
-l'Issue GitHub reste ouverte.
+`Audit` est une spécialisation métier distincte qui référence l'`Issue`
+générique par `issueId`. Les faits GitHub communs restent portés par
+`Issue` et ne sont pas dupliqués dans `Audit`.
 
 ---
 
@@ -42,8 +43,10 @@ GitHub Issue State = Closed
 
 Le seul `Done` ou le seul `Closed` ne suffit pas.
 
-La date métier exacte de réalisation reste à préciser pour les
-indicateurs historiques.
+La date métier de réalisation correspond à l'instant où la seconde
+condition nécessaire (`Done` et `Closed`) devient satisfaite. Si
+l'historique Project disponible ne permet pas de déterminer cette date,
+aucune date n'est inventée et une réserve Data Quality est produite.
 
 ---
 
@@ -74,7 +77,9 @@ Version PROD cible            = M.m.r
 
 L'Issue d'Audit évolue dans la Milestone `M.m.r`.
 
-L'identification exacte de la RC auditée reste à instruire.
+La RC réellement auditée est conservée séparément de la Version PROD
+cible. Si elle ne peut pas être déterminée, elle reste absente et une
+réserve Data Quality est produite ; aucune RC n'est inventée.
 
 ---
 
@@ -96,14 +101,19 @@ Cette temporalité doit rester visible.
 
 ## 7. Plusieurs Audits pour Component × Version
 
-Le verdict courant d'un couple `Component × Version` est déterminé par
-le dernier Audit terminé applicable.
+Le verdict courant d'un couple `Component × Version` est calculé à
+partir de **l'ensemble des Audits terminés applicables**.
 
-Un nouvel Audit non terminé ne remplace pas le dernier verdict acquis.
+Un Audit non terminé ne contribue pas à ce verdict et ne modifie pas le
+verdict acquis.
+
+La correction ou la fermeture d'une anomalie issue d'un Audit ne
+rétablit pas à elle seule la conformité : un nouvel Audit terminé
+applicable doit valider la conformité.
 
 La présence de plusieurs Audits simultanément non terminés pour le même
-`Component × Version` est considérée anormale ; la sévérité et le
-traitement DQ restent à formaliser.
+`Component × Version` reste une situation anormale ; sa sévérité et son
+traitement DQ seront formalisés dans le lot Data Quality.
 
 ---
 
@@ -169,13 +179,10 @@ Il ne modifie pas rétroactivement :
 
 Restent notamment à instruire :
 
-- objet `Audit` distinct ou non de l'Issue ;
 - notion de Campagne d'Audit ;
 - représentation technique de la famille d'Audit ;
-- identification précise de la RC auditée ;
-- date exacte de réalisation ;
-- mécanisme de revalidation ;
-- traitement de plusieurs Audits non terminés simultanés.
+- mécanisme opérationnel de revalidation ;
+- sévérité DQ de plusieurs Audits non terminés simultanés.
 
 ---
 
