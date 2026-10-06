@@ -125,6 +125,22 @@ Une Version PROD :
 - possède normalement une Release GitHub, dont le caractère
     obligatoire reste à confirmer.
 
+Conformément à D-199, `Version` possède un `versionId` métier stable, distinct des identifiants GitHub associés.
+
+Conformément à D-200, son numéro principal est le numéro PROD canonique `M.m.r`, distinct de toute Release Candidate auditée.
+
+Conformément à D-201 et D-202, une Version n’est considérée publiée que si son Git tag PROD exact existe, et `releasedAt` provient de la date de ce tag. Aucune date de Milestone ou de GitHub Release ne s’y substitue silencieusement.
+
+Conformément à D-203, une Version identifiable sans tag PROD reste conservée mais n’est pas publiée : `releasedAt` reste absent et une Data Quality non bloquante est produite.
+
+Conformément à D-204, la Milestone PROD correspondante est référencée via `milestoneId` lorsqu’elle existe, sans devenir la source de vérité de `releasedAt`.
+
+Conformément à D-205 et D-206, un Audit pré-PROD conserve séparément la RC réellement auditée et, lorsqu’il existe, son Git tag et sa date.
+
+Conformément à D-207, une RC indéterminable n’est jamais inventée : l’Audit est conservé et une Data Quality non bloquante signale l’absence.
+
+Conformément à D-208, un Audit de rattrapage référence directement la Version PROD et ne nécessite aucune RC artificielle.
+
 **Statut : ÉTABLI, sauf Release GitHub obligatoire.**
 
 ---

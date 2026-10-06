@@ -3744,6 +3744,103 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
 **Statut : Établi**
 
 
+### D-199 — Identifiant métier stable de Version
+
+Une `Version` normalisée dispose d’un `versionId` métier stable, distinct des identifiants GitHub des Tags, Milestones ou autres objets techniques associés.
+
+Cet identifiant permet de référencer la Version de manière stable dans le modèle normalisé indépendamment des représentations GitHub qui contribuent à son établissement.
+
+**Statut : Établi**
+
+
+### D-200 — Numéro PROD canonique de Version
+
+La propriété de version principale d’une `Version` normalisée est son numéro PROD canonique au format `M.m.r`, par exemple `4.2.1`.
+
+Ce numéro reste distinct de la Release Candidate éventuellement auditée avant publication. Une RC ne remplace pas l’identité de la Version PROD cible.
+
+**Statut : Établi**
+
+
+### D-201 — Git tag PROD requis pour considérer une Version publiée
+
+Une Version PROD n’est considérée comme effectivement publiée que si le Git tag correspondant exactement à son numéro canonique `M.m.r` existe.
+
+Une Milestone, un Audit ou une autre donnée faisant référence à `M.m.r` peut permettre d’identifier une Version attendue, mais ne suffit pas à établir sa publication effective.
+
+**Statut : Établi**
+
+
+### D-202 — Git tag PROD comme source de vérité de releasedAt
+
+`Version.releasedAt` est déterminé par la date du Git tag PROD `M.m.r`, conformément à D-144.
+
+La date d’une Milestone, d’une GitHub Release ou d’un autre objet ne se substitue pas silencieusement à cette date source.
+
+Si la date du tag ne peut pas être établie, `releasedAt` reste absent.
+
+**Statut : Établi**
+
+
+### D-203 — Conservation d’une Version identifiable sans tag PROD
+
+Lorsqu’une Version PROD `M.m.r` est identifiable à partir d’une Milestone, d’un Audit ou d’un autre fait métier mais que le Git tag PROD correspondant est absent, la Version reste conservée dans le modèle normalisé.
+
+Elle n’est pas considérée comme publiée, `releasedAt` reste absent et une Data Quality non bloquante signale l’absence du tag attendu.
+
+Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
+
+**Statut : Établi**
+
+
+### D-204 — Rattachement de la Milestone PROD à la Version
+
+Lorsqu’une Milestone correspondant à la Version PROD `M.m.r` existe, la `Version` conserve explicitement sa référence via `milestoneId`.
+
+Cette relation ne fait pas de la Milestone la source de vérité de `releasedAt`, qui reste déterminé par le Git tag PROD conformément à D-202.
+
+**Statut : Établi**
+
+
+### D-205 — Séparation entre Version PROD cible et RC auditée
+
+Pour un Audit pré-PROD, le modèle conserve explicitement la Release Candidate réellement auditée, par exemple `4.2.1-rc.3`, séparément de la Version PROD cible `4.2.1`.
+
+La RC auditée est une propriété du contexte d’Audit et ne remplace pas l’identité canonique de la Version PROD cible.
+
+**Statut : Établi**
+
+
+### D-206 — Conservation du Git tag de la RC auditée
+
+Lorsque la Release Candidate auditée possède un Git tag, le modèle conserve explicitement la référence à ce tag ainsi que sa date disponible.
+
+Ces informations restent distinctes du Git tag PROD et de `Version.releasedAt`.
+
+**Statut : Établi**
+
+
+### D-207 — Gestion d’une RC auditée indéterminable
+
+Pour un Audit pré-PROD dont la Version PROD cible est connue mais dont la Release Candidate réellement auditée ne peut pas être déterminée, l’Audit est conservé et aucune RC n’est inventée, conformément à D-142.
+
+La donnée RC reste absente et une Data Quality non bloquante signale l’information manquante.
+
+Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
+
+**Statut : Établi**
+
+
+### D-208 — Version cible d’un Audit de rattrapage
+
+Un Audit de rattrapage réalisé après publication référence directement la Version PROD canonique `M.m.r`.
+
+Aucune Release Candidate artificielle n’est requise ou créée pour un Audit de rattrapage. Cette règle prolonge D-142 et distingue explicitement le scénario pré-PROD du scénario de rattrapage.
+
+**Statut : Établi**
+
+
+
 
 
 

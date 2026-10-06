@@ -128,6 +128,21 @@ Conformément à D-197, une divergence entre le Component de l’Issue enfant et
 
 Conformément à D-198, une Issue `Bug` continue de produire une `Anomaly` si un parent Audit attendu est absent ou invalide. Dans ce cas, aucun `auditId` artificiel n’est créé et l’incohérence est signalée.
 
+Conformément à D-199, `Version` possède un `versionId` métier stable distinct des identifiants GitHub techniques. Conformément à D-200, son numéro canonique est le numéro PROD `M.m.r`.
+
+Conformément à D-201 et D-202, l’existence du Git tag PROD exact établit la publication de la Version et sa date établit `releasedAt`. Les autres dates ne constituent pas de fallback implicite.
+
+Conformément à D-203, une Version identifiable sans tag PROD est conservée avec `releasedAt` absent, sans être considérée publiée, et produit une Data Quality non bloquante.
+
+Conformément à D-204, `milestoneId` référence la Milestone PROD lorsqu’elle existe sans modifier la source de vérité de `releasedAt`.
+
+Conformément à D-205 et D-206, le contexte d’un Audit pré-PROD conserve séparément la RC auditée et, lorsqu’il existe, son Git tag avec sa date.
+
+Conformément à D-207, une RC indéterminable reste absente sans valeur inventée et produit une Data Quality non bloquante.
+
+Conformément à D-208, un Audit de rattrapage cible directement la Version PROD sans RC artificielle.
+
+
 
 
 

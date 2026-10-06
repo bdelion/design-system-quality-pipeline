@@ -328,6 +328,17 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-196, porter explicitement le `componentId` sur une anomalie d’Audit lorsque la relation est valide ;
 - conformément à D-197, conserver les faits source et produire une Data Quality non bloquante en cas de divergence de Component entre Audit et anomalie ;
 - conformément à D-198, matérialiser toute Issue `Bug` en `Anomaly` même si son parent Audit attendu est absent ou invalide, sans créer d’`auditId` artificiel et avec une Data Quality non bloquante ;
+- conformément à D-199, définir `versionId` comme identifiant métier stable distinct des objets GitHub techniques ;
+- conformément à D-200, utiliser le numéro PROD `M.m.r` comme numéro canonique de Version et conserver toute RC séparément ;
+- conformément à D-201, considérer une Version publiée uniquement si son Git tag PROD exact existe ;
+- conformément à D-202, dériver `Version.releasedAt` exclusivement de la date du Git tag PROD, sans fallback implicite ;
+- conformément à D-203, conserver une Version identifiable sans tag PROD avec `releasedAt` absent et produire une Data Quality non bloquante ;
+- conformément à D-204, référencer la Milestone PROD via `milestoneId` lorsqu’elle existe ;
+- conformément à D-205, conserver séparément la RC réellement auditée et la Version PROD cible pour un Audit pré-PROD ;
+- conformément à D-206, conserver la référence du Git tag RC et sa date lorsqu’ils existent ;
+- conformément à D-207, ne jamais inventer une RC manquante et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+- conformément à D-208, rattacher un Audit de rattrapage directement à la Version PROD sans RC artificielle ;
+
 
 
 
