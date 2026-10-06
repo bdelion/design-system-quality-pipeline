@@ -101,8 +101,8 @@ reposent actuellement sur des hypothèses métier devenues obsolètes.
 | Audit de rattrapage post-PROD non rétroactif | Absent | Pas de `releasedAt` ni `completedAt` métier | Déduire pré-PROD / catch-up par comparaison temporelle | P1 |
 | Couverture historique = audités / Catalogue de la Version | Contradictoire | KPI utilise les Components actifs courants | Calculer par Version avec Catalogue historique | P0 |
 | Conformité = conformes / couverts | Partiel / contradictoire | KPI agrège les Audits terminés, pas le verdict Component×Version applicable | Recalculer au niveau Component×Version | P1 |
-| Dernier Audit terminé applicable pour Component×Version | Absent | Pas de sélection temporelle/applicabilité | Ajouter résolution du verdict applicable | P1 |
-| Audit incomplet ne remplace pas verdict acquis | Absent | Pas de notion de succession d'Audits applicable | Ajouter règle de sélection | P1 |
+| Ensemble des Audits terminés applicables pour Component×Version | Absent | Le modèle legacy ne calcule pas le verdict agrégé défini par D-222 | Ajouter résolution de l’ensemble applicable et calcul du verdict agrégé | P1 |
+| Audit incomplet ne modifie pas verdict acquis | Absent | Pas de notion explicite d’ensemble d’Audits terminés applicables | Exclure les Audits incomplets du verdict agrégé | P1 |
 | 1 GitHub Anomaly Issue = 1 Anomalie | Conforme dans l'intention | Stable ID par Issue | Conserver | — |
 | Multi-Component : 1 global, 1 par Component | Absent | `componentId` unique | Modéliser relation N-N / projections de métriques | P1 |
 | Hors Audit V1 sans sous-origine | Absent | Aucun `origin` | Ajouter seulement `AUDIT` / `HORS_AUDIT`, sans inférence supplémentaire | P0 |
@@ -507,3 +507,23 @@ dashboard.
 | D-206 : tag et date de RC | À formaliser | La RC auditée doit rester traçable vers son état Git | Conserver la référence du tag RC et sa date lorsqu’ils existent | P0 |
 | D-207 : RC indéterminable | À formaliser | Une RC absente ne doit pas être inventée ni supprimer l’Audit | Conserver l’Audit, laisser la RC absente et émettre une DQ non bloquante ; numéro en I5 | P0 |
 | D-208 : Audit de rattrapage sur PROD | À formaliser | Un rattrapage post-publication n’a pas besoin d’une RC fictive | Référencer directement la Version PROD et ne pas créer de RC artificielle | P0 |
+| D-209 : Catalogue historique propre à chaque Version PROD | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-209 | P0 |
+| D-210 : Catalogue historique lu dans le Git tree du tag PROD | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-210 | P0 |
+| D-211 : Catalogue indéterminable lorsqu’un tag PROD manque | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-211 | P0 |
+| D-212 : Catalogue absent ou illisible au tag PROD | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-212 | P0 |
+| D-213 : Conservation historique d’un Component supprimé | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-213 | P0 |
+| D-214 : Absence historique d’un Component ajouté ultérieurement | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-214 | P0 |
+| D-215 : Identifiant métier stable de Component | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-215 | P0 |
+| D-216 : Identité d’un Component conservée entre Versions continues | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-216 | P0 |
+| D-217 : Renommage explicite d’un Component | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-217 | P0 |
+| D-218 : Nouvelle identité après disparition puis réapparition | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-218 | P0 |
+| D-219 : Matérialisation de la relation Component × Version | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-219 | P0 |
+| D-220 : Couverture fondée sur au moins un Audit terminé applicable | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-220 | P0 |
+| D-221 : Audit incomplet insuffisant pour la couverture | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-221 | P0 |
+| D-222 : Verdict courant agrégé sur l’ensemble des Audits terminés applicables | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-222 | P0 |
+| D-223 : Un Audit incomplet ne modifie pas le verdict acquis | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-223 | P0 |
+| D-224 : Conformité conditionnée à l’absence d’anomalie d’Audit ouverte pertinente | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-224 | P0 |
+| D-225 : AuditImprovement sans effet sur le verdict de conformité | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-225 | P0 |
+| D-226 : Correction d’une anomalie insuffisante pour rétablir la conformité | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-226 | P0 |
+| D-227 : Anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-227 | P0 |
+| D-228 : État NON_COUVERT en absence d’Audit terminé applicable | À formaliser | Contrat I1 établi | Implémenter et tester conformément à D-228 | P0 |

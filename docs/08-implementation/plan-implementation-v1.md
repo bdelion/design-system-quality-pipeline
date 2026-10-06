@@ -338,6 +338,26 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-206, conserver la référence du Git tag RC et sa date lorsqu’ils existent ;
 - conformément à D-207, ne jamais inventer une RC manquante et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
 - conformément à D-208, rattacher un Audit de rattrapage directement à la Version PROD sans RC artificielle ;
+- conformément à D-209, catalogue historique propre à chaque Version PROD;
+- conformément à D-210, catalogue historique lu dans le Git tree du tag PROD;
+- conformément à D-211, catalogue indéterminable lorsqu’un tag PROD manque;
+- conformément à D-212, catalogue absent ou illisible au tag PROD;
+- conformément à D-213, conservation historique d’un Component supprimé;
+- conformément à D-214, absence historique d’un Component ajouté ultérieurement;
+- conformément à D-215, identifiant métier stable de Component;
+- conformément à D-216, identité d’un Component conservée entre Versions continues;
+- conformément à D-217, renommage explicite d’un Component;
+- conformément à D-218, nouvelle identité après disparition puis réapparition;
+- conformément à D-219, matérialisation de la relation Component × Version;
+- conformément à D-220, couverture fondée sur au moins un Audit terminé applicable;
+- conformément à D-221, audit incomplet insuffisant pour la couverture;
+- conformément à D-222, verdict courant agrégé sur l’ensemble des Audits terminés applicables;
+- conformément à D-223, un Audit incomplet ne modifie pas le verdict acquis;
+- conformément à D-224, conformité conditionnée à l’absence d’anomalie d’Audit ouverte pertinente;
+- conformément à D-225, auditImprovement sans effet sur le verdict de conformité;
+- conformément à D-226, correction d’une anomalie insuffisante pour rétablir la conformité;
+- conformément à D-227, anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit;
+- conformément à D-228, état NON_COUVERT en absence d’Audit terminé applicable;
 
 
 
@@ -1035,9 +1055,9 @@ Un Component non audité n’est pas implicitement non conforme.
 
 #### Verdict applicable
 
-Pour un couple `Component × Version`, sélectionner le dernier Audit terminé applicable.
+Pour un couple `Component × Version`, calculer le verdict courant à partir de l’ensemble des Audits terminés applicables conformément à D-222.
 
-Un Audit plus récent mais incomplet ne remplace pas un verdict acquis.
+Un Audit incomplet ne contribue pas à ce verdict et ne modifie pas le verdict acquis. La correction ou fermeture d’une anomalie ne rétablit pas à elle seule la conformité : un nouvel Audit terminé applicable doit valider la conformité conformément à D-226.
 
 #### Multi-Component
 
@@ -1063,7 +1083,7 @@ La somme des ventilations par Component peut donc être supérieure au total glo
 - Component ajouté après la Version → absent du dénominateur historique ;
 - 7 couverts dont 5 conformes → conformité 5/7, pas 5/10 ;
 - Component non audité → hors dénominateur de conformité ;
-- dernier Audit terminé applicable sélectionné ;
+- ensemble des Audits terminés applicables pris en compte dans le verdict ;
 - Audit incomplet plus récent ignoré pour le verdict acquis ;
 - Catalogue historique indisponible → métrique `unknown`.
 

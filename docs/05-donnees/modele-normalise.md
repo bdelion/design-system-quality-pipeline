@@ -142,6 +142,29 @@ Conformément à D-207, une RC indéterminable reste absente sans valeur invent�
 
 Conformément à D-208, un Audit de rattrapage cible directement la Version PROD sans RC artificielle.
 
+### Décisions I1 sur Catalogue historique et verdict Component × Version
+
+- **D-209 — Catalogue historique propre à chaque Version PROD** : Chaque Version PROD possède son propre Catalogue historique, représentant les Components présents dans le repository pour cette Version.
+- **D-210 — Catalogue historique lu dans le Git tree du tag PROD** : Le Catalogue historique d’une Version est reconstruit à partir du fichier de catalogue présent dans le Git tree du tag PROD exact `M.m.r`. Le catalogue courant ne sert jamais de substitut rétroactif.
+- **D-211 — Catalogue indéterminable lorsqu’un tag PROD manque** : Si une Version est identifiable mais que son tag PROD est absent, son Catalogue historique est indéterminable. Le catalogue courant n’est pas utilisé comme fallback.
+- **D-212 — Catalogue absent ou illisible au tag PROD** : Si le tag PROD existe mais que le fichier Catalogue attendu est absent ou illisible dans ce tag, la Version est conservée, son Catalogue historique reste indéterminable et une Data Quality non bloquante est produite. Son identifiant `DQ-xxx` sera attribué en I5.
+- **D-213 — Conservation historique d’un Component supprimé** : Un Component présent dans le Catalogue d’une ancienne Version reste membre du Catalogue historique de cette Version même s’il a ensuite été supprimé du catalogue courant.
+- **D-214 — Absence historique d’un Component ajouté ultérieurement** : Un Component ajouté après une Version `M.m.r` est absent du Catalogue historique de cette Version. Sa présence actuelle ne doit jamais être rétroprojetée.
+- **D-215 — Identifiant métier stable de Component** : Chaque `Component` possède un `componentId` métier stable, distinct de son nom ou libellé affiché.
+- **D-216 — Identité d’un Component conservée entre Versions continues** : Lorsqu’un même Component métier est présent dans plusieurs Versions continues, il conserve le même `componentId` afin de permettre son suivi longitudinal.
+- **D-217 — Renommage explicite d’un Component** : Un renommage peut conserver le `componentId` lorsqu’il est explicitement établi que le Component métier reste le même. Cette continuité doit être déclarée par configuration ou règle explicite et ne doit jamais être devinée automatiquement.
+- **D-218 — Nouvelle identité après disparition puis réapparition** : Lorsqu’un Component disparaît du Catalogue pendant une ou plusieurs Versions puis réapparaît, sa réapparition ne réutilise pas le `componentId` historique précédent. Elle constitue une nouvelle identité métier.
+- **D-219 — Matérialisation de la relation Component × Version** : Le modèle normalisé matérialise explicitement la présence d’un Component dans une Version. Les KPI et verdicts ne doivent pas reconstruire implicitement cette relation à partir du catalogue courant.
+- **D-220 — Couverture fondée sur au moins un Audit terminé applicable** : Un couple `Component × Version` est couvert dès lors qu’au moins un Audit applicable à ce couple est terminé au sens métier défini par D-141.
+- **D-221 — Audit incomplet insuffisant pour la couverture** : Un Audit commencé mais non terminé ne rend jamais un couple `Component × Version` couvert à lui seul.
+- **D-222 — Verdict courant agrégé sur l’ensemble des Audits terminés applicables** : Le verdict courant d’un couple `Component × Version` est calculé à partir de l’ensemble des Audits terminés applicables à ce couple, et non à partir du seul Audit terminé le plus récent. Tous les Audits terminés applicables contribuent à l’état courant selon les règles de conformité. Cette décision remplace la règle antérieure de sélection du dernier Audit terminé portée notamment par D-046.
+- **D-223 — Un Audit incomplet ne modifie pas le verdict acquis** : Un Audit plus récent mais incomplet ne contribue pas au verdict courant et ne remplace pas l’état acquis à partir des Audits terminés applicables.
+- **D-224 — Conformité conditionnée à l’absence d’anomalie d’Audit ouverte pertinente** : Un couple `Component × Version` couvert ne peut être conforme que si l’ensemble des Audits terminés applicables pris en compte pour son verdict ne laisse aucune anomalie d’Audit ouverte affectant la conformité.
+- **D-225 — AuditImprovement sans effet sur le verdict de conformité** : Une `AuditImprovement`, ouverte ou fermée, n’intervient jamais dans le calcul du verdict de conformité d’un couple `Component × Version`.
+- **D-226 — Correction d’une anomalie insuffisante pour rétablir la conformité** : La correction ou la fermeture d’une anomalie issue d’un Audit ne rétablit pas à elle seule la conformité du Component. Le Component reste non conforme jusqu’à ce qu’un nouvel Audit terminé applicable valide la conformité. L’anomalie corrigée reste conservée dans l’historique.
+- **D-227 — Anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit** : Une anomalie d’origine `HORS_AUDIT` ne modifie pas directement le verdict de conformité calculé à partir des Audits applicables au couple `Component × Version`.
+- **D-228 — État NON_COUVERT en absence d’Audit terminé applicable** : Si un Component appartient au Catalogue historique d’une Version mais ne possède aucun Audit terminé applicable, son état est `NON_COUVERT` / non évalué. Il ne doit jamais être assimilé à `NON_CONFORME`.
+
 
 
 
