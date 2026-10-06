@@ -3483,6 +3483,62 @@ Cette règle s’applique aux valeurs Project soumises à reconnaissance ou cano
 **Statut : Établi**
 
 
+### D-174 — Conservation de l’identité du GitHub Project
+
+Chaque rattachement d’une `Issue` à un GitHub Project conserve explicitement `projectId` et `projectName`.
+
+`projectId` constitue la référence stable du Project. `projectName` est également conservé afin de permettre l’affichage, le diagnostic et la compréhension des données ou fixtures sans résolution supplémentaire.
+
+Ces deux informations appartiennent au contexte Project associé à l’Issue.
+
+**Statut : Établi**
+
+
+### D-175 — Séparation du statut Project brut et du statut canonique
+
+Pour chaque rattachement GitHub Project d’une `Issue`, le statut Project brut collecté est conservé séparément de sa notion canonique éventuelle.
+
+Le modèle applique ainsi au statut Project le même principe de traçabilité que pour les Issue Types : la valeur source n’est jamais écrasée par son interprétation.
+
+Si aucune notion canonique n’est reconnue, la valeur brute reste conservée et le statut canonique est absent.
+
+**Statut : Établi**
+
+
+### D-176 — Recalcul du statut Project canonique avec la configuration courante
+
+À chaque exécution du pipeline, le statut Project canonique est recalculé à partir du statut Project brut et de la configuration courante.
+
+La notion canonique est une interprétation dérivée et non une vérité historique immuable. Une évolution de la configuration peut donc reclasser une valeur brute existante sans modification de l’Issue GitHub source.
+
+Les traitements métier qui dépendent du statut canonique utilisent le résultat de cette canonicalisation courante.
+
+**Statut : Établi**
+
+
+### D-177 — Correspondance stricte des variantes de statut Project
+
+La reconnaissance d’un statut Project repose uniquement sur les variantes explicitement déclarées dans la configuration.
+
+La comparaison porte sur la valeur complète après suppression des espaces en début et fin de chaîne et sans distinction de casse. Aucune recherche par sous-chaîne n’est autorisée.
+
+Une variante configurée doit donc représenter une valeur complète acceptable du statut Project.
+
+**Statut : Établi**
+
+
+### D-178 — Gestion d’une correspondance ambiguë de statut Project
+
+Si une valeur brute de statut Project correspond à plusieurs notions canoniques configurées, aucune notion canonique n’est sélectionnée automatiquement.
+
+La valeur brute est conservée, le statut canonique reste absent, les notions canoniques candidates sont signalées et le pipeline continue son exécution avec une Data Quality non bloquante.
+
+Aucune priorité implicite entre notions canoniques n’est autorisée. Le numéro de règle `DQ-xxx` sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
+
+**Statut : Établi**
+
+
+
 
 
 

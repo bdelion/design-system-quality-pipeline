@@ -305,6 +305,12 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-171, conserver les catégories Accessibility reconnues au niveau de l’Issue sans figer prématurément leur vocabulaire ;
 - conformément à D-172, structurer les données GitHub Projects par Project d’origine et interdire leur fusion implicite entre Projects ;
 - conformément à D-173, conserver les valeurs Project brutes non reconnues, ne pas produire de canonique artificiel et émettre une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+- conformément à D-174, conserver `projectId` et `projectName` dans chaque contexte GitHub Project d’une Issue ;
+- conformément à D-175, séparer la valeur brute du statut Project de sa notion canonique optionnelle ;
+- conformément à D-176, recalculer la notion canonique du statut Project à chaque exécution depuis la valeur brute et la configuration courante ;
+- conformément à D-177, reconnaître les variantes de statut Project par égalité stricte sur la valeur complète après `trim`, sans distinction de casse et sans matching par sous-chaîne ;
+- conformément à D-178, ne choisir aucun statut canonique en cas d’ambiguïté, conserver le brut, exposer les candidats et produire une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+
 
 
 - conformément à D-151, recalculer la notion canonique à chaque pipeline depuis la valeur brute et la configuration courante ; une évolution des mots-clés doit pouvoir reclassifier une Issue existante et recalculer les objets métier dérivés ;

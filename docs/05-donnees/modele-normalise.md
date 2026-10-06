@@ -84,6 +84,17 @@ Conformément à D-172, les informations GitHub Projects sont structurées par P
 
 Conformément à D-173, lorsqu’une valeur Project soumise à reconnaissance n’est pas reconnue, sa valeur brute est conservée, aucune valeur canonique artificielle n’est produite et une Data Quality non bloquante est émise. Le contrat détaillé brut/canonique des champs Project sera précisé avec leur modèle normalisé.
 
+Conformément à D-174, chaque contexte Project conserve `projectId` et `projectName`. Les valeurs Project restent ainsi rattachées à une identité stable tout en restant directement compréhensibles pour l’affichage et le diagnostic.
+
+Conformément à D-175, le statut Project est représenté par sa valeur brute et, lorsqu’elle est reconnue sans ambiguïté, par une notion canonique distincte. La valeur brute n’est jamais écrasée.
+
+Conformément à D-176, la notion canonique est recalculée à chaque exécution depuis la valeur brute et la configuration courante.
+
+Conformément à D-177, la reconnaissance des variantes utilise une égalité stricte sur la valeur complète après `trim`, insensible à la casse, sans correspondance par sous-chaîne.
+
+Conformément à D-178, une valeur brute correspondant à plusieurs notions canoniques conserve uniquement sa valeur source ; aucune notion canonique n’est choisie, les candidats sont exposés au diagnostic et une Data Quality non bloquante est émise.
+
+
 
 
 La liste définitive des notions canoniques reste à préciser.
