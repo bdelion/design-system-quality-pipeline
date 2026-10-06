@@ -2,7 +2,7 @@
 
 ## 1. Statuts connus
 
-``` text
+```text
 Backlog
 Ready
 In progress
@@ -14,7 +14,7 @@ Cancelled
 
 Le chemin nominal du profil STANDARD est :
 
-``` text
+```text
 Backlog → Ready → In progress → In review → Done
 ```
 
@@ -23,7 +23,7 @@ alternative.
 
 Les contraintes exactes dépendent du profil de workflow.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Backlog
 
@@ -31,14 +31,14 @@ Les contraintes exactes dépendent du profil de workflow.
 
 La source décrit une Issue `Backlog` avec :
 
--   label `🔎 Grooming` ;
--   Velocity vide ;
--   aucune Iteration ;
--   aucune Milestone ;
--   aucune branche ;
--   aucune Pull Request ;
--   Issue non close ;
--   aucun assignee.
+- label `🔎 Grooming` ;
+- Velocity vide ;
+- aucune Iteration ;
+- aucune Milestone ;
+- aucune branche ;
+- aucune Pull Request ;
+- Issue non close ;
+- aucun assignee.
 
 Ce statut correspond à une Issue qui doit encore être qualifiée et
 pesée.
@@ -48,7 +48,7 @@ pesée.
 Ces propriétés ne doivent pas être appliquées aveuglément aux profils
 spéciaux sans règle dédiée.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Ready
 
@@ -56,12 +56,12 @@ spéciaux sans règle dédiée.
 
 Une Issue `Ready` :
 
--   n'a plus le label `🔎 Grooming` ;
--   est pesée dans le workflow standard ;
--   possède une Velocity `> 0` dans le nominal ;
--   reste ouverte ;
--   n'a pas encore de branche ;
--   n'a pas encore de Pull Request.
+- n'a plus le label `🔎 Grooming` ;
+- est pesée dans le workflow standard ;
+- possède une Velocity `> 0` dans le nominal ;
+- reste ouverte ;
+- n'a pas encore de branche ;
+- n'a pas encore de Pull Request.
 
 La source autorise qu'elle soit déjà positionnée dans une Iteration ou
 une Milestone.
@@ -74,7 +74,7 @@ Les Audits utilisent actuellement une Velocity `0` dans la source.
 
 La distinction :
 
-``` text
+```text
 velocity = null
 velocity = 0
 velocity > 0
@@ -83,7 +83,7 @@ velocity > 0
 est une décision métier établie et ces valeurs ne doivent pas être
 assimilées.
 
-------------------------------------------------------------------------
+---
 
 ## 4. In progress
 
@@ -94,16 +94,16 @@ charge.
 
 La source associe le nominal STANDARD à :
 
--   Velocity renseignée ;
--   Iteration ;
--   Milestone ;
--   assignee ;
--   branche pour les travaux de code.
+- Velocity renseignée ;
+- Iteration ;
+- Milestone ;
+- assignee ;
+- branche pour les travaux de code.
 
 La présence d'une branche n'est pas une règle générique pour Epic ou
 Audit.
 
-------------------------------------------------------------------------
+---
 
 ## 5. In review
 
@@ -124,7 +124,7 @@ Pull Request pour tous les profils.
 Les transitions Epic, Audit, Release et Conception doivent être traitées
 par leurs règles propres.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Done
 
@@ -144,7 +144,7 @@ Request et à son merge.
 Un Audit n'est réalisé au sens métier que lorsque les deux conditions
 sont satisfaites :
 
-``` text
+```text
 Project Status = Done
 ET
 GitHub Issue State = Closed
@@ -156,7 +156,7 @@ Le seul `Done` ne suffit pas.
 
 Une Anomalie est considérée traitée lorsque :
 
-``` text
+```text
 Project Status = Done
 ET
 GitHub Issue State = Closed
@@ -166,7 +166,7 @@ La correction d'une Anomalie d'Audit comporte en outre une attente
 métier de revue par l'auditeur avant clôture, mais les détails
 opérationnels restent à formaliser complètement.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Blocked
 
@@ -180,7 +180,7 @@ Les transitions possibles dépendent du statut précédent et du profil.
 Il ne faut pas déduire une machine à états universelle plus précise que
 les décisions disponibles.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Cancelled
 
@@ -188,7 +188,7 @@ les décisions disponibles.
 
 Un cas est explicitement établi :
 
-``` text
+```text
 remontée client
     ↓
 analyse Squad
@@ -203,19 +203,19 @@ Cette Issue ne devient pas une Anomalie intrinsèque du Design System.
 Les règles génériques sur les propriétés interdites d'une Issue
 `Cancelled` restent à formaliser dans `Q-022`.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Issue State GitHub et Project Status
 
 Le modèle doit conserver séparément :
 
-``` text
+```text
 GitHub Issue State
 ```
 
 et :
 
-``` text
+```text
 Project Status
 ```
 
@@ -224,17 +224,17 @@ Ils ne sont pas interchangeables.
 Les règles `Audit réalisé` et `Anomalie traitée` démontrent
 explicitement la nécessité de combiner les deux dimensions.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Règle de prudence
 
 Les règles de statut ne doivent jamais être évaluées sans connaître le
 profil de workflow lorsque celui-ci modifie la signification de :
 
--   Velocity ;
--   Iteration ;
--   Milestone ;
--   branche ;
--   Pull Request ;
--   `In review` ;
--   `Done`.
+- Velocity ;
+- Iteration ;
+- Milestone ;
+- branche ;
+- Pull Request ;
+- `In review` ;
+- `Done`.

@@ -7,7 +7,7 @@ lors d'une exécution.
 
 Il sépare le calcul de sa restitution :
 
-``` text
+```text
 collecte
   ↓
 normalisation
@@ -22,13 +22,13 @@ Snapshot
   └── Exports
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 2. Contrat actuellement implémenté
 
 Le Snapshot actuel contient notamment :
 
-``` text
+```text
 snapshotId
 capturedAt
 scope
@@ -44,27 +44,27 @@ reliability
 Les données et résultats transmis au Snapshot sont clonés afin que sa
 représentation ne change pas après sa construction.
 
-------------------------------------------------------------------------
+---
 
 ## 3. capturedAt
 
 `capturedAt` représente :
 
-``` text
+```text
 la date d'observation du pipeline
 ```
 
 Il ne faut pas l'utiliser implicitement comme :
 
--   date de détection d'une Anomalie ;
--   date de correction ;
--   date de fin d'un Audit ;
--   date de Release.
+- date de détection d'une Anomalie ;
+- date de correction ;
+- date de fin d'un Audit ;
+- date de Release.
 
 Ces dates métier doivent provenir de règles ou sources explicitement
 définies.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Deux axes temporels
 
@@ -72,7 +72,7 @@ Le modèle doit distinguer :
 
 ### Temps métier
 
-``` text
+```text
 Release
 Audit
 détection
@@ -82,20 +82,20 @@ décommission
 
 ### Temps d'observation
 
-``` text
+```text
 Snapshot.capturedAt
 ```
 
 Une information peut être observée après la date réelle de l'événement
 métier.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Immutabilité
 
 Un Snapshot historique doit rester interprétable selon :
 
-``` text
+```text
 modelVersion
 ruleVersion
 ```
@@ -105,7 +105,7 @@ et selon les données effectivement connues lors de sa capture.
 Une nouvelle règle ou une nouvelle information ne doit pas modifier
 silencieusement un ancien Snapshot.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Fiabilité
 
@@ -115,7 +115,7 @@ Le contrat analytique possède également une fiabilité par métrique.
 
 La fiabilité métrique-spécifique est la plus précise :
 
-``` text
+```text
 problème sur une donnée
         ↓
 métriques réellement dépendantes
@@ -123,7 +123,7 @@ métriques réellement dépendantes
 
 et non :
 
-``` text
+```text
 une alerte DQ
         ↓
 toutes les métriques deviennent partielles
@@ -132,25 +132,25 @@ toutes les métriques deviennent partielles
 La fiabilité globale actuelle reste donc une synthèse technique
 grossière.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Snapshot courant et historique
 
 L'implémentation actuelle distingue notamment :
 
-``` text
+```text
 data/current/snapshot.json
 ```
 
 et des Snapshots de runs sous :
 
-``` text
+```text
 data/runs/
 ```
 
 La politique cible de conservation et de stockage reste à définir.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Snapshot de Release
 
@@ -163,7 +163,7 @@ exactement à chaque Release : `Q-034` reste ouverte.
 Le contrat cible doit néanmoins permettre d'identifier une photographie
 historique pertinente pour la Release.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Audit de rattrapage
 
@@ -173,7 +173,7 @@ connaissance plus riche d'une ancienne Version.
 Il ne doit pas réécrire le Snapshot ou la vue historique correspondant à
 la publication de cette Version.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Comparaison
 
@@ -182,16 +182,16 @@ Le diff de deux Snapshots produit des changements observables.
 Il ne doit pas fabriquer une date métier exacte lorsque seule une
 fenêtre d'observation est connue.
 
-------------------------------------------------------------------------
+---
 
 ## 11. Questions ouvertes
 
 Restent notamment à instruire :
 
--   `Q-034` --- événements déclenchant les Snapshots ;
--   `Q-035` --- représentation complète de la connaissance historique ;
--   `Q-036` --- durée de conservation ;
--   `Q-042` --- stockage cible.
+- `Q-034` --- événements déclenchant les Snapshots ;
+- `Q-035` --- représentation complète de la connaissance historique ;
+- `Q-036` --- durée de conservation ;
+- `Q-042` --- stockage cible.
 
 Ces questions doivent être résolues avant de figer la stratégie de
 persistance.

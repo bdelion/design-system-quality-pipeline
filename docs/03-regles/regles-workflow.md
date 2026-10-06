@@ -6,7 +6,7 @@ Une règle workflow doit être évaluée dans son contexte.
 
 Le minimum conceptuel est :
 
-``` text
+```text
 profil de workflow
 + Issue Type
 + Project Status
@@ -24,11 +24,11 @@ Le statut seul ne suffit pas.
 
 Les profils candidats sont :
 
--   `STANDARD` ;
--   `EPIC` ;
--   `AUDIT` ;
--   `RELEASE` ;
--   `CONCEPTION`.
+- `STANDARD` ;
+- `EPIC` ;
+- `AUDIT` ;
+- `RELEASE` ;
+- `CONCEPTION`.
 
 Leur formalisation définitive reste suivie par `Q-020`.
 
@@ -36,7 +36,7 @@ Leur formalisation définitive reste suivie par `Q-020`.
 
 Le nominal actuellement documenté est :
 
-``` text
+```text
 Backlog
 → Ready
 → In progress
@@ -52,37 +52,37 @@ Backlog
 
 Dans le nominal STANDARD :
 
--   `Grooming` présent ;
--   Velocity absente ;
--   pas d'Iteration ;
--   pas de Milestone ;
--   pas de branche ;
--   pas de PR.
+- `Grooming` présent ;
+- Velocity absente ;
+- pas d'Iteration ;
+- pas de Milestone ;
+- pas de branche ;
+- pas de PR.
 
 ### Ready
 
 Dans le nominal STANDARD :
 
--   `Grooming` absent ;
--   Velocity `> 0` ;
--   pas encore de branche ;
--   pas encore de PR.
+- `Grooming` absent ;
+- Velocity `> 0` ;
+- pas encore de branche ;
+- pas encore de PR.
 
 ### In progress
 
 Dans le nominal STANDARD :
 
--   Velocity `> 0` ;
--   Iteration attendue ;
--   Milestone attendue ;
--   assignee attendu ;
--   branche attendue lorsque le travail modifie le code.
+- Velocity `> 0` ;
+- Iteration attendue ;
+- Milestone attendue ;
+- assignee attendu ;
+- branche attendue lorsque le travail modifie le code.
 
 ### In review
 
 Pour un travail STANDARD de code :
 
-``` text
+```text
 PR attendue
 ```
 
@@ -97,7 +97,7 @@ Cette règle ne doit pas être appliquée aux profils sans PR propre.
 
 Les propriétés certaines ou explicitement décrites sont :
 
-``` text
+```text
 branche propre = non
 PR propre      = non
 Velocity       = non pesée dans la source
@@ -110,14 +110,14 @@ Les conditions exactes des transitions `Ready`, `In progress`,
 
 Un Audit ne correspond pas à une modification de code.
 
-``` text
+```text
 branche propre = non
 PR propre      = non
 ```
 
 Un Audit réalisé nécessite :
 
-``` text
+```text
 Done + Closed
 ```
 
@@ -160,7 +160,7 @@ invariants déjà validés.
 
 Une future règle workflow devrait expliciter au minimum :
 
-``` text
+```text
 ruleId
 workflowProfile
 status

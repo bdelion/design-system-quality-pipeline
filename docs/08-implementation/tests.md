@@ -11,7 +11,7 @@ ou dashboard doit être accompagnée des tests ciblés nécessaires.
 
 ## Commandes principales
 
-``` bash
+```bash
 npm run typecheck
 npm run lint
 npm test
@@ -24,18 +24,18 @@ dépendances sont installées.
 
 Le ZIP de référence contient notamment :
 
--   `analytics-v2-fixture.test.ts` ;
--   `anonymization-config.test.ts` ;
--   `anonymization.test.ts` ;
--   `dashboard.test.ts` ;
--   `fixture-collector.test.ts` ;
--   `fixture-config.test.ts` ;
--   `flow-contract.test.ts` ;
--   `github-collector.test.ts` ;
--   `metric-catalog.test.ts` ;
--   `pipeline.test.ts` ;
--   `snapshot-diff.test.ts` ;
--   `snapshot.test.ts`.
+- `analytics-v2-fixture.test.ts` ;
+- `anonymization-config.test.ts` ;
+- `anonymization.test.ts` ;
+- `dashboard.test.ts` ;
+- `fixture-collector.test.ts` ;
+- `fixture-config.test.ts` ;
+- `flow-contract.test.ts` ;
+- `github-collector.test.ts` ;
+- `metric-catalog.test.ts` ;
+- `pipeline.test.ts` ;
+- `snapshot-diff.test.ts` ;
+- `snapshot.test.ts`.
 
 Cette liste décrit les fichiers observés ; elle ne garantit pas à elle
 seule que tous les tests passent dans une révision donnée.
@@ -52,11 +52,11 @@ et Snapshot.
 
 Les tests du collecteur couvrent notamment :
 
--   pagination ;
--   séparation Issues / Pull Requests ;
--   relations textuelles ;
--   données GraphQL ;
--   comportements de collecte contrôlés.
+- pagination ;
+- séparation Issues / Pull Requests ;
+- relations textuelles ;
+- données GraphQL ;
+- comportements de collecte contrôlés.
 
 Les appels réseau sont simulés afin de garder des tests déterministes et
 indépendants d'un accès GitHub réel.
@@ -70,12 +70,12 @@ entre fixture et configuration associée.
 
 Les tests doivent protéger :
 
--   déterminisme des mappings ;
--   conservation des relations ;
--   anonymisation des identités ;
--   conservation des sémantiques métier autorisées ;
--   génération des configurations associées ;
--   comportement du scanner de confidentialité.
+- déterminisme des mappings ;
+- conservation des relations ;
+- anonymisation des identités ;
+- conservation des sémantiques métier autorisées ;
+- génération des configurations associées ;
+- comportement du scanner de confidentialité.
 
 L'incident historique des timestamps ISO détectés comme téléphones doit
 rester couvert afin d'éviter sa réintroduction.
@@ -100,10 +100,10 @@ complétude le permette.
 
 Les tests vérifient notamment :
 
--   génération des pages ;
--   liens ;
--   libellés ;
--   présence des éléments attendus.
+- génération des pages ;
+- liens ;
+- libellés ;
+- présence des éléments attendus.
 
 Ils ne doivent pas dupliquer les règles métier du moteur de métriques.
 
@@ -111,7 +111,7 @@ Ils ne doivent pas dupliquer les règles métier du moteur de métriques.
 
 Les frontières suivantes méritent des tests ciblés :
 
-``` text
+```text
 Source → RAW
 RAW → NormalizedData
 NormalizedData + DQ → Metrics
@@ -140,7 +140,7 @@ uniquement parce que les fichiers de test existent.
 Lorsqu'une livraison ou une revue doit attester l'état des tests,
 exécuter réellement :
 
-``` bash
+```bash
 npm run typecheck
 npm run lint
 npm test
@@ -156,7 +156,7 @@ tests lorsqu'elles deviennent des règles exécutables.
 
 Exemple de démarche :
 
-``` text
+```text
 Décision métier
     ↓
 règle formalisée

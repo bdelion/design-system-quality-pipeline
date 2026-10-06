@@ -9,7 +9,7 @@ contenu métier.
 
 Elle intervient entre collecte et analyse :
 
-``` text
+```text
 GitHub
   ↓
 RawDataset réel local
@@ -25,7 +25,7 @@ pipeline
 
 Exemple :
 
-``` bash
+```bash
 npm run fixture:anonymize -- \
   --input data/raw/my-real-dataset.json \
   --output fixtures/my-real-dataset-anonymized.json
@@ -33,7 +33,7 @@ npm run fixture:anonymize -- \
 
 Puis :
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input fixtures/my-real-dataset-anonymized.json
 ```
@@ -47,19 +47,19 @@ L'anonymisation est déterministe à partir d'une seed.
 Les dates sont décalées uniformément afin de préserver autant que
 possible :
 
--   l'ordre chronologique ;
--   les écarts de temps ;
--   les durées utiles aux métriques.
+- l'ordre chronologique ;
+- les écarts de temps ;
+- les durées utiles aux métriques.
 
 ## Options actuellement prévues
 
 Le CLI expose notamment :
 
--   `--seed` ;
--   `--date-offset-days` ;
--   `--anonymize-components` ;
--   le mode strict par défaut pour les textes libres ;
--   `--keep-text` pour des données déjà contrôlées.
+- `--seed` ;
+- `--date-offset-days` ;
+- `--anonymize-components` ;
+- le mode strict par défaut pour les textes libres ;
+- `--keep-text` pour des données déjà contrôlées.
 
 `--keep-text` doit être utilisé avec prudence : conserver davantage de
 texte augmente le risque de fuite d'informations.
@@ -71,33 +71,33 @@ l'analyse métier.
 
 Doivent notamment rester inchangés :
 
--   labels ;
--   `state` ;
--   `issueType` ;
--   `projectStatuses[].status` ;
--   `milestone.title` ;
--   `milestone.state`.
+- labels ;
+- `state` ;
+- `issueType` ;
+- `projectStatuses[].status` ;
+- `milestone.title` ;
+- `milestone.state`.
 
 Elle doit également préserver la structure des relations :
 
--   Issue ↔ Pull Request ;
--   Issue ↔ parent ;
--   appartenance au Repository ;
--   relations dépendant des identifiants anonymisés.
+- Issue ↔ Pull Request ;
+- Issue ↔ parent ;
+- appartenance au Repository ;
+- relations dépendant des identifiants anonymisés.
 
 ## Données à anonymiser
 
 Selon le contrat actuel, sont notamment concernés :
 
--   noms et identifiants de Repositories ;
--   owners ;
--   identifiants d'Issues, Pull Requests, Projects et Milestones ;
--   numéros d'Issues et de Pull Requests ;
--   utilisateurs ;
--   URLs ;
--   textes libres en mode strict ;
--   dates par décalage uniforme ;
--   noms de Composants lorsque `--anonymize-components` est activé.
+- noms et identifiants de Repositories ;
+- owners ;
+- identifiants d'Issues, Pull Requests, Projects et Milestones ;
+- numéros d'Issues et de Pull Requests ;
+- utilisateurs ;
+- URLs ;
+- textes libres en mode strict ;
+- dates par décalage uniforme ;
+- noms de Composants lorsque `--anonymize-components` est activé.
 
 Les mappings doivent rester cohérents dans tout le jeu de données.
 
@@ -111,7 +111,7 @@ avec la fixture doivent utiliser les mêmes mappings.
 Le workflow actuel peut donc générer des fichiers spécifiques à la
 fixture, par exemple :
 
-``` text
+```text
 fixtures/my-real-dataset-anonymized.json
 config/system.my-real-dataset-anonymized.yaml
 config/catalogue.my-real-dataset-anonymized.yaml
@@ -130,23 +130,23 @@ correspondent pas.
 
 `fixture:anonymize` peut produire un manifeste local :
 
-``` text
+```text
 fixtures/my-real-dataset-anonymized.json.trace.json
 ```
 
 Ce manifeste permet de relier techniquement :
 
--   chemins JSON ;
--   identifiants source ;
--   identifiants anonymisés ;
--   relations ;
--   présence ou absence de la cible dans le RAW.
+- chemins JSON ;
+- identifiants source ;
+- identifiants anonymisés ;
+- relations ;
+- présence ou absence de la cible dans le RAW.
 
 Il ne doit pas recopier inutilement les objets RAW complets.
 
 Le manifeste est explicitement ignoré par Git via :
 
-``` text
+```text
 *.trace.json
 ```
 
@@ -156,7 +156,7 @@ et ne doit pas être partagé avec la fixture.
 
 Le manifeste peut enrichir le rapport de validation :
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input fixtures/my-real-dataset-anonymized.json \
   --trace fixtures/my-real-dataset-anonymized.json.trace.json \
@@ -165,13 +165,13 @@ npm run fixture:validate -- \
 
 Cela permet notamment de distinguer :
 
-``` text
+```text
 relation absente de la collecte
 ```
 
 de :
 
-``` text
+```text
 relation cassée par l'anonymisation
 ```
 
@@ -179,10 +179,10 @@ relation cassée par l'anonymisation
 
 Le validateur recherche notamment des motifs susceptibles de révéler :
 
--   emails ;
--   téléphones ;
--   URLs ;
--   tokens ou secrets.
+- emails ;
+- téléphones ;
+- URLs ;
+- tokens ou secrets.
 
 Le scanner doit tenir compte du type de donnée.
 
@@ -197,15 +197,15 @@ Les relations doivent rester cohérentes après anonymisation.
 
 Le validateur distingue notamment :
 
--   une cible absente du Repository attendu et introuvable ailleurs ;
--   une cible présente dans un autre Repository (`cross-repository`).
+- une cible absente du Repository attendu et introuvable ailleurs ;
+- une cible présente dans un autre Repository (`cross-repository`).
 
 Cette distinction aide à identifier si l'incohérence provient de la
 collecte, des données sources ou de l'anonymisation.
 
 ## Workflow recommandé
 
-``` bash
+```bash
 # 1. Collecte locale
 npm run collect -- \
   --source github \
@@ -234,7 +234,7 @@ Le RAW réel ne doit jamais être commité.
 
 L'état du repository audité confirme actuellement :
 
-``` text
+```text
 data/raw/     → ignoré
 data/runs/    → ignoré
 *.trace.json  → ignoré
@@ -250,6 +250,6 @@ plutôt que propager aveuglément des objets sources riches.
 
 L'objectif est double :
 
--   préserver la structure analytique nécessaire ;
--   réduire le risque qu'un nouveau champ sensible soit diffusé
+- préserver la structure analytique nécessaire ;
+- réduire le risque qu'un nouveau champ sensible soit diffusé
     automatiquement parce qu'il a été ajouté en amont.

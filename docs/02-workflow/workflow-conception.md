@@ -4,19 +4,19 @@
 
 Une Issue de Conception suit les travaux de Design liés :
 
--   à un nouveau Composant ;
--   à une évolution d'un Composant existant.
+- à un nouveau Composant ;
+- à une évolution d'un Composant existant.
 
 La source associe ce travail à la Guilde Design et à la préparation des
 éléments nécessaires à la réalisation.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Représentation décrite dans la source
 
 La source propose notamment :
 
-``` text
+```text
 Issue Type : 🧠 Conception
 label      : 🔎 Grooming
 label      : 🧩 Component:xxx
@@ -24,30 +24,30 @@ label      : 🧩 Component:xxx
 
 ainsi qu'une description comportant potentiellement :
 
--   liens Figma ;
--   liens Zeroheight ;
--   autres sources de conception/accessibilité ;
--   porteurs Design ;
--   Definition of Ready ;
--   Definition of Done ;
--   DO / DON'T ;
--   checklist de contrôles et réunions.
+- liens Figma ;
+- liens Zeroheight ;
+- autres sources de conception/accessibilité ;
+- porteurs Design ;
+- Definition of Ready ;
+- Definition of Done ;
+- DO / DON'T ;
+- checklist de contrôles et réunions.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Points explicitement non stabilisés
 
 La source comporte plusieurs questions :
 
--   faut-il dupliquer certaines informations de l'Epic ?
--   faut-il des labels `New component` ou `New enhancement` ?
--   quel titre normalisé utiliser ?
--   l'Audit de maquette est-il une étape ou une Issue distincte ?
--   quels éléments appartiennent à la Conception plutôt qu'à l'Epic ?
+- faut-il dupliquer certaines informations de l'Epic ?
+- faut-il des labels `New component` ou `New enhancement` ?
+- quel titre normalisé utiliser ?
+- l'Audit de maquette est-il une étape ou une Issue distincte ?
+- quels éléments appartiennent à la Conception plutôt qu'à l'Epic ?
 
 Ces éléments ne sont pas normatifs.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Relation avec Epic
 
@@ -63,21 +63,21 @@ La cardinalité et les règles exactes de cette relation n'ont pas été
 
 **Statut : À FORMALISER.**
 
-------------------------------------------------------------------------
+---
 
 ## 5. Velocity, Iteration, Milestone
 
 La source ne permet pas de fixer de manière suffisamment sûre une
 matrice normative complète pour :
 
--   Velocity ;
--   Iteration ;
--   Milestone.
+- Velocity ;
+- Iteration ;
+- Milestone.
 
 Il ne faut donc pas appliquer par défaut les règles STANDARD ni inventer
 des exceptions.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Branche et Pull Request
 
@@ -89,7 +89,7 @@ branche ou une Pull Request propre à toute Issue de Conception.
 
 **Statut : À FORMALISER.**
 
-------------------------------------------------------------------------
+---
 
 ## 7. Matrice CONCEPTION
 
@@ -109,7 +109,7 @@ branche ou une Pull Request propre à toute Issue de Conception.
   In review      conditions ouvertes
   Done           Definition of Done à formaliser
 
-------------------------------------------------------------------------
+---
 
 ## 8. Conclusion
 

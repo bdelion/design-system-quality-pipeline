@@ -9,7 +9,7 @@
 Le Metric Engine transforme le modèle normalisé et les impacts Data
 Quality en métriques auto-documentées.
 
-``` text
+```text
 NormalizedData
       +
 DataQualityIssue[]
@@ -23,7 +23,7 @@ Analytics.metrics
 
 Le contrat déclaratif se trouve dans :
 
-``` text
+```text
 src/analytics/catalog.ts
 ```
 
@@ -31,13 +31,13 @@ Chaque métrique calculée doit correspondre à un contrat connu.
 
 Le contrat définit notamment :
 
--   identifiant ;
--   unité ;
--   scope ;
--   définition ;
--   nature `stock`, `ratio`, `duration` ou `flow` ;
--   labels éventuels du numérateur et du dénominateur ;
--   notes éventuelles.
+- identifiant ;
+- unité ;
+- scope ;
+- définition ;
+- nature `stock`, `ratio`, `duration` ou `flow` ;
+- labels éventuels du numérateur et du dénominateur ;
+- notes éventuelles.
 
 Le moteur vérifie les identifiants produits afin d'éviter l'apparition
 silencieuse d'une métrique non documentée.
@@ -46,15 +46,15 @@ silencieuse d'une métrique non documentée.
 
 Une métrique V2 transporte avec sa valeur :
 
--   numérateur ;
--   dénominateur ;
--   périmètre ;
--   période éventuelle ;
--   définition ;
--   entités sources ;
--   fiabilité ;
--   exclusions ;
--   breakdowns éventuels.
+- numérateur ;
+- dénominateur ;
+- périmètre ;
+- période éventuelle ;
+- définition ;
+- entités sources ;
+- fiabilité ;
+- exclusions ;
+- breakdowns éventuels.
 
 L'objectif est que la restitution puisse expliquer la métrique sans
 réimplémenter sa formule.
@@ -63,7 +63,7 @@ réimplémenter sa formule.
 
 Les alertes DQ peuvent déclarer des impacts :
 
-``` text
+```text
 include
 exclude
 unknown
@@ -76,7 +76,7 @@ des alertes qui la concernent.
 
 Schématiquement :
 
-``` text
+```text
 aucune réserve pertinente
     → reliable
 
@@ -94,7 +94,7 @@ d'entité et de règle.
 
 Lorsque le calcul n'est pas possible, le moteur utilise :
 
-``` text
+```text
 unknown
 ```
 
@@ -109,7 +109,7 @@ Les stocks décrivent l'état visible dans le Snapshot courant.
 
 Exemples :
 
-``` text
+```text
 anomaly.total
 anomaly.open
 anomaly.correctedEver
@@ -128,7 +128,7 @@ existe.
 
 Chaque métrique de flux doit porter :
 
-``` text
+```text
 period.from
 period.to
 ```
@@ -141,7 +141,7 @@ simple état courant.
 Le modèle `Analytics` contient encore des propriétés historiques telles
 que :
 
-``` text
+```text
 anomaliesDeclared
 anomaliesCorrected
 openAnomalies
@@ -156,7 +156,7 @@ marquées comme dépréciées.
 
 Tout nouvel écran ou calcul doit consommer :
 
-``` text
+```text
 Analytics.metrics
 ```
 
@@ -169,10 +169,10 @@ actuel.
 
 La prochaine consolidation devra partir :
 
--   des besoins métier ;
--   des décisions D-001 à D-136 ;
--   des objets et cardinalités consolidés ;
--   des règles DQ applicables.
+- des besoins métier ;
+- des décisions D-001 à D-136 ;
+- des objets et cardinalités consolidés ;
+- des règles DQ applicables.
 
 Le moteur ne doit pas être étendu simplement parce qu'un indicateur
 paraît utile : sa définition, son périmètre, ses sources et sa

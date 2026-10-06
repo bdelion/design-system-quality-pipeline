@@ -14,7 +14,7 @@ format des API GitHub.
 Elle constitue la frontière entre les faits collectés et les objets
 utilisés par les règles, les métriques et les restitutions.
 
-``` text
+```text
 RawDataset
    +
 Catalogue
@@ -30,11 +30,11 @@ NormalizedData
 
 L'implémentation normalise principalement :
 
--   `Library` ;
--   `Component` ;
--   `Audit` ;
--   `Anomaly` ;
--   `PullRequest`.
+- `Library` ;
+- `Component` ;
+- `Audit` ;
+- `Anomaly` ;
+- `PullRequest`.
 
 Cette liste décrit le code actuel et non la limite du domaine métier.
 
@@ -64,9 +64,9 @@ l'identité d'un objet.
 Les entités normalisées conservent des informations permettant de
 remonter à leur origine, notamment :
 
--   source ;
--   identifiant source ;
--   date de collecte.
+- source ;
+- identifiant source ;
+- date de collecte.
 
 Cette provenance est nécessaire pour expliquer une métrique ou une
 alerte.
@@ -78,7 +78,7 @@ qu'il produit.
 
 Le contrat actuel connaît :
 
-``` text
+```text
 reliable
 partial
 unknown
@@ -95,7 +95,7 @@ conserver explicitement cette incertitude.
 
 Exemple de principe :
 
-``` text
+```text
 date absente
     ↓
 délai inconnu
@@ -111,11 +111,11 @@ délai = 0
 
 La normalisation ne doit pas :
 
--   corriger silencieusement le RAW ;
--   déduire une décision métier non établie ;
--   transformer une absence d'information en résultat négatif ;
--   intégrer des règles de présentation propres au dashboard ;
--   figer les cardinalités du domaine à partir des seules structures
+- corriger silencieusement le RAW ;
+- déduire une décision métier non établie ;
+- transformer une absence d'information en résultat négatif ;
+- intégrer des règles de présentation propres au dashboard ;
+- figer les cardinalités du domaine à partir des seules structures
     TypeScript actuelles.
 
 ## Évolution cible
@@ -126,11 +126,11 @@ que l'implémentation actuelle.
 Avant d'ajouter de nouvelles entités au modèle TypeScript, il faut
 consolider :
 
-1.  les objets métier ;
-2.  leurs identités ;
-3.  leurs cardinalités ;
-4.  leurs règles ;
-5.  leurs sources ;
-6.  leur temporalité.
+1. les objets métier ;
+2. leurs identités ;
+3. leurs cardinalités ;
+4. leurs règles ;
+5. leurs sources ;
+6. leur temporalité.
 
 Ce travail précédera la gap analysis et l'implémentation.

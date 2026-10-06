@@ -8,7 +8,7 @@ du Snapshot sont invalides.
 La conséquence dépend des métriques qui nécessitent réellement cette
 source.
 
-``` text
+```text
 source indisponible
     ↓
 capacités devenues inconnues
@@ -20,20 +20,20 @@ métriques concernées
 
 GitHub fournit actuellement l'essentiel des données opérationnelles :
 
--   repositories ;
--   Issues ;
--   labels ;
--   relations ;
--   statuts Project ;
--   Milestones ;
--   Pull Requests.
+- repositories ;
+- Issues ;
+- labels ;
+- relations ;
+- statuts Project ;
+- Milestones ;
+- Pull Requests.
 
 Une collecte GitHub incomplète doit être distinguée d'une absence métier
 réelle.
 
 Par exemple :
 
-``` text
+```text
 entité non collectée
 ≠
 entité inexistante
@@ -51,7 +51,7 @@ historique.
 
 Le modèle RAW actuel contient :
 
-``` text
+```text
 nexusAvailable
 ```
 
@@ -59,7 +59,7 @@ nexusAvailable
 
 ### Comportement actuel
 
-``` text
+```text
 severity = WARNING
 action   = include
 ```
@@ -71,7 +71,7 @@ releases.
 
 La table d'impacts associe `DQ-009` à :
 
-``` text
+```text
 portfolio.release.*
 ```
 
@@ -107,7 +107,7 @@ PROD à ce stade.
 
 Une règle de disponibilité de source devrait indiquer explicitement :
 
-``` text
+```text
 source
 capacité affectée
 métriques concernées

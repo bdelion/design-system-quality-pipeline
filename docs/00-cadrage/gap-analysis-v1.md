@@ -17,7 +17,7 @@ instruire** : dépend d'une question métier/technique encore ouverte.
 
 L'architecture générale est réutilisable :
 
-``` text
+```text
 GitHub / Fixture
       ↓
 RawDataset
@@ -39,12 +39,12 @@ ce modèle**.
 
 Les cinq chantiers prioritaires sont :
 
-1.  **Refondre la modélisation Issue / Anomalie / Audit** ;
-2.  **Collecter les relations sub-Issue et l'historique du statut
+1. **Refondre la modélisation Issue / Anomalie / Audit** ;
+2. **Collecter les relations sub-Issue et l'historique du statut
     Project `Done`** ;
-3.  **Modéliser Version, Git tag, Milestone et RC auditée** ;
-4.  **Construire le Catalogue historique au tag d'une Version** ;
-5.  **Recalculer les indicateurs puis adapter snapshots et dashboard sur
+3. **Modéliser Version, Git tag, Milestone et RC auditée** ;
+4. **Construire le Catalogue historique au tag d'une Version** ;
+5. **Recalculer les indicateurs puis adapter snapshots et dashboard sur
     le nouveau modèle**.
 
 Il serait risqué de commencer par modifier les KPI ou l'interface : ils
@@ -160,7 +160,7 @@ pour les deux formes, sans modifier la décision métier.
 
 Le modèle cible V1 devrait au minimum pouvoir exprimer :
 
-``` text
+```text
 Anomaly
 - anomalyId
 - libraryId
@@ -211,23 +211,23 @@ contrat métier cible.
 
 ### À conserver dans l'esprit
 
--   incohérence Issue / PR ;
--   données de Component absentes du référentiel ;
--   labels inconnus ;
--   impacts DQ métrique-spécifiques.
+- incohérence Issue / PR ;
+- données de Component absentes du référentiel ;
+- labels inconnus ;
+- impacts DQ métrique-spécifiques.
 
 ### À modifier
 
--   **DQ-001/DQ-002** : criticité obligatoire uniquement pour une
+- **DQ-001/DQ-002** : criticité obligatoire uniquement pour une
     Anomalie issue d'un Audit Accessibilité ;
--   **DQ-003** : pour une Anomalie d'Audit, exiger exactement un parent
+- **DQ-003** : pour une Anomalie d'Audit, exiger exactement un parent
     Audit, pas seulement interdire plusieurs parents ;
--   **DQ-004/DQ-005** : contrôler la cohérence `Done` / `Closed` / PR
+- **DQ-004/DQ-005** : contrôler la cohérence `Done` / `Closed` / PR
     merge selon le profil applicable ;
--   **DQ-006** : ne pas dégrader indistinctement `portfolio.*` ;
--   **DQ-008/DQ-010** : politique Cancelled encore ouverte (Q-022), donc
+- **DQ-006** : ne pas dégrader indistinctement `portfolio.*` ;
+- **DQ-008/DQ-010** : politique Cancelled encore ouverte (Q-022), donc
     ne pas les promouvoir comme invariants V1 définitifs ;
--   **DQ-009** : métriques Release actuelles absentes du catalogue ; à
+- **DQ-009** : métriques Release actuelles absentes du catalogue ; à
     réaligner avec le nouveau modèle Version.
 
 ### Nouveaux contrôles nécessaires
@@ -245,21 +245,21 @@ impossible à reconstruire.
 
 ### Déjà proches de la cible
 
--   nombre d'Anomalies ;
--   répartition par criticité ;
--   répartition par catégorie ;
--   délai moyen / médian / p90 ;
--   moteur de fiabilité par métrique.
+- nombre d'Anomalies ;
+- répartition par criticité ;
+- répartition par catégorie ;
+- délai moyen / médian / p90 ;
+- moteur de fiabilité par métrique.
 
 Le calcul du délai doit simplement passer de :
 
-``` text
+```text
 firstDoneAt - createdAt
 ```
 
 à la sémantique explicite :
 
-``` text
+```text
 correctedAt - detectedAt
 ```
 
@@ -269,7 +269,7 @@ correctedAt - detectedAt
 
 Actuel :
 
-``` text
+```text
 Components actifs actuellement avec au moins un Audit terminé
 /
 Components actifs actuellement
@@ -277,7 +277,7 @@ Components actifs actuellement
 
 Cible historique :
 
-``` text
+```text
 Components du Catalogue de M.m.r disposant d'un Audit applicable
 /
 Components du Catalogue historique de M.m.r
@@ -340,81 +340,81 @@ vérifiée **avant tout refactor**.
 
 ### Lot I0 --- Baseline technique
 
--   `npm ci` ;
--   exécuter `npm test`, `npm run typecheck`, `npm run lint`,
+- `npm ci` ;
+- exécuter `npm test`, `npm run typecheck`, `npm run lint`,
     `npm run build` ;
--   corriger uniquement les problèmes de baseline indépendants du
+- corriger uniquement les problèmes de baseline indépendants du
     nouveau métier ;
--   figer un état vert.
+- figer un état vert.
 
 ### Lot I1 --- Contrats de domaine V1
 
--   Anomaly autonome ;
--   origine `AUDIT | HORS_AUDIT` ;
--   `componentIds` multi-valués pour Issue/Anomaly générale ;
--   Audit réel uniquement depuis Issue Audit ;
--   Version comme objet métier ;
--   timestamps métier explicites.
+- Anomaly autonome ;
+- origine `AUDIT | HORS_AUDIT` ;
+- `componentIds` multi-valués pour Issue/Anomaly générale ;
+- Audit réel uniquement depuis Issue Audit ;
+- Version comme objet métier ;
+- timestamps métier explicites.
 
 ### Lot I2 --- Collecte GitHub enrichie
 
--   relations sub-Issue ;
--   historique Status / date Done ;
--   champs Project configurables dont RC auditée ;
--   tags / données nécessaires à `releasedAt`.
+- relations sub-Issue ;
+- historique Status / date Done ;
+- champs Project configurables dont RC auditée ;
+- tags / données nécessaires à `releasedAt`.
 
 ### Lot I3 --- Normalisation Audit / Anomalie / Version
 
--   classification Bug ;
--   origine ;
--   relations Audit ;
--   Milestone → targetVersion ;
--   champ RC → auditedReleaseCandidate ;
--   `Done + Closed` → Audit réalisé ;
--   calcul du verdict ;
--   pré-PROD / catch-up.
+- classification Bug ;
+- origine ;
+- relations Audit ;
+- Milestone → targetVersion ;
+- champ RC → auditedReleaseCandidate ;
+- `Done + Closed` → Audit réalisé ;
+- calcul du verdict ;
+- pré-PROD / catch-up.
 
 ### Lot I4 --- Catalogue historique
 
--   lecture du contenu du Repository au tag `M.m.r` ;
--   reconstruction du Catalogue applicable ;
--   contrôles de disponibilité/cohérence.
+- lecture du contenu du Repository au tag `M.m.r` ;
+- reconstruction du Catalogue applicable ;
+- contrôles de disponibilité/cohérence.
 
 ### Lot I5 --- Data Quality V1
 
--   réaligner DQ-001→010 ;
--   ajouter les contrôles nécessaires ;
--   conserver l'approche d'impact métrique-spécifique.
+- réaligner DQ-001→010 ;
+- ajouter les contrôles nécessaires ;
+- conserver l'approche d'impact métrique-spécifique.
 
 ### Lot I6 --- Analytics V1
 
--   délais avec timestamps métier ;
--   couverture par Version ;
--   conformité Component×Version ;
--   agrégations multi-Component ;
--   distinction Audit / hors Audit.
+- délais avec timestamps métier ;
+- couverture par Version ;
+- conformité Component×Version ;
+- agrégations multi-Component ;
+- distinction Audit / hors Audit.
 
 ### Lot I7 --- Snapshots / historique
 
--   intégrer Versions et événements métier ;
--   conserver observation vs business time ;
--   calculer état à la Release sans rétroprojection.
+- intégrer Versions et événements métier ;
+- conserver observation vs business time ;
+- calculer état à la Release sans rétroprojection.
 
 ### Lot I8 --- Dashboard V1
 
--   adapter les pages au nouveau contrat ;
--   vues Version / Component ;
--   provenance des Anomalies ;
--   historique et fiabilité ;
--   accessibilité UI.
+- adapter les pages au nouveau contrat ;
+- vues Version / Component ;
+- provenance des Anomalies ;
+- historique et fiabilité ;
+- accessibilité UI.
 
 ### Lot I9 --- Fixtures, anonymisation et non-régression
 
--   faire évoluer fixtures ;
--   anonymiser les nouveaux champs ;
--   tests unitaires des décisions D-137→D-146 ;
--   tests d'intégration multi-repositories ;
--   scénarios pré-PROD / catch-up / hors Audit / historique.
+- faire évoluer fixtures ;
+- anonymiser les nouveaux champs ;
+- tests unitaires des décisions D-137→D-146 ;
+- tests d'intégration multi-repositories ;
+- scénarios pré-PROD / catch-up / hors Audit / historique.
 
 ## 13. Questions encore ouvertes mais non bloquantes pour démarrer I0/I1
 
@@ -439,7 +439,7 @@ mais architecture générale conservable.**
 
 Le chemin critique est :
 
-``` text
+```text
 Contrats métier
 → collecte GitHub des faits manquants
 → normalisation

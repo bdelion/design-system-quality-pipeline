@@ -8,11 +8,11 @@ réalisation qui n'est pas traitée par un workflow spécialisé.
 Sa formalisation définitive comme profil métier fait partie de `Q-020`,
 mais il sert de référence pour distinguer le nominal des exceptions.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Flux nominal
 
-``` text
+```text
 Backlog
    ↓ refinement / pesée
 Ready
@@ -28,13 +28,13 @@ Done
 
 `Cancelled` constitue une sortie terminale alternative.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Backlog
 
 Nominalement :
 
-``` text
+```text
 Grooming       = présent
 Velocity       = null
 Iteration      = absente
@@ -47,13 +47,13 @@ assignee       = absent
 
 L'Issue est encore en qualification.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Ready
 
 Après refinement/pesée :
 
-``` text
+```text
 Grooming       = absent
 Velocity       > 0
 branche        = absente
@@ -66,13 +66,13 @@ planification.
 
 La Velocity `0` ne doit pas être confondue avec une Velocity absente.
 
-------------------------------------------------------------------------
+---
 
 ## 5. In progress
 
 Dans le nominal STANDARD :
 
-``` text
+```text
 Velocity       > 0
 Iteration      = attendue
 Milestone      = attendue
@@ -83,13 +83,13 @@ Issue State    = Open
 
 L'Issue est effectivement en réalisation.
 
-------------------------------------------------------------------------
+---
 
 ## 6. In review
 
 Pour un travail de code STANDARD :
 
-``` text
+```text
 Pull Request = attendue
 Issue State  = Open
 ```
@@ -99,7 +99,7 @@ La Pull Request porte la revue de la modification.
 Une PR peut avoir été créée auparavant en Draft ; le statut `In review`
 correspond à la phase où la modification est réellement soumise à revue.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Done
 
@@ -116,7 +116,7 @@ code.
 Il ne faut donc pas transformer cette page en règle universelle pour
 tous les profils.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Blocked
 
@@ -131,7 +131,7 @@ réalisation.
 Le statut exact de retour ne doit pas être déduit sans historique ou
 règle explicite.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Cancelled
 
@@ -142,23 +142,23 @@ travail à réaliser sur le Design System.
 Les contraintes génériques des Issues Cancelled restent ouvertes dans
 `Q-022`.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Matrice STANDARD
 
-  ---------------------------------------------------------------------------------------------
+---
   Statut      Grooming            Velocity Iteration    Milestone    Branche      PR
   ----------- --------------- ------------ ------------ ------------ ------------ -------------
   Backlog     obligatoire           `null` non          non          non          non
 
   Ready       non                    `> 0` possible     possible     non          non
-                                   nominal                                        
+                                   nominal
 
   In progress non                    `> 0` attendue     attendue     attendue si  possible
                                    nominal                           code         Draft
 
   In review   non                    `> 0` attendue     attendue     attendue si  attendue
-                                   nominal                           code         
+                                   nominal                           code
 
   Done        non               historique historique   historique   historique   attendue si
                                                                                   réalisation
@@ -168,8 +168,8 @@ Les contraintes génériques des Issues Cancelled restent ouvertes dans
               de blocage                   contexte     contexte     contexte     contexte
 
   Cancelled   non défini        non défini non défini   non défini   non défini   non défini
-              génériquement                                                       
-  ---------------------------------------------------------------------------------------------
+              génériquement
+---
 
 Les cellules non définies ne doivent pas être converties en
 interdictions DQ avant résolution de `Q-022`.

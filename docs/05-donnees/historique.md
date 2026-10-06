@@ -5,19 +5,19 @@
 L'historisation doit permettre de répondre à deux questions différentes
 :
 
-``` text
+```text
 Que savions-nous à un instant donné ?
 ```
 
 et :
 
-``` text
+```text
 Que savons-nous aujourd'hui d'un objet historique ?
 ```
 
 Ces deux vues ne doivent jamais être confondues.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Principe de non-réécriture du passé
 
@@ -26,7 +26,7 @@ la connaissance actuelle sans modifier ce qui était connu à l'époque.
 
 Exemple :
 
-``` text
+```text
 Version 1.4.0 publiée
         │
         │  aucun Audit disponible à la publication
@@ -40,14 +40,14 @@ connaissance actuelle enrichie
 La vue historique de la Version à sa publication doit continuer à
 indiquer que le résultat d'Audit n'était pas encore connu.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Snapshot
 
 Le Snapshot représente l'état connu par le pipeline au moment de sa
 capture.
 
-``` text
+```text
 capturedAt
 =
 instant d'observation du pipeline
@@ -58,41 +58,41 @@ contenus dans le Snapshot.
 
 Par exemple :
 
-``` text
+```text
 Anomalie observée pour la première fois dans Snapshot N
 ```
 
 ne signifie pas nécessairement :
 
-``` text
+```text
 date de détection = Snapshot N.capturedAt
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 4. Comparaison de Snapshots
 
 Le diff répond à :
 
-``` text
+```text
 qu'est-ce qui a changé entre deux observations ?
 ```
 
 Il peut produire des faits tels que :
 
--   entité apparue ;
--   entité disparue ;
--   changement d'état ;
--   première correction devenue observable ;
--   réouverture devenue observable ;
--   annulation devenue observable.
+- entité apparue ;
+- entité disparue ;
+- changement d'état ;
+- première correction devenue observable ;
+- réouverture devenue observable ;
+- annulation devenue observable.
 
 Ces faits sont des transitions observées.
 
 Ils ne remplacent pas une date métier explicite lorsqu'une telle date
 est nécessaire.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Historique d'une Version
 
@@ -100,7 +100,7 @@ Pour une Version PROD, il faut distinguer au minimum :
 
 ### État à la publication
 
-``` text
+```text
 Version
 Catalogue applicable
 Audits connus
@@ -111,7 +111,7 @@ couverture connue
 
 ### Connaissance actuelle
 
-``` text
+```text
 état historique initial
 +
 Audits de rattrapage
@@ -123,13 +123,13 @@ autres informations découvertes ultérieurement
 
 La seconde vue complète la première ; elle ne la remplace pas.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Audits pré-PROD
 
 Dans le fonctionnement cible :
 
-``` text
+```text
 Release Candidate M.m.r-rc.n
         ↓
 Audit
@@ -143,13 +143,13 @@ la connaissance disponible à la sortie de la Version.
 L'identification précise de la Release Candidate effectivement auditée
 reste à instruire.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Audits de rattrapage
 
 Dans le fonctionnement de rattrapage :
 
-``` text
+```text
 Version PROD M.m.r
         ↓
 Audit ultérieur
@@ -157,26 +157,26 @@ Audit ultérieur
 
 La Milestone peut être :
 
-``` text
+```text
 M.m.r-Audit
 ```
 
 mais elle désigne toujours la Version métier :
 
-``` text
+```text
 M.m.r
 ```
 
 Le résultat enrichit la connaissance actuelle de cette Version sans
 modifier rétroactivement l'état connu lors de la publication.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Évolution des Anomalies
 
 L'historique doit permettre de distinguer :
 
-``` text
+```text
 Anomalie connue à la publication
 Anomalie découverte ultérieurement
 Anomalie non traitée
@@ -188,7 +188,7 @@ Anomalie annulée
 Une Anomalie traitée quitte le stock courant à traiter mais reste dans
 l'historique.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Catalogue historique
 
@@ -201,7 +201,7 @@ dénominateur historique.
 Le mécanisme technique permettant de reconstruire ou conserver ce
 Catalogue historique reste à définir.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Disparition d'une entité entre deux Snapshots
 
@@ -210,16 +210,16 @@ une suppression métier.
 
 Elle peut provenir notamment :
 
--   d'un changement de périmètre ;
--   d'une collecte incomplète ;
--   d'une indisponibilité de source ;
--   d'un changement d'identité ou de mapping ;
--   d'une décommission réelle.
+- d'un changement de périmètre ;
+- d'une collecte incomplète ;
+- d'une indisponibilité de source ;
+- d'un changement d'identité ou de mapping ;
+- d'une décommission réelle.
 
 Le diff doit donc rester un constat d'observation tant que la cause
 métier n'est pas établie.
 
-------------------------------------------------------------------------
+---
 
 ## 11. Comparabilité
 
@@ -228,7 +228,7 @@ permet une interprétation cohérente.
 
 Les dimensions à considérer comprennent notamment :
 
-``` text
+```text
 scope
 modelVersion
 ruleVersion
@@ -238,7 +238,7 @@ complétude de collecte
 
 La politique technique complète de comparabilité reste à formaliser.
 
-------------------------------------------------------------------------
+---
 
 ## 12. Questions encore ouvertes
 
@@ -248,11 +248,11 @@ Quels événements doivent provoquer un Snapshot ?
 
 Pistes existantes :
 
--   exécution périodique ;
--   Release ;
--   fin de Sprint ;
--   Audit ;
--   exécution manuelle.
+- exécution périodique ;
+- Release ;
+- fin de Sprint ;
+- Audit ;
+- exécution manuelle.
 
 **Statut : À instruire.**
 
@@ -276,14 +276,14 @@ Le système de stockage cible des Snapshots reste à décider.
 
 **Statut : À instruire ultérieurement.**
 
-------------------------------------------------------------------------
+---
 
 ## Reconstruction du Catalogue historique
 
 Le Catalogue applicable à une Version PROD `M.m.r` est reconstruit à
 partir de l'état du Repository identifié par le Git tag `M.m.r`.
 
-``` text
+```text
 Version PROD M.m.r
         ↓
 Git tag M.m.r
@@ -300,17 +300,16 @@ Les indicateurs historiques dépendant du Catalogue, en particulier la
 couverture d'Audit, doivent utiliser ce périmètre et non le Catalogue
 courant.
 
-------------------------------------------------------------------------
+---
 
 ## Instant de référence d'une Release
 
 L'instant de référence d'une Version PROD `M.m.r` est la date de création du Git tag `M.m.r`.
 
-``` text
+```text
 releasedAt = GitTag(M.m.r).createdAt
 ```
 
 Les informations connues jusqu'à `releasedAt` peuvent appartenir à l'état à la Release. Les informations postérieures relèvent de la connaissance actuelle et ne doivent pas être projetées rétroactivement.
 
 Cette règle distingue notamment un Audit pré-PROD déjà réalisé à la Release d'un Audit de rattrapage réalisé après la Release.
-

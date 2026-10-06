@@ -8,7 +8,7 @@ contexte de Version.
 Il se distingue d'un travail STANDARD parce qu'il ne correspond pas
 directement à une modification du code.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Identification
 
@@ -16,7 +16,7 @@ directement à une modification du code.
 
 Une Issue d'Audit RGAA est actuellement identifiée par :
 
-``` text
+```text
 label : Audit RGAA
 label : 🧩 Component:xxx
 ```
@@ -25,7 +25,7 @@ label : 🧩 Component:xxx
 
 L'orientation cible est :
 
-``` text
+```text
 Issue Type      : 🔍 Audit
 Famille d'Audit : Accessibilité / RGAA
 Composant       : exactement 1
@@ -33,20 +33,20 @@ Composant       : exactement 1
 
 La représentation technique de la famille reste ouverte.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Composant
 
 Une Issue d'Audit concerne exactement un Composant.
 
-``` text
+```text
 Audit ── exactement 1 Component
 ```
 
 Aucun ou plusieurs labels Composant constituent une incohérence pour une
 Issue d'Audit.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Version et Milestone
 
@@ -55,7 +55,7 @@ Version et produire un verdict de conformité versionné.
 
 ### Pré-PROD
 
-``` text
+```text
 Milestone = M.m.r
 Version effectivement auditée = M.m.r-rc.n
 ```
@@ -65,20 +65,20 @@ ouverte.
 
 ### Rattrapage
 
-``` text
+```text
 Milestone = M.m.r-Audit
 Version auditée = M.m.r
 ```
 
 `M.m.r-Audit` n'est pas une nouvelle Version.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Velocity
 
 La source historique indique :
 
-``` text
+```text
 Velocity = 0 actuellement
 ```
 
@@ -86,7 +86,7 @@ pour les Issues d'Audit.
 
 La décision métier générale distingue explicitement :
 
-``` text
+```text
 null
 0
 > 0
@@ -97,7 +97,7 @@ Ces valeurs ne sont pas interchangeables.
 La signification définitive de `0` dans tous les profils reste liée à la
 formalisation de `Q-020`.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Iteration
 
@@ -109,7 +109,7 @@ exige une Iteration » aux Audits.
 
 **Statut : À FORMALISER.**
 
-------------------------------------------------------------------------
+---
 
 ## 7. Branche et Pull Request
 
@@ -117,7 +117,7 @@ Un Audit ne constitue pas en lui-même une modification de code.
 
 Le profil AUDIT ne doit donc pas exiger artificiellement :
 
-``` text
+```text
 branche propre
 Pull Request propre
 ```
@@ -126,13 +126,13 @@ Les Anomalies issues de l'Audit suivent ensuite leur propre workflow de
 correction et peuvent, elles, nécessiter une branche et une Pull
 Request.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Réalisation de l'Audit
 
 Un Audit est réalisé lorsque :
 
-``` text
+```text
 Project Status = Done
 ET
 GitHub Issue State = Closed
@@ -145,13 +145,13 @@ Un Audit `Done` mais encore ouvert n'est pas réalisé au sens métier.
 
 Un Audit fermé mais non `Done` n'est pas réalisé au sens métier.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Résultats
 
 Un Audit peut produire :
 
-``` text
+```text
 0..n Anomalies
 0..n Improvements
 ```
@@ -163,13 +163,13 @@ Les Anomalies influencent le verdict de conformité.
 
 Les Improvements n'influencent pas ce verdict.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Verdict
 
 Pour un Audit Accessibilité réalisé :
 
-``` text
+```text
 0 Anomalie
 → AUDITÉ & CONFORME
 
@@ -182,13 +182,13 @@ verdict.
 
 Une revalidation nécessite un nouvel Audit.
 
-------------------------------------------------------------------------
+---
 
 ## 11. Unicité d'un Audit en cours
 
 Pour un même couple :
 
-``` text
+```text
 Composant × Version
 ```
 
@@ -197,7 +197,7 @@ il ne doit pas exister plusieurs Audits non terminés simultanément.
 Un nouvel Audit en cours ne remplace pas le dernier verdict acquis tant
 qu'il n'est pas lui-même `Done + Closed`.
 
-------------------------------------------------------------------------
+---
 
 ## 12. Matrice AUDIT
 
@@ -216,7 +216,7 @@ qu'il n'est pas lui-même `Done + Closed`.
   Conformité            déduite des Anomalies lorsque Audit réalisé
   Revalidation          nouvel Audit
 
-------------------------------------------------------------------------
+---
 
 ## 13. Conséquence DQ
 

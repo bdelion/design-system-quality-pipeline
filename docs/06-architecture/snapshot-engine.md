@@ -9,7 +9,7 @@
 Le Snapshot Engine assemble les résultats d'une exécution dans une
 enveloppe stable destinée aux consommateurs.
 
-``` text
+```text
 RAW
 + NormalizedData
 + Data Quality
@@ -25,21 +25,21 @@ Snapshot
 
 `buildSnapshot` reçoit actuellement :
 
--   RAW ;
--   données normalisées ;
--   alertes DQ ;
--   analytics ;
--   `modelVersion` ;
--   `ruleVersion` ;
--   `scope`.
+- RAW ;
+- données normalisées ;
+- alertes DQ ;
+- analytics ;
+- `modelVersion` ;
+- `ruleVersion` ;
+- `scope`.
 
 Il génère :
 
--   `snapshotId` ;
--   `capturedAt` ;
--   synthèse DQ ;
--   fiabilité globale ;
--   copie structurée des données et résultats.
+- `snapshotId` ;
+- `capturedAt` ;
+- synthèse DQ ;
+- fiabilité globale ;
+- copie structurée des données et résultats.
 
 ## Immutabilité
 
@@ -63,7 +63,7 @@ principe analytique cible**, à examiner lors de la gap analysis.
 
 Le Snapshot conserve :
 
-``` text
+```text
 modelVersion
 ruleVersion
 ```
@@ -78,12 +78,12 @@ des faits observables entre les deux états.
 
 Il fournit notamment :
 
--   entités ajoutées et retirées ;
--   transitions d'Anomalies ;
--   Anomalies créées ;
--   premières corrections observées ;
--   réouvertures ;
--   annulations.
+- entités ajoutées et retirées ;
+- transitions d'Anomalies ;
+- Anomalies créées ;
+- premières corrections observées ;
+- réouvertures ;
+- annulations.
 
 Le diff ne modifie pas les Snapshots.
 
@@ -91,8 +91,8 @@ Le diff ne modifie pas les Snapshots.
 
 La comparaison actuelle repose sur :
 
--   `capturedAt` ;
--   les identifiants normalisés.
+- `capturedAt` ;
+- les identifiants normalisés.
 
 La compatibilité de `scope`, `modelVersion`, `ruleVersion` et la
 complétude des sources devront être mieux formalisées avant de
@@ -102,10 +102,10 @@ considérer toute paire de Snapshots comme comparable.
 
 Le Snapshot peut alimenter :
 
--   dashboard ;
--   historique ;
--   exports ;
--   futurs consommateurs.
+- dashboard ;
+- historique ;
+- exports ;
+- futurs consommateurs.
 
 Cette architecture doit permettre de faire évoluer la restitution sans
 déplacer les règles dans le frontend.

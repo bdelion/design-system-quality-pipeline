@@ -12,7 +12,7 @@ automatiquement du code actuel.
 
 Un Audit est réalisé lorsque les deux conditions sont vraies :
 
-``` text
+```text
 Project Status = Done
 ET
 GitHub Issue State = Closed
@@ -24,7 +24,7 @@ Le seul statut `Done` ne suffit pas.
 
 Une Anomalie est considérée comme traitée lorsque :
 
-``` text
+```text
 Project Status = Done
 ET
 GitHub Issue State = Closed
@@ -37,13 +37,13 @@ dans l'historique.
 
 Un Audit possède :
 
-``` text
+```text
 0..n Anomalies
 ```
 
 Chaque Anomalie d'Audit appartient à :
 
-``` text
+```text
 exactement 1 Audit parent
 ```
 
@@ -55,13 +55,13 @@ Audit antérieur.
 
 Un Audit possède :
 
-``` text
+```text
 0..n Improvements
 ```
 
 Chaque Improvement d'Audit appartient à :
 
-``` text
+```text
 exactement 1 Audit parent
 ```
 
@@ -71,7 +71,7 @@ Une Improvement ne modifie pas le verdict de conformité de l'Audit.
 
 Le comptage retenu est :
 
-``` text
+```text
 1 Issue GitHub qualifiée comme Anomalie
 =
 1 Anomalie comptée
@@ -91,8 +91,8 @@ Component.
 
 Pour une Anomalie d'un Audit Accessibilité :
 
--   exactement une criticité RGAA est attendue ;
--   la criticité RGAA est réservée aux Anomalies d'Audit Accessibilité.
+- exactement une criticité RGAA est attendue ;
+- la criticité RGAA est réservée aux Anomalies d'Audit Accessibilité.
 
 Elle ne doit pas être confondue avec d'autres domaines de priorité ou
 criticité.
@@ -101,21 +101,21 @@ criticité.
 
 Pour une Anomalie d'un Audit Accessibilité :
 
-``` text
+```text
 exactement 1 label a11y
 ```
 
 Pour une Improvement d'Audit :
 
--   un label a11y est facultatif ;
--   plusieurs labels a11y sont actuellement tolérés ;
--   la cardinalité cible reste à préciser.
+- un label a11y est facultatif ;
+- plusieurs labels a11y sont actuellement tolérés ;
+- la cardinalité cible reste à préciser.
 
 ## Conformité d'un Audit
 
 Pour un Audit Accessibilité réalisé :
 
-``` text
+```text
 0 Anomalie
 → conforme
 
@@ -142,7 +142,7 @@ mais ne constitue pas une Anomalie intrinsèque du Design System.
 
 En revanche, les interdictions génériques telles que :
 
-``` text
+```text
 Cancelled → aucune PR
 Cancelled → aucune Milestone
 ```
@@ -156,7 +156,7 @@ doivent être analysées séparément dans le cadre de `Q-022`.
 
 Les règles suivantes ne sont pas des invariants métier universels :
 
-``` text
+```text
 Done → PR obligatoire
 Grooming → Velocity absente
 In progress → branche obligatoire
@@ -166,13 +166,13 @@ Elles dépendent du profil de workflow.
 
 Voir `docs/02-workflow/` et [Règles workflow](regles-workflow.md).
 
-------------------------------------------------------------------------
+---
 
 ## Identification d'une Anomalie
 
 ### Hors Audit
 
-``` text
+```text
 Issue Type = 🐛 Bug
 ET absence de relation de sub-Issue vers un Audit d'origine
 → Anomalie hors Audit
@@ -180,7 +180,7 @@ ET absence de relation de sub-Issue vers un Audit d'origine
 
 ### Issue d'un Audit
 
-``` text
+```text
 Issue Type = 🐛 Bug
 ET sub-Issue d'un Audit
 → Anomalie issue d'un Audit
@@ -193,13 +193,13 @@ Les contraintes spécifiques RGAA --- criticité, catégorie a11y et
 Component identique à l'Audit --- s'appliquent aux Anomalies d'Audit
 Accessibilité et ne doivent pas être imposées aux Anomalies hors Audit.
 
-------------------------------------------------------------------------
+---
 
 ## Origine d'une Anomalie
 
 En V1 :
 
-``` text
+```text
 Issue Type = 🐛 Bug
 ET sub-Issue d'un Audit
 → origine = AUDIT
@@ -216,27 +216,27 @@ l'équipe ou du contenu de l'Issue.
 Une classification plus fine est réservée à une évolution V2 après
 définition explicite des dimensions métier et des sources fiables.
 
-------------------------------------------------------------------------
+---
 
 ## Date de détection d'une Anomalie
 
 La date de détection utilisée par le modèle et les indicateurs est la
 date de création GitHub de l'Issue `🐛 Bug` représentant l'Anomalie.
 
-``` text
+```text
 detectedAt = issue.createdAt
 ```
 
 Aucune date antérieure supposée de constatation ne doit être inférée.
 
-------------------------------------------------------------------------
+---
 
 ## Date de correction d'une Anomalie
 
 La date de correction utilisée par le modèle et les indicateurs est la
 date du passage de l'Issue `🐛 Bug` au statut Project `Done`.
 
-``` text
+```text
 correctedAt = date du passage à Done
 ```
 
@@ -248,7 +248,7 @@ La date de `Closed` et la date de merge ne se substituent pas à la date
 de `Done` pour calculer `correctedAt`. Une incohérence entre ces
 événements doit être signalée comme un problème de qualité des données.
 
-------------------------------------------------------------------------
+---
 
 ## Date de fin d'un Audit
 
@@ -256,7 +256,7 @@ Un Audit est réalisé lorsque son Issue est simultanément `Done` et `Closed`.
 
 Sa date métier de fin est la date du passage au statut Project `Done` :
 
-``` text
+```text
 completedAt = date du passage à Done
 ```
 
@@ -264,20 +264,20 @@ La fermeture GitHub doit être cohérente avec cet événement, mais ne s'y subs
 
 Cette règle ne définit pas la date de début de l'Audit.
 
-------------------------------------------------------------------------
+---
 
 ## Identification de la Release Candidate auditée
 
 Pour un Audit pré-PROD :
 
-``` text
+```text
 Version cible = Milestone de l'Issue d'Audit
 RC auditée    = champ explicite de l'Issue d'Audit
 ```
 
 La cohérence entre les deux doit être contrôlée. Par exemple :
 
-``` text
+```text
 Milestone = 1.8.0
 RC auditée = 1.8.0-rc.13
 → cohérent
@@ -287,14 +287,14 @@ La RC auditée ne doit pas être inférée à partir de la dernière RC construi
 
 L'absence du champ explicite sur un Audit pré-PROD empêche d'identifier précisément l'artefact audité et doit être traitée comme une information manquante / un problème de qualité des données.
 
-------------------------------------------------------------------------
+---
 
 ## Catalogue historique d'une Version
 
 Pour toute Version PROD `M.m.r`, le Catalogue historique de référence
 est obtenu depuis le contenu du Repository au Git tag `M.m.r`.
 
-``` text
+```text
 historicalCatalogue(M.m.r)
 = catalogue extrait du Repository au tag M.m.r
 ```
@@ -303,15 +303,14 @@ La présence ultérieure, la modification ou la suppression d'un
 Component dans le Catalogue courant ne doit pas modifier le périmètre
 historique d'une Version déjà publiée.
 
-------------------------------------------------------------------------
+---
 
 ## Date de Release d'une Version
 
 Pour une Version PROD `M.m.r` :
 
-``` text
+```text
 releasedAt = date de création du Git tag M.m.r
 ```
 
 Cette date est la référence temporelle pour l'état connu au moment de la Release. Les événements postérieurs peuvent enrichir la connaissance actuelle, mais ne doivent pas être projetés rétroactivement.
-

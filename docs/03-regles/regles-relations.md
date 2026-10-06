@@ -9,7 +9,7 @@ Elles ne doivent pas être confondues avec les règles de statut.
 
 ## Audit → Component
 
-``` text
+```text
 Audit
 └── exactement 1 Component
 ```
@@ -19,7 +19,7 @@ le modèle établi.
 
 ## Audit → Anomaly
 
-``` text
+```text
 Audit
 └── 0..n Anomalies
 
@@ -31,7 +31,7 @@ Cette relation est normative pour une Anomalie issue d'un Audit.
 
 ## Audit → Improvement
 
-``` text
+```text
 Audit
 └── 0..n Improvements
 
@@ -62,8 +62,8 @@ Une Issue peut concerner plusieurs Components.
 
 Elle est comptée :
 
--   une fois dans le total global distinct des Issues ;
--   une fois dans chacun des indicateurs Component concernés.
+- une fois dans le total global distinct des Issues ;
+- une fois dans chacun des indicateurs Component concernés.
 
 La somme des comptes par Component peut donc dépasser le nombre global
 d'Issues distinctes.
@@ -113,13 +113,13 @@ du jeu de données.
 
 Il faut distinguer deux cas :
 
-``` text
+```text
 référence réellement invalide
 ```
 
 et :
 
-``` text
+```text
 référence valide mais entité hors périmètre de collecte
 ```
 

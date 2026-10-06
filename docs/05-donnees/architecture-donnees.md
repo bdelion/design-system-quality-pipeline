@@ -12,7 +12,7 @@ décisions D-001 à D-136 sera traité dans une étape ultérieure.
 
 ## Vue d'ensemble
 
-``` mermaid
+```mermaid
 flowchart LR
     G[GitHub] --> RAW[RawDataset]
     F[Fixture] --> RAW
@@ -32,29 +32,29 @@ flowchart LR
 
 ## Contrats par étape
 
-  -------------------------------------------------------------------------------
+---
   Étape             Entrée            Sortie                 Couche logicielle
                                                              actuelle
   ----------------- ----------------- ---------------------- --------------------
   Collecte          Fixture ou API    `RawDataset`           `src/collectors/`
-                    GitHub                                   
+                    GitHub
 
   Référence         YAML catalogue    Catalogue validé       `src/catalogue.ts`
 
   Normalisation     RAW + catalogue + `NormalizedData`       `src/normalizers/`
-                    configuration                            
+                    configuration
 
   Qualité           RAW + normalisé + `DataQualityIssue[]`   `src/quality/`
-                    règles                                   
+                    règles
 
   Analyse           Normalisé +       métriques /            `src/analytics/`
-                    impacts DQ        `Analytics`            
+                    impacts DQ        `Analytics`
 
   Snapshot          RAW + normalisé + `Snapshot`             `src/snapshots/`
-                    DQ + analytics                           
+                    DQ + analytics
 
   Restitution       Snapshot          HTML / JS / CSS        `src/dashboard/`
-  -------------------------------------------------------------------------------
+---
 
 ## RawDataset
 
@@ -92,11 +92,11 @@ indépendants de la structure de l'API GitHub.
 
 Dans l'implémentation actuelle, il contient principalement :
 
--   `Library` ;
--   `Component` ;
--   `Audit` ;
--   `Anomaly` ;
--   `PullRequest`.
+- `Library` ;
+- `Component` ;
+- `Audit` ;
+- `Anomaly` ;
+- `PullRequest`.
 
 Les relations utilisent des identifiants stables afin de relier
 Components, Audits, Anomalies et Pull Requests.
@@ -119,11 +119,11 @@ Principe important :
 L'implémentation actuelle distingue notamment des impacts de métrique de
 type :
 
--   `include` : la donnée peut rester dans le calcul, avec une fiabilité
+- `include` : la donnée peut rester dans le calcul, avec une fiabilité
     potentiellement dégradée ;
--   `exclude` : la donnée est exclue du périmètre d'une métrique
+- `exclude` : la donnée est exclue du périmètre d'une métrique
     concernée ;
--   `unknown` : la métrique concernée ne peut pas être considérée comme
+- `unknown` : la métrique concernée ne peut pas être considérée comme
     connue.
 
 Les règles DQ actuellement implémentées décrivent l'état du logiciel ;
@@ -147,13 +147,13 @@ métrique et non uniquement comme un état global du Snapshot.
 
 Le Snapshot regroupe dans une enveloppe traçable :
 
--   le RAW ;
--   le modèle normalisé ;
--   les résultats DQ ;
--   les analytics ;
--   la version du modèle ;
--   la version des règles ;
--   les informations de fiabilité.
+- le RAW ;
+- le modèle normalisé ;
+- les résultats DQ ;
+- les analytics ;
+- la version du modèle ;
+- la version des règles ;
+- les informations de fiabilité.
 
 Il constitue le contrat actuel entre le pipeline de calcul et les
 consommateurs tels que le dashboard.
@@ -164,7 +164,7 @@ Voir [Snapshots](snapshots.md).
 
 Le dashboard n'est pas une source de vérité métier.
 
-``` text
+```text
 Sources
   ↓
 RAW

@@ -5,13 +5,13 @@
 La vue Version doit restituer ce qui était connu pour une Version donnée
 sans projeter rétroactivement des Audits réalisés après sa publication.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Identité de Version
 
 Le modèle distingue :
 
-``` text
+```text
 Version déclarée
 Version d'artefact
 Version PROD
@@ -21,7 +21,7 @@ Milestone
 Une Milestone `M.m.r-Audit` est normalisée vers la Version concernée
 `M.m.r`, tout en conservant son contexte de rattrapage.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Components du périmètre
 
@@ -34,13 +34,13 @@ rétroactivement l'ancien périmètre.
 Le mécanisme technique de construction de ce Catalogue historique reste
 à définir.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Couverture
 
 Pour une Version :
 
-``` text
+```text
 Components couverts par un Audit applicable
 /
 Components du Catalogue applicable
@@ -48,13 +48,13 @@ Components du Catalogue applicable
 
 La couverture ne signifie pas conformité.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Conformité
 
 Pour une Version :
 
-``` text
+```text
 Components conformes
 /
 Components couverts
@@ -62,31 +62,31 @@ Components couverts
 
 Les Components non audités sont exclus du dénominateur de conformité.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Audit direct et verdict hérité
 
 La vue doit pouvoir distinguer :
 
-``` text
+```text
 Audit réalisé sur cette Version
 ```
 
 de :
 
-``` text
+```text
 verdict antérieur encore applicable
 ```
 
 L'héritage ne doit pas créer fictivement un nouvel Audit historique.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Audit pré-PROD
 
 Dans le fonctionnement cible :
 
-``` text
+```text
 RC M.m.r-rc.n
 → Audit
 → PROD M.m.r
@@ -97,11 +97,11 @@ sortie PROD.
 
 L'identification exacte de la RC auditée reste partiellement ouverte.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Audit de rattrapage
 
-``` text
+```text
 PROD M.m.r
 → Audit ultérieur
 ```
@@ -109,23 +109,23 @@ PROD M.m.r
 Ce résultat enrichit la connaissance actuelle de la Version mais ne doit
 pas être présenté comme connu lors de la date de publication.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Anomalies
 
 La vue Version peut présenter les Anomalies issues des Audits
 applicables :
 
--   détectées ;
--   traitées ;
--   non traitées ;
--   criticité ;
--   catégorie.
+- détectées ;
+- traitées ;
+- non traitées ;
+- criticité ;
+- catégorie.
 
 Il faut conserver la distinction entre état historique à la sortie et
 état de traitement actuel.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Score de qualité
 

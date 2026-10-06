@@ -7,19 +7,19 @@ sans dépendre d'un accès GitHub en temps réel.
 
 Elles servent notamment :
 
--   aux tests ;
--   à la démonstration ;
--   à la validation des contrats ;
--   à l'analyse contrôlée d'un jeu de données réel après anonymisation.
+- aux tests ;
+- à la démonstration ;
+- à la validation des contrats ;
+- à l'analyse contrôlée d'un jeu de données réel après anonymisation.
 
 ## Fixtures présentes
 
 Le repository contient notamment :
 
--   `fixtures/github.json` : fixture de démonstration ;
--   `fixtures/my-real-dataset-anonymized.json` : fixture anonymisée
+- `fixtures/github.json` : fixture de démonstration ;
+- `fixtures/my-real-dataset-anonymized.json` : fixture anonymisée
     issue d'un jeu réel ;
--   un rapport de validation associé lorsqu'il a été généré.
+- un rapport de validation associé lorsqu'il a été généré.
 
 Les fichiers exacts peuvent évoluer ; le principe important est de
 distinguer une fixture partageable d'un RAW réel local.
@@ -31,7 +31,7 @@ La fixture par défaut peut être utilisée par les commandes du pipeline.
 Lorsqu'une fixture spécifique est nécessaire, son chemin doit être
 fourni explicitement :
 
-``` bash
+```bash
 npm run pipeline -- \
   --source fixture \
   --fixture fixtures/my-real-dataset-anonymized.json
@@ -47,13 +47,13 @@ utilisent exactement les mêmes mappings d'identité.
 
 Pour une fixture :
 
-``` text
+```text
 fixtures/my-real-dataset-anonymized.json
 ```
 
 le workflow actuel peut produire des fichiers spécifiques tels que :
 
-``` text
+```text
 config/system.my-real-dataset-anonymized.yaml
 config/catalogue.my-real-dataset-anonymized.yaml
 ```
@@ -68,7 +68,7 @@ accidentellement des mappings de Repository obsolètes.
 
 L'implémentation conserve un fallback vers :
 
-``` text
+```text
 config/system.fixture.yaml
 config/catalogue.fixture.yaml
 ```
@@ -88,7 +88,7 @@ d'anonymisation.
 
 En particulier :
 
-``` text
+```text
 Fixture
 + system fixture config
 + catalogue fixture config
@@ -108,14 +108,14 @@ utilisée comme référence.
 
 Exemple :
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input fixtures/my-real-dataset-anonymized.json
 ```
 
 Avec manifeste de traçabilité local :
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input fixtures/my-real-dataset-anonymized.json \
   --trace fixtures/my-real-dataset-anonymized.json.trace.json \
@@ -129,7 +129,7 @@ Le manifeste `*.trace.json` reste local et ne doit pas être partagé.
 
 ## Règle de sécurité
 
-``` text
+```text
 RAW réel
     → local uniquement
 

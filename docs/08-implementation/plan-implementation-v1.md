@@ -206,7 +206,7 @@ Les tests existants constituent la baseline de non-régression.
 
 Une branche de référence verte sur laquelle le refactor métier peut commencer.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Lot I1 — Contrats de domaine V1
 
@@ -256,7 +256,7 @@ Faire évoluer le contrat pour représenter plusieurs Components.
 
 Cible conceptuelle :
 
-``` ts
+```ts
 interface RawIssue {
   // ...
   components: string[];
@@ -301,7 +301,7 @@ Faire de l’Anomalie une entité autonome de l’Audit.
 
 Cible conceptuelle :
 
-``` ts
+```ts
 type AnomalyOrigin = 'AUDIT' | 'HORS_AUDIT';
 
 interface Anomaly {
@@ -330,7 +330,7 @@ Remplacer le statut synthétique actuel par les faits nécessaires au métier.
 
 Cible conceptuelle :
 
-``` ts
+```ts
 type AuditVerdict = 'CONFORM' | 'NON_CONFORM' | 'UNKNOWN';
 type AuditTiming = 'PRE_PROD' | 'CATCH_UP' | 'UNKNOWN';
 
@@ -357,7 +357,7 @@ Introduire un objet métier Version.
 
 Cible conceptuelle minimale :
 
-``` ts
+```ts
 interface Version {
   versionId: string;
   libraryId: string;
@@ -374,7 +374,7 @@ interface Version {
 
 Ajouter les Issues et les Versions :
 
-``` ts
+```ts
 interface NormalizedData {
   libraries: Library[];
   components: Component[];
@@ -423,7 +423,7 @@ Bloque I2, I3 et I4.
 
 Un contrat de domaine capable de porter la V1, même si certains champs restent temporairement `undefined` tant que I2 n’a pas enrichi la collecte.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Lot I2 — Collecte GitHub enrichie
 
@@ -554,7 +554,7 @@ Bloque I3 et fournit une partie des données nécessaires à I4.
 
 Un `RawDataset` suffisamment riche pour construire le modèle métier V1 sans heuristique temporelle ou relationnelle cachée.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Lot I3 — Normalisation Audit / Anomalie / Version
 
@@ -710,7 +710,7 @@ Bloque I5 et I6.
 
 Un `NormalizedData` conforme au modèle métier V1 pour Anomaly, Audit et Version.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Lot I4 — Catalogue historique par Version
 
@@ -750,13 +750,13 @@ Recommandé :
 
 Introduire une API explicite, par exemple conceptuellement :
 
-``` ts
+```ts
 loadCatalogueAtVersion(repository, version)
 ```
 
 ou :
 
-``` ts
+```ts
 loadCatalogueAtRef(repository, tag)
 ```
 
@@ -801,7 +801,7 @@ Bloque le calcul correct de la couverture historique dans I6.
 
 Chaque Version analysée peut être associée à son Catalogue historique ou à un état explicite d’indisponibilité.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Lot I5 — Data Quality V1
 
@@ -890,7 +890,7 @@ Bloque la fiabilité finale des métriques I6.
 
 Une couche DQ alignée sur le métier, capable d’expliquer pourquoi une métrique est fiable, partielle ou inconnue.
 
-------------------------------------------------------------------------
+---
 
 ## 11. Lot I6 — Analytics V1
 
@@ -1033,7 +1033,7 @@ Bloque I7 et I8.
 
 Un catalogue de métriques V1 cohérent avec le modèle métier consolidé et indépendant des détails de GitHub.
 
-------------------------------------------------------------------------
+---
 
 ## 12. Lot I7 — Snapshots et historique
 
@@ -1135,7 +1135,7 @@ Bloque les vues historiques complètes du dashboard I8.
 
 Un modèle temporel cohérent permettant les analyses historiques sans réécriture du passé.
 
-------------------------------------------------------------------------
+---
 
 ## 13. Lot I8 — Dashboard V1
 
@@ -1276,7 +1276,7 @@ Dernier lot fonctionnel avant la consolidation I9.
 
 Un dashboard V1 contemporain, accessible et fidèle au contrat métier sans logique métier dupliquée dans l’UI.
 
-------------------------------------------------------------------------
+---
 
 ## 14. Lot I9 — Fixtures, anonymisation et non-régression
 
@@ -1375,7 +1375,7 @@ Dans les tests d’anonymisation :
 
 Une suite de non-régression V1 suffisamment représentative pour faire évoluer ensuite le produit sans dépendre des données réelles.
 
-------------------------------------------------------------------------
+---
 
 ## 15. Questions ouvertes et points de décision pendant l’implémentation
 

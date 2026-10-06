@@ -7,7 +7,7 @@ le métier sans exposer directement la structure de l'API GitHub.
 
 Il constitue la frontière entre :
 
-``` text
+```text
 formats des sources
         ↓
 normalisation
@@ -19,11 +19,11 @@ concepts utilisés par le pipeline
 
 Le modèle TypeScript actuel contient principalement :
 
--   `Library` ;
--   `Component` ;
--   `Audit` ;
--   `Anomaly` ;
--   `PullRequest`.
+- `Library` ;
+- `Component` ;
+- `Audit` ;
+- `Anomaly` ;
+- `PullRequest`.
 
 Cet inventaire décrit **l'état du code actuel**. Il ne doit pas être
 interprété comme le modèle métier cible complet.
@@ -36,7 +36,25 @@ représentation générique.
 
 Conformément à D-146, cette entité générique conserve le type d’Issue GitHub/métier collecté dans un champ `issueType`. Ce champ fait partie du contrat normalisé de l’Issue et ne doit pas être perdu pendant la transformation `RawIssue → Issue`.
 
-Conformément à D-147, les Issue Types forment un vocabulaire global au système et non une configuration propre à chaque repository. Les valeurs observées peuvent être inventoriées à partir du dataset collecté. La reconnaissance des notions métier est pilotée par une configuration globale associant une notion canonique à plusieurs valeurs ou mots-clés acceptés, dans la continuité de `github.issueTypes.keywords` dans `system.yaml`. Conformément à D-148, une valeur non reconnue reste conservée telle qu’elle a été collectée. L’Issue normalisée n’est ni supprimée ni invalidée pour ce motif. La Data Quality doit signaler le cas par un élément « issueType à déclarer » contenant au minimum la valeur brute concernée et un lien vers l’Issue GitHub source. Cette réserve est non bloquante pour le pipeline. Conformément à D-149, le modèle normalisé porte séparément la valeur brute remontée par GitHub et la notion canonique reconnue par le pipeline ; la canonicalisation ne remplace jamais la donnée source. Conformément à D-150, la notion canonique est optionnelle : si aucune notion n’est reconnue, elle est absente et aucune valeur `UNKNOWN` n’est injectée. Conformément à D-151, cette notion canonique est dérivée à chaque exécution depuis la valeur brute et la configuration courante ; elle n’est pas une vérité historique indépendante à conserver lorsque la configuration évolue. Conformément à D-153, la reconnaissance repose sur une correspondance stricte avec une variante complète explicitement déclarée ; les keywords ne sont pas des fragments recherchés dans la valeur brute. Conformément à D-152, une reconnaissance ambiguë vers plusieurs notions laisse également la notion canonique absente ; aucune priorité implicite n’est appliquée et une réserve Data Quality documente les candidats et l’Issue concernée. La liste définitive des notions canoniques reste à préciser. Conformément à D-155, l’absence totale d’Issue Type est également représentable : `rawIssueType` et `issueType` sont alors absents. L’Issue reste dans `NormalizedData`, aucune valeur `UNKNOWN` n’est injectée et la Data Quality produit une réserve non bloquante « issueType manquant » avec un lien vers l’Issue GitHub. Ce cas est distinct d’un `rawIssueType` présent mais non reconnu, qui relève de « issueType à déclarer » selon D-148. Conformément à D-154, la résolution compare la valeur complète après `trim` et sans tenir compte de la casse ; aucune recherche partielle n’est effectuée et `rawIssueType` reste inchangé.
+Conformément à D-147, les Issue Types forment un vocabulaire global au système et non une configuration propre à chaque repository. Les valeurs observées peuvent être inventoriées à partir du dataset collecté. La reconnaissance des notions métier est pilotée par une configuration globale associant une notion canonique à plusieurs variantes acceptées, dans la continuité de `github.issueTypes.keywords` dans `system.yaml`.
+
+Conformément à D-148, une valeur non reconnue reste conservée telle qu’elle a été collectée. L’Issue normalisée n’est ni supprimée ni invalidée pour ce motif. La Data Quality doit signaler le cas par un élément « issueType à déclarer » contenant au minimum la valeur brute concernée et un lien vers l’Issue GitHub source. Cette réserve est non bloquante pour le pipeline.
+
+Conformément à D-149, le modèle normalisé porte séparément la valeur brute remontée par GitHub et la notion canonique reconnue par le pipeline ; la canonicalisation ne remplace jamais la donnée source.
+
+Conformément à D-150, la notion canonique est optionnelle : si aucune notion n’est reconnue, elle est absente et aucune valeur `UNKNOWN` n’est injectée.
+
+Conformément à D-151, cette notion canonique est dérivée à chaque exécution depuis la valeur brute et la configuration courante ; elle n’est pas une vérité historique indépendante à conserver lorsque la configuration évolue.
+
+Conformément à D-152, une reconnaissance ambiguë vers plusieurs notions laisse également la notion canonique absente. Aucune priorité implicite n’est appliquée et une réserve Data Quality documente les candidats et l’Issue concernée.
+
+Conformément à D-153, la reconnaissance repose sur une correspondance stricte avec une variante complète explicitement déclarée ; les keywords ne sont pas des fragments recherchés dans la valeur brute.
+
+Conformément à D-154, la résolution compare la valeur complète après `trim` et sans tenir compte de la casse. Aucune recherche partielle n’est effectuée et `rawIssueType` reste inchangé.
+
+Conformément à D-155, l’absence totale d’Issue Type est également représentable : `rawIssueType` et `issueType` sont alors absents. L’Issue reste dans `NormalizedData`, aucune valeur `UNKNOWN` n’est injectée et la Data Quality produit une réserve non bloquante « issueType manquant » avec un lien vers l’Issue GitHub. Ce cas est distinct d’un `rawIssueType` présent mais non reconnu, qui relève de « issueType à déclarer » selon D-148.
+
+La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts
 supplémentaires, notamment autour des Packages, Versions, Improvements,
@@ -50,12 +68,12 @@ Les objets normalisés sont reliés par des identifiants stables.
 
 Le normaliseur peut ainsi établir des relations entre :
 
--   Library et Issues ;
--   Library et Components ;
--   Issues et objets métier spécialisés dérivés ;
--   Components et Audits ;
--   Audits et Anomalies ;
--   Issues et Pull Requests selon les données disponibles.
+- Library et Issues ;
+- Library et Components ;
+- Issues et objets métier spécialisés dérivés ;
+- Components et Audits ;
+- Audits et Anomalies ;
+- Issues et Pull Requests selon les données disponibles.
 
 Les cardinalités métier cibles ne doivent pas être déduites uniquement
 des structures TypeScript actuelles.
@@ -70,9 +88,9 @@ identifiant stable.
 
 Ce mécanisme facilite notamment :
 
--   les relations entre objets normalisés ;
--   les comparaisons de Snapshots ;
--   la détection de changements entre exécutions.
+- les relations entre objets normalisés ;
+- les comparaisons de Snapshots ;
+- la détection de changements entre exécutions.
 
 Un identifiant stable technique ne remplace pas pour autant la
 définition d'une identité métier. Cette dernière doit rester documentée
@@ -85,21 +103,21 @@ vers les données ayant servi à leur construction.
 
 Le modèle actuel utilise notamment des informations telles que :
 
--   `source` ;
--   `sourceId` ;
--   `collectedAt`.
+- `source` ;
+- `sourceId` ;
+- `collectedAt`.
 
 La provenance permet d'expliquer :
 
--   l'origine d'une entité ;
--   l'origine d'une alerte DQ ;
--   les entités ayant contribué à une métrique.
+- l'origine d'une entité ;
+- l'origine d'une alerte DQ ;
+- les entités ayant contribué à une métrique.
 
 ## État de qualité
 
 Le contrat actuel définit les statuts :
 
-``` text
+```text
 reliable
 partial
 unknown
@@ -121,7 +139,7 @@ les métriques du Snapshot partielles.
 Si la date nécessaire au calcul d'un délai n'est pas disponible, le
 pipeline doit représenter le délai comme inconnu plutôt que comme nul.
 
-``` text
+```text
 absence de preuve
 ≠
 valeur métier égale à zéro
@@ -140,13 +158,13 @@ de métriques ou au dashboard.
 
 L'enrichissement du modèle doit suivre l'ordre suivant :
 
-1.  décision ou définition métier ;
-2.  cardinalités et règles ;
-3.  contrat normalisé ;
-4.  mapping depuis le RAW ;
-5.  Data Quality ;
-6.  métriques ;
-7.  restitution.
+1. décision ou définition métier ;
+2. cardinalités et règles ;
+3. contrat normalisé ;
+4. mapping depuis le RAW ;
+5. Data Quality ;
+6. métriques ;
+7. restitution.
 
 Le code existant ne doit donc pas être utilisé pour limiter
 artificiellement le modèle métier cible.

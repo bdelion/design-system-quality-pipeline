@@ -9,13 +9,13 @@ pendant la normalisation.
 
 Le modèle doit distinguer :
 
-``` text
+```text
 Component connu du Catalogue
 ```
 
 de :
 
-``` text
+```text
 Component découvert mais absent du Catalogue
 ```
 
@@ -23,13 +23,13 @@ Component découvert mais absent du Catalogue
 
 La règle `DQ-006` signale actuellement un Component dont :
 
-``` text
+```text
 discoverySource = suggested
 ```
 
 avec :
 
-``` text
+```text
 severity = WARNING
 action   = include
 ```
@@ -53,7 +53,7 @@ L'impact doit donc être défini métrique par métrique.
 
 Pour les indicateurs historiques de couverture :
 
-``` text
+```text
 Version
 → Catalogue applicable à cette Version
 → dénominateur historique
@@ -69,26 +69,26 @@ Le mécanisme technique de construction de ce Catalogue historique reste
 
 Le pipeline doit distinguer :
 
-``` text
+```text
 Milestone brute
 ```
 
 de :
 
-``` text
+```text
 Version normalisée
 ```
 
 Exemple :
 
-``` text
+```text
 1.1.0
 1.1.0-Audit
 ```
 
 peuvent désigner la même Version normalisée :
 
-``` text
+```text
 1.1.0
 ```
 

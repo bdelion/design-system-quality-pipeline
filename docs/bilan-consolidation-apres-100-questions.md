@@ -85,22 +85,22 @@ Plusieurs sujets peuvent rester ouverts sans empêcher de consolider le modèle 
 
 Avant de figer le modèle de données complet, il reste surtout à consolider les sujets transverses suivants :
 
-1. **Library / Repository / Package / Component**  
+1. **Library / Repository / Package / Component**
    Les cardinalités cibles entre ces objets ne sont pas encore toutes arrêtées.
 
-2. **Anomalie hors Audit**  
+2. **Anomalie hors Audit**
    La définition générale d'une Anomalie et son cycle de vie restent moins précis que le cas Audit Accessibilité.
 
-3. **Workflow par profil**  
+3. **Workflow par profil**
    Les exceptions exactes entre STANDARD, AUDIT, EPIC, RELEASE et CONCEPTION doivent être consolidées dans une matrice unique.
 
-4. **Sources et temporalité des dates**  
+4. **Sources et temporalité des dates**
    Les dates de détection, correction, transitions Project et release doivent être reliées à des sources GitHub/Jenkins/Nexus réellement disponibles.
 
-5. **Référentiel historique des Composants**  
+5. **Référentiel historique des Composants**
    Le principe du Catalogue par Version est établi, mais sa construction technique n'est pas encore définie.
 
-6. **Sources externes consommateurs**  
+6. **Sources externes consommateurs**
    Applications, versions utilisées et occurrences de Composants constituent un futur domaine distinct qui ne doit pas bloquer le premier dashboard.
 
 ## 5. Recommandation pour la suite

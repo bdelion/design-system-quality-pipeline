@@ -4,10 +4,10 @@
 
 Cette page distingue :
 
-1.  les règles `DQ-001` à `DQ-010` réellement implémentées ;
-2.  leur intention ;
-3.  les divergences observées avec le modèle métier consolidé ;
-4.  les points qui devront être arbitrés avant modification du code.
+1. les règles `DQ-001` à `DQ-010` réellement implémentées ;
+2. leur intention ;
+3. les divergences observées avec le modèle métier consolidé ;
+4. les points qui devront être arbitrés avant modification du code.
 
 Aucune divergence listée ici ne constitue à elle seule une décision de
 modifier une règle.
@@ -16,7 +16,7 @@ modifier une règle.
 
 Le contrat actuel utilise notamment :
 
-``` text
+```text
 severity : ERROR | WARNING
 action   : include | exclude | unknown
 ```
@@ -32,7 +32,7 @@ de la donnée source.
 
 **Actuel**
 
-``` text
+```text
 Severity : ERROR
 Action   : exclude
 ```
@@ -49,13 +49,13 @@ est attendue.
 La règle doit à terme être suffisamment contextualisée pour ne pas
 imposer une criticité RGAA aux objets auxquels elle ne s'applique pas.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-002 --- Criticités incompatibles
 
 **Actuel**
 
-``` text
+```text
 Severity : ERROR
 Action   : exclude
 ```
@@ -70,13 +70,13 @@ RGAA.
 La criticité RGAA est distincte des autres domaines de priorité ou
 criticité.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-003 --- Parents multiples
 
 **Actuel**
 
-``` text
+```text
 Severity : ERROR
 Action   : exclude
 ```
@@ -87,7 +87,7 @@ Détecte une Anomalie avec plusieurs `parentRefs`.
 
 La règle correspond à une cardinalité désormais établie :
 
-``` text
+```text
 Anomaly d'Audit
 → exactement 1 Audit parent
 ```
@@ -100,13 +100,13 @@ qualifié comme Anomalie d'Audit.
 Un impact `audit.anomalyCount.*` est déclaré alors que ce préfixe n'est
 pas présent dans le catalogue V2 observé.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-004 --- PR de correction absente
 
 **Actuel**
 
-``` text
+```text
 Severity : WARNING
 Action   : include
 ```
@@ -120,7 +120,7 @@ fonctionnement décrit.
 
 Cependant, la règle générale :
 
-``` text
+```text
 Done → PR
 ```
 
@@ -130,13 +130,13 @@ DQ-004 doit donc rester comprise comme une règle appliquée à un contexte
 précis, et non comme la preuve qu'une PR est obligatoire pour EPIC ou
 AUDIT.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-005 --- PR mergée et Issue ouverte
 
 **Actuel**
 
-``` text
+```text
 Severity : WARNING
 Action   : include
 ```
@@ -150,7 +150,7 @@ distincts.
 
 Pour une Anomalie d'Audit, l'état traité nécessite notamment :
 
-``` text
+```text
 Done + Closed
 ```
 
@@ -160,13 +160,13 @@ transitoire légitime.
 La sévérité actuelle `WARNING` est cohérente avec le fait qu'il s'agit
 d'un signal à examiner plutôt que d'une suppression de donnée.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-006 --- Component absent du Catalogue
 
 **Actuel**
 
-``` text
+```text
 Severity : WARNING
 Action   : include
 ```
@@ -185,13 +185,13 @@ nécessaire.
 
 L'impact cible doit être défini métrique par métrique.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-007 --- Label inconnu
 
 **Actuel**
 
-``` text
+```text
 Severity : WARNING
 Action   : include
 ```
@@ -205,13 +205,13 @@ incertaine.
 
 L'impact doit dépendre de la dimension portée par le label concerné.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-008 --- Issue Cancelled référencée par une PR
 
 **Actuel**
 
-``` text
+```text
 Severity : ERROR
 Action   : exclude
 ```
@@ -226,26 +226,26 @@ conserver une relation vers une PR.
 
 Cette règle doit donc être considérée comme :
 
-``` text
+```text
 comportement actuellement implémenté
 ≠
 invariant métier définitivement validé
 ```
 
-------------------------------------------------------------------------
+---
 
 ### DQ-009 --- Nexus indisponible
 
 **Actuel**
 
-``` text
+```text
 Severity : WARNING
 Action   : include
 ```
 
 Détecte :
 
-``` text
+```text
 raw.nexusAvailable = false
 ```
 
@@ -259,13 +259,13 @@ Seules les métriques qui dépendent réellement d'une preuve Nexus doivent
 L'impact `portfolio.release.*` ne correspond à aucun préfixe démontré
 dans le catalogue V2 actuel.
 
-------------------------------------------------------------------------
+---
 
 ### DQ-010 --- Issue Cancelled avec Milestone
 
 **Actuel**
 
-``` text
+```text
 Severity : ERROR
 Action   : exclude
 ```
@@ -288,7 +288,7 @@ représentés explicitement par les dix DQ actuelles.
 
 Exemples établis :
 
-``` text
+```text
 Audit → exactement 1 Component
 Anomaly d'Audit → exactement 1 Audit parent
 Improvement d'Audit → exactement 1 Audit parent
@@ -306,15 +306,15 @@ Elle ne crée pas encore de nouveaux identifiants `DQ-011+`.
 
 Les constats suivants sont confirmés :
 
--   logique DQ répartie entre YAML, TypeScript et table d'impacts ;
--   `DQ-003` référence `audit.anomalyCount.*`, absent du catalogue V2
+- logique DQ répartie entre YAML, TypeScript et table d'impacts ;
+- `DQ-003` référence `audit.anomalyCount.*`, absent du catalogue V2
     observé ;
--   `DQ-006` impacte `portfolio.*`, potentiellement trop largement ;
--   `DQ-009` référence `portfolio.release.*`, absent du catalogue V2
+- `DQ-006` impacte `portfolio.*`, potentiellement trop largement ;
+- `DQ-009` référence `portfolio.release.*`, absent du catalogue V2
     observé ;
--   `DQ-008` et `DQ-010` couvrent deux interdictions liées aux Issues
+- `DQ-008` et `DQ-010` couvrent deux interdictions liées aux Issues
     Cancelled dont le statut métier reste à formaliser ;
--   la fiabilité globale du Snapshot devient actuellement `partial` dès
+- la fiabilité globale du Snapshot devient actuellement `partial` dès
     qu'une alerte DQ existe, y compris un WARNING.
 
 ## 6. Fiabilité cible
@@ -323,7 +323,7 @@ La fiabilité doit être principalement métrique-spécifique.
 
 Exemple :
 
-``` text
+```text
 DQ sur la criticité d'une Anomalie
     ↓
 métrique par criticité : affectée
@@ -338,12 +338,12 @@ métriques.
 
 Avant toute refonte des DQ :
 
-1.  stabiliser les règles métier nécessaires à la V1 ;
-2.  associer chaque règle à un contexte ou profil ;
-3.  définir la conséquence métier d'une violation ;
-4.  identifier les métriques réellement concernées ;
-5.  décider severity et action ;
-6.  seulement ensuite modifier YAML, TypeScript et tests.
+1. stabiliser les règles métier nécessaires à la V1 ;
+2. associer chaque règle à un contexte ou profil ;
+3. définir la conséquence métier d'une violation ;
+4. identifier les métriques réellement concernées ;
+5. décider severity et action ;
+6. seulement ensuite modifier YAML, TypeScript et tests.
 
 Les fichiers historiques `docs/quality-rules/DQ-001.md` à `DQ-010.md`
 doivent rester disponibles tant que cette migration n'est pas terminée.

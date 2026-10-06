@@ -7,13 +7,13 @@ Une Issue de Release sert à piloter une publication de Version.
 La source historique décrit un workflow spécifique et ne permet pas de
 la traiter comme une Issue STANDARD ordinaire.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Informations décrites dans la source
 
 La source prévoit notamment :
 
-``` text
+```text
 titre       : 🔖 Release M.m.r
 Milestone   : M.m.r
 branche source :
@@ -26,13 +26,13 @@ branche cible :
 
 ainsi qu'une description contenant :
 
--   numéro de Version ;
--   branches source et cible ;
--   mode opératoire ;
--   checklist de publication ;
--   points de vigilance spécifiques à la Version.
+- numéro de Version ;
+- branches source et cible ;
+- mode opératoire ;
+- checklist de publication ;
+- points de vigilance spécifiques à la Version.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Relation avec le cycle de Version
 
@@ -40,7 +40,7 @@ Les cycles établis sont :
 
 ### Release
 
-``` text
+```text
 release/***
     ↓
 M.m.r-rc.n
@@ -56,7 +56,7 @@ Nexus PROD M.m.r
 
 ### Hotfix
 
-``` text
+```text
 hotfix/***
     ↓
 M.m.r-hc.n
@@ -73,19 +73,19 @@ Nexus PROD M.m.r
 La Release GitHub existe normalement pour une PROD mais son caractère
 obligatoire reste à confirmer.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Milestone
 
 L'Issue de Release décrite dans la source est rattachée à la Milestone :
 
-``` text
+```text
 M.m.r
 ```
 
 Cette Milestone représente la Version PROD concernée.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Branche et Pull Request
 
@@ -98,22 +98,22 @@ La Pull Request appartient donc au processus de publication.
 Les règles détaillées de review sont documentées dans
 `pull-requests.md`.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Statuts encore ouverts
 
 La source indique notamment que l'Issue de Release :
 
--   resterait `Blocked` **ou `Backlog`** tant que les autres Issues ne
+- resterait `Blocked` **ou `Backlog`** tant que les autres Issues ne
     sont pas terminées ;
--   deviendrait `Ready` après une période de retour des early adopters.
+- deviendrait `Ready` après une période de retour des early adopters.
 
 La présence explicite de l'alternative `Blocked (ou Backlog ?)` montre
 que cette transition n'est pas décidée.
 
 Elle ne doit pas être transformée en règle DQ.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Matrice RELEASE
 
@@ -131,19 +131,19 @@ Elle ne doit pas être transformée en règle DQ.
   In review                   à formaliser avec PR
   Done                        à formaliser par rapport à publication PROD
 
-------------------------------------------------------------------------
+---
 
 ## 8. Ce qui reste à formaliser
 
 Avant de transformer RELEASE en machine à états normative, il faut
 décider :
 
--   statut initial réel ;
--   condition de passage à Ready ;
--   articulation avec les Audits pré-PROD ;
--   condition exacte de Done ;
--   comportement pour branches `support/*` ;
--   rôle exact de la Release GitHub.
+- statut initial réel ;
+- condition de passage à Ready ;
+- articulation avec les Audits pré-PROD ;
+- condition exacte de Done ;
+- comportement pour branches `support/*` ;
+- rôle exact de la Release GitHub.
 
 Ces points ne doivent pas être déduits de la seule implémentation
 actuelle.

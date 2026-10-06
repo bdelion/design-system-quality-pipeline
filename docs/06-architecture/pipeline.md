@@ -13,7 +13,7 @@ règles métier détaillées.
 
 ## Séquence actuelle
 
-``` text
+```text
 configuration
     ↓
 catalogue
@@ -54,8 +54,8 @@ génération du dashboard
 
 Le pipeline peut fonctionner à partir :
 
--   d'une fixture ;
--   de GitHub.
+- d'une fixture ;
+- de GitHub.
 
 Les deux chemins doivent converger vers le même contrat `RawDataset`,
 afin que les couches suivantes ne dépendent pas du mode de collecte.
@@ -105,7 +105,7 @@ Le dashboard est généré à partir du Snapshot.
 
 Cette dépendance doit rester unidirectionnelle :
 
-``` text
+```text
 Snapshot → Dashboard
 ```
 
@@ -116,7 +116,7 @@ Le dashboard ne doit pas modifier ni compléter les données métier.
 L'orchestration devra évoluer avec le modèle métier cible, mais en
 conservant autant que possible les frontières :
 
-``` text
+```text
 Sources
   ↓
 RAW

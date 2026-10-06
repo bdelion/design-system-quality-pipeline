@@ -9,12 +9,12 @@ Les cardinalités sont centralisées dans `relations.md`.
 
 Quatre statuts sont utilisés :
 
--   **ÉTABLI** : définition métier suffisamment stabilisée ;
--   **ACTUEL** : représentation observée aujourd'hui ;
--   **À CONFIRMER** : abstraction ou propriété encore ouverte ;
--   **FUTUR** : objet volontairement hors V1.
+- **ÉTABLI** : définition métier suffisamment stabilisée ;
+- **ACTUEL** : représentation observée aujourd'hui ;
+- **À CONFIRMER** : abstraction ou propriété encore ouverte ;
+- **FUTUR** : objet volontairement hors V1.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Design System
 
@@ -25,7 +25,7 @@ Il constitue la racine métier du périmètre suivi.
 
 **Statut : ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 3. Librairie
 
@@ -34,14 +34,14 @@ disposition des Applications consommatrices.
 
 ### Actuel
 
-``` text
+```text
 1 Repository = 1 Librairie
 1 Librairie = 1 Package
 ```
 
 ### Cible
 
-``` text
+```text
 1 Repository = 1..n Librairies
 1 Librairie = 1..n Packages
 ```
@@ -51,7 +51,7 @@ réduite à celle du Repository.
 
 **Statut : ÉTABLI pour l'objet et l'orientation cible.**
 
-------------------------------------------------------------------------
+---
 
 ## 4. Repository
 
@@ -59,20 +59,20 @@ Le **Repository** est un conteneur technique GitHub.
 
 Il fournit notamment :
 
--   Issues ;
--   Pull Requests ;
--   Milestones ;
--   branches ;
--   tags ;
--   Releases ;
--   informations de Projects.
+- Issues ;
+- Pull Requests ;
+- Milestones ;
+- branches ;
+- tags ;
+- Releases ;
+- informations de Projects.
 
 Il constitue une source et un périmètre technique, pas l'identité métier
 définitive d'une Librairie.
 
 **Statut : ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 5. Package
 
@@ -81,10 +81,10 @@ dépendance par une Application.
 
 Éléments déjà établis :
 
--   il possède un nom ;
--   il possède des Versions ;
--   ses artefacts sont publiés dans Nexus ;
--   une Application le consomme dans une Version donnée.
+- il possède un nom ;
+- il possède des Versions ;
+- ses artefacts sont publiés dans Nexus ;
+- une Application le consomme dans une Version donnée.
 
 Aujourd'hui, une Librairie correspond à un Package.
 
@@ -95,7 +95,7 @@ instruire.
 
 **Statut : PARTIELLEMENT ÉTABLI --- Q-001, Q-002.**
 
-------------------------------------------------------------------------
+---
 
 ## 6. Version
 
@@ -103,7 +103,7 @@ Une **Version** identifie un état versionné d'un Package.
 
 Les formes actuellement établies sont notamment :
 
-``` text
+```text
 M.m.r-SNAPSHOT
 M.m.r-rc.n
 M.m.r-hc.n
@@ -112,22 +112,22 @@ M.m.r
 
 Il faut distinguer :
 
--   Version déclarée dans `package.json` ;
--   Version d'artefact construite ou publiée par Jenkins.
+- Version déclarée dans `package.json` ;
+- Version d'artefact construite ou publiée par Jenkins.
 
 Une Version PROD :
 
--   est de forme `M.m.r` ;
--   n'a pas de suffixe ;
--   est publiée dans l'espace Nexus PROD ;
--   possède un Tag Git correspondant ;
--   doit disposer d'une Milestone `M.m.r` ;
--   possède normalement une Release GitHub, dont le caractère
+- est de forme `M.m.r` ;
+- n'a pas de suffixe ;
+- est publiée dans l'espace Nexus PROD ;
+- possède un Tag Git correspondant ;
+- doit disposer d'une Milestone `M.m.r` ;
+- possède normalement une Release GitHub, dont le caractère
     obligatoire reste à confirmer.
 
 **Statut : ÉTABLI, sauf Release GitHub obligatoire.**
 
-------------------------------------------------------------------------
+---
 
 ## 7. Build Jenkins
 
@@ -141,7 +141,7 @@ objet métier autonome du futur modèle normalisé.
 
 **Statut : ACTUEL / technique.**
 
-------------------------------------------------------------------------
+---
 
 ## 8. Composant
 
@@ -150,12 +150,12 @@ une Librairie.
 
 Il peut être concerné par :
 
--   des Issues ;
--   des Audits ;
--   des Anomalies ;
--   des Improvements ;
--   des Versions ;
--   des informations de qualité.
+- des Issues ;
+- des Audits ;
+- des Anomalies ;
+- des Improvements ;
+- des Versions ;
+- des informations de qualité.
 
 Le Catalogue constitue la référence des Composants connus.
 
@@ -164,7 +164,7 @@ multi-Packages reste ouvert.
 
 **Statut : ÉTABLI pour l'objet ; relation Package À CONFIRMER.**
 
-------------------------------------------------------------------------
+---
 
 ## 9. Issue
 
@@ -173,15 +173,15 @@ GitHub.
 
 Elle peut notamment porter :
 
--   Issue Type ;
--   labels ;
--   Status ;
--   Velocity ;
--   Iteration ;
--   Milestone ;
--   relations avec d'autres Issues ;
--   relations avec des Pull Requests ;
--   zéro, un ou plusieurs Composants selon sa nature.
+- Issue Type ;
+- labels ;
+- Status ;
+- Velocity ;
+- Iteration ;
+- Milestone ;
+- relations avec d'autres Issues ;
+- relations avec des Pull Requests ;
+- zéro, un ou plusieurs Composants selon sa nature.
 
 Une Issue n'est pas automatiquement une Anomalie.
 
@@ -216,13 +216,13 @@ Conformément à D-154, la comparaison stricte des variantes applique uniquement
 
 Conformément à D-152, si plusieurs notions canoniques correspondent à une même valeur brute, aucune n’est retenue : `issueType` reste absent. Le pipeline n’applique aucune priorité implicite et signale l’ambiguïté en Data Quality avec la valeur brute, les notions candidates et le lien vers l’Issue source.
 
-La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
+La liste définitive des notions canoniques reste à préciser.
 
 Conformément à D-155, l’absence totale d’Issue Type n’empêche pas la conservation de l’Issue. Dans ce cas, `rawIssueType` et `issueType` sont tous deux absents. Aucune valeur artificielle n’est injectée. Une réserve Data Quality non bloquante « issueType manquant » doit fournir un lien vers l’Issue GitHub concernée. Ce cas reste distinct d’une valeur présente mais non reconnue, traitée par D-148 comme « issueType à déclarer ».
 
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
-------------------------------------------------------------------------
+---
 
 ## 10. Audit
 
@@ -233,15 +233,15 @@ Aujourd'hui, le travail est matérialisé par une Issue GitHub d'Audit.
 
 Une Issue d'Audit :
 
--   concerne exactement un Composant ;
--   peut produire zéro à plusieurs Anomalies ;
--   peut produire zéro à plusieurs Improvements ;
--   est réalisée lorsqu'elle est à la fois `Project Status = Done` et
+- concerne exactement un Composant ;
+- peut produire zéro à plusieurs Anomalies ;
+- peut produire zéro à plusieurs Improvements ;
+- est réalisée lorsqu'elle est à la fois `Project Status = Done` et
     `GitHub Issue State = Closed`.
 
 Pour un Audit Accessibilité terminé :
 
-``` text
+```text
 0 Anomalie
 → AUDITÉ & CONFORME
 
@@ -256,7 +256,7 @@ l'Issue GitHub qui le matérialise.
 
 **Statut : PARTIELLEMENT ÉTABLI --- Q-015.**
 
-------------------------------------------------------------------------
+---
 
 ## 11. Famille d'Audit
 
@@ -264,7 +264,7 @@ La **Famille d'Audit** décrit la nature de l'évaluation réalisée.
 
 La nature de l'Issue et la famille sont deux dimensions distinctes :
 
-``` text
+```text
 Issue Type = Audit
 Famille     = Accessibilité / RGAA actuellement
 ```
@@ -273,7 +273,7 @@ La représentation technique de cette famille reste à décider.
 
 **Statut : principe ÉTABLI ; représentation À CONFIRMER.**
 
-------------------------------------------------------------------------
+---
 
 ## 12. Campagne d'Audit
 
@@ -282,15 +282,15 @@ regrouper plusieurs Audits.
 
 Aujourd'hui, une Milestone peut jouer ce rôle de regroupement pour :
 
--   une future Version PROD ;
--   un Audit de rattrapage.
+- une future Version PROD ;
+- un Audit de rattrapage.
 
 Il n'est pas établi qu'une Campagne doive devenir un objet métier
 autonome.
 
 **Statut : À CONFIRMER --- Q-016.**
 
-------------------------------------------------------------------------
+---
 
 ## 13. Anomalie
 
@@ -299,11 +299,11 @@ Une **Anomalie** est un problème identifié sur le Design System.
 Pour les Anomalies provenant d'un Audit, le modèle est désormais strict
 :
 
--   une Issue GitHub qualifiée comme Anomalie compte pour une Anomalie ;
--   elle est sous-Issue d'exactement un Audit ;
--   son Issue Type est `🐛 Bug` ;
--   elle concerne exactement le même Composant que son Audit parent ;
--   pour un Audit Accessibilité, elle possède exactement une criticité
+- une Issue GitHub qualifiée comme Anomalie compte pour une Anomalie ;
+- elle est sous-Issue d'exactement un Audit ;
+- son Issue Type est `🐛 Bug` ;
+- elle concerne exactement le même Composant que son Audit parent ;
+- pour un Audit Accessibilité, elle possède exactement une criticité
     RGAA et exactement une catégorie `a11y`.
 
 Une Issue peut regrouper plusieurs occurrences du même problème : le
@@ -315,7 +315,7 @@ origines et certaines propriétés restent à consolider.
 **Statut : ÉTABLI pour l'Anomalie d'Audit ; PARTIEL pour l'Anomalie
 générale.**
 
-------------------------------------------------------------------------
+---
 
 ## 14. Improvement
 
@@ -324,20 +324,20 @@ qui ne constitue pas une non-conformité.
 
 Elle :
 
--   est une sous-Issue d'exactement un Audit ;
--   possède l'Issue Type `✨ Feature` ;
--   concerne exactement le même Composant que l'Audit ;
--   ne porte aucune criticité RGAA ;
--   peut porter une catégorisation `a11y`, mais celle-ci est facultative
+- est une sous-Issue d'exactement un Audit ;
+- possède l'Issue Type `✨ Feature` ;
+- concerne exactement le même Composant que l'Audit ;
+- ne porte aucune criticité RGAA ;
+- peut porter une catégorisation `a11y`, mais celle-ci est facultative
     ;
--   n'affecte pas le verdict de conformité.
+- n'affecte pas le verdict de conformité.
 
 La cardinalité maximale des catégories `a11y` d'une Improvement reste à
 confirmer.
 
 **Statut : ÉTABLI sauf cardinalité maximale a11y.**
 
-------------------------------------------------------------------------
+---
 
 ## 15. Criticité
 
@@ -346,19 +346,19 @@ déterminé.
 
 Les domaines identifiés comprennent :
 
--   accessibilité / RGAA / WAI-ARIA ;
--   métier ;
--   fonctionnalité ;
--   technique ;
--   Developer Experience ;
--   Designer Experience.
+- accessibilité / RGAA / WAI-ARIA ;
+- métier ;
+- fonctionnalité ;
+- technique ;
+- Developer Experience ;
+- Designer Experience.
 
 Les labels RGAA `bloquante`, `majeure`, `mineure` sont strictement
 réservés aux Anomalies provenant d'un Audit Accessibilité.
 
 **Statut : ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 16. Catégorie a11y
 
@@ -368,16 +368,16 @@ Elle est transverse à la nature et à l'origine de l'Issue.
 
 Elle peut donc apparaître sur :
 
--   Anomalie d'Audit ;
--   Improvement d'Audit ;
--   Issue hors Audit.
+- Anomalie d'Audit ;
+- Improvement d'Audit ;
+- Issue hors Audit.
 
 Elle ne suffit jamais à conclure qu'une Issue est une Anomalie ou
 provient d'un Audit.
 
 **Statut : ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 17. Pull Request
 
@@ -391,7 +391,7 @@ EPIC, AUDIT, RELEASE ou CONCEPTION.
 
 **Statut : objet ÉTABLI ; obligations À FORMALISER.**
 
-------------------------------------------------------------------------
+---
 
 ## 18. Iteration
 
@@ -404,7 +404,7 @@ workflow.
 
 **Statut : ÉTABLI comme objet source ; règles À FORMALISER.**
 
-------------------------------------------------------------------------
+---
 
 ## 19. Milestone
 
@@ -413,10 +413,10 @@ polymorphe.
 
 Elle peut notamment représenter :
 
--   une Version `M.m.r` ;
--   un Audit de rattrapage `M.m.r-Audit` ;
--   un horizon trimestriel ou semestriel ;
--   un lot de priorité Design.
+- une Version `M.m.r` ;
+- un Audit de rattrapage `M.m.r-Audit` ;
+- un horizon trimestriel ou semestriel ;
+- un lot de priorité Design.
 
 Une Milestone doit donc être classifiée avant d'être interprétée.
 
@@ -424,7 +424,7 @@ Une Milestone doit donc être classifiée avant d'être interprétée.
 
 **Statut : ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 20. Release GitHub
 
@@ -436,7 +436,7 @@ caractère obligatoire et son mécanisme exact de création ne sont pas
 
 **Statut : À CONFIRMER --- Q-007.**
 
-------------------------------------------------------------------------
+---
 
 ## 21. Tag Git
 
@@ -450,7 +450,7 @@ La règle de traitement d'un Tag attendu mais absent reste à définir.
 
 **Statut : ÉTABLI pour le nominal ; anomalie À INSTRUIRE.**
 
-------------------------------------------------------------------------
+---
 
 ## 22. Application consommatrice
 
@@ -459,7 +459,7 @@ plusieurs Packages du Design System.
 
 Le futur modèle devra pouvoir représenter :
 
-``` text
+```text
 Application
 └── Package @ Version
 ```
@@ -470,7 +470,7 @@ Les sources et méthodes de détection ne sont pas définies.
 
 **Statut : FUTUR.**
 
-------------------------------------------------------------------------
+---
 
 ## 23. Consommation
 
@@ -485,7 +485,7 @@ Sa forme technique n'est pas arrêtée.
 
 **Statut : FUTUR.**
 
-------------------------------------------------------------------------
+---
 
 ## 24. Snapshot
 
@@ -499,7 +499,7 @@ Il ne doit pas être confondu avec un événement métier.
 
 **Statut : ÉTABLI techniquement.**
 
-------------------------------------------------------------------------
+---
 
 ## 25. Data Quality Issue
 
@@ -513,13 +513,13 @@ que dégrader arbitrairement toutes les métriques.
 
 **Statut : ÉTABLI comme principe analytique.**
 
-------------------------------------------------------------------------
+---
 
 ## 26. Objets à ne pas confondre
 
 Le modèle impose notamment les distinctions suivantes :
 
-``` text
+```text
 Repository ≠ Librairie
 
 Librairie ≠ Package
@@ -542,7 +542,7 @@ Snapshot ≠ événement métier
 
 Ces distinctions doivent rester visibles dans le modèle normalisé.
 
-------------------------------------------------------------------------
+---
 
 ## Anomalie --- identification générale
 
@@ -553,7 +553,7 @@ Une Anomalie découverte dans le cadre d'un Audit reste également une
 Issue de type `🐛 Bug`, mais elle est distinguée par sa relation de
 sub-Issue avec l'Issue d'Audit d'origine.
 
-``` text
+```text
 Anomalie
 ├── hors Audit
 └── issue d'un Audit
@@ -562,14 +562,14 @@ Anomalie
 La relation à l'Audit qualifie l'origine de l'Anomalie ; elle ne change
 pas la nature `Anomalie` de l'Issue.
 
-------------------------------------------------------------------------
+---
 
 ## Anomalie --- origine en V1
 
 Pour la V1, l'origine d'une Anomalie est volontairement limitée à deux
 valeurs métier :
 
-``` text
+```text
 AUDIT
 HORS_AUDIT
 ```
@@ -583,14 +583,14 @@ la Squad elle-même.
 
 La taxonomie V2 et les indicateurs associés ne sont pas encore définis.
 
-------------------------------------------------------------------------
+---
 
 ## Anomalie --- date de détection
 
 Pour une Anomalie, la date métier de détection est la date de création
 de l'Issue `🐛 Bug` dans GitHub.
 
-``` text
+```text
 Anomalie.detectedAt = GitHub Issue.createdAt
 ```
 
@@ -598,14 +598,14 @@ Cette règle s'applique aux Anomalies issues d'un Audit comme aux
 Anomalies hors Audit. Le modèle ne reconstruit pas une éventuelle
 constatation antérieure à la création de l'Issue.
 
-------------------------------------------------------------------------
+---
 
 ## Anomalie --- date de correction
 
 La date métier de correction d'une Anomalie est la date à laquelle
 l'Issue `🐛 Bug` passe au statut Project `Done`.
 
-``` text
+```text
 Anomalie.correctedAt = date du passage de l'Issue à Done
 ```
 
@@ -618,13 +618,13 @@ correction lorsqu'une Pull Request est requise.
 de la Pull Request relève d'un contrôle de cohérence des données et ne
 change pas la définition de `correctedAt`.
 
-------------------------------------------------------------------------
+---
 
 ## Audit --- date de fin
 
 La date métier de fin d'un Audit est la date à laquelle son Issue d'Audit passe au statut Project `Done`.
 
-``` text
+```text
 Audit.completedAt = date du passage de l'Issue d'Audit à Done
 ```
 
@@ -632,13 +632,13 @@ Dans le fonctionnement nominal, l'Issue doit également être `Closed` de maniè
 
 La date de début d'un Audit n'est pas déduite de cette décision.
 
-------------------------------------------------------------------------
+---
 
 ## Audit --- artefact réellement audité
 
 Un Audit pré-PROD porte deux références de Version complémentaires :
 
-``` text
+```text
 targetVersion
 → Version cible portée par la Milestone, de forme M.m.r
 
@@ -650,7 +650,7 @@ auditedReleaseCandidate
 
 La Milestone reste nécessaire pour rattacher l'Audit à sa Version cible. Elle ne remplace pas le champ explicite de RC auditée.
 
-------------------------------------------------------------------------
+---
 
 ## Version --- Catalogue historique applicable
 
@@ -663,15 +663,14 @@ Il représente le périmètre des Components de cette Version et sert
 notamment de dénominateur aux indicateurs historiques de couverture
 d'Audit.
 
-------------------------------------------------------------------------
+---
 
 ## Version --- date de Release
 
 Une Version PROD `M.m.r` possède une date métier de Release définie par la date de création de son Git tag `M.m.r`.
 
-``` text
+```text
 releasedAt = GitTag(M.m.r).createdAt
 ```
 
 `releasedAt` sert d'instant de coupure pour reconstruire l'état connu à la Release.
-

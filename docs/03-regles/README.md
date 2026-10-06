@@ -5,13 +5,13 @@
 Ce dossier organise les règles utilisées par le Design System Quality
 Pipeline sans confondre :
 
--   une règle métier validée ;
--   une règle de workflow dépendante d'un profil ;
--   une règle de cohérence entre relations ;
--   une règle de référentiel ;
--   une règle de qualité de données ;
--   une règle liée à la disponibilité d'une source ;
--   une règle actuellement implémentée mais encore discutable au regard
+- une règle métier validée ;
+- une règle de workflow dépendante d'un profil ;
+- une règle de cohérence entre relations ;
+- une règle de référentiel ;
+- une règle de qualité de données ;
+- une règle liée à la disponibilité d'une source ;
+- une règle actuellement implémentée mais encore discutable au regard
     du modèle cible.
 
 Cette distinction est indispensable avant toute refonte de `DQ-001` à
@@ -25,10 +25,10 @@ Elles définissent la signification des objets du domaine.
 
 Exemples :
 
--   ce qui constitue un Audit réalisé ;
--   ce qui constitue une Anomalie traitée ;
--   la cardinalité Audit → Anomalie ;
--   la différence entre Anomalie et Improvement.
+- ce qui constitue un Audit réalisé ;
+- ce qui constitue une Anomalie traitée ;
+- la cardinalité Audit → Anomalie ;
+- la différence entre Anomalie et Improvement.
 
 Voir [Règles métier](regles-metier.md).
 
@@ -71,7 +71,7 @@ Voir [Règles de disponibilité des sources](regles-sources.md).
 
 ## Ordre d'évaluation cible
 
-``` text
+```text
 Données sources
     ↓
 Normalisation
@@ -104,13 +104,13 @@ parce que la documentation métier a évolué.
 
 La démarche est :
 
-1.  documenter ce que la règle fait aujourd'hui ;
-2.  identifier le besoin métier qu'elle cherche à protéger ;
-3.  confronter ce besoin aux décisions consolidées ;
-4.  identifier les divergences ;
-5.  décider ensuite de conserver, spécialiser, remplacer ou retirer la
+1. documenter ce que la règle fait aujourd'hui ;
+2. identifier le besoin métier qu'elle cherche à protéger ;
+3. confronter ce besoin aux décisions consolidées ;
+4. identifier les divergences ;
+5. décider ensuite de conserver, spécialiser, remplacer ou retirer la
     règle ;
-6.  seulement alors modifier le code et les tests.
+6. seulement alors modifier le code et les tests.
 
 ## Fiabilité
 
@@ -119,7 +119,7 @@ Snapshot non fiables.
 
 Le modèle cible doit raisonner au niveau de la métrique :
 
-``` text
+```text
 DQ
   ↓
 métriques réellement concernées

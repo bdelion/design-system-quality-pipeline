@@ -8,7 +8,7 @@ modification de code.
 Elle ne doit pas être considérée comme obligatoire pour toute Issue sans
 tenir compte du profil de workflow.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Profil STANDARD
 
@@ -17,27 +17,27 @@ Request est un élément central du traitement.
 
 La source décrit notamment :
 
--   PR éventuellement `Draft` avant la phase de revue ;
--   PR ouverte/non Draft lorsque les Issues associées sont en
+- PR éventuellement `Draft` avant la phase de revue ;
+- PR ouverte/non Draft lorsque les Issues associées sont en
     `In review` ;
--   assignee ;
--   reviewers pendant la revue ;
--   approbation ;
--   discussions résolues ;
--   checks réussis avant merge.
+- assignee ;
+- reviewers pendant la revue ;
+- approbation ;
+- discussions résolues ;
+- checks réussis avant merge.
 
 Le modèle RAW actuel ne conserve pas toutes ces informations.
 
 Toutes ces règles ne peuvent donc pas encore être contrôlées par le
 pipeline.
 
-------------------------------------------------------------------------
+---
 
 ## 3. In review
 
 Pour une Issue STANDARD de code :
 
-``` text
+```text
 In review
 → Pull Request attendue
 ```
@@ -47,7 +47,7 @@ La Pull Request constitue le support de la revue.
 Cette relation ne doit pas être appliquée universellement aux profils
 sans PR propre.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Done
 
@@ -60,7 +60,7 @@ l'auditeur.
 
 Il ne faut donc pas assimiler automatiquement :
 
-``` text
+```text
 PR merged
 =
 Issue métier terminée
@@ -68,7 +68,7 @@ Issue métier terminée
 
 sans vérifier les autres conditions du profil.
 
-------------------------------------------------------------------------
+---
 
 ## 5. EPIC
 
@@ -76,18 +76,18 @@ Une Epic n'a pas de branche ou de Pull Request propre selon la source.
 
 Ses sous-Issues portent les réalisations techniques.
 
-``` text
+```text
 EPIC
 └── PR propre : NON
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 6. AUDIT
 
 Une Issue d'Audit n'est pas une modification de code.
 
-``` text
+```text
 AUDIT
 └── PR propre : NON
 ```
@@ -95,20 +95,20 @@ AUDIT
 Les Anomalies issues de l'Audit suivent leur propre processus de
 correction et peuvent posséder leurs propres Pull Requests.
 
-------------------------------------------------------------------------
+---
 
 ## 7. RELEASE
 
 Le profil RELEASE manipule explicitement :
 
--   une branche source `release/*` ou `hotfix/*` ;
--   une branche cible ;
--   une Pull Request d'intégration/publication.
+- une branche source `release/*` ou `hotfix/*` ;
+- une branche cible ;
+- une Pull Request d'intégration/publication.
 
 Ses règles ne doivent pas être confondues avec celles d'une Issue
 STANDARD.
 
-------------------------------------------------------------------------
+---
 
 ## 8. CONCEPTION
 
@@ -117,7 +117,7 @@ de Conception.
 
 **Statut : À FORMALISER.**
 
-------------------------------------------------------------------------
+---
 
 ## 9. Matrice
 
@@ -132,7 +132,7 @@ de Conception.
 Cette matrice explique pourquoi `Q-021` doit être résolue par profil
 plutôt que par une règle globale.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Limitation des données actuelles
 
@@ -142,11 +142,11 @@ les Issues.
 
 Il ne permet pas à lui seul de contrôler exhaustivement :
 
--   assignee ;
--   reviewers ;
--   approvals ;
--   discussions résolues ;
--   checks CI.
+- assignee ;
+- reviewers ;
+- approvals ;
+- discussions résolues ;
+- checks CI.
 
 Ces contrôles ne doivent pas être annoncés comme implémentés tant que
 les données nécessaires ne sont pas collectées.

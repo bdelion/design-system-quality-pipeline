@@ -16,7 +16,7 @@ Lorsqu'une réponse est établie, elle doit être reportée dans les documents d
 
 ---
 
-# 2. Gestion des décisions et questions
+## 2. Gestion des décisions et questions
 
 Les identifiants des décisions `D-xxx` et des questions `Q-xxx` sont stables.
 
@@ -35,9 +35,9 @@ Le registre doit donc rester cumulatif et traçable.
 
 ---
 
-# 3. Décisions et faits déjà établis
+## 3. Décisions et faits déjà établis
 
-## D-001 — Repository et Librairie
+### D-001 — Repository et Librairie
 
 Aujourd'hui :
 
@@ -55,7 +55,7 @@ Le modèle doit permettre à terme :
 
 ---
 
-## D-002 — Librairie et Package
+### D-002 — Librairie et Package
 
 Aujourd'hui :
 
@@ -73,7 +73,7 @@ Cible :
 
 ---
 
-## D-003 — Package et Version
+### D-003 — Package et Version
 
 Une Application utilise un Package dans une Version donnée.
 
@@ -86,7 +86,7 @@ Application
 
 ---
 
-## D-004 — Version déclarée dans `package.json`
+### D-004 — Version déclarée dans `package.json`
 
 Dans le fonctionnement nominal observé, `package.json` contient une Version de base de forme :
 
@@ -116,7 +116,7 @@ La forme `M.m.r` constitue donc le fonctionnement nominal observé et non une co
 
 ---
 
-## D-005 — Version SNAPSHOT
+### D-005 — Version SNAPSHOT
 
 Depuis :
 
@@ -141,7 +141,7 @@ Elles n'ont pas vocation à être déployées en production.
 
 ---
 
-## D-006 — Release Candidate
+### D-006 — Release Candidate
 
 Depuis :
 
@@ -161,7 +161,7 @@ Le numéro situé après `rc` correspond au numéro du build Jenkins.
 
 ---
 
-## D-007 — Hotfix Candidate
+### D-007 — Hotfix Candidate
 
 Depuis :
 
@@ -181,7 +181,7 @@ Le numéro situé après `hc` correspond au numéro du build Jenkins.
 
 ---
 
-## D-008 — Production PROD depuis une release
+### D-008 — Production PROD depuis une release
 
 Une Version PROD issue d'une release est produite lors du merge :
 
@@ -203,7 +203,7 @@ Publication Nexus PROD M.m.r
 
 ---
 
-## D-009 — Production PROD depuis un hotfix
+### D-009 — Production PROD depuis un hotfix
 
 Une Version PROD issue d'un hotfix est produite selon le même principe :
 
@@ -223,7 +223,7 @@ Publication Nexus PROD M.m.r
 
 ---
 
-## D-010 — Caractéristiques d'une Version PROD
+### D-010 — Caractéristiques d'une Version PROD
 
 Une Version PROD :
 
@@ -240,7 +240,7 @@ Le caractère obligatoire de la Release GitHub n'est pas encore confirmé.
 
 ---
 
-## D-011 — Nexus ne contient pas uniquement des Versions PROD
+### D-011 — Nexus ne contient pas uniquement des Versions PROD
 
 Nexus peut notamment contenir :
 
@@ -257,7 +257,7 @@ La présence d'une Version dans Nexus ne suffit donc pas à la qualifier de Vers
 
 ---
 
-## D-012 — Audit cible avant PROD
+### D-012 — Audit cible avant PROD
 
 Le fonctionnement souhaité est de réaliser les Audits avant la création de la Version PROD finale.
 
@@ -277,7 +277,7 @@ M.m.r
 
 ---
 
-## D-013 — Milestone des Audits pré-PROD
+### D-013 — Milestone des Audits pré-PROD
 
 Dans le fonctionnement cible, les Issues d'Audit des Composants évoluent dans la Milestone correspondant à la future Version PROD :
 
@@ -289,7 +289,7 @@ M.m.r
 
 ---
 
-## D-014 — Milestone `M.m.r-Audit`
+### D-014 — Milestone `M.m.r-Audit`
 
 Une Milestone telle que :
 
@@ -305,7 +305,7 @@ Elle correspond à un mécanisme de rattrapage utilisé lorsque les Audits n'ont
 
 ---
 
-## D-015 — Contenu d'une Milestone d'Audit de rattrapage
+### D-015 — Contenu d'une Milestone d'Audit de rattrapage
 
 Une Milestone `M.m.r-Audit` contient uniquement les Issues d'Audit des Composants.
 
@@ -317,7 +317,7 @@ Les Anomalies découvertes ne sont pas destinées à être planifiées dans cett
 
 ---
 
-## D-016 — Traitement des Anomalies découvertes lors d'un Audit
+### D-016 — Traitement des Anomalies découvertes lors d'un Audit
 
 Les Anomalies découvertes suivent leur propre processus :
 
@@ -337,7 +337,7 @@ Milestone + Sprint / Iteration
 
 ---
 
-## D-017 — Temporalité des Audits
+### D-017 — Temporalité des Audits
 
 Le modèle doit distinguer :
 
@@ -361,7 +361,7 @@ Audit
 
 ---
 
-## D-018 — Identification actuelle d'une Issue d'Audit RGAA
+### D-018 — Identification actuelle d'une Issue d'Audit RGAA
 
 Aujourd'hui :
 
@@ -374,7 +374,7 @@ label : 🧩 Component:xxx
 
 ---
 
-## D-019 — Identification cible d'une Issue d'Audit
+### D-019 — Identification cible d'une Issue d'Audit
 
 La cible souhaitée est :
 
@@ -388,7 +388,7 @@ La représentation de la famille d'Audit reste à décider.
 
 ---
 
-## D-020 — Nature et famille d'Audit
+### D-020 — Nature et famille d'Audit
 
 La nature de l'Issue et la famille d'Audit sont deux dimensions distinctes.
 
@@ -403,7 +403,7 @@ Issue
 
 ---
 
-## D-021 — Composant non audité
+### D-021 — Composant non audité
 
 Il faut distinguer :
 
@@ -419,7 +419,7 @@ Un Composant non audité n'est pas automatiquement non conforme.
 
 ---
 
-## D-022 — Couverture et conformité
+### D-022 — Couverture et conformité
 
 ```text
 Couverture d'Audit
@@ -441,7 +441,7 @@ Composants audités
 
 ---
 
-## D-023 — Vélocité vide et vélocité zéro
+### D-023 — Vélocité vide et vélocité zéro
 
 Les valeurs suivantes ont des significations différentes :
 
@@ -455,7 +455,7 @@ velocity > 0
 
 ---
 
-## D-024 — Criticité
+### D-024 — Criticité
 
 La Criticité doit être associée à un domaine :
 
@@ -470,7 +470,7 @@ La Criticité doit être associée à un domaine :
 
 ---
 
-## D-025 — Anomalie et Amélioration
+### D-025 — Anomalie et Amélioration
 
 Une Anomalie et une proposition d'Amélioration sont deux notions distinctes.
 
@@ -478,7 +478,7 @@ Une Anomalie et une proposition d'Amélioration sont deux notions distinctes.
 
 ---
 
-## D-026 — Version déclarée et Version d'artefact
+### D-026 — Version déclarée et Version d'artefact
 
 La Version présente dans `package.json` et la Version effectivement construite/publiée par Jenkins sont deux notions distinctes.
 
@@ -502,7 +502,7 @@ Le modèle normalisé devra conserver cette distinction.
 
 ---
 
-## D-027 — Famille actuelle d'Audit
+### D-027 — Famille actuelle d'Audit
 
 La seule famille d'Audit actuellement pratiquée est l'**Accessibilité**.
 
@@ -512,7 +512,7 @@ RGAA, WCAG et WAI-ARIA sont a priori traités ensemble par l'auditeur dans ce co
 
 ---
 
-## D-028 — Fin d'un Audit
+### D-028 — Fin d'un Audit
 
 Une Issue d'Audit est considérée comme terminée lorsque les deux conditions sont réunies :
 
@@ -526,7 +526,7 @@ GitHub Issue State = Closed
 
 ---
 
-## D-029 — Conformité déduite de l'Audit
+### D-029 — Conformité déduite de l'Audit
 
 Le résultat de conformité n'est actuellement pas saisi explicitement.
 
@@ -546,7 +546,7 @@ Une sub-Issue d'Amélioration ne rend donc pas, à elle seule, le Composant non 
 
 ---
 
-## D-030 — Classification des sub-Issues d'un Audit d'Accessibilité
+### D-030 — Classification des sub-Issues d'un Audit d'Accessibilité
 
 Les sub-Issues d'une Issue d'Audit d'Accessibilité peuvent actuellement représenter deux natures métier distinctes :
 
@@ -573,7 +573,7 @@ Une sub-Issue d'Amélioration possède actuellement :
 
 ---
 
-## D-031 — Catégories Accessibilité des Anomalies d'Audit
+### D-031 — Catégories Accessibilité des Anomalies d'Audit
 
 Les Anomalies issues d'un Audit d'Accessibilité portent un label de forme :
 
@@ -600,7 +600,7 @@ Les catégories `navigation clavier` et `contrastes` ont été citées plusieurs
 
 ---
 
-## D-032 — Criticité RGAA d'une Anomalie d'Audit
+### D-032 — Criticité RGAA d'une Anomalie d'Audit
 
 Dans le fonctionnement actuel, une Anomalie issue d'un Audit d'Accessibilité doit porter exactement un label de criticité RGAA parmi :
 
@@ -622,7 +622,7 @@ Ces trois valeurs constituent le référentiel actuel, mais le modèle doit perm
 
 ---
 
-## D-033 — Référentiel de criticité partagé avec l'auditeur
+### D-033 — Référentiel de criticité partagé avec l'auditeur
 
 Les trois niveaux de criticité RGAA actuellement utilisés sont partagés avec l'auditeur :
 
@@ -640,7 +640,7 @@ La définition précise et les critères d'attribution de chacun de ces niveaux 
 
 ---
 
-## D-034 — Orientation de catégorisation des Améliorations d'Audit
+### D-034 — Orientation de catégorisation des Améliorations d'Audit
 
 Aucun exemple réel de sub-Issue d'Amélioration issue d'un Audit n'est disponible à ce stade pour établir un référentiel existant.
 
@@ -661,7 +661,7 @@ Les caractéristiques actuellement établies d'une Amélioration d'Audit restent
 
 ---
 
-## D-035 — Absence d'impact des Améliorations sur la conformité
+### D-035 — Absence d'impact des Améliorations sur la conformité
 
 Une sub-Issue d'Amélioration issue d'un Audit n'est pas une non-conformité.
 
@@ -683,7 +683,7 @@ Les Améliorations doivent être suivies séparément et ne doivent pas être co
 
 ---
 
-## D-036 — Revue de l'auditeur dans la Definition of Done d'une Anomalie
+### D-036 — Revue de l'auditeur dans la Definition of Done d'une Anomalie
 
 Le workflow de correction des Anomalies d'Audit n'est pas encore définitivement acté.
 
@@ -697,7 +697,7 @@ Le mécanisme permettant ensuite de considérer globalement le Composant comme c
 
 ---
 
-## D-037 — Hypothèse de clôture d'une Anomalie après merge de la PR
+### D-037 — Hypothèse de clôture d'une Anomalie après merge de la PR
 
 Le responsable et le moment exacts de la clôture d'une Anomalie d'Audit ne sont pas encore définitivement actés.
 
@@ -713,7 +713,7 @@ Le merge de la Pull Request constitue un événement technique de fin de correct
 
 ---
 
-## D-038 — Revalidation de conformité par une nouvelle Issue d'Audit
+### D-038 — Revalidation de conformité par une nouvelle Issue d'Audit
 
 Après correction des Anomalies détectées lors d'un Audit, la conformité globale du Composant doit être réévaluée au moyen d'une nouvelle Issue d'Audit du Composant.
 
@@ -741,7 +741,7 @@ Cette nouvelle Issue d'Audit permet également de matérialiser l'activité de r
 
 ---
 
-## D-039 — Distinction entre correction et conformité
+### D-039 — Distinction entre correction et conformité
 
 La correction d'une Anomalie et la conformité d'un Composant sont deux notions métier distinctes.
 
@@ -761,7 +761,7 @@ Le retour à un verdict de conformité doit être porté par une Issue d'Audit d
 
 ---
 
-## D-040 — Déclenchement collectif de l'Audit de revalidation
+### D-040 — Déclenchement collectif de l'Audit de revalidation
 
 La création d'une Issue d'Audit de revalidation ne dépend pas nécessairement de la fermeture de toutes les Anomalies issues de l'Audit précédent.
 
@@ -780,7 +780,7 @@ Ces exemples ne constituent pas des règles prédéfinies.
 
 ---
 
-## D-041 — Nouvelles Anomalies lors d'un Audit de revalidation
+### D-041 — Nouvelles Anomalies lors d'un Audit de revalidation
 
 Lorsqu'un nouvel Audit de revalidation constate une Anomalie, l'auditeur crée une nouvelle Issue d'Anomalie liée à cette nouvelle Issue d'Audit.
 
@@ -802,7 +802,7 @@ Ce principe permet de conserver l'historique des constats et de rattacher chaque
 
 ---
 
-## D-042 — Absence de lien direct entre Anomalies successives
+### D-042 — Absence de lien direct entre Anomalies successives
 
 Lorsqu'un nouvel Audit détecte un problème identique ou similaire à celui d'une Anomalie issue d'un Audit précédent, aucune relation métier explicite supplémentaire n'est requise entre les deux Anomalies.
 
@@ -824,7 +824,7 @@ Une analyse future de récurrence pourrait être calculée ou proposée comme in
 
 ---
 
-## D-043 — Continuité des Audits d'un Composant sans relation directe
+### D-043 — Continuité des Audits d'un Composant sans relation directe
 
 Lorsqu'une nouvelle Issue d'Audit est créée pour revalider un Composant, aucune relation explicite avec l'Issue d'Audit précédente n'est requise.
 
@@ -848,7 +848,7 @@ Le pipeline doit donc conserver séparément l'identité du Composant et la Vers
 
 ---
 
-## D-044 — Conformité historisée par Composant et Version
+### D-044 — Conformité historisée par Composant et Version
 
 Le verdict de conformité issu d'un Audit s'applique au Composant dans la Version effectivement auditée. Un Audit ultérieur sur une autre Version ne modifie pas rétroactivement ce verdict.
 
@@ -863,7 +863,7 @@ Button@1.8.0 → CONFORME
 
 ---
 
-## D-045 — Séparer le verdict d'Audit et l'état des corrections
+### D-045 — Séparer le verdict d'Audit et l'état des corrections
 
 Un verdict `NON CONFORME` ne devient pas `CONFORME` au seul motif que les Anomalies ont été corrigées dans une Version ultérieure.
 
@@ -873,7 +873,7 @@ Une annotation complémentaire pourra indiquer que les Anomalies connues sont co
 
 ---
 
-## D-046 — Dernier Audit comme état de conformité courant
+### D-046 — Dernier Audit comme état de conformité courant
 
 Pour un même couple `Composant × Version`, plusieurs Audits peuvent exister successivement.
 
@@ -899,7 +899,7 @@ Le dashboard doit donc distinguer le verdict de chaque Audit du verdict courant 
 
 ---
 
-## D-047 — Date de réalisation d'un Audit
+### D-047 — Date de réalisation d'un Audit
 
 Un Audit est terminé lorsque les deux conditions suivantes sont satisfaites :
 
@@ -916,7 +916,7 @@ Pour déterminer l'état de conformité courant, l'Audit ayant la date de réali
 
 ---
 
-## D-048 — Un Audit en cours ne remplace pas le dernier verdict acquis
+### D-048 — Un Audit en cours ne remplace pas le dernier verdict acquis
 
 Pour un même couple `Composant × Version`, un nouvel Audit qui n'est pas encore réalisé au sens métier (`Project Status = Done` et `GitHub Issue State = Closed`) ne modifie pas l'état de conformité courant.
 
@@ -942,7 +942,7 @@ Lorsque l'Audit B devient `Done + Closed`, son verdict devient alors le nouveau 
 
 ---
 
-## D-049 — Séparer conformité courante et activité d'Audit en cours
+### D-049 — Séparer conformité courante et activité d'Audit en cours
 
 Pour un couple `Composant × Version`, le dashboard doit pouvoir représenter simultanément :
 
@@ -967,7 +967,7 @@ L'information indiquant qu'un Audit est en cours doit être visible quelque part
 
 ---
 
-## D-050 — Unicité de l'Audit non terminé par Composant et Version
+### D-050 — Unicité de l'Audit non terminé par Composant et Version
 
 Pour un même couple `Composant × Version`, il ne doit exister qu'une seule Issue d'Audit non terminée à la fois.
 
@@ -984,7 +984,7 @@ La règle porte sur l'ensemble des Audits non terminés et pas uniquement sur ce
 
 ---
 
-## D-051 — Version auditée obligatoire
+### D-051 — Version auditée obligatoire
 
 Toute Issue d'Audit doit cibler une Version effectivement auditée qui puisse être identifiée sans ambiguïté.
 
@@ -998,7 +998,7 @@ La Version auditée ne doit pas être déduite systématiquement du seul nom de 
 
 ---
 
-## D-052 — Milestone comme référence de Version et Version auditée dans le template
+### D-052 — Milestone comme référence de Version et Version auditée dans le template
 
 Pour une Issue d'Audit, la Milestone doit suffire pour identifier la Version de référence et le contexte d'Audit.
 
@@ -1037,7 +1037,7 @@ La Milestone constitue donc le pivot de rattachement à la Version de référenc
 
 ---
 
-## D-053 — Cohérence entre Milestone et Version auditée
+### D-053 — Cohérence entre Milestone et Version auditée
 
 La `Version auditée` renseignée dans l'Issue d'Audit doit être cohérente avec la Version de référence portée par la Milestone.
 
@@ -1070,7 +1070,7 @@ La sévérité de cette future règle de qualité reste à définir.
 
 ---
 
-## D-054 — Milestone prioritaire et Version auditée complémentaire
+### D-054 — Milestone prioritaire et Version auditée complémentaire
 
 Pour l'analyse d'un Audit, la Milestone constitue la référence principale permettant d'identifier la Version de référence.
 
@@ -1090,7 +1090,7 @@ Cette distinction est particulièrement importante en pré-PROD : une Milestone 
 
 ---
 
-## D-055 — Milestone obligatoire et bloquante pour la conformité
+### D-055 — Milestone obligatoire et bloquante pour la conformité
 
 Toute Issue d'Audit doit être rattachée à une Milestone exploitable.
 
@@ -1114,7 +1114,7 @@ La règle est asymétrique :
 
 ---
 
-## D-056 — Audit sans Milestone comptabilisé dans l'activité
+### D-056 — Audit sans Milestone comptabilisé dans l'activité
 
 Une Issue d'Audit `Done + Closed` sans Milestone reste comptabilisée dans les indicateurs d'activité d'Audit qui ne nécessitent pas de rattachement à une Version.
 
@@ -1136,7 +1136,7 @@ La validité d'une Issue d'Audit doit donc être appréciée en fonction de la m
 
 ---
 
-## D-057 — Un Audit n'est pas nécessairement requis à chaque Version
+### D-057 — Un Audit n'est pas nécessairement requis à chaque Version
 
 La publication d'une nouvelle Version de Librairie n'implique pas nécessairement qu'un nouvel Audit soit réalisé pour chacun de ses Composants.
 
@@ -1158,7 +1158,7 @@ Les règles permettant de déterminer qu'un Audit antérieur reste applicable à
 
 ---
 
-## D-058 — Héritage d'un Audit lorsque le Composant est inchangé
+### D-058 — Héritage d'un Audit lorsque le Composant est inchangé
 
 Lorsqu'un Composant n'a pas changé entre deux Versions de Librairie, son Audit antérieur reste applicable à la Version suivante.
 
@@ -1188,7 +1188,7 @@ La manière de déterminer techniquement et fonctionnellement qu'un Composant es
 
 ---
 
-## D-059 — État des lieux des Composants entre deux Versions
+### D-059 — État des lieux des Composants entre deux Versions
 
 Le projet doit pouvoir produire un état des lieux des Composants entre deux Versions de Librairie.
 
@@ -1207,7 +1207,7 @@ Cette fonctionnalité existe actuellement dans un script séparé et pourra êtr
 
 ---
 
-## D-060 — La décision d'ouvrir un Audit reste à la Squad
+### D-060 — La décision d'ouvrir un Audit reste à la Squad
 
 L'état des lieux entre deux Versions est une aide à la décision et non un moteur de décision automatique d'Audit.
 
@@ -1221,7 +1221,7 @@ La responsabilité de décider d'ouvrir ou non une Issue d'Audit reste à la Squ
 
 ---
 
-## D-061 — Comparaison des Composants reportée à une évolution ultérieure
+### D-061 — Comparaison des Composants reportée à une évolution ultérieure
 
 La fonctionnalité de comparaison des Composants entre deux Versions est conservée dans l'architecture cible mais n'est pas à réaliser dans le périmètre immédiat.
 
@@ -1233,7 +1233,7 @@ Une approche existante s'appuie sur la notion d'export. Cette approche constitue
 
 ---
 
-## D-062 — Cible d'automatisation de la comparaison entre tags
+### D-062 — Cible d'automatisation de la comparaison entre tags
 
 À terme, le projet devra proposer un script ou traitement automatisé déclenché lors de la création d'un tag Git correspondant à une publication issue de `master` ou d'une branche `support/xxx`.
 
@@ -1252,7 +1252,7 @@ Les modalités techniques exactes du déclenchement GitHub, du stockage des rés
 
 ---
 
-## D-063 — Restitution future des évolutions de Composants dans le Dashboard
+### D-063 — Restitution future des évolutions de Composants dans le Dashboard
 
 Lorsque la comparaison entre Versions sera disponible, le Dashboard devra restituer les états des Composants (`NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ`, `DÉCOMMISSIONNÉ`) et faire ressortir les Composants pour lesquels un Audit devrait être envisagé.
 
@@ -1264,7 +1264,7 @@ Elle ne remet pas en cause D-060 : la décision d'ouvrir effectivement une Issue
 
 ---
 
-## D-064 — Couverture d'Audit calculée sur le Catalogue de Composants
+### D-064 — Couverture d'Audit calculée sur le Catalogue de Composants
 
 Pour une Version donnée, la couverture d'Audit est calculée par rapport au nombre total de Composants du Catalogue considéré.
 
@@ -1295,7 +1295,7 @@ Dans le fonctionnement actuel, la notion de Composant `NOUVEAU` ou `ÉVOLUÉ` no
 
 ---
 
-## D-065 — Taux de conformité calculé uniquement sur les Composants audités
+### D-065 — Taux de conformité calculé uniquement sur les Composants audités
 
 Le taux de conformité d'une Version est calculé uniquement parmi les Composants considérés comme audités pour cette Version.
 
@@ -1326,7 +1326,7 @@ Les Composants non audités ne doivent donc pas être comptabilisés comme non c
 
 ---
 
-## D-066 — Catalogue historique propre à chaque Version
+### D-066 — Catalogue historique propre à chaque Version
 
 Les indicateurs historiques d'une Version doivent utiliser le Catalogue de Composants applicable à cette Version et non le Catalogue courant.
 
@@ -1353,7 +1353,7 @@ La manière de construire, stocker ou reconstituer techniquement cette photograp
 
 ---
 
-## D-067 — Décommissionnement logique d'un Composant dans le Catalogue
+### D-067 — Décommissionnement logique d'un Composant dans le Catalogue
 
 Un Composant décommissionné ne doit pas être supprimé physiquement du Catalogue.
 
@@ -1379,7 +1379,7 @@ Le décommissionnement est donc une suppression logique et non une suppression d
 
 ---
 
-## D-068 — Réactivation exceptionnelle d'un Composant explicitée dans le Catalogue
+### D-068 — Réactivation exceptionnelle d'un Composant explicitée dans le Catalogue
 
 La réapparition d'un Composant précédemment décommissionné est considérée comme un cas exceptionnel qui ne devrait normalement pas se produire.
 
@@ -1393,7 +1393,7 @@ Le mécanisme exact de représentation de cette réactivation dans le Catalogue 
 
 ---
 
-## D-069 — Distinguer Audit réalisé sur une Version et couverture héritée
+### D-069 — Distinguer Audit réalisé sur une Version et couverture héritée
 
 Un Composant ne doit jamais être présenté comme ayant été audité sur une Version si aucun Audit n'a effectivement été réalisé sur cette Version.
 
@@ -1421,7 +1421,7 @@ Les indicateurs et le Dashboard doivent préserver cette distinction afin de ne 
 
 ---
 
-## D-070 — La couverture peut inclure un verdict antérieur non conforme
+### D-070 — La couverture peut inclure un verdict antérieur non conforme
 
 Un Composant couvert par un Audit antérieur encore applicable participe à la couverture d'Audit de la Version courante, même si le verdict applicable est `NON CONFORME`.
 
@@ -1435,7 +1435,7 @@ Il convient, lorsque le contexte peut être ambigu, de privilégier le libellé 
 
 ---
 
-## D-071 — Héritage transitif d'un verdict d'Audit applicable
+### D-071 — Héritage transitif d'un verdict d'Audit applicable
 
 Un verdict d'Audit antérieur peut rester applicable à plusieurs Versions successives sans limite prédéfinie du nombre de Versions traversées.
 
@@ -1467,7 +1467,7 @@ Un nouvel Audit terminé remplace ce verdict pour le périmètre auquel son nouv
 
 ---
 
-## D-072 — Une évolution de Composant ne rompt pas automatiquement le verdict applicable
+### D-072 — Une évolution de Composant ne rompt pas automatiquement le verdict applicable
 
 Le fait qu'un Composant ait évolué entre deux Versions ne signifie pas automatiquement qu'un nouvel Audit est nécessaire et ne doit pas, à lui seul, invalider le dernier verdict de conformité applicable.
 
@@ -1494,7 +1494,7 @@ Le pipeline ne doit donc pas transformer automatiquement un Composant `ÉVOLUÉ`
 
 ---
 
-## D-073 — Qualification par la Squad de l'impact d'une évolution sur le besoin d'Audit
+### D-073 — Qualification par la Squad de l'impact d'une évolution sur le besoin d'Audit
 
 Le suivi du patrimoine doit permettre à la Squad d'examiner les Composants ayant évolué et d'indiquer explicitement lorsqu'une évolution n'impacte pas le périmètre nécessitant un nouvel Audit.
 
@@ -1508,7 +1508,7 @@ La terminologie exacte et les valeurs du statut de qualification restent à déf
 
 ---
 
-## D-074 — Page cible de suivi du patrimoine pour la Squad
+### D-074 — Page cible de suivi du patrimoine pour la Squad
 
 Le Dashboard devra à terme proposer une page dédiée au suivi du patrimoine des Composants.
 
@@ -1525,7 +1525,7 @@ Cette page est une aide au pilotage et ne décide pas automatiquement de la cré
 
 ---
 
-## D-075 — États de qualification d'une évolution vis-à-vis d'un Audit
+### D-075 — États de qualification d'une évolution vis-à-vis d'un Audit
 
 Pour un Composant détecté comme `ÉVOLUÉ`, le suivi du patrimoine utilise trois états de qualification du besoin d'Audit :
 
@@ -1561,7 +1561,7 @@ Le pipeline ne doit pas décider automatiquement entre `AUDIT À FAIRE` et `AUDI
 
 ---
 
-## D-076 — Un nouveau Composant doit être audité avant sa mise à disposition
+### D-076 — Un nouveau Composant doit être audité avant sa mise à disposition
 
 En cible métier, un Composant `NOUVEAU` doit être audité avant sa mise à disposition.
 
@@ -1590,7 +1590,7 @@ Cette règle exprime le processus cible. Elle ne doit pas conduire le pipeline �
 
 ---
 
-## D-077 — État `AUDIT RÉALISÉ` dans le suivi du patrimoine
+### D-077 — État `AUDIT RÉALISÉ` dans le suivi du patrimoine
 
 Le suivi du patrimoine peut utiliser l'état `AUDIT RÉALISÉ` afin d'indiquer explicitement qu'un Audit attendu a effectivement été effectué.
 
@@ -1607,7 +1607,7 @@ Les qualifications du suivi du besoin d'Audit deviennent ainsi :
 
 ---
 
-## D-078 — Le verdict de conformité prime dans la restitution qualité
+### D-078 — Le verdict de conformité prime dans la restitution qualité
 
 L'information essentielle pour la qualité d'un Composant reste le verdict de conformité issu de l'Audit applicable.
 
@@ -1638,7 +1638,7 @@ Dans les restitutions orientées qualité, le verdict de conformité doit être 
 
 ---
 
-## D-079 — Les corrections ne remplacent pas le verdict de conformité
+### D-079 — Les corrections ne remplacent pas le verdict de conformité
 
 Lorsqu'un Composant a un verdict applicable `NON CONFORME`, la correction de tout ou partie des Anomalies connues ne suffit pas à rendre le Composant `CONFORME`.
 
@@ -1648,7 +1648,7 @@ Le verdict reste `NON CONFORME` jusqu'à ce qu'un nouvel Audit terminé confirme
 
 ---
 
-## D-080 — Taux de traitement des Anomalies distinct du verdict
+### D-080 — Taux de traitement des Anomalies distinct du verdict
 
 Pour un Composant `NON CONFORME`, le Dashboard doit pouvoir afficher un marqueur indiquant le taux de traitement des Anomalies associées au verdict applicable.
 
@@ -1662,7 +1662,7 @@ Une Anomalie entre dans le numérateur des Anomalies traitées lorsqu'elle satis
 
 ---
 
-## D-081 — Une Anomalie est traitée lorsqu'elle est Done et Closed
+### D-081 — Une Anomalie est traitée lorsqu'elle est Done et Closed
 
 Pour le calcul du taux de traitement des Anomalies, une Anomalie est considérée comme traitée uniquement lorsque les deux conditions suivantes sont satisfaites :
 
@@ -1680,7 +1680,7 @@ Elle permet de disposer d'une règle explicite et homogène pour le calcul du ta
 
 ---
 
-## D-082 — Le suivi du traitement porte sur le stock historique d'Anomalies du Composant
+### D-082 — Le suivi du traitement porte sur le stock historique d'Anomalies du Composant
 
 Le suivi du traitement d'un Composant doit prendre en compte toutes ses Anomalies historiques tant qu'elles ne satisfont pas la règle D-081 (`Project Status = Done` et `GitHub Issue State = Closed`).
 
@@ -1694,7 +1694,7 @@ Cette règle permet au Dashboard de restituer à la fois l'avancement global du 
 
 ---
 
-## D-083 — Taux historique de traitement des Anomalies d'un Composant
+### D-083 — Taux historique de traitement des Anomalies d'un Composant
 
 Le taux de traitement des Anomalies d'un Composant est calculé sur l'ensemble des Anomalies historiquement détectées pour ce Composant.
 
@@ -1730,7 +1730,7 @@ Le taux reste distinct du verdict de conformité.
 
 ---
 
-## D-084 — Affichage du stock restant d'Anomalies
+### D-084 — Affichage du stock restant d'Anomalies
 
 En complément du taux de traitement, le Dashboard doit afficher le nombre absolu d'Anomalies historiques du Composant restant à traiter.
 
@@ -1747,7 +1747,7 @@ Le stock restant correspond aux Anomalies qui ne satisfont pas encore la règle 
 
 ---
 
-## D-085 — Répartition du stock restant par criticité RGAA
+### D-085 — Répartition du stock restant par criticité RGAA
 
 Pour les Anomalies d'Audit d'accessibilité disposant de la criticité RGAA actuelle, le Dashboard doit pouvoir ventiler le stock restant selon les niveaux :
 
@@ -1772,7 +1772,7 @@ Elle ne change pas le verdict de conformité.
 
 ---
 
-## D-086 — Taux de traitement par criticité RGAA
+### D-086 — Taux de traitement par criticité RGAA
 
 Pour les Anomalies d'accessibilité disposant d'une criticité RGAA, le Dashboard doit calculer et afficher un taux de traitement propre à chaque niveau de criticité.
 
@@ -1802,7 +1802,7 @@ Un taux de `100 %` pour une criticité signifie que toutes les Anomalies histori
 
 ---
 
-## D-087 — Agrégation du suivi des Anomalies au niveau de la Librairie
+### D-087 — Agrégation du suivi des Anomalies au niveau de la Librairie
 
 Les indicateurs de traitement définis au niveau du Composant doivent également être calculés au niveau de la Librairie, en agrégeant les Anomalies historiques des Composants appartenant à cette Librairie.
 
@@ -1834,7 +1834,7 @@ Cette agrégation d'Anomalies ne crée pas à elle seule un verdict unique de co
 
 ---
 
-## D-088 — Vue latest : stock historique pertinent du patrimoine actif
+### D-088 — Vue latest : stock historique pertinent du patrimoine actif
 
 Dans la vue `latest` d'une Librairie, les indicateurs de traitement doivent tenir compte des Anomalies historiques encore non traitées des Composants appartenant au patrimoine actif de la dernière Version.
 
@@ -1851,7 +1851,7 @@ Cette règle évite de faire disparaître une dette historique toujours pertinen
 
 ---
 
-## D-089 — Consultation des indicateurs par Version de Librairie
+### D-089 — Consultation des indicateurs par Version de Librairie
 
 Le Dashboard doit permettre de consulter les indicateurs de traitement pour une Version donnée de la Librairie, en plus de la vue `latest`.
 
@@ -1875,7 +1875,7 @@ La vue par Version doit préserver la lecture historique sans réécrire le pass
 
 ---
 
-## D-090 — Une vue historique de Version restitue l'état à sa date de sortie
+### D-090 — Une vue historique de Version restitue l'état à sa date de sortie
 
 Lorsqu'une ancienne Version de Librairie est consultée, les indicateurs doivent restituer l'état historique des Anomalies au moment de la sortie de cette Version.
 
@@ -1902,7 +1902,7 @@ La vue `latest`, à l'inverse, sert au pilotage de l'état courant du patrimoine
 
 ---
 
-## D-091 — La photographie d'une Version PROD reste immuable après sa sortie
+### D-091 — La photographie d'une Version PROD reste immuable après sa sortie
 
 Une fois une Version PROD sortie, sa photographie historique ne doit plus évoluer.
 
@@ -1914,7 +1914,7 @@ Cette immutabilité concerne les indicateurs historiques de la Version et évite
 
 ---
 
-## D-092 — Une Milestone de Version PROD close ne reçoit pas rétroactivement de nouvelles Anomalies
+### D-092 — Une Milestone de Version PROD close ne reçoit pas rétroactivement de nouvelles Anomalies
 
 Lorsqu'une Version PROD est sortie et que sa Milestone correspondante est figée et close, une Anomalie découverte ou créée ultérieurement ne doit pas être rattachée rétroactivement à cette Milestone.
 
@@ -1942,7 +1942,7 @@ La manière de déterminer et de représenter les Versions affectées reste à i
 
 ---
 
-## D-093 — Une Milestone d'Audit post-PROD porte le contexte de la Version affectée
+### D-093 — Une Milestone d'Audit post-PROD porte le contexte de la Version affectée
 
 Lorsqu'un Audit est réalisé après la publication d'une Version PROD, la Milestone d'Audit de la forme `M.m.r-Audit` porte le contexte de la Version PROD auditée.
 
@@ -1972,7 +1972,7 @@ Elle s'applique aux Anomalies issues d'un Audit post-PROD. Le mécanisme permett
 
 ---
 
-## D-094 — Un Bug hors périmètre accessibilité renseigne obligatoirement sa Version affectée dans sa description
+### D-094 — Un Bug hors périmètre accessibilité renseigne obligatoirement sa Version affectée dans sa description
 
 Pour un Bug découvert en dehors du périmètre des Audits d'accessibilité, l'information permettant d'identifier la Version affectée doit obligatoirement être renseignée dans la description de l'Issue.
 
@@ -1986,7 +1986,7 @@ Le format exact de l'information dans la description n'est pas encore défini et
 
 ---
 
-## D-095 — Un Bug hors accessibilité peut affecter plusieurs Versions
+### D-095 — Un Bug hors accessibilité peut affecter plusieurs Versions
 
 Pour un Bug hors périmètre des Audits d'accessibilité, le modèle doit permettre d'identifier une ou plusieurs Versions affectées.
 
@@ -2018,7 +2018,7 @@ Seules les Versions effectivement identifiées comme affectées doivent être en
 
 ---
 
-## D-096 — Distinguer Version observée et Version affectée pour une remontée client
+### D-096 — Distinguer Version observée et Version affectée pour une remontée client
 
 Lorsqu'un client remonte un Bug hors périmètre des Audits d'accessibilité, la Version qu'il utilise au moment du constat est d'abord une **Version observée**.
 
@@ -2048,7 +2048,7 @@ Cette distinction évite d'attribuer au Design System une anomalie provenant en 
 
 ---
 
-## D-097 — Une erreur d'implémentation client impose l'état Cancelled
+### D-097 — Une erreur d'implémentation client impose l'état Cancelled
 
 Après analyse d'une remontée, si la Squad conclut que le problème provient uniquement d'une erreur d'implémentation du Composant par le client et non d'un défaut du Design System, l'Issue doit obligatoirement passer au statut `Cancelled`.
 
@@ -2065,7 +2065,7 @@ Cette règle est une règle de workflow obligatoire.
 
 ---
 
-## D-098 — Suivre séparément les erreurs d'intégration client dans la vue Squad
+### D-098 — Suivre séparément les erreurs d'intégration client dans la vue Squad
 
 Les Issues passées à `Cancelled` parce que la Squad a confirmé une erreur d'implémentation côté client doivent être suivies dans les éléments de pilotage destinés à la Squad.
 
@@ -2092,7 +2092,7 @@ Pilotage Squad / expérience d'intégration
 
 ---
 
-## D-099 — Ventiler les erreurs d'intégration client par Composant
+### D-099 — Ventiler les erreurs d'intégration client par Composant
 
 Dans la vue de pilotage destinée à la Squad, les Issues `Cancelled` parce qu'elles correspondent à une erreur d'implémentation côté client doivent pouvoir être regroupées et comptabilisées par Composant.
 
@@ -2119,7 +2119,7 @@ Cet indicateur reste distinct des indicateurs d'Anomalies confirmées et ne cons
 
 ---
 
-## D-100 — Mettre en perspective les Issues d'un Composant avec son niveau d'usage
+### D-100 — Mettre en perspective les Issues d'un Composant avec son niveau d'usage
 
 Le modèle analytique cible doit permettre de mettre en perspective les volumes d'Issues et de remontées d'un Composant avec son niveau réel d'utilisation dans les applications consommatrices.
 
@@ -2131,7 +2131,7 @@ Les ratios exacts restent à définir.
 
 ---
 
-## D-101 — Mesurer le nombre total d'Issues par Composant
+### D-101 — Mesurer le nombre total d'Issues par Composant
 
 Le Dashboard cible doit permettre de connaître, pour chaque Composant, le nombre total d'Issues qui lui sont rattachées, tous types d'Issue confondus.
 
@@ -2141,7 +2141,7 @@ Cette mesure est distincte des indicateurs spécialisés sur les Anomalies, Audi
 
 ---
 
-## D-102 — Mesurer le nombre d'applications utilisatrices d'un Composant
+### D-102 — Mesurer le nombre d'applications utilisatrices d'un Composant
 
 Pour chaque Composant, le Dashboard cible doit permettre de connaître le nombre d'applications consommatrices qui déclarent ou utilisent ce Composant au moins une fois.
 
@@ -2151,7 +2151,7 @@ Une application ne compte qu'une fois dans cet indicateur, quel que soit le nomb
 
 ---
 
-## D-103 — Mesurer les occurrences d'un Composant par application et globalement
+### D-103 — Mesurer les occurrences d'un Composant par application et globalement
 
 Le Dashboard cible doit distinguer :
 
@@ -2175,7 +2175,7 @@ Le dénombrement exact et sa méthode de détection seront traités ultérieurem
 
 ---
 
-## D-104 — Ne pas figer immédiatement les ratios d'usage comme KPI définitifs
+### D-104 — Ne pas figer immédiatement les ratios d'usage comme KPI définitifs
 
 Les ratios construits à partir des Issues et des données d'usage des Composants doivent d'abord être considérés comme des **indicateurs candidats à instruire**.
 
@@ -2187,7 +2187,7 @@ Leur définition, leur interprétation, leurs biais éventuels et leur utilité 
 
 ---
 
-## D-105 — Instruire en priorité le ratio Issues / occurrences globales
+### D-105 — Instruire en priorité le ratio Issues / occurrences globales
 
 Parmi les ratios candidats, le ratio suivant est considéré comme particulièrement intéressant à instruire en premier :
 
@@ -2206,7 +2206,7 @@ Il est considéré, à ce stade, comme potentiellement plus pertinent que le seu
 
 ---
 
-## D-106 — Conserver Issues / applications utilisatrices comme ratio candidat
+### D-106 — Conserver Issues / applications utilisatrices comme ratio candidat
 
 Le ratio suivant reste également pertinent à instruire :
 
@@ -2224,7 +2224,7 @@ Il reste un ratio candidat et n'est pas encore validé comme KPI définitif.
 
 ---
 
-## D-107 — Le label Composant est obligatoire pour toute Issue concernant un Composant
+### D-107 — Le label Composant est obligatoire pour toute Issue concernant un Composant
 
 Toute Issue qui concerne effectivement un Composant doit obligatoirement porter le label correspondant `🧩 Component:xxx`, quel que soit son Issue Type.
 
@@ -2238,7 +2238,7 @@ Cette règle ne signifie pas que toute Issue du Repository doit obligatoirement 
 
 ---
 
-## D-108 — Une Issue multi-Composants porte tous les labels Composant concernés
+### D-108 — Une Issue multi-Composants porte tous les labels Composant concernés
 
 Lorsqu'une même Issue concerne effectivement plusieurs Composants, elle doit porter un label `🧩 Component:xxx` pour chacun des Composants concernés.
 
@@ -2256,7 +2256,7 @@ L'Issue doit alors être rattachée à chacun de ces Composants dans les analyse
 
 ---
 
-## D-109 — Privilégier une Issue distincte par Composant
+### D-109 — Privilégier une Issue distincte par Composant
 
 Même si une Issue multi-Composants est autorisée, la pratique à privilégier est de créer une Issue distincte pour chaque Composant lorsque le travail peut être séparé.
 
@@ -2273,7 +2273,7 @@ Cette pratique est une orientation de gouvernance et n'est pas, à ce stade, une
 
 ---
 
-## D-110 — Une Issue multi-Composants compte une fois pour chaque Composant concerné
+### D-110 — Une Issue multi-Composants compte une fois pour chaque Composant concerné
 
 Lorsqu'une Issue porte plusieurs labels `🧩 Component:xxx`, elle doit être comptabilisée une fois dans les indicateurs de chacun des Composants auxquels elle est rattachée.
 
@@ -2297,17 +2297,17 @@ L'Issue reste néanmoins une seule Issue GitHub. Les totaux par Composant ne doi
 
 ---
 
-## D-111 — Distinguer les différents comptages d'Issues au niveau Bibliothèque
+### D-111 — Distinguer les différents comptages d'Issues au niveau Bibliothèque
 
 Au niveau d'une Bibliothèque, le Dashboard doit fournir plusieurs lectures complémentaires des Issues.
 
-### Total global
+#### Total global
 
 Le nombre total d'Issues de la Bibliothèque correspond au nombre d'Issues GitHub distinctes, tous types confondus, qu'elles soient rattachées ou non à un Composant.
 
 Une Issue multi-Composants ne compte donc qu'une seule fois dans ce total.
 
-### Issues rattachées aux Composants
+#### Issues rattachées aux Composants
 
 Le Dashboard doit également permettre de distinguer les Issues selon les Composants auxquels elles sont rattachées.
 
@@ -2315,7 +2315,7 @@ Une Issue multi-Composants est alors comptabilisée une fois pour chacun de ses 
 
 La somme des compteurs par Composant peut donc être supérieure au nombre d'Issues GitHub distinctes rattachées à au moins un Composant.
 
-### Issues sans Composant
+#### Issues sans Composant
 
 Le Dashboard doit également rendre visible le nombre d'Issues qui ne portent aucun label `🧩 Component:xxx`.
 
@@ -2340,7 +2340,7 @@ La somme de la ventilation par Composant n'est pas destinée à reconstituer le 
 
 ---
 
-## D-112 — Une Issue sans Composant peut être légitimement transverse
+### D-112 — Une Issue sans Composant peut être légitimement transverse
 
 Une Issue peut légitimement ne porter aucun label `🧩 Component:xxx` lorsqu'elle est transverse et ne concerne effectivement aucun Composant.
 
@@ -2352,7 +2352,7 @@ Le Dashboard doit permettre de rendre visibles les Issues sans Composant sans le
 
 ---
 
-## D-113 — Ne pas déduire automatiquement qu'un label Composant est manquant
+### D-113 — Ne pas déduire automatiquement qu'un label Composant est manquant
 
 À partir de la seule absence de label `🧩 Component:xxx`, le pipeline ne peut pas déterminer de manière fiable si une Issue est légitimement transverse ou si son rattachement à un Composant a été oublié.
 
@@ -2369,7 +2369,7 @@ Ces mécanismes seraient des aides à la qualification et ne doivent pas, sans r
 
 ---
 
-## D-114 — Ne pas imposer de label dédié aux Issues sans Composant
+### D-114 — Ne pas imposer de label dédié aux Issues sans Composant
 
 Une Issue sans label `🧩 Component:xxx` n'a pas besoin d'un label spécifique permettant de la qualifier comme `transverse`.
 
@@ -2381,7 +2381,7 @@ L'absence de label Composant est donc elle-même une caractéristique observable
 
 ---
 
-## D-115 — Prévoir une page d'analyse dynamique des Issues
+### D-115 — Prévoir une page d'analyse dynamique des Issues
 
 Le Dashboard doit prévoir une page permettant d'analyser les Issues de manière dynamique en sélectionnant les critères utilisés pour les filtrer ou les agréger.
 
@@ -2401,7 +2401,7 @@ Les critères exacts proposés par la page, les combinaisons autorisées et son 
 
 ---
 
-## D-116 — Permettre le croisement de plusieurs critères dans l'analyse dynamique
+### D-116 — Permettre le croisement de plusieurs critères dans l'analyse dynamique
 
 La page d'analyse dynamique doit permettre de combiner plusieurs critères de filtrage simultanément, puis d'agréger le résultat selon une dimension choisie.
 
@@ -2425,7 +2425,7 @@ La conception détaillée de cette capacité est volontairement différée : lis
 
 ---
 
-## D-117 — Une Issue d'Audit concerne exactement un Composant
+### D-117 — Une Issue d'Audit concerne exactement un Composant
 
 Une Issue d'Audit doit obligatoirement porter **un et un seul** label `🧩 Component:xxx`.
 
@@ -2448,7 +2448,7 @@ Cette règle est spécifique aux Issues d'Audit. Les Issues classiques peuvent e
 
 ---
 
-## D-118 — Contrôler la cohérence du Composant des Anomalies d'Audit
+### D-118 — Contrôler la cohérence du Composant des Anomalies d'Audit
 
 Une Anomalie issue d'un Audit doit obligatoirement porter **un et un seul** label `🧩 Component:xxx`.
 
@@ -2486,7 +2486,7 @@ Ce contrôle sert explicitement à détecter les erreurs de rattachement dans le
 
 ---
 
-## D-119 — Contrôler la cohérence du Composant des Improvements d'Audit
+### D-119 — Contrôler la cohérence du Composant des Improvements d'Audit
 
 Une Improvement issue d'un Audit doit obligatoirement porter **un et un seul** label `🧩 Component:xxx`.
 
@@ -2506,7 +2506,7 @@ Elle ne modifie toutefois pas la sémantique de conformité : contrairement à u
 
 ---
 
-## D-120 — Une Improvement d'Audit doit être une sous-Issue de l'Audit
+### D-120 — Une Improvement d'Audit doit être une sous-Issue de l'Audit
 
 Une Improvement issue d'un Audit doit obligatoirement être créée comme **sous-Issue de l'Issue d'Audit** qui l'a fait émerger.
 
@@ -2537,7 +2537,7 @@ Cette règle ne modifie pas la conformité : une Improvement reste distincte d'u
 
 ---
 
-## D-121 — Une Anomalie d'Audit doit être une sous-Issue de l'Audit
+### D-121 — Une Anomalie d'Audit doit être une sous-Issue de l'Audit
 
 Une Anomalie issue d'un Audit doit obligatoirement être créée comme **sous-Issue de l'Issue d'Audit** qui l'a fait émerger.
 
@@ -2549,7 +2549,7 @@ Une Anomalie identifiée comme issue d'un Audit mais qui n'est pas une sous-Issu
 
 ---
 
-## D-122 — Règle commune de traçabilité des résultats d'Audit
+### D-122 — Règle commune de traçabilité des résultats d'Audit
 
 Les Anomalies et Improvements issues d'un Audit suivent la même règle structurelle :
 
@@ -2567,7 +2567,7 @@ Leur rôle métier reste différent : l'Anomalie intervient dans le verdict de c
 
 ---
 
-## D-123 — Les types connus de sous-Issues d'Audit ne constituent pas une liste fermée
+### D-123 — Les types connus de sous-Issues d'Audit ne constituent pas une liste fermée
 
 À ce jour, les deux seuls types métier identifiés comme sous-Issues d'une Issue d'Audit sont :
 
@@ -2591,7 +2591,7 @@ En particulier, une sous-Issue d'un type inconnu ne doit pas être assimilée au
 
 ---
 
-## D-124 — Une Anomalie d'Audit doit avoir l'Issue Type Bug
+### D-124 — Une Anomalie d'Audit doit avoir l'Issue Type Bug
 
 Toute Anomalie créée à partir d'un Audit doit obligatoirement avoir l'Issue Type `🐛 Bug`.
 
@@ -2613,7 +2613,7 @@ Cette règle concerne spécifiquement les Anomalies issues d'un Audit. Elle ne s
 
 ---
 
-## D-125 — Une Improvement d'Audit doit avoir l'Issue Type Feature
+### D-125 — Une Improvement d'Audit doit avoir l'Issue Type Feature
 
 Toute Improvement créée à partir d'un Audit doit obligatoirement avoir l'Issue Type `✨ Feature`.
 
@@ -2645,7 +2645,7 @@ Cette classification reste extensible conformément à D-123.
 
 ---
 
-## D-126 — Les criticités RGAA sont réservées aux Anomalies d'Audit
+### D-126 — Les criticités RGAA sont réservées aux Anomalies d'Audit
 
 Les labels de criticité RGAA actuellement définis sont réservés aux **Anomalies d'Audit** :
 
@@ -2676,7 +2676,7 @@ Cette règle concerne le schéma actuel de criticité RGAA associé aux Audits A
 
 ---
 
-## D-127 — Les labels a11y sont transverses à la nature et à l'origine des Issues
+### D-127 — Les labels a11y sont transverses à la nature et à l'origine des Issues
 
 Les labels `♿ a11y:xxx` décrivent une **thématique ou un domaine d'accessibilité** concerné par une Issue.
 
@@ -2706,7 +2706,7 @@ La présence d'un label `♿ a11y:xxx` ne permet donc pas, à elle seule, de con
 
 ---
 
-## D-128 — Un seul label a11y par Issue est l'hypothèse métier actuelle
+### D-128 — Un seul label a11y par Issue est l'hypothèse métier actuelle
 
 L'hypothèse métier actuelle est qu'une Issue porte normalement **au plus un** label `♿ a11y:xxx`.
 
@@ -2722,7 +2722,7 @@ En conséquence :
 
 ---
 
-## D-129 — Une Anomalie d'Audit Accessibilité doit avoir exactement un label a11y
+### D-129 — Une Anomalie d'Audit Accessibilité doit avoir exactement un label a11y
 
 Toute **Anomalie issue d'un Audit Accessibilité** doit obligatoirement porter **exactement un** label `♿ a11y:xxx`.
 
@@ -2744,7 +2744,7 @@ Cette règle précise D-128 : l'hypothèse générale sur la cardinalité des la
 
 ---
 
-## D-130 — La catégorie a11y est facultative pour une Improvement d'Audit Accessibilité
+### D-130 — La catégorie a11y est facultative pour une Improvement d'Audit Accessibilité
 
 Une **Improvement issue d'un Audit Accessibilité** n'est pas obligée de porter un label `♿ a11y:xxx`.
 
@@ -2765,7 +2765,7 @@ Cette règle se distingue explicitement de celle des Anomalies d'Audit Accessibi
 
 ---
 
-## D-131 — La cardinalité maximale a11y d'une Improvement d'Audit reste ouverte
+### D-131 — La cardinalité maximale a11y d'une Improvement d'Audit reste ouverte
 
 Pour une **Improvement issue d'un Audit Accessibilité**, il est établi que la catégorisation `♿ a11y:xxx` est facultative.
 
@@ -2782,7 +2782,7 @@ Le modèle doit pouvoir représenter plusieurs catégories et le pipeline ne doi
 
 ---
 
-## D-132 — Les criticités RGAA sont strictement réservées aux Anomalies provenant d'un Audit
+### D-132 — Les criticités RGAA sont strictement réservées aux Anomalies provenant d'un Audit
 
 Les trois labels de criticité RGAA actuellement définis :
 
@@ -2817,7 +2817,7 @@ Cette règle confirme la distinction entre :
 
 ---
 
-## D-133 — Un même problème peut être regroupé dans une ou plusieurs Anomalies d'Audit
+### D-133 — Un même problème peut être regroupé dans une ou plusieurs Anomalies d'Audit
 
 Lors d'un même Audit d'un Composant, si un même problème d'accessibilité est constaté à plusieurs endroits, l'auditeur peut :
 
@@ -2836,7 +2836,7 @@ Conséquence pour les indicateurs :
 
 ---
 
-## D-134 — L'unité de comptage d'une Anomalie est l'Issue GitHub
+### D-134 — L'unité de comptage d'une Anomalie est l'Issue GitHub
 
 Pour les indicateurs du dashboard, une **Issue GitHub qualifiée comme Anomalie** compte pour **une Anomalie**.
 
@@ -2859,7 +2859,7 @@ En conséquence :
 
 ---
 
-## D-135 — Une Anomalie d'Audit appartient à un seul Audit parent
+### D-135 — Une Anomalie d'Audit appartient à un seul Audit parent
 
 La relation entre une **Anomalie provenant d'un Audit** et son **Issue d'Audit parent** est stricte du côté de l'Anomalie :
 
@@ -2878,7 +2878,7 @@ Le pipeline doit considérer comme incohérente toute Anomalie d'Audit ayant zé
 
 ---
 
-## D-136 — Une Improvement d'Audit appartient à un seul Audit parent
+### D-136 — Une Improvement d'Audit appartient à un seul Audit parent
 
 La relation entre une **Improvement provenant d'un Audit** et son **Issue d'Audit parent** est stricte du côté de l'Improvement :
 
@@ -2920,7 +2920,7 @@ pas sa nature.
 
 Pour la V1, le modèle distingue deux origines d'Anomalie :
 
-``` text
+```text
 AUDIT
 HORS_AUDIT
 ```
@@ -2941,7 +2941,7 @@ de la Squad. D'autres dimensions et indicateurs restent à challenger.
 La date métier de détection d'une Anomalie est la date de création de
 l'Issue `🐛 Bug` dans GitHub.
 
-``` text
+```text
 Anomalie.detectedAt = GitHub Issue.createdAt
 ```
 
@@ -2958,7 +2958,7 @@ reconstruite ou inférée.
 La date métier de correction d'une Anomalie est la date à laquelle
 l'Issue `🐛 Bug` passe au statut Project `Done`.
 
-``` text
+```text
 Anomalie.correctedAt = date du passage à Done
 ```
 
@@ -2981,7 +2981,7 @@ Un Audit est considéré comme réalisé lorsque son Issue est simultanément
 
 La date métier de fin est :
 
-``` text
+```text
 Audit.completedAt = date du passage à Done
 ```
 
@@ -3003,7 +3003,7 @@ Version PROD cible `M.m.r`.
 La Release Candidate réellement auditée est enregistrée dans un champ
 explicite porté par l'Issue d'Audit :
 
-``` text
+```text
 Milestone = M.m.r
 RC auditée = M.m.r-rc.n
 ```
@@ -3028,7 +3028,7 @@ Pour une Version PROD `M.m.r`, le Catalogue historique applicable est
 reconstruit à partir du contenu du Repository au Git tag `M.m.r`
 correspondant.
 
-``` text
+```text
 Git tag M.m.r
       ↓
 état du Repository à ce tag
@@ -3051,7 +3051,7 @@ ancienne Version.
 Pour une Version PROD `M.m.r`, la date métier de Release est la date de
 création du Git tag `M.m.r`.
 
-``` text
+```text
 Version.releasedAt = GitTag(M.m.r).createdAt
 ```
 
@@ -3074,7 +3074,7 @@ Une entité générique `Issue` représente ce patrimoine GitHub dans le modèle
 
 Les objets métier spécialisés sont dérivés des Issues qui satisfont leurs règles respectives sans remplacer l'Issue source :
 
-``` text
+```text
 GitHub Issue
       ↓
 Issue normalisée
@@ -3098,7 +3098,7 @@ L’entité normalisée générique `Issue` conserve le type d’Issue GitHub/m�
 
 Ce type constitue une propriété de l’Issue normalisée et participe, avec les relations de l’Issue et les autres règles métier applicables, à la dérivation éventuelle des objets spécialisés.
 
-``` text
+```text
 RawIssue
    ↓
 Issue.issueType
@@ -3124,7 +3124,7 @@ La liste des types effectivement rencontrés peut être déduite de l’ensemble
 
 La configuration système porte une couche de reconnaissance globale qui associe une notion canonique à une ou plusieurs valeurs ou mots-clés acceptés. Le mécanisme déjà présent dans `system.yaml` sous `github.issueTypes.keywords` constitue la base de ce contrat.
 
-``` yaml
+```yaml
 github:
   issueTypes:
     keywords:
@@ -3289,17 +3289,11 @@ L’identifiant `DQ-xxx` définitif de cette règle sera attribué lors du lot I
 
 **Statut : Établi**
 
-
-
-
-
-
-
 ---
 
-# 4. Questions ouvertes — Librairies, Packages et Repositories
+## 4. Questions ouvertes — Librairies, Packages et Repositories
 
-## Q-001 — Propriétés du Package
+### Q-001 — Propriétés du Package
 
 Quelles propriétés doivent définir un Package dans le modèle métier ?
 
@@ -3307,7 +3301,7 @@ Quelles propriétés doivent définir un Package dans le modèle métier ?
 
 ---
 
-## Q-002 — Plusieurs Packages pour une Librairie
+### Q-002 — Plusieurs Packages pour une Librairie
 
 Dans quels cas une Librairie pourrait-elle être distribuée par plusieurs Packages ?
 
@@ -3315,7 +3309,7 @@ Dans quels cas une Librairie pourrait-elle être distribuée par plusieurs Packa
 
 ---
 
-## Q-003 — Plusieurs Librairies dans un Repository
+### Q-003 — Plusieurs Librairies dans un Repository
 
 Comment les Librairies devront-elles être identifiées dans un futur monorepo ?
 
@@ -3323,7 +3317,7 @@ Comment les Librairies devront-elles être identifiées dans un futur monorepo ?
 
 ---
 
-## Q-004 — Composants et Packages
+### Q-004 — Composants et Packages
 
 Dans le cas futur où une Librairie possède plusieurs Packages, un Composant appartient-il à la Librairie, à un Package ou potentiellement à plusieurs Packages ?
 
@@ -3331,9 +3325,9 @@ Dans le cas futur où une Librairie possède plusieurs Packages, un Composant ap
 
 ---
 
-# 5. Questions ouvertes — Versions et Releases
+## 5. Questions ouvertes — Versions et Releases
 
-## Q-005 — Cycle Release Candidate vers PROD
+### Q-005 — Cycle Release Candidate vers PROD
 
 Le cycle release vers PROD est établi.
 
@@ -3343,7 +3337,7 @@ Le fonctionnement cible prévoit en complément la réalisation des Audits sur u
 
 ---
 
-## Q-006 — Cycle Hotfix Candidate vers PROD
+### Q-006 — Cycle Hotfix Candidate vers PROD
 
 Le cycle hotfix vers PROD est établi.
 
@@ -3351,7 +3345,7 @@ Le cycle hotfix vers PROD est établi.
 
 ---
 
-## Q-007 — Release GitHub
+### Q-007 — Release GitHub
 
 Une Release GitHub doit-elle systématiquement exister pour toute Version PROD et comment est-elle créée ?
 
@@ -3359,7 +3353,7 @@ Une Release GitHub doit-elle systématiquement exister pour toute Version PROD e
 
 ---
 
-## Q-008 — Milestone PROD manquante
+### Q-008 — Milestone PROD manquante
 
 Comment traiter une Version PROD pour laquelle la Milestone `M.m.r` serait absente ?
 
@@ -3367,7 +3361,7 @@ Comment traiter une Version PROD pour laquelle la Milestone `M.m.r` serait absen
 
 ---
 
-## Q-009 — Tag Git manquant
+### Q-009 — Tag Git manquant
 
 Comment traiter une Version publiée dans Nexus PROD lorsque le Tag attendu est absent ?
 
@@ -3375,7 +3369,7 @@ Comment traiter une Version publiée dans Nexus PROD lorsque le Tag attendu est 
 
 ---
 
-## Q-010 — Version d'Audit
+### Q-010 — Version d'Audit
 
 `M.m.r-Audit` représente un Audit de rattrapage de `M.m.r`, et non une Version distincte.
 
@@ -3385,7 +3379,7 @@ Le fonctionnement cible réalise l'Audit sur `M.m.r-rc.n` avant la PROD.
 
 ---
 
-# 6. Questions ouvertes — Anomalies
+## 6. Questions ouvertes — Anomalies
 
 ### Q-011 --- Définition d'une Anomalie
 
@@ -3404,7 +3398,7 @@ La relation d'Audit distingue l'origine de l'Anomalie.
 
 Pour la V1, deux origines sont distinguées :
 
-``` text
+```text
 AUDIT
 HORS_AUDIT
 ```
@@ -3424,7 +3418,7 @@ indicateurs associés.
 La date de détection d'une Anomalie est la date de création de l'Issue
 `🐛 Bug` dans GitHub.
 
-``` text
+```text
 detectedAt = GitHub Issue.createdAt
 ```
 
@@ -3437,7 +3431,7 @@ detectedAt = GitHub Issue.createdAt
 La date de correction d'une Anomalie est la date à laquelle l'Issue
 `🐛 Bug` passe au statut Project `Done`.
 
-``` text
+```text
 correctedAt = date du passage à Done
 ```
 
@@ -3447,12 +3441,11 @@ lorsqu'une Pull Request est requise.
 
 **Statut : Établi**
 
-
 ---
 
-# 7. Questions ouvertes — Audits
+## 7. Questions ouvertes — Audits
 
-## Q-015 — Objet Audit
+### Q-015 — Objet Audit
 
 L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHub représentant le travail d'Audit ?
 
@@ -3460,7 +3453,7 @@ L'Audit doit-il devenir un objet métier explicite indépendant de l'Issue GitHu
 
 ---
 
-## Q-016 — Campagne d'Audit
+### Q-016 — Campagne d'Audit
 
 Comment une Campagne d'Audit est-elle identifiée ?
 
@@ -3468,7 +3461,7 @@ Comment une Campagne d'Audit est-elle identifiée ?
 
 ---
 
-## Q-017 — Résultat d'un Audit
+### Q-017 — Résultat d'un Audit
 
 Le résultat de conformité n'est actuellement pas déclaré explicitement par l'auditeur.
 
@@ -3504,7 +3497,7 @@ Les Améliorations sont donc exclues du calcul du verdict de conformité.
 
 ---
 
-## Q-018 — Version auditée
+### Q-018 — Version auditée
 
 Pour un Audit pré-PROD, la Version auditée est une Release Candidate `M.m.r-rc.n`.
 
@@ -3523,7 +3516,7 @@ Un Audit est réalisé lorsque son Issue est simultanément `Done` et
 
 Sa date métier de fin est :
 
-``` text
+```text
 Audit.completedAt = date du passage au statut Project Done
 ```
 
@@ -3537,9 +3530,9 @@ indicateur la nécessite.
 
 ---
 
-# 8. Questions ouvertes — Workflow
+## 8. Questions ouvertes — Workflow
 
-## Q-020 — Profils de workflow
+### Q-020 — Profils de workflow
 
 Les profils STANDARD, EPIC, AUDIT, RELEASE et CONCEPTION doivent-ils être formalisés comme des profils métier distincts ?
 
@@ -3547,7 +3540,7 @@ Les profils STANDARD, EPIC, AUDIT, RELEASE et CONCEPTION doivent-ils être forma
 
 ---
 
-## Q-021 — Exceptions aux règles de Pull Request
+### Q-021 — Exceptions aux règles de Pull Request
 
 Pour quels profils une Pull Request n'est-elle pas obligatoire avant Done ?
 
@@ -3555,7 +3548,7 @@ Pour quels profils une Pull Request n'est-elle pas obligatoire avant Done ?
 
 ---
 
-## Q-022 — Statut Cancelled
+### Q-022 — Statut Cancelled
 
 Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled ?
 
@@ -3563,9 +3556,9 @@ Quelles propriétés ou relations sont interdites lorsqu'une Issue est Cancelled
 
 ---
 
-# 9. Questions ouvertes — Applications consommatrices
+## 9. Questions ouvertes — Applications consommatrices
 
-## Q-023 — Identification des Applications
+### Q-023 — Identification des Applications
 
 Quelle source permet de connaître les Applications qui utilisent ou devraient utiliser le Design System ?
 
@@ -3573,7 +3566,7 @@ Quelle source permet de connaître les Applications qui utilisent ou devraient u
 
 ---
 
-## Q-024 — Détection des Packages utilisés
+### Q-024 — Détection des Packages utilisés
 
 Comment déterminer qu'une Application utilise un Package donné ?
 
@@ -3581,7 +3574,7 @@ Comment déterminer qu'une Application utilise un Package donné ?
 
 ---
 
-## Q-025 — Détection de la Version utilisée
+### Q-025 — Détection de la Version utilisée
 
 Comment déterminer la Version effectivement utilisée par une Application ?
 
@@ -3589,7 +3582,7 @@ Comment déterminer la Version effectivement utilisée par une Application ?
 
 ---
 
-## Q-026 — Versions non-PROD utilisées par les consommateurs
+### Q-026 — Versions non-PROD utilisées par les consommateurs
 
 Comment traiter une Application utilisant une Version SNAPSHOT, RC ou HC ?
 
@@ -3597,7 +3590,7 @@ Comment traiter une Application utilisant une Version SNAPSHOT, RC ou HC ?
 
 ---
 
-## Q-027 — Détection des Composants utilisés
+### Q-027 — Détection des Composants utilisés
 
 Comment identifier les Composants utilisés et leur nombre d'utilisations ?
 
@@ -3605,7 +3598,7 @@ Comment identifier les Composants utilisés et leur nombre d'utilisations ?
 
 ---
 
-## Q-028 — Dette de montée de Version
+### Q-028 — Dette de montée de Version
 
 Comment définir la dette liée à l'utilisation d'une ancienne Version PROD ?
 
@@ -3613,7 +3606,7 @@ Comment définir la dette liée à l'utilisation d'une ancienne Version PROD ?
 
 ---
 
-## Q-029 — Alertes aux Squads
+### Q-029 — Alertes aux Squads
 
 Quelles situations doivent provoquer une alerte à destination d'une Squad responsable ?
 
@@ -3621,9 +3614,9 @@ Quelles situations doivent provoquer une alerte à destination d'une Squad respo
 
 ---
 
-# 10. Questions ouvertes — Qualité
+## 10. Questions ouvertes — Qualité
 
-## Q-030 — Qualité d'une Version
+### Q-030 — Qualité d'une Version
 
 Comment calculer la qualité d'une Version en distinguant Audit pré-PROD et Audit de rattrapage ?
 
@@ -3631,7 +3624,7 @@ Comment calculer la qualité d'une Version en distinguant Audit pré-PROD et Aud
 
 ---
 
-## Q-031 — Qualité d'un Composant
+### Q-031 — Qualité d'un Composant
 
 Comment calculer la qualité d'un Composant pour une Version donnée ?
 
@@ -3639,7 +3632,7 @@ Comment calculer la qualité d'un Composant pour une Version donnée ?
 
 ---
 
-## Q-032 — Badge ou note d'une Application
+### Q-032 — Badge ou note d'une Application
 
 Comment construire une information synthétique de qualité pour une Application à partir des Packages, Versions et Composants utilisés ?
 
@@ -3647,7 +3640,7 @@ Comment construire une information synthétique de qualité pour une Application
 
 ---
 
-## Q-033 — RGAA / WAI-ARIA d'une Application
+### Q-033 — RGAA / WAI-ARIA d'une Application
 
 Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA d'une Application ?
 
@@ -3655,9 +3648,9 @@ Quelle signification précise doit avoir une note ou un badge RGAA / WAI-ARIA d'
 
 ---
 
-# 11. Questions ouvertes — Historisation
+## 11. Questions ouvertes — Historisation
 
-## Q-034 — Granularité historique
+### Q-034 — Granularité historique
 
 Quels événements doivent provoquer la création d'un Snapshot ?
 
@@ -3665,7 +3658,7 @@ Quels événements doivent provoquer la création d'un Snapshot ?
 
 ---
 
-## Q-035 — Historisation de la connaissance de la qualité
+### Q-035 — Historisation de la connaissance de la qualité
 
 Comment distinguer la qualité connue à la publication de celle découverte ultérieurement ?
 
@@ -3673,7 +3666,7 @@ Comment distinguer la qualité connue à la publication de celle découverte ult
 
 ---
 
-## Q-036 — Conservation
+### Q-036 — Conservation
 
 Quelle durée d'historique doit être conservée ?
 
@@ -3681,9 +3674,9 @@ Quelle durée d'historique doit être conservée ?
 
 ---
 
-# 12. Questions ouvertes — Sources externes
+## 12. Questions ouvertes — Sources externes
 
-## Q-037 — Nexus
+### Q-037 — Nexus
 
 Quelles informations Nexus sont nécessaires au pipeline ?
 
@@ -3691,7 +3684,7 @@ Quelles informations Nexus sont nécessaires au pipeline ?
 
 ---
 
-## Q-038 — Jenkins
+### Q-038 — Jenkins
 
 Le pipeline doit-il interroger directement Jenkins ou GitHub et Nexus fournissent-ils suffisamment d'informations ?
 
@@ -3699,7 +3692,7 @@ Le pipeline doit-il interroger directement Jenkins ou GitHub et Nexus fournissen
 
 ---
 
-## Q-039 — Applications consommatrices
+### Q-039 — Applications consommatrices
 
 Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
@@ -3707,7 +3700,7 @@ Quelle source permettra d'identifier les Applications et leurs dépendances ?
 
 ---
 
-## Q-040 — Usage des Composants
+### Q-040 — Usage des Composants
 
 Quelle source permettra de mesurer l'utilisation réelle des Composants ?
 
@@ -3715,9 +3708,9 @@ Quelle source permettra de mesurer l'utilisation réelle des Composants ?
 
 ---
 
-# 13. Questions ouvertes — Architecture
+## 13. Questions ouvertes — Architecture
 
-## Q-041 — Backend
+### Q-041 — Backend
 
 À quel moment le dashboard statique devra-t-il évoluer vers une architecture avec backend ?
 
@@ -3725,7 +3718,7 @@ Quelle source permettra de mesurer l'utilisation réelle des Composants ?
 
 ---
 
-## Q-042 — Stockage historique
+### Q-042 — Stockage historique
 
 Quel système doit conserver les Snapshots à terme ?
 
@@ -3733,7 +3726,7 @@ Quel système doit conserver les Snapshots à terme ?
 
 ---
 
-## Q-043 — Multi-source
+### Q-043 — Multi-source
 
 Comment orchestrer à terme :
 
@@ -3751,9 +3744,9 @@ Autres sources
 
 ---
 
-# 14. Nouvelles questions issues de la modélisation des Audits
+## 14. Nouvelles questions issues de la modélisation des Audits
 
-## Q-044 — Familles d'Audit
+### Q-044 — Familles d'Audit
 
 La seule famille d'Audit actuellement pratiquée est :
 
@@ -3777,7 +3770,7 @@ D'autres familles, par exemple Sécurité ou Performance, pourraient être envis
 
 ---
 
-## Q-045 — Représentation de la famille d'Audit
+### Q-045 — Représentation de la famille d'Audit
 
 Comment représenter la famille d'Audit dans GitHub ?
 
@@ -3797,7 +3790,7 @@ Famille d'Audit = Accessibilité
 
 ---
 
-## Q-046 — Cardinalité de la famille d'Audit
+### Q-046 — Cardinalité de la famille d'Audit
 
 Une Issue d'Audit possède-t-elle exactement une famille ou peut-elle appartenir à plusieurs familles ?
 
@@ -3805,7 +3798,7 @@ Une Issue d'Audit possède-t-elle exactement une famille ou peut-elle appartenir
 
 ---
 
-## Q-047 — Cardinalité du Composant
+### Q-047 — Cardinalité du Composant
 
 Une Issue d'Audit doit obligatoirement être rattachée à **un et un seul Composant** au moyen d'un label `🧩 Component:xxx`.
 
@@ -3819,8 +3812,8 @@ Une Issue d'Audit sans Composant ou avec plusieurs Composants est invalide.
 
 Pour un Audit pré-PROD :
 
--   la Milestone de l'Issue d'Audit porte la Version cible `M.m.r` ;
--   un champ explicite de l'Issue d'Audit porte la RC réellement auditée
+- la Milestone de l'Issue d'Audit porte la Version cible `M.m.r` ;
+- un champ explicite de l'Issue d'Audit porte la RC réellement auditée
     `M.m.r-rc.n`.
 
 La Milestone et le champ de RC auditée sont complémentaires.
@@ -3829,7 +3822,7 @@ La Milestone et le champ de RC auditée sont complémentaires.
 
 ---
 
-## Q-049 — Fin d'une Issue d'Audit
+### Q-049 — Fin d'une Issue d'Audit
 
 Une Issue d'Audit est considérée comme terminée lorsque :
 
@@ -3845,7 +3838,7 @@ Le seul statut Done ou le seul état Closed n'est pas suffisant.
 
 ---
 
-## Q-050 — Relation Issue d'Audit / Anomalie
+### Q-050 — Relation Issue d'Audit / Anomalie
 
 La relation Audit → Anomalie est désormais établie :
 
@@ -3860,7 +3853,7 @@ Lors d'une revalidation, une nouvelle Anomalie est créée si le problème est d
 
 ---
 
-## Q-051 — Passage en PROD et couverture des Audits
+### Q-051 — Passage en PROD et couverture des Audits
 
 Toutes les Issues d'Audit prévues doivent-elles être terminées avant le passage en PROD ?
 
@@ -3868,7 +3861,7 @@ Toutes les Issues d'Audit prévues doivent-elles être terminées avant le passa
 
 ---
 
-## Q-052 — Passage en PROD et Anomalies détectées
+### Q-052 — Passage en PROD et Anomalies détectées
 
 Quelles Anomalies détectées pendant les Audits empêchent la publication de la Version PROD ?
 
@@ -3876,7 +3869,7 @@ Quelles Anomalies détectées pendant les Audits empêchent la publication de la
 
 ---
 
-## Q-053 — Migration vers l'Issue Type `🔍 Audit`
+### Q-053 — Migration vers l'Issue Type `🔍 Audit`
 
 Comment effectuer la transition entre :
 
@@ -3896,7 +3889,7 @@ Famille d'Audit = ...
 
 ---
 
-## Q-054 — Valeur de Version dans `package.json`
+### Q-054 — Valeur de Version dans `package.json`
 
 Dans le fonctionnement nominal observé, `package.json` contient :
 
@@ -3935,7 +3928,7 @@ Il faut distinguer :
 
 ---
 
-## Q-055 — Template d'Issue d'Audit
+### Q-055 — Template d'Issue d'Audit
 
 À terme, un template GitHub doit fournir le minimum vital nécessaire à une Issue d'Audit.
 
@@ -3954,7 +3947,7 @@ Quel est le minimum d'informations qui doit être demandé par ce template ?
 
 ---
 
-## Q-056 — Catégorisation des Améliorations d'Audit
+### Q-056 — Catégorisation des Améliorations d'Audit
 
 Pour une Improvement issue d'un Audit, plusieurs éléments sont désormais établis :
 
@@ -3972,7 +3965,7 @@ La catégorisation complémentaire envisagée pour les Improvements, ainsi que l
 
 ---
 
-## Q-057 — Cardinalité des catégories Accessibilité d’une Anomalie
+### Q-057 — Cardinalité des catégories Accessibilité d’une Anomalie
 
 Les labels `♿ a11y:xxx` constituent une catégorisation accessibilité transverse et peuvent être utilisés sur des Anomalies d'Audit, des Improvements d'Audit et des Issues hors Audit.
 
@@ -3989,7 +3982,7 @@ Les règles de cardinalité applicables aux Issues hors Audit restent également
 
 ---
 
-## Q-058 — Évolution du référentiel de criticité RGAA
+### Q-058 — Évolution du référentiel de criticité RGAA
 
 Le périmètre d'utilisation des criticités RGAA est désormais établi.
 
@@ -4001,7 +3994,7 @@ Le schéma actuel comporte exactement ces trois valeurs. Son éventuelle évolut
 
 ---
 
-## Q-059 — Critères d'attribution des criticités RGAA
+### Q-059 — Critères d'attribution des criticités RGAA
 
 Les niveaux :
 
@@ -4021,7 +4014,7 @@ Aucune définition fonctionnelle de `bloquante`, `majeure` ou `mineure` ne doit 
 
 ---
 
-## Q-060 — Revalidation d'un Composant après correction des Anomalies
+### Q-060 — Revalidation d'un Composant après correction des Anomalies
 
 Le modèle cible retenu est la création d'une nouvelle Issue d'Audit du Composant après correction des Anomalies.
 
@@ -4040,7 +4033,7 @@ Il reste à préciser le déclenchement exact de cette nouvelle Issue d'Audit et
 
 ---
 
-## Q-061 — Responsable et déclencheur de la clôture d'une Anomalie
+### Q-061 — Responsable et déclencheur de la clôture d'une Anomalie
 
 Le workflow n'est pas encore définitivement défini.
 
@@ -4052,14 +4045,13 @@ Il reste à confirmer :
 - que le merge sur la branche cible constitue bien le déclencheur opérationnel ;
 - comment la validation de l'auditeur est matérialisée et contrôlée avant la clôture.
 
-
 La clôture de l'Anomalie ne rétablit pas automatiquement la conformité du Composant. Celle-ci sera réévaluée dans une nouvelle Issue d'Audit.
 
 **Statut : À confirmer**
 
 ---
 
-## Q-062 — Déclenchement de l'Audit de revalidation
+### Q-062 — Déclenchement de l'Audit de revalidation
 
 La nouvelle Issue d'Audit de revalidation n'est pas déclenchée automatiquement par la fermeture de toutes les Anomalies.
 
@@ -4080,7 +4072,7 @@ Il reste à préciser comment cette décision collective est matérialisée dans
 
 ---
 
-## Q-063 — Matérialisation de la décision de revalidation
+### Q-063 — Matérialisation de la décision de revalidation
 
 Le déclenchement d'un nouvel Audit de revalidation relève d'un choix collectif de la Squad.
 
@@ -4092,7 +4084,7 @@ Il reste également à préciser qui est responsable de créer l'Issue d'Audit d
 
 ---
 
-## Q-064 — Lien entre Anomalies successives portant sur un même problème
+### Q-064 — Lien entre Anomalies successives portant sur un même problème
 
 Lorsqu'une nouvelle Anomalie correspond au même problème qu'une Anomalie issue d'un Audit précédent, aucune relation explicite entre les deux Issues n'est requise.
 
@@ -4111,7 +4103,7 @@ Une éventuelle analyse de récurrence pourra être étudiée ultérieurement co
 
 ---
 
-## Q-065 — Changement de Version entre deux Audits successifs
+### Q-065 — Changement de Version entre deux Audits successifs
 
 Deux Audits successifs d'un même Composant peuvent porter sur des Versions différentes selon les choix de la Squad.
 
@@ -4127,7 +4119,7 @@ Il reste à préciser ultérieurement si le dashboard doit :
 
 ---
 
-## Q-066 — Annotation d'une Version non conforme dont les Anomalies sont corrigées
+### Q-066 — Annotation d'une Version non conforme dont les Anomalies sont corrigées
 
 Une Version peut conserver un verdict historique `NON CONFORME` alors que ses Anomalies ont été corrigées dans une Version ultérieure qui n'a pas encore obtenu de verdict `CONFORME`.
 
@@ -4139,7 +4131,7 @@ Il reste à définir son nom, ses états, ses conditions de calcul, le rattachem
 
 ---
 
-## Q-067 — Ordonnancement de plusieurs Audits d'un même Composant et d'une même Version
+### Q-067 — Ordonnancement de plusieurs Audits d'un même Composant et d'une même Version
 
 Le dernier Audit réalisé détermine l'état de conformité courant du couple `Composant × Version`.
 
@@ -4151,7 +4143,7 @@ Plusieurs Audits portant sur le même couple sont donc ordonnés selon cette dat
 
 ---
 
-## Q-068 — Disponibilité de la date de passage au statut Done
+### Q-068 — Disponibilité de la date de passage au statut Done
 
 La date de réalisation d'un Audit nécessite de connaître l'instant où l'Issue est devenue `Done` ainsi que sa date de fermeture, afin de retenir l'instant où la seconde condition `Done + Closed` a été satisfaite.
 
@@ -4161,7 +4153,7 @@ Il reste à vérifier que la source GitHub collectée permet d'obtenir de maniè
 
 ---
 
-## Q-069 — Présentation d'un Audit en cours à côté du verdict courant
+### Q-069 — Présentation d'un Audit en cours à côté du verdict courant
 
 Pour un même couple `Composant × Version`, le dashboard doit afficher simultanément :
 
@@ -4183,7 +4175,7 @@ Il reste uniquement à définir leur représentation UX exacte dans le dashboard
 
 ---
 
-## Q-070 — Sévérité de plusieurs Audits non terminés pour un même Composant et une même Version
+### Q-070 — Sévérité de plusieurs Audits non terminés pour un même Composant et une même Version
 
 La présence de plusieurs Issues d'Audit non terminées pour le même couple `Composant × Version` est désormais considérée comme une situation anormale.
 
@@ -4193,7 +4185,7 @@ Il reste à déterminer comment cette anomalie de données/workflow devra être 
 
 ---
 
-## Q-071 — Source de la Version effectivement auditée
+### Q-071 — Source de la Version effectivement auditée
 
 La Milestone constitue la référence structurante permettant d'identifier la Version de référence et le contexte de l'Audit :
 
@@ -4219,7 +4211,7 @@ Version auditée : 1.8.0-rc.42
 
 ---
 
-## Q-072 — Cohérence entre Milestone et champ Version auditée
+### Q-072 — Cohérence entre Milestone et champ Version auditée
 
 La `Version auditée` doit appartenir à la Version de référence portée par la Milestone.
 
@@ -4245,7 +4237,7 @@ Une incohérence constitue une anomalie de données à signaler.
 
 ---
 
-## Q-073 — Sévérité d'une incohérence de Version d'Audit
+### Q-073 — Sévérité d'une incohérence de Version d'Audit
 
 Une incohérence entre la Version de référence portée par la Milestone et le champ `Version auditée :` constitue une anomalie de données.
 
@@ -4255,7 +4247,7 @@ Il reste à déterminer la sévérité de cette anomalie dans le futur moteur de
 
 ---
 
-## Q-074 — Représentation d'une Version auditée manquante
+### Q-074 — Représentation d'une Version auditée manquante
 
 Lorsqu'une Milestone valide permet de poursuivre l'analyse mais que le champ `Version auditée :` est absent, l'Audit reste exploitable avec une donnée partielle.
 
@@ -4265,7 +4257,7 @@ Il reste à définir comment cette information manquante sera représentée dans
 
 ---
 
-## Q-075 — Traitement d'un Audit bloqué par l'absence de Milestone
+### Q-075 — Traitement d'un Audit bloqué par l'absence de Milestone
 
 Une Issue d'Audit `Done + Closed` sans Milestone reste comptabilisée dans l'activité d'Audit.
 
@@ -4277,7 +4269,7 @@ Cette décision implique une appréciation de la qualité des données spécifiq
 
 ---
 
-## Q-076 — Dénominateur et héritage de la couverture d'Audit
+### Q-076 — Dénominateur et héritage de la couverture d'Audit
 
 La couverture d'Audit est calculée sur le nombre total de Composants du Catalogue.
 
@@ -4299,7 +4291,7 @@ Le taux de conformité est ensuite calculé uniquement parmi les Composants audi
 
 ---
 
-## Q-077 — Détermination d'un Composant inchangé entre deux Versions
+### Q-077 — Détermination d'un Composant inchangé entre deux Versions
 
 L'état des lieux entre deux Versions pourra s'appuyer sur les modifications Git des fichiers appartenant aux Composants afin de distinguer les Composants `NOUVEAU`, `ÉVOLUÉ`, `INCHANGÉ` et `DÉCOMMISSIONNÉ`.
 
@@ -4311,7 +4303,7 @@ La manière exacte d'associer les fichiers du repository aux Composants reste à
 
 ---
 
-## Q-078 — Référentiel permettant d'identifier les Composants entre deux Versions
+### Q-078 — Référentiel permettant d'identifier les Composants entre deux Versions
 
 Les repositories de Librairies n'ont pas actuellement une architecture suffisamment stable et homogène pour utiliser une convention commune de répertoires.
 
@@ -4323,7 +4315,7 @@ Cette piste devra être réétudiée lors de l'intégration future de la fonctio
 
 ---
 
-## Q-079 — Règle SemVer de sélection du tag précédent
+### Q-079 — Règle SemVer de sélection du tag précédent
 
 Le traitement cible doit comparer le tag nouvellement créé au tag précédent pertinent selon les règles SemVer.
 
@@ -4333,7 +4325,7 @@ Il reste à préciser la règle exacte de sélection lorsque plusieurs lignes de
 
 ---
 
-## Q-080 — Version du Catalogue utilisée comme dénominateur
+### Q-080 — Version du Catalogue utilisée comme dénominateur
 
 Le Catalogue utilisé comme dénominateur doit correspondre à la Version analysée.
 
@@ -4355,7 +4347,7 @@ les indicateurs de la Version.
 
 ---
 
-## Q-082 — Réactivation d'un Composant décommissionné
+### Q-082 — Réactivation d'un Composant décommissionné
 
 La réapparition d'un Composant décommissionné est considérée comme exceptionnelle.
 
@@ -4367,7 +4359,7 @@ Le mécanisme exact permettant de représenter cette réactivation reste à déf
 
 ---
 
-## Q-083 — Représentation d'une réactivation dans le Catalogue
+### Q-083 — Représentation d'une réactivation dans le Catalogue
 
 Lorsqu'un Composant décommissionné est exceptionnellement réactivé, il faut rendre cette réactivation explicite dans le Catalogue.
 
@@ -4377,7 +4369,7 @@ Il reste à déterminer quelles informations doivent être portées par le Catal
 
 ---
 
-## Q-084 — Restitution de l'origine du verdict applicable
+### Q-084 — Restitution de l'origine du verdict applicable
 
 Lorsqu'un verdict de conformité applicable à une Version provient d'un Audit réalisé sur une Version antérieure, il reste à préciser comment le Dashboard doit rendre cette origine visible.
 
@@ -4387,7 +4379,7 @@ Par exemple, il pourrait distinguer un Audit réalisé directement sur la Versio
 
 ---
 
-## Q-085 — Rupture de l'héritage lorsqu'un Composant évolue
+### Q-085 — Rupture de l'héritage lorsqu'un Composant évolue
 
 Une évolution du Composant ne rompt pas automatiquement l'héritage du dernier verdict applicable.
 
@@ -4399,7 +4391,7 @@ Le pipeline ne doit donc pas déduire `NON AUDITÉ` de la seule présence d'une 
 
 ---
 
-## Q-086 — États de qualification d'une évolution vis-à-vis d'un Audit
+### Q-086 — États de qualification d'une évolution vis-à-vis d'un Audit
 
 Pour un Composant `ÉVOLUÉ`, trois états sont retenus :
 
@@ -4415,7 +4407,7 @@ La Squad décide ensuite explicitement si un nouvel Audit est à faire ou s'il n
 
 ---
 
-## Q-087 — Qualification initiale d'un nouveau Composant
+### Q-087 — Qualification initiale d'un nouveau Composant
 
 Un Composant `NOUVEAU` doit en théorie être audité avant sa mise à disposition.
 
@@ -4429,7 +4421,7 @@ Il n'est donc pas initialisé à `À ÉVALUER` comme un Composant `ÉVOLUÉ`.
 
 ---
 
-## Q-088 — Traitement d'un nouveau Composant audité avant sa mise à disposition
+### Q-088 — Traitement d'un nouveau Composant audité avant sa mise à disposition
 
 Lorsqu'un Composant `NOUVEAU` a été audité pendant la mise au point de sa Version de sortie, le suivi du patrimoine peut afficher `AUDIT RÉALISÉ`.
 
@@ -4439,7 +4431,7 @@ Cet état ne remplace pas le verdict : l'information qualité principale reste `
 
 ---
 
-## Q-089 — Priorité visuelle entre conformité et suivi d'Audit
+### Q-089 — Priorité visuelle entre conformité et suivi d'Audit
 
 Le verdict de conformité est l'information qualité principale et `AUDIT RÉALISÉ` une information de suivi d'activité.
 
@@ -4449,7 +4441,7 @@ Il reste à préciser, lors de la conception du Dashboard, comment présenter vi
 
 ---
 
-## Q-090 — Définition d'une Anomalie traitée
+### Q-090 — Définition d'une Anomalie traitée
 
 Pour le calcul du taux de traitement, une Anomalie est considérée comme traitée uniquement lorsque :
 
@@ -4465,7 +4457,7 @@ Cette question recoupait un principe déjà abordé antérieurement sur la ferme
 
 ---
 
-## Q-091 — Dénominateur temporel du taux de traitement des Anomalies
+### Q-091 — Dénominateur temporel du taux de traitement des Anomalies
 
 Le dénominateur du taux de traitement correspond à toutes les Anomalies historiquement détectées sur le Composant.
 
@@ -4479,7 +4471,7 @@ Le Dashboard doit également afficher le stock restant en valeur absolue et, pou
 
 ---
 
-## Q-092 — Périmètre de la ventilation par criticité RGAA
+### Q-092 — Périmètre de la ventilation par criticité RGAA
 
 Pour les Anomalies issues des Audits d'accessibilité, le Dashboard doit afficher, pour chaque niveau `🚦 rgaa:xxx` :
 
@@ -4494,7 +4486,7 @@ Le taux est calculé sur l'historique des Anomalies de la criticité concernée.
 
 ---
 
-## Q-093 — Agrégation du suivi des Anomalies au niveau supérieur
+### Q-093 — Agrégation du suivi des Anomalies au niveau supérieur
 
 Les indicateurs de traitement définis au niveau du Composant doivent être agrégés au niveau de la Librairie.
 
@@ -4506,7 +4498,7 @@ La restitution doit permettre de retrouver les Composants contribuant aux indica
 
 ---
 
-## Q-094 — Périmètre versionné de l'agrégation au niveau Librairie
+### Q-094 — Périmètre versionné de l'agrégation au niveau Librairie
 
 Deux lectures sont nécessaires :
 
@@ -4519,7 +4511,7 @@ Un Composant décommissionné aujourd'hui peut donc rester visible dans les indi
 
 ---
 
-## Q-095 — Date de référence des indicateurs d'une ancienne Version
+### Q-095 — Date de référence des indicateurs d'une ancienne Version
 
 La vue d'une ancienne Version doit afficher l'état des Anomalies tel qu'il était au moment de la sortie de cette Version.
 
@@ -4536,7 +4528,7 @@ La vue historique ne doit pas être recalculée à partir de l'état actuel des 
 La date métier de Release d'une Version PROD `M.m.r` est la date de
 création du Git tag `M.m.r`.
 
-``` text
+```text
 releasedAt = GitTag(M.m.r).createdAt
 ```
 
@@ -4544,7 +4536,7 @@ releasedAt = GitTag(M.m.r).createdAt
 
 ---
 
-## Q-097 — Versions affectées par une Anomalie découverte après une release
+### Q-097 — Versions affectées par une Anomalie découverte après une release
 
 Pour une Anomalie issue d'un Audit post-PROD, la Version affectée peut être déterminée à partir du contexte de l'Audit et de sa Milestone `M.m.r-Audit`, normalisée vers `M.m.r`.
 
@@ -4556,7 +4548,7 @@ Le cas des Anomalies découvertes hors Audit reste à instruire séparément.
 
 ---
 
-## Q-098 — Version affectée pour une Anomalie découverte hors Audit
+### Q-098 — Version affectée pour une Anomalie découverte hors Audit
 
 Pour un Bug hors périmètre des Audits d'accessibilité, la Version affectée doit obligatoirement être renseignée dans la description de l'Issue.
 
@@ -4568,7 +4560,7 @@ Le format exact utilisé dans la description reste à définir.
 
 ---
 
-## Q-099 — Format de la Version affectée dans la description d'un Bug hors accessibilité
+### Q-099 — Format de la Version affectée dans la description d'un Bug hors accessibilité
 
 La présence obligatoire de la Version affectée dans la description de l'Issue est établie pour les Bugs hors périmètre des Audits d'accessibilité.
 
@@ -4578,7 +4570,7 @@ Il reste à définir le format structuré attendu afin que le pipeline puisse ex
 
 ---
 
-## Q-100 — Sémantique de la Version renseignée lors d'une remontée client
+### Q-100 — Sémantique de la Version renseignée lors d'une remontée client
 
 La Version utilisée par le client au moment de la remontée doit d'abord être considérée comme une `Version observée`.
 
@@ -4590,7 +4582,7 @@ Une erreur d'implémentation du Composant côté client ne doit pas conduire à 
 
 ---
 
-## Q-101 — Caractère systématique de Cancelled pour une erreur d'implémentation client
+### Q-101 — Caractère systématique de Cancelled pour une erreur d'implémentation client
 
 Lorsqu'une analyse conclut que le problème provient uniquement d'une erreur d'implémentation côté client et non d'un défaut du Design System, l'Issue doit obligatoirement passer au statut `Cancelled`.
 
@@ -4600,7 +4592,7 @@ Ce comportement constitue une règle de workflow.
 
 ---
 
-## Q-102 — Traitement des remontées Cancelled dans les indicateurs
+### Q-102 — Traitement des remontées Cancelled dans les indicateurs
 
 Les Issues `Cancelled` parce qu'elles correspondent à une erreur d'implémentation côté client doivent être suivies séparément dans les éléments de pilotage destinés à la Squad.
 
@@ -4612,7 +4604,7 @@ Elles servent notamment à identifier des besoins d'amélioration de la document
 
 ---
 
-## Q-103 — Ventilation des erreurs d'intégration client pour la Squad
+### Q-103 — Ventilation des erreurs d'intégration client pour la Squad
 
 La vue Squad doit permettre de ventiler par Composant les remontées `Cancelled` parce qu'elles correspondent à une erreur d'implémentation côté client.
 
@@ -4624,7 +4616,7 @@ Elle reste séparée des indicateurs de qualité intrinsèque du Design System.
 
 ---
 
-## Q-104 — Normalisation par le niveau d'usage du Composant
+### Q-104 — Normalisation par le niveau d'usage du Composant
 
 Les volumes d'Issues et de remontées par Composant doivent pouvoir être mis en perspective avec le niveau d'usage du Composant dans les applications consommatrices.
 
@@ -4634,7 +4626,7 @@ Le besoin est établi. Les ratios exacts, les sources, la méthode de détection
 
 ---
 
-## Q-105 — Ratios d'usage et d'Issues à retenir
+### Q-105 — Ratios d'usage et d'Issues à retenir
 
 Les ratios ne sont pas encore figés et doivent faire l'objet d'une instruction.
 
@@ -4651,7 +4643,7 @@ D'autres ratios pertinents peuvent être proposés et ajoutés au catalogue des 
 
 ---
 
-## Q-106 — Autres ratios candidats autour des Issues et de l'usage
+### Q-106 — Autres ratios candidats autour des Issues et de l'usage
 
 Au-delà des ratios `Issues / occurrences globales` et `Issues / applications utilisatrices`, il reste à instruire d'autres ratios potentiellement utiles.
 
@@ -4670,7 +4662,7 @@ Pour chaque candidat, il faudra préciser son objectif, son interprétation, son
 
 ---
 
-## Q-107 — Cas où une Issue peut légitimement ne concerner aucun Composant
+### Q-107 — Cas où une Issue peut légitimement ne concerner aucun Composant
 
 Il est établi que toute Issue concernant effectivement un Composant doit porter un label `🧩 Component:xxx`.
 
@@ -4680,7 +4672,7 @@ Il reste à définir les cas métier dans lesquels une Issue peut légitimement 
 
 ---
 
-## Q-108 — Comptabilisation d'une Issue multi-Composants dans les indicateurs
+### Q-108 — Comptabilisation d'une Issue multi-Composants dans les indicateurs
 
 Une Issue portant plusieurs labels `🧩 Component:xxx` doit compter une fois dans les indicateurs de chacun des Composants concernés.
 
@@ -4690,7 +4682,7 @@ Elle reste toutefois une seule Issue GitHub au niveau global.
 
 ---
 
-## Q-109 — Comptage global des Issues au niveau Bibliothèque
+### Q-109 — Comptage global des Issues au niveau Bibliothèque
 
 Le nombre total d'Issues au niveau Bibliothèque correspond au nombre d'Issues GitHub distinctes, tous types confondus et avec ou sans rattachement à un Composant.
 
@@ -4705,7 +4697,7 @@ Une Issue multi-Composants reste unique dans le total Bibliothèque mais contrib
 
 ---
 
-## Q-110 — Nature des Issues sans Composant
+### Q-110 — Nature des Issues sans Composant
 
 Il est établi qu'une Issue peut légitimement être transverse et ne porter aucun label `🧩 Component:xxx`.
 
@@ -4717,7 +4709,7 @@ La distinction entre `Issue transverse` et `Composant manquant suspecté` devra 
 
 ---
 
-## Q-111 — Mécanisme d'identification d'un Composant manquant suspecté
+### Q-111 — Mécanisme d'identification d'un Composant manquant suspecté
 
 Il reste à définir comment identifier une Issue sans label `🧩 Component:xxx` qui concerne probablement un Composant.
 
@@ -4729,7 +4721,7 @@ Le mécanisme devra éviter de transformer une simple heuristique en erreur de q
 
 ---
 
-## Q-112 — Dimensions disponibles dans la page d'analyse dynamique
+### Q-112 — Dimensions disponibles dans la page d'analyse dynamique
 
 Le besoin d'une page permettant de sélectionner dynamiquement des critères de filtre et d'agrégation est établi.
 
@@ -4749,7 +4741,7 @@ Les premières dimensions identifiées restent notamment : Composant, présence/
 
 ---
 
-## Q-113 — Futurs types de sous-Issues d'Audit
+### Q-113 — Futurs types de sous-Issues d'Audit
 
 À ce jour, seuls les types métier Anomalie et Improvement sont identifiés comme sous-Issues d'une Issue d'Audit.
 
@@ -4759,7 +4751,7 @@ D'autres types pourront éventuellement apparaître à l'avenir. Ils devront alo
 
 ---
 
-## Q-114 — Nombre d'occurrences regroupées dans une Anomalie d'Audit
+### Q-114 — Nombre d'occurrences regroupées dans une Anomalie d'Audit
 
 Lorsqu'une seule Issue Anomalie regroupe plusieurs occurrences d'un même problème dans un Composant, le dashboard ne cherche pas à compter ces occurrences.
 
@@ -4775,7 +4767,7 @@ Le nombre d'occurrences internes n'est ni extrait ni estimé.
 
 ---
 
-# 15. Méthode de traitement des questions
+## 15. Méthode de traitement des questions
 
 Les questions ne doivent pas être résolues toutes en même temps.
 

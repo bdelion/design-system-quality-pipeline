@@ -9,18 +9,18 @@ transformer prématurément en conclusions métier.
 
 Le RAW doit rester suffisamment proche des sources pour permettre :
 
--   la traçabilité ;
--   la normalisation ;
--   les contrôles de qualité ;
--   l'explication d'un résultat ;
--   le rejeu du pipeline.
+- la traçabilité ;
+- la normalisation ;
+- les contrôles de qualité ;
+- l'explication d'un résultat ;
+- le rejeu du pipeline.
 
 ## Sources actuelles
 
 Le pipeline peut actuellement produire un RAW depuis :
 
--   une fixture ;
--   GitHub.
+- une fixture ;
+- GitHub.
 
 Le Catalogue YAML est chargé séparément puis ses références de
 Composants sont injectées dans le jeu de données avant la normalisation.
@@ -31,13 +31,13 @@ Le collecteur GitHub fonctionne en lecture seule.
 
 Pour chaque Repository configuré, l'implémentation collecte notamment :
 
-1.  les métadonnées du Repository ;
-2.  les Issues paginées ;
-3.  les Pull Requests paginées ;
-4.  la timeline des Issues ;
-5.  les relations Development et les statuts Projects v2 via GraphQL
+1. les métadonnées du Repository ;
+2. les Issues paginées ;
+3. les Pull Requests paginées ;
+4. la timeline des Issues ;
+5. les relations Development et les statuts Projects v2 via GraphQL
     lorsqu'une URL GraphQL est configurée ;
-6.  les informations de Projects classiques via REST lorsque
+6. les informations de Projects classiques via REST lorsque
     disponibles.
 
 Les Pull Requests apparaissant dans l'endpoint REST des Issues sont
@@ -52,11 +52,11 @@ pipeline.
 L'implémentation actuelle recherche les relations Issue/PR à partir de
 plusieurs signaux structurés ou textuels :
 
--   mots-clés de fermeture configurés tels que `Closes`, `Fixes` ou
+- mots-clés de fermeture configurés tels que `Closes`, `Fixes` ou
     `Resolves` ;
--   titre ou corps selon le traitement concerné ;
--   timeline GitHub ;
--   références Development récupérées via GraphQL.
+- titre ou corps selon le traitement concerné ;
+- timeline GitHub ;
+- références Development récupérées via GraphQL.
 
 Les numéros détectés sont ensuite résolus contre les Pull Requests
 effectivement collectées.
@@ -71,8 +71,8 @@ Les statuts Project associés aux Issues sont conservés dans le RAW.
 
 L'implémentation actuelle peut combiner :
 
--   Projects v2 via GraphQL ;
--   Projects classiques via REST lorsque l'API les expose.
+- Projects v2 via GraphQL ;
+- Projects classiques via REST lorsque l'API les expose.
 
 La configuration peut définir des valeurs de statut considérées comme
 annulées par les traitements actuels. Cette interprétation appartient à
@@ -86,7 +86,7 @@ transitoires.
 Les statuts HTTP actuellement considérés comme réessayables comprennent
 notamment :
 
-``` text
+```text
 429
 502
 503
@@ -108,49 +108,49 @@ le RAW, les fixtures ou les Snapshots.
 
 Le RAW conserve notamment :
 
--   `id` ;
--   `name` ;
--   `owner` ;
--   `defaultBranch` ;
--   Issues ;
--   Pull Requests.
+- `id` ;
+- `name` ;
+- `owner` ;
+- `defaultBranch` ;
+- Issues ;
+- Pull Requests.
 
 ### Issue
 
 Le RAW conserve notamment :
 
--   `id` ;
--   `number` ;
--   `title` ;
--   `state` ;
--   `issueType` ;
--   labels ;
--   informations de Composant disponibles ;
--   criticités disponibles ;
--   relations parent disponibles ;
--   dates ;
--   Pull Requests liés ;
--   statuts GitHub Project ;
--   Milestone.
+- `id` ;
+- `number` ;
+- `title` ;
+- `state` ;
+- `issueType` ;
+- labels ;
+- informations de Composant disponibles ;
+- criticités disponibles ;
+- relations parent disponibles ;
+- dates ;
+- Pull Requests liés ;
+- statuts GitHub Project ;
+- Milestone.
 
 ### Pull Request
 
 Le RAW conserve notamment :
 
--   `id` ;
--   `number` ;
--   `state` ;
--   `mergedAt` ;
--   relations vers les Issues.
+- `id` ;
+- `number` ;
+- `state` ;
+- `mergedAt` ;
+- relations vers les Issues.
 
 ### Milestone
 
 Le RAW conserve notamment :
 
--   `id` ;
--   `number` ;
--   `title` ;
--   `state`.
+- `id` ;
+- `number` ;
+- `title` ;
+- `state`.
 
 ### Catalogue
 
@@ -164,12 +164,12 @@ sémantique métier nécessaire au pipeline.
 
 Les champs suivants doivent notamment être conservés tels quels :
 
--   labels ;
--   `state` ;
--   `issueType` ;
--   `projectStatuses[].status` ;
--   `milestone.title` ;
--   `milestone.state`.
+- labels ;
+- `state` ;
+- `issueType` ;
+- `projectStatuses[].status` ;
+- `milestone.title` ;
+- `milestone.state`.
 
 À l'inverse, les identifiants, utilisateurs, URLs, titres ou textes
 libres peuvent relever de la politique d'anonymisation selon leur
@@ -187,10 +187,10 @@ attendu par le pipeline.
 
 Cette règle limite :
 
--   le couplage aux schémas externes ;
--   la diffusion accidentelle de données inutiles ;
--   la dépendance à des champs non maîtrisés ;
--   les risques d'anonymisation incomplète.
+- le couplage aux schémas externes ;
+- la diffusion accidentelle de données inutiles ;
+- la dépendance à des champs non maîtrisés ;
+- les risques d'anonymisation incomplète.
 
 ## RAW et conclusions métier
 
@@ -208,7 +208,7 @@ Les règles de qualité ne corrigent pas silencieusement le RAW.
 
 Lorsqu'une donnée est absente, incohérente ou invalide :
 
-``` text
+```text
 RAW conservé
     +
 DataQualityIssue

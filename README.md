@@ -9,11 +9,11 @@ produit des snapshots et génère un dashboard HTML statique.
 
 La documentation détaillée est disponible dans [`docs/`](docs/index.md).
 
-------------------------------------------------------------------------
+---
 
 ## Vue d'ensemble
 
-``` text
+```text
 GitHub / Fixture
        │
        ▼
@@ -37,39 +37,39 @@ GitHub / Fixture
 
 Les principes structurants sont :
 
--   le modèle RAW ne conserve que les données utiles au pipeline ;
--   les données inconnues ou invalides ne sont pas transformées
+- le modèle RAW ne conserve que les données utiles au pipeline ;
+- les données inconnues ou invalides ne sont pas transformées
     silencieusement en `0`, `false` ou « conforme » ;
--   les contrôles de qualité sont associés à leur impact réel sur les
+- les contrôles de qualité sont associés à leur impact réel sur les
     indicateurs ;
--   les KPI exposent leur périmètre et leur fiabilité ;
--   les snapshots permettent de comparer les états successifs et de
+- les KPI exposent leur périmètre et leur fiabilité ;
+- les snapshots permettent de comparer les états successifs et de
     calculer les flux ;
--   le pipeline reste déterministe et rejouable à partir des données
+- le pipeline reste déterministe et rejouable à partir des données
     collectées et des versions de règles.
 
 ## Prérequis
 
--   Node.js 20 ou supérieur ;
--   npm ;
--   terminal ouvert à la racine du projet.
+- Node.js 20 ou supérieur ;
+- npm ;
+- terminal ouvert à la racine du projet.
 
 Vérification :
 
-``` bash
+```bash
 node --version
 npm --version
 ```
 
 ## Installation
 
-``` bash
+```bash
 npm install
 ```
 
 Vérifier ensuite le projet :
 
-``` bash
+```bash
 npm run typecheck
 npm test
 npm run lint
@@ -79,19 +79,19 @@ npm run lint
 
 La commande principale est :
 
-``` bash
+```bash
 npm run pipeline
 ```
 
 Elle enchaîne les principales étapes du pipeline :
 
-1.  chargement de la configuration ;
-2.  collecte de la source ;
-3.  normalisation ;
-4.  contrôles de qualité ;
-5.  calcul des KPI ;
-6.  création du snapshot ;
-7.  génération du dashboard.
+1. chargement de la configuration ;
+2. collecte de la source ;
+3. normalisation ;
+4. contrôles de qualité ;
+5. calcul des KPI ;
+6. création du snapshot ;
+7. génération du dashboard.
 
 Une exécution peut être `COMPLETE` ou `PARTIAL`. `PARTIAL` signifie que
 le traitement est terminé mais que certaines données ou métriques sont
@@ -99,7 +99,7 @@ affectées par des réserves de qualité.
 
 ### Exécuter les étapes séparément
 
-``` bash
+```bash
 npm run collect
 npm run validate
 npm run analyze
@@ -112,19 +112,19 @@ npm run dashboard
 Après une exécution du pipeline, le dashboard statique est disponible
 dans :
 
-``` text
+```text
 data/dashboard/index.html
 ```
 
 Il comprend notamment :
 
--   **Vue d'ensemble** : principaux KPI, criticités, qualité des données
+- **Vue d'ensemble** : principaux KPI, criticités, qualité des données
     et délais ;
--   **Anomalies** : détail des anomalies et de leur qualité de données ;
--   **Audits** : composants, audits et résultats ;
--   **Cartographie** : relations repository → composant → audit →
+- **Anomalies** : détail des anomalies et de leur qualité de données ;
+- **Audits** : composants, audits et résultats ;
+- **Cartographie** : relations repository → composant → audit →
     anomalie → PR ;
--   **Historique** : évolution entre snapshots comparables.
+- **Historique** : évolution entre snapshots comparables.
 
 Le dashboard ne nécessite ni serveur applicatif ni base de données.
 
@@ -134,7 +134,7 @@ Le dashboard ne nécessite ni serveur applicatif ni base de données.
 
 Une fixture permet d'exécuter le pipeline sans accès à GitHub.
 
-``` bash
+```bash
 npm run pipeline
 ```
 
@@ -147,20 +147,20 @@ Un collecteur GitHub REST est disponible en lecture seule.
 
 Définir le token uniquement dans l'environnement :
 
-``` powershell
+```powershell
 $env:GITHUB_TOKEN = "..."
 ```
 
 Puis :
 
-``` bash
+```bash
 npm run collect -- --source github
 npm run pipeline -- --source github
 ```
 
 Pour GitHub Enterprise, les URLs API/web sont configurées dans `.env` :
 
-``` text
+```text
 GITHUB_API_URL=...
 GITHUB_GRAPHQL_URL=...
 GITHUB_URL=...
@@ -177,7 +177,7 @@ lorsqu'elles sont disponibles.
 Le projet fournit une chaîne dédiée pour transformer un RAW réel en
 fixture partageable.
 
-``` bash
+```bash
 npm run fixture:anonymize -- \
   --input data/raw/my-real-dataset.json \
   --output fixtures/github-real-anonymized.json
@@ -187,23 +187,23 @@ L'anonymisation est déterministe à partir d'une seed.
 
 Elle anonymise notamment :
 
--   identifiants ;
--   noms et propriétaires de repositories ;
--   numéros techniques ;
--   dates ;
--   textes libres ;
--   noms de projets ;
--   relations associées.
+- identifiants ;
+- noms et propriétaires de repositories ;
+- numéros techniques ;
+- dates ;
+- textes libres ;
+- noms de projets ;
+- relations associées.
 
 Certaines données métier sont volontairement conservées exactement car
 elles ont une signification analytique :
 
--   `labels` ;
--   `state` ;
--   `issueType` ;
--   `projectStatuses[].status` ;
--   `milestone.title` ;
--   `milestone.state`.
+- `labels` ;
+- `state` ;
+- `issueType` ;
+- `projectStatuses[].status` ;
+- `milestone.title` ;
+- `milestone.state`.
 
 Le collecteur et l'anonymiseur reconstruisent explicitement le modèle
 RAW : les objets riches provenant de l'API GitHub ne sont pas recopiés
@@ -213,13 +213,13 @@ tels quels.
 
 Depuis V7, l'anonymisation produit par défaut un manifeste local :
 
-``` text
+```text
 fixtures/github-real-anonymized.json.trace.json
 ```
 
 Il permet de relier :
 
-``` text
+```text
 fixture anonymisée
       ↓
 sourcePath JSON
@@ -237,7 +237,7 @@ Les fichiers `*.trace.json` sont exclus du dépôt par `.gitignore`.
 
 Pour désactiver sa génération :
 
-``` bash
+```bash
 npm run fixture:anonymize -- \
   --input <raw.json> \
   --output <fixture.json> \
@@ -246,34 +246,34 @@ npm run fixture:anonymize -- \
 
 Un chemin explicite peut être fourni avec :
 
-``` bash
+```bash
 --trace-output <path>
 ```
 
 ## Validation d'une fixture
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input fixtures/github-real-anonymized.json
 ```
 
 La validation contrôle notamment :
 
--   la présence de données sensibles résiduelles ;
--   les relations entre entités ;
--   la cohérence des références ;
--   les éléments susceptibles d'empêcher une fixture d'être considérée
+- la présence de données sensibles résiduelles ;
+- les relations entre entités ;
+- la cohérence des références ;
+- les éléments susceptibles d'empêcher une fixture d'être considérée
     comme partageable.
 
 Un rapport Markdown est généré par défaut à côté de la fixture :
 
-``` text
+```text
 fixtures/github-real-anonymized.json.validation.md
 ```
 
 Un emplacement peut être précisé avec :
 
-``` bash
+```bash
 --report <path>
 ```
 
@@ -282,7 +282,7 @@ Un emplacement peut être précisé avec :
 Pour analyser une anomalie de fixture avec son origine dans les données
 réelles :
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input fixtures/github-real-anonymized.json \
   --trace fixtures/github-real-anonymized.json.trace.json
@@ -290,12 +290,12 @@ npm run fixture:validate -- \
 
 Le rapport peut alors indiquer :
 
--   le chemin JSON dans la fixture ;
--   le fichier RAW source ;
--   le `sourcePath` correspondant ;
--   l'identifiant RAW de l'entité ;
--   l'identifiant RAW de la référence ;
--   si la cible était présente ou absente du RAW.
+- le chemin JSON dans la fixture ;
+- le fichier RAW source ;
+- le `sourcePath` correspondant ;
+- l'identifiant RAW de l'entité ;
+- l'identifiant RAW de la référence ;
+- si la cible était présente ou absente du RAW.
 
 Cela permet notamment de distinguer une référence réellement absente de
 la source d'un problème introduit pendant l'anonymisation.
@@ -311,7 +311,7 @@ un texte.
 
 Le contrôle distingue ainsi mieux :
 
-``` text
+```text
 date structurée
 ≠
 numéro de téléphone
@@ -322,7 +322,7 @@ qui peuvent réellement en contenir.
 
 ## Architecture du code
 
-``` text
+```text
 config/                 Configuration du système et des règles
 fixtures/               Fixtures locales et données de démonstration
 src/
@@ -342,7 +342,7 @@ docs/                   Documentation technique détaillée
 
 ## Commandes disponibles
 
-  -----------------------------------------------------------------------
+---
   Commande                            Rôle
   ----------------------------------- -----------------------------------
   `npm run collect`                   Collecte les données RAW
@@ -367,7 +367,7 @@ docs/                   Documentation technique détaillée
   `npm test`                          Exécute les tests
 
   `npm run lint`                      Exécute ESLint
-  -----------------------------------------------------------------------
+---
 
 ## Historique et flux
 
@@ -390,10 +390,10 @@ invalides.
 
 Une anomalie de qualité peut :
 
--   exclure certaines données d'un indicateur ;
--   réduire la fiabilité d'une métrique ;
--   laisser les autres métriques inchangées ;
--   rendre une métrique indisponible lorsqu'elle ne peut plus être
+- exclure certaines données d'un indicateur ;
+- réduire la fiabilité d'une métrique ;
+- laisser les autres métriques inchangées ;
+- rendre une métrique indisponible lorsqu'elle ne peut plus être
     calculée correctement.
 
 Le détail des règles, sévérités, périmètres et impacts est documenté
@@ -404,20 +404,20 @@ dans [`docs/quality-rules.md`](docs/quality-rules.md).
 Le README reste volontairement synthétique. Pour les détails techniques
 :
 
--   [`docs/index.md`](docs/index.md) --- index de la documentation ;
--   [`docs/architecture.md`](docs/architecture.md) --- architecture ;
--   [`docs/workflow.md`](docs/workflow.md) --- déroulement d'une
+- [`docs/index.md`](docs/index.md) --- index de la documentation ;
+- [`docs/architecture.md`](docs/architecture.md) --- architecture ;
+- [`docs/workflow.md`](docs/workflow.md) --- déroulement d'une
     exécution ;
--   [`docs/data-flows.md`](docs/data-flows.md) --- flux de données ;
--   [`docs/data-model.md`](docs/data-model.md) --- modèle de données ;
--   [`docs/catalogue.md`](docs/catalogue.md) --- catalogue ;
--   [`docs/github-collector.md`](docs/github-collector.md) --- collecte
+- [`docs/data-flows.md`](docs/data-flows.md) --- flux de données ;
+- [`docs/data-model.md`](docs/data-model.md) --- modèle de données ;
+- [`docs/catalogue.md`](docs/catalogue.md) --- catalogue ;
+- [`docs/github-collector.md`](docs/github-collector.md) --- collecte
     GitHub ;
--   [`docs/analytics.md`](docs/analytics.md) --- calcul des KPI ;
--   [`docs/snapshots-dashboard.md`](docs/snapshots-dashboard.md) ---
+- [`docs/analytics.md`](docs/analytics.md) --- calcul des KPI ;
+- [`docs/snapshots-dashboard.md`](docs/snapshots-dashboard.md) ---
     snapshots et dashboard ;
--   [`docs/testing.md`](docs/testing.md) --- stratégie de tests ;
--   [`docs/quality-rules.md`](docs/quality-rules.md) --- règles Data
+- [`docs/testing.md`](docs/testing.md) --- stratégie de tests ;
+- [`docs/quality-rules.md`](docs/quality-rules.md) --- règles Data
     Quality.
 
 Les fichiers de configuration et le code restent les sources de vérité
@@ -431,7 +431,7 @@ Installer Node.js 20+ et rouvrir le terminal.
 
 ### Le typecheck échoue
 
-``` bash
+```bash
 npm run typecheck
 ```
 
@@ -441,13 +441,13 @@ Corriger les erreurs TypeScript avant de relancer le pipeline.
 
 Regénérer le dashboard :
 
-``` bash
+```bash
 npm run dashboard
 ```
 
 Puis rouvrir :
 
-``` text
+```text
 data/dashboard/index.html
 ```
 
@@ -461,7 +461,7 @@ alertes Data Quality dans le dashboard et la documentation des règles
 
 Générer ou consulter le rapport :
 
-``` bash
+```bash
 npm run fixture:validate -- \
   --input <fixture.json> \
   --report <fixture.json.validation.md>
@@ -474,14 +474,14 @@ manifeste `.trace.json`.
 
 Ne jamais versionner :
 
--   tokens GitHub ;
--   fichiers RAW issus d'un environnement réel ;
--   manifestes de trace RAW ;
--   fichiers contenant des données personnelles ou confidentielles.
+- tokens GitHub ;
+- fichiers RAW issus d'un environnement réel ;
+- manifestes de trace RAW ;
+- fichiers contenant des données personnelles ou confidentielles.
 
 Utiliser `.env` pour les secrets et conserver les traces RAW localement.
 
-------------------------------------------------------------------------
+---
 
 **Version du projet :** `0.1.0`\
 **Stack :** Node.js · TypeScript · Commander · Vitest · ESLint\

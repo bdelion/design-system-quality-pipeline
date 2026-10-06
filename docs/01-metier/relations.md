@@ -7,22 +7,22 @@ cardinalités du modèle métier du **Design System Quality Pipeline**.
 
 Il distingue quatre statuts :
 
--   **ÉTABLI** : relation ou cardinalité validée par une décision métier
+- **ÉTABLI** : relation ou cardinalité validée par une décision métier
     ;
--   **ACTUEL** : fonctionnement observé aujourd'hui, sans en faire
+- **ACTUEL** : fonctionnement observé aujourd'hui, sans en faire
     nécessairement une contrainte cible ;
--   **À CONFIRMER** : relation identifiée mais dont une cardinalité ou
+- **À CONFIRMER** : relation identifiée mais dont une cardinalité ou
     une sémantique reste ouverte ;
--   **FUTUR** : relation volontairement hors du périmètre V1.
+- **FUTUR** : relation volontairement hors du périmètre V1.
 
 Aucune cardinalité absente de ce document ne doit être déduite
 implicitement de la structure GitHub ou de l'implémentation actuelle.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Vue d'ensemble
 
-``` text
+```text
 Design System
     │
     └── 1..n Librairies
@@ -46,11 +46,11 @@ Design System
 Le rattachement futur exact `Composant ↔ Package` n'est pas encore
 établi.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Design System → Librairie
 
-``` text
+```text
 Design System 1 ── 1..n Librairies
 ```
 
@@ -62,13 +62,13 @@ La cardinalité inverse n'a pas besoin d'être généralisée à plusieurs
 Design Systems dans le périmètre actuel : le projet suit un Design
 System donné.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Repository ↔ Librairie
 
 ### Situation actuelle
 
-``` text
+```text
 Repository 1 ── 1 Librairie
 ```
 
@@ -76,7 +76,7 @@ Aujourd'hui, un Repository correspond à une Librairie.
 
 ### Cible
 
-``` text
+```text
 Repository 1 ── 1..n Librairies
 ```
 
@@ -92,19 +92,19 @@ pas définie.
 
 **Référence ouverte : Q-003.**
 
-------------------------------------------------------------------------
+---
 
 ## 5. Librairie → Package
 
 ### Situation actuelle
 
-``` text
+```text
 Librairie 1 ── 1 Package
 ```
 
 ### Cible
 
-``` text
+```text
 Librairie 1 ── 1..n Packages
 ```
 
@@ -115,7 +115,7 @@ définitives d'un Package restent à instruire.
 
 **Références ouvertes : Q-001, Q-002.**
 
-------------------------------------------------------------------------
+---
 
 ## 6. Package → Version
 
@@ -124,7 +124,7 @@ cycle de vie.
 
 Conceptuellement :
 
-``` text
+```text
 Package 1 ── 0..n Versions
 ```
 
@@ -135,7 +135,7 @@ ne constitue pas un identifiant global suffisant.
 
 Les catégories actuellement connues comprennent :
 
-``` text
+```text
 M.m.r-SNAPSHOT
 M.m.r-rc.n
 M.m.r-hc.n
@@ -145,13 +145,13 @@ M.m.r
 La Version déclarée dans `package.json` et la Version d'artefact
 produite par Jenkins sont deux notions distinctes.
 
-------------------------------------------------------------------------
+---
 
 ## 7. Librairie → Composant
 
 Un Composant appartient métierement à une Librairie.
 
-``` text
+```text
 Librairie 1 ── 0..n Composants
 Composant ── 1 Librairie
 ```
@@ -167,7 +167,7 @@ au Package est implicitement non ambigu.
 
 Dans la cible `1 Librairie = 1..n Packages`, la cardinalité :
 
-``` text
+```text
 Composant ↔ Package
 ```
 
@@ -175,16 +175,16 @@ n'est pas établie.
 
 Un Composant pourrait appartenir :
 
--   à la Librairie indépendamment des Packages ;
--   à exactement un Package ;
--   à plusieurs Packages.
+- à la Librairie indépendamment des Packages ;
+- à exactement un Package ;
+- à plusieurs Packages.
 
 **Statut : À CONFIRMER --- Q-004.**
 
 Aucune de ces hypothèses ne doit être codée comme règle cible avant
 décision.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Issue ↔ Composant
 
@@ -193,13 +193,13 @@ décision.
 Toute Issue qui concerne effectivement un Composant doit porter le label
 :
 
-``` text
+```text
 🧩 Component:xxx
 ```
 
 Une Issue classique peut concerner plusieurs Composants.
 
-``` text
+```text
 Issue 1 ── 0..n Composants
 ```
 
@@ -217,9 +217,9 @@ Composant lorsque le travail est réellement séparable.
 
 Une Issue multi-Composants :
 
--   compte une fois pour chaque Composant dans les analyses par
+- compte une fois pour chaque Composant dans les analyses par
     Composant ;
--   reste une seule Issue dans le total global de la Librairie.
+- reste une seule Issue dans le total global de la Librairie.
 
 La somme des compteurs par Composant ne doit donc pas servir à
 reconstruire le nombre global d'Issues distinctes.
@@ -231,13 +231,13 @@ L'absence de label Composant n'est pas automatiquement une erreur.
 Le pipeline ne doit pas déduire qu'un label manque sans signal
 complémentaire fiable.
 
-------------------------------------------------------------------------
+---
 
 ## 9. Issue d'Audit → Composant
 
 Une Issue d'Audit concerne exactement un Composant.
 
-``` text
+```text
 Issue d'Audit ── exactement 1 Composant
 Composant ── 0..n Issues d'Audit
 ```
@@ -246,13 +246,13 @@ Composant ── 0..n Issues d'Audit
 
 Sont invalides :
 
--   aucun Composant ;
--   plusieurs Composants.
+- aucun Composant ;
+- plusieurs Composants.
 
 Dans la représentation GitHub actuelle, le rattachement repose sur
 exactement un label `🧩 Component:xxx`.
 
-------------------------------------------------------------------------
+---
 
 ## 10. Audit ↔ Version
 
@@ -263,7 +263,7 @@ Deux temporalités sont établies.
 
 ### Audit pré-PROD
 
-``` text
+```text
 Release Candidate M.m.r-rc.n
         │
         ▼
@@ -284,7 +284,7 @@ L'identification exacte de la Release Candidate réellement auditée reste
 
 ### Audit de rattrapage
 
-``` text
+```text
 Version PROD M.m.r
         │
         ▼
@@ -298,13 +298,13 @@ et non une Version supplémentaire.
 
 **Statut : ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 11. Audit → Anomalie
 
 Pour une Anomalie provenant d'un Audit :
 
-``` text
+```text
 Audit 1 ── 0..n Anomalies
 Anomalie d'Audit ── exactement 1 Audit parent
 ```
@@ -315,10 +315,10 @@ La relation doit être explicite sous forme de sous-Issue GitHub.
 
 Une Anomalie d'Audit :
 
--   est une sous-Issue de son Audit ;
--   a l'Issue Type `🐛 Bug` ;
--   possède exactement un Composant ;
--   possède le même Composant que l'Audit parent.
+- est une sous-Issue de son Audit ;
+- a l'Issue Type `🐛 Bug` ;
+- possède exactement un Composant ;
+- possède le même Composant que l'Audit parent.
 
 Une même Issue Anomalie ne peut pas être réutilisée comme enfant de
 plusieurs Audits.
@@ -326,13 +326,13 @@ plusieurs Audits.
 Lors d'une revalidation ultérieure, si le même problème est de nouveau
 constaté, une nouvelle Issue Anomalie est créée pour le nouvel Audit.
 
-------------------------------------------------------------------------
+---
 
 ## 12. Audit → Improvement
 
 Pour une Improvement provenant d'un Audit :
 
-``` text
+```text
 Audit 1 ── 0..n Improvements
 Improvement d'Audit ── exactement 1 Audit parent
 ```
@@ -343,21 +343,21 @@ La relation doit être explicite sous forme de sous-Issue GitHub.
 
 Une Improvement d'Audit :
 
--   est une sous-Issue de son Audit ;
--   a l'Issue Type `✨ Feature` ;
--   possède exactement un Composant ;
--   possède le même Composant que l'Audit parent.
+- est une sous-Issue de son Audit ;
+- a l'Issue Type `✨ Feature` ;
+- possède exactement un Composant ;
+- possède le même Composant que l'Audit parent.
 
 Une même Issue Improvement ne peut pas être partagée entre plusieurs
 Audits.
 
-------------------------------------------------------------------------
+---
 
 ## 13. Anomalie / Improvement d'Audit → Composant
 
 Les deux relations ont la même contrainte structurelle :
 
-``` text
+```text
 Audit
 └── exactement 1 Composant C
     │
@@ -373,13 +373,13 @@ Audit
 Une différence de Composant entre parent et enfant constitue une
 incohérence de données.
 
-------------------------------------------------------------------------
+---
 
 ## 14. Sous-Issues d'Audit
 
 Les deux types métier actuellement connus sont :
 
-``` text
+```text
 Audit
 ├── Anomalie
 └── Improvement
@@ -391,15 +391,15 @@ Cette liste n'est pas fermée.
 
 Une sous-Issue d'un type inconnu :
 
--   ne doit pas être automatiquement assimilée à une Anomalie ;
--   ne doit pas modifier automatiquement le verdict de conformité ;
--   devra disposer de règles explicites avant intégration analytique.
+- ne doit pas être automatiquement assimilée à une Anomalie ;
+- ne doit pas modifier automatiquement le verdict de conformité ;
+- devra disposer de règles explicites avant intégration analytique.
 
-------------------------------------------------------------------------
+---
 
 ## 15. Anomalie d'Audit Accessibilité → criticité RGAA
 
-``` text
+```text
 Anomalie d'Audit Accessibilité
 └── exactement 1 criticité RGAA
     ├── bloquante
@@ -412,20 +412,20 @@ Anomalie d'Audit Accessibilité
 Ces criticités sont strictement réservées aux Anomalies provenant d'un
 Audit Accessibilité.
 
-``` text
+```text
 Improvement d'Audit
 └── 0 criticité RGAA
 ```
 
 Une Issue hors Audit ne doit pas non plus porter ces criticités RGAA.
 
-------------------------------------------------------------------------
+---
 
 ## 16. Issue ↔ catégorie a11y
 
 Les labels :
 
-``` text
+```text
 ♿ a11y:xxx
 ```
 
@@ -433,15 +433,15 @@ sont transverses.
 
 Ils peuvent qualifier :
 
--   une Anomalie d'Audit ;
--   une Improvement d'Audit ;
--   une Issue hors Audit.
+- une Anomalie d'Audit ;
+- une Improvement d'Audit ;
+- une Issue hors Audit.
 
 Ils n'identifient donc ni la nature ni l'origine de l'Issue.
 
 ### Anomalie d'Audit Accessibilité
 
-``` text
+```text
 Anomalie d'Audit Accessibilité
 └── exactement 1 ♿ a11y:xxx
 ```
@@ -450,7 +450,7 @@ Anomalie d'Audit Accessibilité
 
 ### Improvement d'Audit Accessibilité
 
-``` text
+```text
 Improvement d'Audit Accessibilité
 └── 0..n ♿ a11y:xxx
 ```
@@ -469,7 +469,7 @@ elle n'est pas suffisamment établie pour devenir une règle stricte.
 
 **Statut : À CONFIRMER --- D-128.**
 
-------------------------------------------------------------------------
+---
 
 ## 17. Issue ↔ Pull Request
 
@@ -489,19 +489,19 @@ du profil de workflow.
 Aucune règle générale `Issue Done → exactement une PR` ne doit être
 imposée avant cette consolidation.
 
-------------------------------------------------------------------------
+---
 
 ## 18. Issue ↔ Issue
 
 GitHub permet plusieurs relations utiles :
 
--   parent / sous-Issue ;
--   `Blocked by` ;
--   `Blocking`.
+- parent / sous-Issue ;
+- `Blocked by` ;
+- `Blocking`.
 
 Certaines relations sont déjà spécialisées métierement, notamment :
 
-``` text
+```text
 Audit → sous-Issue Anomalie
 Audit → sous-Issue Improvement
 ```
@@ -512,23 +512,23 @@ de workflow.
 
 **Statut : PARTIELLEMENT ÉTABLI.**
 
-------------------------------------------------------------------------
+---
 
 ## 19. Issue → Iteration / Milestone
 
 Une Issue peut être rattachée à :
 
--   une Iteration ;
--   une Milestone.
+- une Iteration ;
+- une Milestone.
 
 La signification dépend du workflow et du contexte.
 
 Une Milestone peut notamment représenter :
 
--   une Version `M.m.r` ;
--   un regroupement d'Audit de rattrapage `M.m.r-Audit` ;
--   un horizon de planification ;
--   un lot Design.
+- une Version `M.m.r` ;
+- un regroupement d'Audit de rattrapage `M.m.r-Audit` ;
+- un horizon de planification ;
+- un lot Design.
 
 La présence d'une Milestone ne doit donc jamais être interprétée
 automatiquement comme une Version sans classification préalable.
@@ -536,13 +536,13 @@ automatiquement comme une Version sans classification préalable.
 **Statut : ÉTABLI comme principe ; règles détaillées à consolider en M3
 Workflow.**
 
-------------------------------------------------------------------------
+---
 
 ## 20. Application → Package @ Version
 
 À terme :
 
-``` text
+```text
 Application
     └── consomme
         └── Package @ Version
@@ -555,13 +555,13 @@ réellement utilisés n'est pas définie.
 
 **Statut : FUTUR --- Q-023 à Q-026.**
 
-------------------------------------------------------------------------
+---
 
 ## 21. Application ↔ Composant
 
 À terme, le système pourra chercher à déterminer :
 
-``` text
+```text
 Application
     └── utilise
         └── 0..n Composants
@@ -574,7 +574,7 @@ pas définies.
 
 **Statut : FUTUR --- Q-027.**
 
-------------------------------------------------------------------------
+---
 
 ## 22. Audit métier ↔ Issue d'Audit GitHub
 
@@ -583,7 +583,7 @@ d'Audit d'un Composant.
 
 Il n'est pas encore décidé si :
 
-``` text
+```text
 Audit métier = Issue d'Audit GitHub
 ```
 
@@ -594,7 +594,7 @@ relation vers l'Issue qui le matérialise.
 
 Le modèle technique ne doit donc pas figer prématurément cette identité.
 
-------------------------------------------------------------------------
+---
 
 ## 23. Campagne d'Audit
 
@@ -603,7 +603,7 @@ rattrapage.
 
 Il n'est pas encore établi si :
 
-``` text
+```text
 Campagne d'Audit = Milestone
 ```
 
@@ -611,23 +611,23 @@ ou si une Campagne doit devenir un objet métier autonome.
 
 **Statut : À CONFIRMER --- Q-016.**
 
-------------------------------------------------------------------------
+---
 
 ## 24. Matrice synthétique
 
-  -------------------------------------------------------------------------------
+---
   Source         Relation       Cible          Cardinalité /   Statut
-                                               règle           
+                                               règle
   -------------- -------------- -------------- --------------- ------------------
   Design System  contient       Librairie      `1 → 1..n`      ÉTABLI
 
   Repository     héberge        Librairie      actuel `1 → 1`, ÉTABLI
-                                               cible           
-                                               `1 → 1..n`      
+                                               cible
+                                               `1 → 1..n`
 
   Librairie      distribue      Package        actuel `1 → 1`, ÉTABLI
-                                               cible           
-                                               `1 → 1..n`      
+                                               cible
+                                               `1 → 1..n`
 
   Package        possède        Version        `1 → 0..n`      ÉTABLI
                                                                conceptuellement
@@ -635,74 +635,74 @@ ou si une Campagne doit devenir un objet métier autonome.
   Librairie      contient       Composant      `1 → 0..n`      ÉTABLI
 
   Composant      appartient à   Package        non décidé en   À CONFIRMER
-                                               multi-package   
+                                               multi-package
 
   Issue          concerne       Composant      `0..n`          ÉTABLI
-  classique                                                    
+  classique
 
   Issue Audit    concerne       Composant      exactement `1`  ÉTABLI
 
   Audit          produit        Anomalie       `0..n`          ÉTABLI
-                                d'Audit                        
+                                d'Audit
 
   Anomalie       appartient à   Audit          exactement `1`  ÉTABLI
-  d'Audit                                                      
+  d'Audit
 
   Audit          produit        Improvement    `0..n`          ÉTABLI
-                                d'Audit                        
+                                d'Audit
 
   Improvement    appartient à   Audit          exactement `1`  ÉTABLI
-  d'Audit                                                      
+  d'Audit
 
   Anomalie       concerne       Composant      exactement `1`, ÉTABLI
-  d'Audit                                      même que parent 
+  d'Audit                                      même que parent
 
   Improvement    concerne       Composant      exactement `1`, ÉTABLI
-  d'Audit                                      même que parent 
+  d'Audit                                      même que parent
 
   Anomalie Audit porte          criticité RGAA exactement `1`  ÉTABLI
-  A11y                                                         
+  A11y
 
   Improvement    porte          criticité RGAA `0`             ÉTABLI
-  Audit A11y                                                   
+  Audit A11y
 
   Anomalie Audit porte          catégorie a11y exactement `1`  ÉTABLI
-  A11y                                                         
+  A11y
 
   Improvement    porte          catégorie a11y minimum `0`,    À CONFIRMER
-  Audit A11y                                   maximum inconnu 
+  Audit A11y                                   maximum inconnu
 
   Issue          liée à         Pull Request   dépend du       À FORMALISER
-                                               profil          
+                                               profil
 
   Issue          appartient à   Iteration      dépend du       À FORMALISER
-                                               workflow        
+                                               workflow
 
   Issue          appartient à   Milestone      sémantique      ÉTABLI / à
                                                polymorphe      classifier
 
   Application    consomme       Package @      relation        FUTUR
-                                Version        conceptuelle    
+                                Version        conceptuelle
 
   Application    utilise        Composant      à détecter      FUTUR
 
   Audit métier   matérialisé    Issue Audit    identité exacte À CONFIRMER
-                 par                           ouverte         
+                 par                           ouverte
 
   Campagne       regroupée par  Milestone      identité exacte À CONFIRMER
-  d'Audit                                      ouverte         
-  -------------------------------------------------------------------------------
+  d'Audit                                      ouverte
+---
 
-------------------------------------------------------------------------
+---
 
 ## 25. Conséquence pour la suite
 
 Les relations suffisamment établies peuvent maintenant servir de base :
 
--   aux règles d'intégrité ;
--   au modèle normalisé cible ;
--   aux indicateurs par Composant et Audit ;
--   aux contrôles DQ.
+- aux règles d'intégrité ;
+- au modèle normalisé cible ;
+- aux indicateurs par Composant et Audit ;
+- aux contrôles DQ.
 
 Les points ouverts ne doivent pas bloquer la V1 lorsqu'ils relèvent du
 futur multi-package, des consommateurs ou d'une abstraction métier qui

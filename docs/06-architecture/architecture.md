@@ -13,7 +13,7 @@ Elle ne définit pas à elle seule le modèle métier cible.
 
 Le projet est un pipeline Node.js + TypeScript en lecture seule.
 
-``` mermaid
+```mermaid
 flowchart LR
   C[Configuration] --> P[Pipeline]
   F[Fixture] --> P
@@ -40,7 +40,7 @@ flowchart LR
 
 ## Responsabilités actuelles
 
-  -----------------------------------------------------------------------
+---
   Couche                              Responsabilité
   ----------------------------------- -----------------------------------
   `src/cli.ts`                        expose les commandes utilisateur
@@ -69,11 +69,11 @@ flowchart LR
 
   `src/domain/types.ts`               définit les contrats TypeScript
                                       partagés
-  -----------------------------------------------------------------------
+---
 
 ## Orchestration
 
-``` mermaid
+```mermaid
 flowchart TD
     OP[Opérateur] --> CLI[CLI]
     CLI --> PIPE[Pipeline]
@@ -154,14 +154,14 @@ Il consomme le Snapshot et ne doit pas devenir un second moteur métier.
 
 ## Principes architecturaux
 
--   lecture seule vis-à-vis des sources externes ;
--   séparation RAW / normalisation / qualité / métriques / restitution ;
--   conservation de la provenance ;
--   données invalides conservées et accompagnées d'une décision de
+- lecture seule vis-à-vis des sources externes ;
+- séparation RAW / normalisation / qualité / métriques / restitution ;
+- conservation de la provenance ;
+- données invalides conservées et accompagnées d'une décision de
     qualité ;
--   distinction entre valeur calculable et valeur inconnue ;
--   versionnement du modèle et des règles dans les sorties ;
--   possibilité de rejouer le pipeline à partir de données contrôlées.
+- distinction entre valeur calculable et valeur inconnue ;
+- versionnement du modèle et des règles dans les sorties ;
+- possibilité de rejouer le pipeline à partir de données contrôlées.
 
 ## Limite de cette page
 
@@ -173,11 +173,11 @@ future gap analysis code ↔ modèle cible.
 
 Voir également :
 
--   [Architecture des données](../05-donnees/architecture-donnees.md) ;
--   [Pipeline](pipeline.md) ;
--   [Normalisation](normalisation.md) ;
--   [Quality Engine](quality-engine.md) ;
--   [Metric Engine](metric-engine.md) ;
--   [Snapshot Engine](snapshot-engine.md) ;
--   [Dashboard](dashboard.md) ;
--   [Architecture cible](architecture-cible.md).
+- [Architecture des données](../05-donnees/architecture-donnees.md) ;
+- [Pipeline](pipeline.md) ;
+- [Normalisation](normalisation.md) ;
+- [Quality Engine](quality-engine.md) ;
+- [Metric Engine](metric-engine.md) ;
+- [Snapshot Engine](snapshot-engine.md) ;
+- [Dashboard](dashboard.md) ;
+- [Architecture cible](architecture-cible.md).

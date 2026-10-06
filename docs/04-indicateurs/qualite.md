@@ -4,13 +4,13 @@
 
 Le projet doit distinguer :
 
-``` text
+```text
 qualité métier du Design System
 ```
 
 et :
 
-``` text
+```text
 qualité / fiabilité des données utilisées pour la mesurer
 ```
 
@@ -20,7 +20,7 @@ métier.
 Inversement, une situation métier peut être bonne mais impossible à
 mesurer de manière fiable.
 
-------------------------------------------------------------------------
+---
 
 ## 2. Qualité d'un Component
 
@@ -31,7 +31,7 @@ pour une Version n'est pas encore définie.
 
 Les états d'Audit :
 
-``` text
+```text
 NON AUDITÉ
 AUDITÉ & CONFORME
 AUDITÉ & NON CONFORME
@@ -39,7 +39,7 @@ AUDITÉ & NON CONFORME
 
 ne doivent pas être transformés automatiquement en score numérique.
 
-------------------------------------------------------------------------
+---
 
 ## 3. Qualité d'une Version
 
@@ -47,15 +47,15 @@ ne doivent pas être transformés automatiquement en score numérique.
 
 Le modèle dispose déjà d'indicateurs distincts :
 
--   couverture d'Audit ;
--   taux de conformité ;
--   traitement des Anomalies ;
--   répartition par criticité ;
--   qualité des données.
+- couverture d'Audit ;
+- taux de conformité ;
+- traitement des Anomalies ;
+- répartition par criticité ;
+- qualité des données.
 
 Ils ne doivent pas être combinés arbitrairement en un score unique.
 
-------------------------------------------------------------------------
+---
 
 ## 4. Reliability d'une métrique
 
@@ -66,25 +66,25 @@ susceptibles d'affecter son calcul.
 
 Exemple :
 
-``` text
+```text
 criticité manquante
 ```
 
 peut affecter :
 
-``` text
+```text
 répartition des Anomalies par criticité
 ```
 
 sans nécessairement affecter :
 
-``` text
+```text
 nombre total d'Anomalies
 ```
 
 si l'Anomalie reste correctement identifiée.
 
-------------------------------------------------------------------------
+---
 
 ## 5. Exclusions
 
@@ -95,7 +95,7 @@ Une exclusion ne doit pas supprimer l'entité du Snapshot.
 Elle signifie uniquement que l'entité ne peut pas participer de manière
 fiable à ce calcul précis.
 
-------------------------------------------------------------------------
+---
 
 ## 6. Unknown
 
@@ -105,13 +105,13 @@ produire artificiellement `0`.
 
 Principe :
 
-``` text
+```text
 absence de preuve
 ≠
 preuve de zéro
 ```
 
-------------------------------------------------------------------------
+---
 
 ## 7. Snapshot global
 
@@ -120,20 +120,20 @@ contient des réserves.
 
 Il ne doit pas entraîner mécaniquement :
 
-``` text
+```text
 toutes les métriques = partial
 ```
 
 La fiabilité doit rester métrique-spécifique.
 
-------------------------------------------------------------------------
+---
 
 ## 8. Vue manager
 
 La vue destinée aux responsables doit privilégier des formulations
 compréhensibles :
 
-``` text
+```text
 Donnée fiable
 Donnée partielle
 Donnée inconnue
