@@ -3359,6 +3359,18 @@ La propriété `url` appartient au socle générique de l’Issue et reste dispo
 **Statut : Établi**
 
 
+### D-162 — Conservation du rattachement à la Milestone dans l’Issue normalisée
+
+Toute `Issue` normalisée conserve son rattachement éventuel à une Milestone GitHub dans une propriété `milestoneId?: string`.
+
+La `Milestone` reste un objet normalisé distinct. L’Issue ne duplique pas ses propriétés et conserve uniquement sa référence lorsqu’un rattachement existe.
+
+Cette information appartient au socle générique de l’Issue, indépendamment de l’usage métier qui pourra ensuite en être fait pour un Audit, une Version ou un autre type d’Issue.
+
+**Statut : Établi**
+
+
+
 
 
 

@@ -232,6 +232,8 @@ Conformément à D-160, toute `Issue` normalisée conserve explicitement `reposi
 
 Conformément à D-161, toute `Issue` normalisée conserve explicitement son URL GitHub dans `url: string`. Cette donnée source permet notamment au dashboard et à la Data Quality de proposer un lien direct vers l’Issue sans reconstruire son URL à partir de `repositoryId` et `number`.
 
+Conformément à D-162, toute `Issue` normalisée conserve son rattachement éventuel à une Milestone dans `milestoneId?: string`. La `Milestone` demeure un objet normalisé distinct : l’Issue porte sa référence sans dupliquer ses propriétés. Ce rattachement est conservé pour toutes les Issues, indépendamment de son interprétation métier ultérieure.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---

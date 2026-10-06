@@ -66,6 +66,8 @@ Conformément à D-160, `Issue` contient également `repositoryId: string` en pl
 
 Conformément à D-161, `Issue` contient également `url: string`, correspondant à son URL GitHub source. Les couches aval utilisent cette valeur pour créer les liens vers GitHub et ne reconstruisent pas l’URL à partir de `repositoryId` et `number`.
 
+Conformément à D-162, `Issue` contient également `milestoneId?: string`. Cette propriété référence la `Milestone` normalisée associée lorsqu’elle existe ; elle ne duplique pas les données de la Milestone et reste indépendante de l’usage métier qui sera fait de ce rattachement.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts
