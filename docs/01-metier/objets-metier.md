@@ -222,6 +222,8 @@ Conformément à D-155, l’absence totale d’Issue Type n’empêche pas la co
 
 Conformément à D-156, toute `Issue` normalisée conserve également son `title` GitHub. Cette propriété générique est conservée même lorsqu’aucun objet métier spécialisé n’est dérivé de l’Issue. Elle peut être exploitée par les couches aval, notamment le dashboard et la Data Quality, sans revenir au `RawDataset`.
 
+Conformément à D-157, toute `Issue` normalisée conserve son état GitHub dans `state`, avec les valeurs `OPEN` ou `CLOSED`. Cet état natif de l’Issue ne doit pas être confondu avec le statut GitHub Projects (`Backlog`, `Ready`, `In progress`, `In review`, `Done`, etc.). Il est conservé même lorsqu’aucune spécialisation métier n’est dérivée de l’Issue.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---

@@ -56,6 +56,8 @@ Conformément à D-155, l’absence totale d’Issue Type est également représ
 
 Conformément à D-156, `Issue` conserve aussi le `title` GitHub. Le titre appartient au socle générique normalisé et reste disponible pour les traitements aval, qu’une spécialisation métier soit dérivée ou non.
 
+Conformément à D-157, ce socle générique contient également `state: 'OPEN' | 'CLOSED'`. Cette propriété représente l’état natif GitHub de l’Issue et reste distincte de tout statut GitHub Projects.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

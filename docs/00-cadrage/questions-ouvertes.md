@@ -3301,6 +3301,18 @@ Cette décision ne préjuge pas encore des autres propriétés minimales de l’
 **Statut : Établi**
 
 
+### D-157 — Conservation de l’état GitHub dans l’Issue normalisée
+
+Toute `Issue` normalisée conserve son état GitHub dans une propriété `state`, avec les valeurs `OPEN` ou `CLOSED`.
+
+Cet état représente exclusivement l’état natif de l’Issue GitHub. Il est distinct du statut porté par GitHub Projects, par exemple `Backlog`, `Ready`, `In progress`, `In review` ou `Done`.
+
+La propriété `state` appartient au socle générique de l’Issue et reste disponible indépendamment de l’existence d’une spécialisation métier telle que `Audit`, `Anomaly` ou `AuditImprovement`.
+
+**Statut : Établi**
+
+
+
 ---
 
 ## 4. Questions ouvertes — Librairies, Packages et Repositories
