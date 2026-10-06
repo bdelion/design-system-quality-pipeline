@@ -60,6 +60,8 @@ Conformément à D-157, ce socle générique contient également `state: 'OPEN' 
 
 Conformément à D-158, le socle générique contient aussi `createdAt: string` et `closedAt?: string`. Ces dates représentent respectivement la création et la fermeture GitHub de l’Issue. Elles ne remplacent aucune date métier dérivée, notamment `detectedAt`, `correctedAt` ou `completedAt`.
 
+Conformément à D-159, `Issue` conserve également `labels: string[]`, contenant tous les labels GitHub de l’Issue, qu’ils soient ou non interprétés par le pipeline. Toute propriété métier dérivée d’un label reste séparée de cette donnée source.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

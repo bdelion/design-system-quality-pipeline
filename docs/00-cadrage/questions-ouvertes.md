@@ -3326,6 +3326,18 @@ Elles constituent des faits GitHub et ne doivent pas être confondues avec les d
 **Statut : Établi**
 
 
+### D-159 — Conservation exhaustive des labels GitHub de l’Issue normalisée
+
+Toute `Issue` normalisée conserve l’ensemble de ses labels GitHub dans une propriété `labels: string[]`.
+
+Cette conservation ne se limite pas aux labels actuellement interprétés par le pipeline pour dériver une notion métier, par exemple un composant, une criticité ou une catégorie. Les labels non interprétés sont également conservés afin de préserver l’information GitHub source et de permettre de futurs usages sans revenir au `RawDataset`.
+
+Les notions métier dérivées à partir de labels restent séparées de la collection brute `labels` et ne la remplacent pas.
+
+**Statut : Établi**
+
+
+
 
 
 ---

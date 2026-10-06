@@ -226,6 +226,8 @@ Conformément à D-157, toute `Issue` normalisée conserve son état GitHub dans
 
 Conformément à D-158, toute `Issue` normalisée conserve également `createdAt` et, lorsqu’elle est fermée, `closedAt`. Ces propriétés représentent les dates GitHub natives de création et de fermeture de l’Issue. Elles restent distinctes des dates métier dérivées telles que `detectedAt`, `correctedAt` et `completedAt`.
 
+Conformément à D-159, toute `Issue` normalisée conserve l’ensemble de ses labels GitHub dans `labels: string[]`, y compris ceux qui ne sont pas interprétés par le pipeline. Les notions métier dérivées depuis certains labels restent des propriétés séparées et ne remplacent jamais cette collection source.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---
