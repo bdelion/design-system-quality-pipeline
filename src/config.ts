@@ -16,6 +16,9 @@ export interface GithubProcessingConfig {
     anomaly: string;
     keywords: Record<string, string[]>;
   };
+  projects: {
+    auditedReleaseCandidateField: string;
+  };
   closingKeywords: string[];
   cancelledProjectStatuses: string[];
 }
@@ -48,7 +51,17 @@ export async function loadConfig(source: 'fixture' | 'github' = 'github', fixtur
     // switch a fixture to the real GitHub repository configuration first.
     content = await readFile(`${configPath}/system.fixture.yaml`, 'utf8');
   }
-  const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
+  const parsed = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
+  const systemConfig = {
+    ...parsed,
+    github: {
+      ...parsed.github,
+      projects: {
+        auditedReleaseCandidateField:
+          parsed.github.projects?.auditedReleaseCandidateField ?? ''
+      }
+    }
+  };
   return {
     ...systemConfig,
     githubApiUrl: process.env.GITHUB_API_URL,

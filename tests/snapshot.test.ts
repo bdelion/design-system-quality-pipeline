@@ -15,7 +15,7 @@ import { loadConfig } from '../src/config.js';
     const issues = evaluateDataQuality(raw, normalized, config.github);
     const snapshot = buildSnapshot(raw, normalized, issues, calculateKpis(normalized, issues), '2.1', 'dq-test', 'test');
     expect(snapshot.rawData.repositories).toHaveLength(3);
-    expect(snapshot.normalizedData.anomalies).toHaveLength(7);
+    expect(snapshot.normalizedData.legacyAnomalies).toHaveLength(7);
     expect(snapshot.ruleVersion).toBe('dq-test');
     expect(snapshot.dataQuality.summary.WARNING).toBeGreaterThan(0);
   });

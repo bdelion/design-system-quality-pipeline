@@ -16,15 +16,15 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   // Vérifie que la normalisation reste indépendante de la forme GitHub.
   it('normalizes all configured repositories without coupling KPI code to GitHub shape', () => {
     expect(normalized.libraries).toHaveLength(3);
-    expect(normalized.anomalies).toHaveLength(7);
-    expect(normalized.anomalies.filter((anomaly) => anomaly.provenance.sourceId?.startsWith('issue-2')).length).toBe(2);
-    expect(normalized.anomalies.filter((anomaly) => anomaly.provenance.sourceId?.startsWith('issue-3')).length).toBe(2);
-    expect(normalized.anomalies.every((anomaly) => anomaly.provenance.source === 'github')).toBe(true);
-    expect(normalized.audits.some((audit) => audit.objectiveAuditResult === 'conform')).toBe(true);
+    expect(normalized.legacyAnomalies).toHaveLength(7);
+    expect(normalized.legacyAnomalies.filter((anomaly) => anomaly.provenance.sourceId?.startsWith('issue-2')).length).toBe(2);
+    expect(normalized.legacyAnomalies.filter((anomaly) => anomaly.provenance.sourceId?.startsWith('issue-3')).length).toBe(2);
+    expect(normalized.legacyAnomalies.every((anomaly) => anomaly.provenance.source === 'github')).toBe(true);
+    expect(normalized.legacyAudits.some((audit) => audit.objectiveAuditResult === 'conform')).toBe(true);
     expect(normalized.components.some((component) => component.name === 'Toast')).toBe(true);
-    expect(normalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.criticality).toBe('major');
-    expect(normalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.categories).toEqual(['focus']);
-    expect(issues.some((issue) => issue.ruleId === 'DQ-004' && issue.entityId === normalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.anomalyId)).toBe(false);
+    expect(normalized.legacyAnomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.criticality).toBe('major');
+    expect(normalized.legacyAnomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.categories).toEqual(['focus']);
+    expect(issues.some((issue) => issue.ruleId === 'DQ-004' && issue.entityId === normalized.legacyAnomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101')?.anomalyId)).toBe(false);
   });
 
   // Le catalogue enrichit les composants connus sans changer la source des anomalies.
@@ -39,7 +39,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
 
   it('uses the configured audit version instead of a hard-coded normalizer version', () => {
     const versioned = normalizeGithub(raw, config.github, undefined, '2099.01');
-    expect(versioned.audits.every((audit) => audit.version === '2099.01')).toBe(true);
+    expect(versioned.legacyAudits.every((audit) => audit.version === '2099.01')).toBe(true);
   });
 
   it('detects multiple parents independently of criticality', () => {
@@ -50,7 +50,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     issue.criticities = [];
     const normalizedSynthetic = normalizeGithub(synthetic, config.github, undefined, config.auditVersion);
     const quality = evaluateDataQuality(synthetic, normalizedSynthetic, config.github);
-    const anomaly = normalizedSynthetic.anomalies.find((candidate) => candidate.provenance.sourceId === 'issue-101');
+    const anomaly = normalizedSynthetic.legacyAnomalies.find((candidate) => candidate.provenance.sourceId === 'issue-101');
     expect(quality.some((item) => item.ruleId === 'DQ-003' && item.entityId === anomaly?.anomalyId)).toBe(true);
   });
 
@@ -91,7 +91,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
 
   // Les données invalides restent visibles, mais ne doivent pas gonfler les KPI.
   it('keeps invalid source data and excludes only the affected KPI object', () => {
-    expect(normalized.anomalies).toHaveLength(7);
+    expect(normalized.legacyAnomalies).toHaveLength(7);
     expect(issues.some((issue) => issue.ruleId === 'DQ-001')).toBe(true);
     expect(calculateKpis(normalized, issues).metrics['anomaly.total']?.value).toBe(7);
   });
@@ -115,7 +115,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
 
     const cancelledNormalized = normalizeGithub(cancelledRaw, config.github, undefined, config.auditVersion);
     const cancelledIssues = evaluateDataQuality(cancelledRaw, cancelledNormalized, config.github);
-    const cancelledAnomaly = cancelledNormalized.anomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101');
+    const cancelledAnomaly = cancelledNormalized.legacyAnomalies.find((anomaly) => anomaly.provenance.sourceId === 'issue-101');
     const cancelledAnalytics = calculateKpis(cancelledNormalized, cancelledIssues);
 
     expect(cancelledAnomaly?.cancelled).toBe(true);

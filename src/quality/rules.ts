@@ -12,7 +12,7 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
   };
 
   // Les données invalides restent dans le snapshot ; les règles décrivent seulement leur impact.
-  for (const anomaly of data.anomalies) {
+  for (const anomaly of data.legacyAnomalies) {
     const sourceIssue = raw.repositories
       .flatMap((repository) => repository.issues)
       .find((issue) => issue.id === anomaly.provenance.sourceId);

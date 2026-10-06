@@ -2,11 +2,13 @@ import { stableId } from '../lib/ids.js';
 import type { GithubProcessingConfig } from '../config.js';
 import type { Catalogue, CatalogueComponent } from '../catalogue.js';
 import type {
-  Anomaly,
-  Audit,
   Component,
   DataQualityStatus,
+  Issue,
+  LegacyAnomaly,
+  LegacyAudit,
   Library,
+  Milestone,
   NormalizedData,
   PullRequest,
   RawDataset
@@ -21,7 +23,10 @@ export function normalizeGithub(
   catalogue?: Catalogue,
   auditVersion?: string
 ): NormalizedData {
-  const libraries: Library[] = raw.repositories.map((repository) => ({
+  const repositories = [...raw.repositories].sort((left, right) => left.id.localeCompare(right.id));
+  const orderedIssues = (repository: RawDataset['repositories'][number]) =>
+    [...repository.issues].sort((left, right) => left.id.localeCompare(right.id));
+  const libraries: Library[] = repositories.map((repository) => ({
     libraryId: stableId('lib', repository.name),
     name: repository.name,
     repository: `${repository.owner}/${repository.name}`,
@@ -32,12 +37,14 @@ export function normalizeGithub(
   }));
 
   const libraryByRepository = new Map(
-    raw.repositories.map((repository, index) => [repository.name, libraries[index]!])
+    repositories.map((repository, index) => [repository.name, libraries[index]!])
   );
   const componentsByName = new Map<string, Component>();
-  const audits: Audit[] = [];
-  const anomalies: Anomaly[] = [];
+  const legacyAudits: LegacyAudit[] = [];
+  const legacyAnomalies: LegacyAnomaly[] = [];
   const pullRequests: PullRequest[] = [];
+  const issues: Issue[] = [];
+  const milestonesById = new Map<string, Milestone>();
   const catalogueByRepositoryAndName = new Map(
     catalogue?.components
       .filter((component) => component.repository)
@@ -66,14 +73,16 @@ export function normalizeGithub(
   }
 
   // Les composants sont indexés par bibliothèque pour éviter les collisions entre repositories.
-  for (const repository of raw.repositories) {
+  for (const repository of repositories) {
     const library = libraryByRepository.get(repository.name)!;
-    for (const issue of repository.issues) {
-      const componentName = issue.component ?? 'unknown';
-      const componentId = stableId('component', `${library.libraryId}:${componentName}`);
+    for (const issue of orderedIssues(repository)) {
+      const componentNames = issue.components
+        ?? (issue.component ? [issue.component] : []);
       const cancelledProjectStatuses = (issue.projectStatuses ?? [])
         .filter((projectStatus) => rules.cancelledProjectStatuses.some((cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()));
-      if (!componentsByName.has(`${library.libraryId}:${componentName}`)) {
+      for (const componentName of [...componentNames].sort()) {
+        const componentId = stableId('component', `${library.libraryId}:${componentName}`);
+        if (componentsByName.has(`${library.libraryId}:${componentName}`)) continue;
         const catalogueComponent = catalogueByRepositoryAndName.get(`${repository.name}:${componentName}`);
         const inCatalogue = Boolean(catalogueComponent) || raw.catalogueComponents.includes(componentName);
         componentsByName.set(`${library.libraryId}:${componentName}`, {
@@ -93,12 +102,26 @@ export function normalizeGithub(
           dataQualityStatus: inCatalogue ? 'reliable' : 'partial'
         });
       }
+      if (issue.milestone) {
+        const milestoneId = stableId('milestone', `${repository.id}:${issue.milestone.number}`);
+        milestonesById.set(milestoneId, {
+          milestoneId,
+          repositoryId: repository.id,
+          number: issue.milestone.number,
+          title: issue.milestone.title,
+          ...(issue.milestone.state ? { state: issue.milestone.state } : {})
+        });
+      }
+      if (componentNames.length !== 1) continue;
+      const [componentName] = componentNames;
+      if (componentName === undefined) continue;
+      const componentId = stableId('component', `${library.libraryId}:${componentName}`);
       const auditId = stableId(
         'audit',
         `${library.libraryId}:${componentName}:${resolvedAuditVersion}`
       );
-      if (!audits.some((audit) => audit.auditId === auditId)) {
-        audits.push({
+      if (!legacyAudits.some((audit) => audit.auditId === auditId)) {
+        legacyAudits.push({
           auditId,
           libraryId: library.libraryId,
           componentId,
@@ -116,7 +139,7 @@ export function normalizeGithub(
       }
       // Les audits sont créés pour toutes les issues, mais seules les issues BUG deviennent des anomalies.
       if (issue.issueType !== rules.issueTypes.anomaly) continue;
-      anomalies.push({
+      legacyAnomalies.push({
         anomalyId: stableId('anomaly', issue.id),
         auditId,
         componentId,
@@ -140,7 +163,7 @@ export function normalizeGithub(
         cancelledProjectStatuses
       });
     }
-    for (const pullRequest of repository.pullRequests) {
+    for (const pullRequest of [...repository.pullRequests].sort((left, right) => left.id.localeCompare(right.id))) {
       pullRequests.push({
         pullRequestId: pullRequest.id,
         repository: repository.name,
@@ -157,7 +180,103 @@ export function normalizeGithub(
     }
   }
 
-  return { libraries, components: [...componentsByName.values()], audits, anomalies, pullRequests };
+  for (const repository of repositories) {
+    const library = libraryByRepository.get(repository.name)!;
+    const issueIdByRawId = new Map(
+      orderedIssues(repository).map((issue) => [issue.id, stableId('issue', issue.id)])
+    );
+    const pullRequestIds = new Set(repository.pullRequests.map((pullRequest) => pullRequest.id));
+    for (const sourceIssue of orderedIssues(repository)) {
+      const issueId = issueIdByRawId.get(sourceIssue.id)!;
+      const componentNames = sourceIssue.components
+        ?? (sourceIssue.component ? [sourceIssue.component] : []);
+      const componentIds = componentNames
+        .map((name) => componentsByName.get(`${library.libraryId}:${name}`)?.componentId)
+        .filter((componentId): componentId is string => componentId !== undefined)
+        .sort();
+      const parentIds = sourceIssue.parents
+        .map((parentId) => issueIdByRawId.get(parentId))
+        .filter((parentId): parentId is string => parentId !== undefined);
+      const projectStatuses = (sourceIssue.projectStatuses ?? []).map((projectStatus) => ({
+        projectId: projectStatus.projectId,
+        projectName: projectStatus.projectName,
+        status: { rawValue: projectStatus.status },
+        fields: (sourceIssue.projectFields ?? [])
+          .filter((field) => field.projectId === projectStatus.projectId)
+          .map(({ fieldName, value }) => ({ fieldName, value }))
+          .sort((left, right) => left.fieldName.localeCompare(right.fieldName)),
+        ...(projectStatus.iteration ? { iteration: projectStatus.iteration } : {}),
+        ...(projectStatus.velocity !== undefined
+          ? { velocity: { rawValue: projectStatus.velocity } }
+          : {}),
+        ...(projectStatus.scheduling !== undefined
+          ? { scheduling: { rawValue: projectStatus.scheduling } }
+          : {}),
+        transitions: (projectStatus.transitions ?? []).map((transition) => ({
+          ...(transition.previousStatus !== undefined
+            ? { previousStatus: { rawValue: transition.previousStatus } }
+            : {}),
+          newStatus: { rawValue: transition.newStatus },
+          ...(transition.changedAt !== undefined ? { changedAt: transition.changedAt } : {})
+        }))
+      })).sort((left, right) => left.projectId.localeCompare(right.projectId));
+      const milestoneId = sourceIssue.milestone
+        ? stableId('milestone', `${repository.id}:${sourceIssue.milestone.number}`)
+        : undefined;
+      const accessibilityCategories = sourceIssue.labels
+        .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase()))
+        .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length));
+      const issueType = canonicalIssueType(sourceIssue.issueType, rules);
+      issues.push({
+        issueId,
+        number: sourceIssue.number,
+        title: sourceIssue.title,
+        ...(sourceIssue.issueType !== undefined ? { rawIssueType: sourceIssue.issueType } : {}),
+        ...(issueType ? { issueType } : {}),
+        state: sourceIssue.state,
+        createdAt: sourceIssue.createdAt,
+        ...(sourceIssue.closedAt ? { closedAt: sourceIssue.closedAt } : {}),
+        labels: [...sourceIssue.labels],
+        repositoryId: repository.id,
+        libraryId: library.libraryId,
+        ...(sourceIssue.url ? { url: sourceIssue.url } : {}),
+        ...(milestoneId ? { milestoneId } : {}),
+        projectStatuses,
+        ...(parentIds.length === 1 ? { parentIssueId: parentIds[0] } : {}),
+        subIssueIds: orderedIssues(repository)
+          .filter((candidate) => candidate.parents.includes(sourceIssue.id))
+          .map((candidate) => issueIdByRawId.get(candidate.id)!)
+          .sort(),
+        linkedPullRequestIds: sourceIssue.linkedPullRequestIds
+          .filter((pullRequestId) => pullRequestIds.has(pullRequestId))
+          .sort(),
+        componentIds,
+        criticities: [...sourceIssue.criticities],
+        accessibilityCategories,
+        provenance: {
+          source: 'github',
+          sourceId: sourceIssue.id,
+          collectedAt: raw.collectedAt
+        },
+        dataQualityStatus: collectedStatus
+      });
+    }
+  }
+
+  return {
+    libraries: [...libraries].sort((left, right) => left.libraryId.localeCompare(right.libraryId)),
+    components: [...componentsByName.values()].sort((left, right) => left.componentId.localeCompare(right.componentId)),
+    issues: issues.sort((left, right) => left.issueId.localeCompare(right.issueId)),
+    milestones: [...milestonesById.values()].sort((left, right) => left.milestoneId.localeCompare(right.milestoneId)),
+    versions: [],
+    componentVersions: [],
+    audits: [],
+    anomalies: [],
+    auditImprovements: [],
+    legacyAudits: legacyAudits.sort((left, right) => left.auditId.localeCompare(right.auditId)),
+    legacyAnomalies: legacyAnomalies.sort((left, right) => left.anomalyId.localeCompare(right.anomalyId)),
+    pullRequests: pullRequests.sort((left, right) => left.pullRequestId.localeCompare(right.pullRequestId))
+  };
 }
 
 /** Convertit les métadonnées du catalogue vers le modèle Component. */
@@ -183,11 +302,25 @@ function catalogueMetadata(component: CatalogueComponent | undefined): Partial<C
 function criticalityValue(
   value: string | undefined,
   rules: GithubProcessingConfig
-): Anomaly['criticality'] {
+): LegacyAnomaly['criticality'] {
   if (!value) return undefined;
   const normalized = value.toLowerCase();
   return rules.labels.criticalityValues[normalized]
     ?? (['blocking', 'major', 'minor'].includes(normalized)
-      ? normalized as Anomaly['criticality']
+      ? normalized as LegacyAnomaly['criticality']
       : undefined);
+}
+
+/** Resolves only complete, explicitly configured Issue Type variants. */
+function canonicalIssueType(
+  rawIssueType: string | undefined,
+  rules: GithubProcessingConfig
+): string | undefined {
+  if (rawIssueType === undefined) return undefined;
+  const value = rawIssueType.trim().toLowerCase();
+  const candidates = Object.entries(rules.issueTypes.keywords)
+    .filter(([, variants]) => variants.some((variant) => variant.trim().toLowerCase() === value))
+    .map(([canonical]) => canonical)
+    .sort();
+  return candidates.length === 1 ? candidates[0] : undefined;
 }

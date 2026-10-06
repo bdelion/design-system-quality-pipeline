@@ -42,7 +42,7 @@ L’ordre d’implémentation est volontaire : les couches aval ne doivent pas c
 
 L’ordre de priorité est le suivant :
 
-1. décisions métier consolidées D-001 à D-147 ;
+1. décisions métier consolidées jusqu’au dernier identifiant établi dans `questions-ouvertes.md` ;
 2. documentation métier et règles consolidées ;
 3. contrat de données cible ;
 4. code et tests existants ;
@@ -576,6 +576,8 @@ Au minimum, la V1 doit pouvoir obtenir :
 
 Le nom technique du champ RC doit être configurable et ne doit pas être codé en dur dans le collecteur.
 
+Le schéma GraphQL utilisé pour les valeurs `Text`, `Number` et `Iteration` doit être validé contre le schéma GitHub réel avant que ces données soient considérées comme opérationnelles. Les mocks de test seuls ne valident pas cette compatibilité.
+
 #### Historique de passage à Done
 
 Collecter la donnée permettant d’identifier la date de transition vers le statut `Done`.
@@ -586,6 +588,10 @@ Cette donnée alimentera ultérieurement :
 - `Audit.completedAt`.
 
 La source exacte doit être validée contre l’API GitHub disponible. Si l’API ne permet pas d’obtenir directement cet historique, le lot doit documenter le mécanisme retenu et ses limites au lieu d’inventer un timestamp.
+
+Les Projects classiques utilisent les événements REST `moved_columns_in_project`. Pour les Projects v2, le collecteur interroge les événements `ProjectV2ItemStatusChangedEvent` du `timelineItems` GraphQL et suit la pagination. La référence du schéma GraphQL confirme l’existence de cet événement ; une exécution avec un dépôt réel reste nécessaire pour confirmer sa disponibilité effective avec les permissions et Projects de l’organisation cible.
+
+Si la source ne fournit pas un historique suffisant, aucune date métier n’est fabriquée. Le traitement non bloquant et le signalement Data Quality exigés par D-188 doivent être finalisés en I5 ; une erreur d’API ou de permission reste actuellement explicite et bloque la collecte.
 
 #### Tags et Release
 
@@ -628,6 +634,7 @@ Dans `tests/anonymization.test.ts` :
 - `RawIssue.parents` n’est plus systématiquement vide lorsque GitHub expose une relation.
 - Le RAW porte le Status et la RC auditée sans logique métier.
 - La date de passage à `Done` est collectée lorsqu’elle est disponible ; sinon l’absence est explicite.
+- L’historique des Projects classiques et v2 est collecté par leurs sources respectives et paginé ; l’accès réel reste à valider dans l’organisation cible.
 - Les tags nécessaires aux Versions sont présents dans le RAW.
 - Le collecteur n’infère ni `AUDIT`/`HORS_AUDIT`, ni `PRE_PROD`/`CATCH_UP`, ni le verdict.
 - Les fixtures et l’anonymisation préservent les nouveaux faits.

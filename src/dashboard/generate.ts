@@ -211,7 +211,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const metrics = snapshot.analytics.metrics;
   const libraryById = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
   const repositories = [...new Set(snapshot.normalizedData.libraries.map((library) => library.name))].sort();
-  const categories = [...new Set(snapshot.normalizedData.anomalies.flatMap((anomaly) => anomaly.categories))].sort();
+  const categories = [...new Set(snapshot.normalizedData.legacyAnomalies.flatMap((anomaly) => anomaly.categories))].sort();
   const total = metricOrUnknown(metrics, 'anomaly.total');
   const open = metricOrUnknown(metrics, 'anomaly.open');
   const inProgress = metricOrUnknown(metrics, 'anomaly.inProgress');
@@ -224,7 +224,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const oldest = metricOrUnknown(metrics, 'anomaly.backlog.oldestAge');
   const criticalityCoverage = metricOrUnknown(metrics, 'anomaly.criticalityCoverage');
 
-  const rows = snapshot.normalizedData.anomalies.map((anomaly) => {
+  const rows = snapshot.normalizedData.legacyAnomalies.map((anomaly) => {
     const component = snapshot.normalizedData.components.find((item) => item.componentId === anomaly.componentId);
     const repositoryName = libraryById.get(component?.libraryId ?? '') ?? 'repository inconnu';
     const status = anomaly.cancelled ? 'cancelled' : anomaly.status;
@@ -281,7 +281,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   </section>
 
   <article class="panel table-panel">
-    <div class="panel-heading"><div><p class="eyebrow">Détail des objets</p><h2>Anomalies suivies</h2></div><span class="badge">${snapshot.normalizedData.anomalies.length} lignes</span></div>
+    <div class="panel-heading"><div><p class="eyebrow">Détail des objets</p><h2>Anomalies suivies</h2></div><span class="badge">${snapshot.normalizedData.legacyAnomalies.length} lignes</span></div>
     <div class="filter-bar"><input class="search" data-filter placeholder="Rechercher une anomalie, un composant, une catégorie..."><select data-filter-repository><option value="">Tous les repositories</option>${repositories.map((repository) => `<option value="${escapeHtml(repository)}">${escapeHtml(repository)}</option>`).join('')}</select><select data-filter-criticality><option value="">Toutes les criticités</option><option value="blocking">Bloquante</option><option value="major">Majeure</option><option value="minor">Mineure</option><option value="unknown">Inconnue</option></select><select data-filter-category><option value="">Toutes les catégories</option>${categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}</select><select data-filter-status><option value="">Tous les états</option><option value="open">Ouverte</option><option value="in_progress">En cours</option><option value="done">Terminée</option><option value="reopened">Rouverte</option><option value="cancelled">Annulée</option></select><button type="button" class="reset-button" data-reset-filters>Réinitialiser</button></div>
     <div class="table-wrap"><table><thead><tr><th>Anomalie</th><th>Repository / composant</th><th>Criticité</th><th>Catégorie</th><th>État</th><th>Créée</th><th>1re correction</th><th>Délai</th><th>PR</th></tr></thead><tbody data-table>${rows}</tbody></table></div>
   </article>
@@ -325,7 +325,7 @@ function repositoryReference(snapshot: Snapshot, repositoryName: string, githubU
 /** Ajoute à une alerte qualité la cible et sa source consultable. */
 function qualityIssueTarget(snapshot: Snapshot, issue: Snapshot['dataQuality']['issues'][number], githubUrl?: string): string {
   if (issue.entityType === 'anomaly') {
-    const anomaly = snapshot.normalizedData.anomalies.find((candidate) => candidate.anomalyId === issue.entityId);
+    const anomaly = snapshot.normalizedData.legacyAnomalies.find((candidate) => candidate.anomalyId === issue.entityId);
     const source = anomaly?.provenance.sourceId;
     return `<div class="quality-target"><span class="quality-target-label">Cible : anomalie ${escapeHtml(issue.entityId)}</span>${source ? `<span>Source : ${githubReference(snapshot, source, githubUrl)}</span>` : '<span>Aucune source GitHub disponible</span>'}</div>`;
   }
@@ -387,14 +387,14 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
     list.push(component);
     componentsByLibrary.set(component.libraryId, list);
   }
-  const auditsByComponent = new Map<string, Snapshot['normalizedData']['audits']>();
-  for (const audit of snapshot.normalizedData.audits) {
+  const auditsByComponent = new Map<string, Snapshot['normalizedData']['legacyAudits']>();
+  for (const audit of snapshot.normalizedData.legacyAudits) {
     const list = auditsByComponent.get(audit.componentId) ?? [];
     list.push(audit);
     auditsByComponent.set(audit.componentId, list);
   }
-  const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
-  for (const anomaly of snapshot.normalizedData.anomalies) {
+  const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['legacyAnomalies']>();
+  for (const anomaly of snapshot.normalizedData.legacyAnomalies) {
     const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
     list.push(anomaly);
     anomaliesByComponent.set(anomaly.componentId, list);
@@ -441,7 +441,7 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   <section class="section-heading"><div><p class="eyebrow">Lecture</p><h2>Cartographie exploitable</h2></div><span class="badge">${formatMetricValue(auditedMetric)} composants audités</span></section>
   <section class="panel graph-toolbar"><input class="search" data-map-filter placeholder="Rechercher un repository, composant, audit, anomalie ou PR"><select data-map-kind-filter><option value="">Tous les niveaux</option><option value="repository">Repositories</option><option value="component">Composants</option><option value="audit">Audits</option><option value="anomaly">Anomalies</option><option value="pr">Pull requests</option></select><button type="button" class="reset-button" data-map-reset>Réinitialiser</button></section>
   <section class="map-legend"><span class="legend-repository">Repository</span><span class="legend-component">Composant</span><span class="legend-audit">Audit</span><span class="legend-anomaly">Anomalie</span><span class="legend-pr">PR</span></section>
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Relations du snapshot</p><h2>Patrimoine et chaîne de preuve</h2></div><span class="badge">${snapshot.normalizedData.anomalies.length} anomalies</span></div><div class="map-canvas">${repositorySections || '<p class="muted">Aucune relation disponible.</p>'}</div></article>
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Relations du snapshot</p><h2>Patrimoine et chaîne de preuve</h2></div><span class="badge">${snapshot.normalizedData.legacyAnomalies.length} anomalies</span></div><div class="map-canvas">${repositorySections || '<p class="muted">Aucune relation disponible.</p>'}</div></article>
   <article class="panel table-panel" id="map-quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves susceptibles d’affecter la cartographie</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${severityLabel(issue.severity)}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>La cartographie ne présente aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }
 
@@ -460,11 +460,11 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   const { metrics } = snapshot.analytics;
   const libraries = snapshot.normalizedData.libraries;
   const activeComponents = snapshot.normalizedData.components.filter((component) => component.status === 'active');
-  const completedAudits = snapshot.normalizedData.audits.filter((audit) => !['in_progress', 'not_evaluated'].includes(audit.status));
+  const completedAudits = snapshot.normalizedData.legacyAudits.filter((audit) => !['in_progress', 'not_evaluated'].includes(audit.status));
   const completedByComponent = new Map<string, typeof completedAudits[number]>();
   for (const audit of completedAudits) completedByComponent.set(audit.componentId, audit);
-  const anomaliesByComponent = new Map<string, typeof snapshot.normalizedData.anomalies>();
-  for (const anomaly of snapshot.normalizedData.anomalies) {
+  const anomaliesByComponent = new Map<string, typeof snapshot.normalizedData.legacyAnomalies>();
+  for (const anomaly of snapshot.normalizedData.legacyAnomalies) {
     const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
     list.push(anomaly);
     anomaliesByComponent.set(anomaly.componentId, list);
@@ -490,12 +490,12 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
 
   const componentRows = activeComponents.map((component) => {
     const library = libraries.find((item) => item.libraryId === component.libraryId);
-    const audit = completedByComponent.get(component.componentId) ?? snapshot.normalizedData.audits.find((item) => item.componentId === component.componentId);
+    const audit = completedByComponent.get(component.componentId) ?? snapshot.normalizedData.legacyAudits.find((item) => item.componentId === component.componentId);
     const anomalies = anomaliesByComponent.get(component.componentId) ?? [];
     return componentAuditRow(snapshot, component, library?.name ?? 'repository inconnu', audit, anomalies, githubUrl);
   }).join('');
 
-  const auditRows = snapshot.normalizedData.audits.map((audit) => {
+  const auditRows = snapshot.normalizedData.legacyAudits.map((audit) => {
     const component = snapshot.normalizedData.components.find((item) => item.componentId === audit.componentId);
     const library = libraries.find((item) => item.libraryId === audit.libraryId);
     const anomalies = anomaliesByComponent.get(audit.componentId) ?? [];
@@ -529,14 +529,14 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
 
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Patrimoine actif</p><h2>Composant → audit → anomalies</h2></div><span class="badge">${activeComponents.length} composants actifs</span></div><div class="filter-bar"><input class="search" data-component-filter placeholder="Rechercher un composant, repository ou anomalie..."><select data-component-result><option value="">Tous les résultats</option><option value="audited">Audité</option><option value="not_audited">Non audité</option><option value="conform">Conforme</option><option value="conditional">Conditionnel</option><option value="non_conform">Non conforme</option><option value="critical">Critique</option></select><button type="button" class="reset-button" data-reset-component-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Audit</th><th>Résultat</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody data-component-table>${componentRows}</tbody></table></div></article>
 
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits réalisés</p><h2>Traçabilité de chaque audit</h2></div><span class="badge">${snapshot.normalizedData.audits.length} audits</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant / source</th><th>Résultat</th><th>Version</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${auditRows || '<tr><td colspan="7">Aucun audit terminé dans ce snapshot.</td></tr>'}</tbody></table></div></article>
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits réalisés</p><h2>Traçabilité de chaque audit</h2></div><span class="badge">${snapshot.normalizedData.legacyAudits.length} audits</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant / source</th><th>Résultat</th><th>Version</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${auditRows || '<tr><td colspan="7">Aucun audit terminé dans ce snapshot.</td></tr>'}</tbody></table></div></article>
 
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison</p><h2>Couverture par repository</h2></div><span class="badge">${repositoriesWithComponents.length} repositories</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composants actifs</th><th>Audités</th><th>Conformes</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${repositoryRowsV2}</tbody></table></div></article>
 
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves qui affectent les audits ou leur périmètre</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)} · ${severityLabel(issue.severity)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${qualityLabel(issue.action === 'exclude' ? 'partial' : 'reliable')}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>Les audits et leur périmètre ne présentent aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }
 
-function componentAuditRow(snapshot: Snapshot, component: Component, repositoryName: string, audit: Snapshot['normalizedData']['audits'][number] | undefined, anomalies: Snapshot['normalizedData']['anomalies'], githubUrl?: string): string {
+function componentAuditRow(snapshot: Snapshot, component: Component, repositoryName: string, audit: Snapshot['normalizedData']['legacyAudits'][number] | undefined, anomalies: Snapshot['normalizedData']['legacyAnomalies'], githubUrl?: string): string {
   const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;
   const result = audit ? auditStatusLabel(audit.objectiveAuditResult) : 'non audité';
   const resultClass = audit ? audit.objectiveAuditResult : 'unknown';
@@ -556,7 +556,7 @@ function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
   return snapshot.normalizedData.libraries.map((library) => {
     const components = snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId);
     const componentIds = new Set(components.map((component) => component.componentId));
-    const anomalies = snapshot.normalizedData.anomalies.filter((anomaly) => componentIds.has(anomaly.componentId));
+    const anomalies = snapshot.normalizedData.legacyAnomalies.filter((anomaly) => componentIds.has(anomaly.componentId));
     const pullRequests = snapshot.normalizedData.pullRequests.filter((pullRequest) => pullRequest.repository === library.name);
     const open = anomalies.filter((anomaly) => anomaly.status === 'open' || anomaly.status === 'reopened').length;
     const reliability = components.some((component) => component.dataQualityStatus !== 'reliable') ? 'partielle' : 'fiable';
@@ -568,7 +568,7 @@ function delayRows(snapshot: Snapshot): string {
   const libraryById = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
   return snapshot.normalizedData.libraries.map((library) => {
     const componentIds = new Set(snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId).map((component) => component.componentId));
-    const delays = snapshot.normalizedData.anomalies.filter((anomaly) => componentIds.has(anomaly.componentId) && anomaly.firstDoneAt).map((anomaly) => (Date.parse(anomaly.firstDoneAt!) - Date.parse(anomaly.createdAt)) / 86_400_000).sort((left, right) => left - right);
+    const delays = snapshot.normalizedData.legacyAnomalies.filter((anomaly) => componentIds.has(anomaly.componentId) && anomaly.firstDoneAt).map((anomaly) => (Date.parse(anomaly.firstDoneAt!) - Date.parse(anomaly.createdAt)) / 86_400_000).sort((left, right) => left - right);
     const average = delays.length === 0 ? 'inconnu' : `${(delays.reduce((total, delay) => total + delay, 0) / delays.length).toFixed(1)} j`;
     const median = delays.length === 0 ? 'inconnu' : `${(delays.length % 2 === 1 ? (delays[Math.floor(delays.length / 2)] ?? 0) : ((delays[delays.length / 2 - 1] ?? 0) + (delays[delays.length / 2] ?? 0)) / 2).toFixed(1)} j`;
     const longest = delays.length === 0 ? 'inconnu' : `${(delays[delays.length - 1] ?? 0).toFixed(1)} j`;

@@ -33,6 +33,8 @@ github:
         - "bug"
         - "rgaa"
         - "a11y"
+  projects:
+    auditedReleaseCandidateField: ""
   closingKeywords:
     - "close"
     - "closed"

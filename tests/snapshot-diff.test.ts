@@ -2,13 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { diffSnapshots } from '../src/snapshots/diff.js';
 import type { Snapshot } from '../src/domain/types.js';
 
-function snapshot(id: string, capturedAt: string, anomalies: Snapshot['normalizedData']['anomalies']): Snapshot {
+function snapshot(id: string, capturedAt: string, anomalies: Snapshot['normalizedData']['legacyAnomalies']): Snapshot {
   return {
     snapshotId: id,
     capturedAt,
     scope: 'fixture',
     rawData: { collectedAt: capturedAt, repositories: [], catalogueComponents: [], nexusAvailable: true },
-    normalizedData: { libraries: [], components: [], audits: [], anomalies, pullRequests: [] },
+    normalizedData: {
+      libraries: [], components: [], issues: [], milestones: [], versions: [], componentVersions: [],
+      audits: [], anomalies: [], auditImprovements: [],
+      legacyAudits: [], legacyAnomalies: anomalies, pullRequests: []
+    },
     dataQuality: { issues: [], summary: { INFO: 0, WARNING: 0, ERROR: 0 } },
     analytics: { metrics: {} } as Snapshot['analytics'],
     ruleVersion: 'test',

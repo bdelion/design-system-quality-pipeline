@@ -1,4 +1,4 @@
-import type { Audit, Anomaly, Component, Library, PullRequest, Snapshot } from '../domain/types.js';
+import type { Component, LegacyAnomaly, LegacyAudit, Library, PullRequest, Snapshot } from '../domain/types.js';
 
 export interface EntityDelta<TId extends string = string> {
   added: TId[];
@@ -7,8 +7,8 @@ export interface EntityDelta<TId extends string = string> {
 
 export interface AnomalyTransition {
   anomalyId: string;
-  from: Anomaly['status'];
-  to: Anomaly['status'];
+  from: LegacyAnomaly['status'];
+  to: LegacyAnomaly['status'];
 }
 
 export interface SnapshotDiff {
@@ -50,8 +50,8 @@ function byId<T>(items: T[], id: (item: T) => string): Map<string, T> {
 export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
   if (before.capturedAt >= after.capturedAt) throw new Error('Snapshot order is invalid: before must precede after.');
 
-  const previousAnomalies = byId(before.normalizedData.anomalies, (item) => item.anomalyId);
-  const currentAnomalies = byId(after.normalizedData.anomalies, (item) => item.anomalyId);
+  const previousAnomalies = byId(before.normalizedData.legacyAnomalies, (item) => item.anomalyId);
+  const currentAnomalies = byId(after.normalizedData.legacyAnomalies, (item) => item.anomalyId);
   const anomalyTransitions: AnomalyTransition[] = [];
   const anomaliesCorrected: string[] = [];
   const anomaliesReopened: string[] = [];
@@ -68,7 +68,7 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     if (!previous.cancelled && current.cancelled) anomaliesCancelled.push(anomalyId);
   }
 
-  const anomaliesCreated = delta(before.normalizedData.anomalies, after.normalizedData.anomalies, (item) => item.anomalyId).added;
+  const anomaliesCreated = delta(before.normalizedData.legacyAnomalies, after.normalizedData.legacyAnomalies, (item) => item.anomalyId).added;
 
   return {
     fromSnapshotId: before.snapshotId,
@@ -78,8 +78,8 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     period: { from: before.capturedAt, to: after.capturedAt },
     libraries: delta(before.normalizedData.libraries, after.normalizedData.libraries, (item: Library) => item.libraryId),
     components: delta(before.normalizedData.components, after.normalizedData.components, (item: Component) => item.componentId),
-    audits: delta(before.normalizedData.audits, after.normalizedData.audits, (item: Audit) => item.auditId),
-    anomalies: delta(before.normalizedData.anomalies, after.normalizedData.anomalies, (item: Anomaly) => item.anomalyId),
+    audits: delta(before.normalizedData.legacyAudits, after.normalizedData.legacyAudits, (item: LegacyAudit) => item.auditId),
+    anomalies: delta(before.normalizedData.legacyAnomalies, after.normalizedData.legacyAnomalies, (item: LegacyAnomaly) => item.anomalyId),
     pullRequests: delta(before.normalizedData.pullRequests, after.normalizedData.pullRequests, (item: PullRequest) => item.pullRequestId),
     anomalyTransitions,
     anomaliesCreated,

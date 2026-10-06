@@ -14,7 +14,11 @@ function snapshot(id: string, capturedAt: string, status: 'open' | 'done', first
   return {
     snapshotId: id, capturedAt, scope: 'fixture',
     rawData: { collectedAt: capturedAt, repositories: [], catalogueComponents: [], nexusAvailable: true },
-    normalizedData: { libraries: [], components: [], audits: [], anomalies: [anomaly], pullRequests: [] },
+    normalizedData: {
+      libraries: [], components: [], issues: [], milestones: [], versions: [], componentVersions: [],
+      audits: [], anomalies: [], auditImprovements: [],
+      legacyAudits: [], legacyAnomalies: [anomaly], pullRequests: []
+    },
     dataQuality: { issues: [], summary: { INFO: 0, WARNING: 0, ERROR: 0 } },
     analytics: { metrics: {} } as Snapshot['analytics'], ruleVersion: 'test', modelVersion: 'test', reliability: 'reliable'
   } as Snapshot;

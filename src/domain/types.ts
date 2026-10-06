@@ -23,6 +23,18 @@ export interface RawRepository {
   defaultBranch: string;
   issues: RawIssue[];
   pullRequests: RawPullRequest[];
+  tags?: RawTag[];
+}
+
+/** Git tag reference facts; lightweight tags have no tag-object creation date. */
+export interface RawTag {
+  name: string;
+  ref: string;
+  referenceSha: string;
+  referenceObjectType: 'commit' | 'tag' | 'tree' | 'blob';
+  targetSha: string;
+  targetType: 'commit' | 'tag' | 'tree' | 'blob';
+  createdAt?: string;
 }
 
 /** Issue GitHub conservée dans le modèle RAW avant normalisation. */
@@ -31,26 +43,58 @@ export interface RawIssue {
   number: number;
   title: string;
   state: 'OPEN' | 'CLOSED';
-  issueType: 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE' | 'OTHER' | 'UNKNOWN';
+  issueType?: string;
   labels: string[];
+  /** Collection target; `component` remains temporarily for existing fixtures. */
+  components?: string[];
   component?: string;
   criticities: string[];
   parents: string[];
   createdAt: string;
   closedAt?: string;
+  url?: string;
   firstDoneAt?: string;
   auditStatus?: AuditStatus;
   auditResult?: AuditStatus;
   linkedPullRequestIds: string[];
   projectStatuses: RawProjectStatus[];
+  projectFields?: RawProjectField[];
   milestone?: RawMilestone;
+}
+
+export interface RawProjectField {
+  projectId: string;
+  projectName: string;
+  fieldName: string;
+  value: string | number | null;
 }
 
 /** Statut d'une issue dans un GitHub Project. */
 export interface RawProjectStatus {
   projectId: string;
   projectName: string;
+  /** Raw source value retained for compatibility with the current collector. */
   status: string;
+  iteration?: RawProjectIteration;
+  velocity?: string | number | null;
+  scheduling?: string | null;
+  transitions?: RawProjectStatusTransition[];
+}
+
+/** Facts about a GitHub Projects iteration, without inferred values. */
+export interface RawProjectIteration {
+  id: string;
+  title: string;
+  startDate?: string;
+  duration?: number;
+  endDate?: string;
+}
+
+/** A source transition; previous status is absent when GitHub does not provide it. */
+export interface RawProjectStatusTransition {
+  previousStatus?: string;
+  newStatus: string;
+  changedAt?: string;
 }
 
 /** Milestone GitHub rattachée à une issue. */
@@ -59,6 +103,148 @@ export interface RawMilestone {
   number: number;
   title: string;
   state?: 'open' | 'closed';
+}
+
+/**
+ * V1 domain contract. Canonical values are optional because source values
+ * may be missing, unrecognized, or ambiguous.
+ */
+export type CanonicalIssueType = string;
+export type CanonicalProjectStatus = string;
+export type AnomalyOrigin = 'AUDIT' | 'HORS_AUDIT' | 'UNDETERMINED';
+export type AuditVerdict = 'CONFORM' | 'NON_CONFORM' | 'UNKNOWN';
+export type AuditTiming = 'PRE_PROD' | 'CATCH_UP' | 'UNKNOWN';
+
+export interface CanonicalProjectValue {
+  rawValue: string;
+  canonicalValue?: string;
+  candidates?: string[];
+}
+
+export interface ProjectStatusTransition {
+  previousStatus?: CanonicalProjectValue;
+  newStatus: CanonicalProjectValue;
+  changedAt?: string;
+}
+
+export interface ProjectContext {
+  projectId: string;
+  projectName: string;
+  status: CanonicalProjectValue;
+  fields: Array<{ fieldName: string; value: string | number | null }>;
+  iteration?: RawProjectIteration;
+  velocity?: {
+    rawValue: string | number | null;
+    numericValue?: number;
+  };
+  scheduling?: {
+    rawValue: string | null;
+  };
+  transitions: ProjectStatusTransition[];
+}
+
+export interface Milestone {
+  milestoneId: string;
+  repositoryId: string;
+  number: number;
+  title: string;
+  state?: 'open' | 'closed';
+}
+
+/** Generic normalized GitHub issue, preserved independently of specialization. */
+export interface Issue {
+  issueId: string;
+  number: number;
+  title: string;
+  rawIssueType?: string;
+  issueType?: CanonicalIssueType;
+  state: 'OPEN' | 'CLOSED';
+  createdAt: string;
+  closedAt?: string;
+  labels: string[];
+  repositoryId: string;
+  libraryId: string;
+  /** Temporarily optional until I2 adds this fact to all RAW sources. */
+  url?: string;
+  milestoneId?: string;
+  projectStatuses: ProjectContext[];
+  parentIssueId?: string;
+  subIssueIds: string[];
+  linkedPullRequestIds: string[];
+  componentIds: string[];
+  criticities: string[];
+  accessibilityCategories: string[];
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+export interface GitTagReference {
+  name: string;
+  taggedAt?: string;
+}
+
+export interface Version {
+  versionId: string;
+  libraryId: string;
+  number: string;
+  tag?: string;
+  releasedAt?: string;
+  milestoneId?: string;
+  published: boolean;
+  catalogueStatus: 'known' | 'unknown';
+}
+
+/** Explicit membership in a historical Component x Version catalogue. */
+export interface ComponentVersion {
+  componentId: string;
+  versionId: string;
+}
+
+/** V1 Audit specialization; shared GitHub facts remain on the source Issue. */
+export interface Audit {
+  auditId: string;
+  issueId: string;
+  componentId: string;
+  versionId: string;
+  auditedReleaseCandidate?: string;
+  auditedReleaseCandidateTag?: GitTagReference;
+  completedAt?: string;
+  realized: boolean;
+  verdict: AuditVerdict;
+  timing: AuditTiming;
+}
+
+interface AnomalyBase {
+  anomalyId: string;
+  issueId: string;
+  componentIds: string[];
+  criticality?: 'blocking' | 'major' | 'minor';
+  categories: string[];
+  detectedAt: string;
+  correctedAt?: string;
+}
+
+export type Anomaly =
+  | (AnomalyBase & {
+      origin: 'AUDIT';
+      auditId: string;
+      componentId: string;
+    })
+  | (AnomalyBase & {
+      origin: 'HORS_AUDIT';
+      auditId?: never;
+      componentId?: never;
+    })
+  | (AnomalyBase & {
+      origin: 'UNDETERMINED';
+      auditId?: never;
+      componentId?: never;
+    });
+
+export interface AuditImprovement {
+  auditImprovementId: string;
+  issueId: string;
+  auditId: string;
 }
 
 /** Pull request GitHub conservée dans le modèle RAW. */
@@ -120,7 +306,7 @@ export interface PullRequest {
 }
 
 /** Anomalie qualité rattachée à un composant et à un audit. */
-export interface Anomaly {
+export interface LegacyAnomaly {
   anomalyId: string;
   auditId: string;
   componentId: string;
@@ -140,7 +326,7 @@ export interface Anomaly {
 }
 
 /** Audit normalisé à partir des données disponibles. */
-export interface Audit {
+export interface LegacyAudit {
   auditId: string;
   libraryId: string;
   componentId: string;
@@ -241,10 +427,21 @@ export interface Analytics {
 export interface NormalizedData {
   libraries: Library[];
   components: Component[];
+  issues: Issue[];
+  milestones: Milestone[];
+  versions: Version[];
+  componentVersions: ComponentVersion[];
   audits: Audit[];
   anomalies: Anomaly[];
+  auditImprovements: AuditImprovement[];
+  /** @deprecated Temporary compatibility projection; migrate consumers to V1 audits. */
+  legacyAudits: LegacyAudit[];
+  /** @deprecated Temporary compatibility projection; migrate consumers to V1 anomalies. */
+  legacyAnomalies: LegacyAnomaly[];
   pullRequests: PullRequest[];
 }
+
+export type NormalizedDataV1 = NormalizedData;
 
 /** Snapshot immuable regroupant sources, résultats et décisions de qualité. */
 export interface Snapshot {

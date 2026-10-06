@@ -44,9 +44,11 @@ GitHub Issue State = Closed
 Le seul `Done` ou le seul `Closed` ne suffit pas.
 
 La date métier de réalisation correspond à l'instant où la seconde
-condition nécessaire (`Done` et `Closed`) devient satisfaite. Si
-l'historique Project disponible ne permet pas de déterminer cette date,
-aucune date n'est inventée et une réserve Data Quality est produite.
+condition nécessaire (`Done` et `Closed`) devient satisfaite. Cette date
+de réalisation reste distincte de `completedAt`, qui correspond à la
+date du passage à `Done` conformément à D-141. Si l'historique Project
+disponible ne permet pas de déterminer une date requise, aucune date
+n'est inventée et une réserve Data Quality est produite.
 
 ---
 
@@ -188,7 +190,7 @@ Restent notamment à instruire :
 
 ## Date de fin et effet historique
 
-La date métier de fin d'un Audit est la date à laquelle l'Issue d'Audit passe au statut Project `Done`.
+La date métier `completedAt` d'un Audit est la date à laquelle l'Issue d'Audit passe au statut Project `Done`, conformément à D-141.
 
 ```text
 Audit.completedAt = date du passage à Done
@@ -196,7 +198,7 @@ Audit.completedAt = date du passage à Done
 
 L'Issue doit également être `Closed` pour que l'Audit soit réalisé. Dans le fonctionnement nominal, `Done` et `Closed` sont cohérents.
 
-À partir de `completedAt`, le Component est considéré comme audité dans la connaissance disponible à cet instant. Un Audit de rattrapage post-PROD ne doit donc pas être projeté rétroactivement sur la date de publication de la Version.
+La réalisation métier de l'Audit exige également que l'Issue soit `Closed`. La réalisation n'est acquise qu'une fois les deux conditions satisfaites ; `completedAt` reste la date du passage à `Done`. Un Audit de rattrapage post-PROD ne doit pas être projeté rétroactivement sur la date de publication de la Version.
 
 La date de début de l'Audit reste distincte et n'est pas définie par cette décision.
 
