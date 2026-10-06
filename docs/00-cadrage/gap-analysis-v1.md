@@ -1,0 +1,447 @@
+# Gap analysis V1 --- Design System Quality Pipeline
+
+## 1. Objet
+
+Cette analyse confronte le modèle métier consolidé jusqu'à D-144 au code
+présent dans le ZIP
+`design-system-quality-pipeline-feature-chatgpt-review-20261003.zip`.
+
+Elle ne modifie pas le code. Elle distingue : - **Conforme** :
+comportement déjà aligné avec la cible V1 ; - **Partiel** : brique
+réutilisable mais modèle ou comportement incomplet ; - **Absent** :
+capacité V1 non implémentée ; - **Contradictoire / legacy** :
+comportement actuel incompatible avec une décision métier ; - **À
+instruire** : dépend d'une question métier/technique encore ouverte.
+
+## 2. Synthèse exécutive
+
+L'architecture générale est réutilisable :
+
+``` text
+GitHub / Fixture
+      ↓
+RawDataset
+      ↓
+NormalizedData
+      ↓
+Data Quality
+      ↓
+Analytics
+      ↓
+Snapshot
+      ↓
+Dashboard statique
+```
+
+Le principal écart n'est donc pas architectural. Il se situe dans le
+**modèle métier normalisé et la collecte des faits GitHub nécessaires à
+ce modèle**.
+
+Les cinq chantiers prioritaires sont :
+
+1.  **Refondre la modélisation Issue / Anomalie / Audit** ;
+2.  **Collecter les relations sub-Issue et l'historique du statut
+    Project `Done`** ;
+3.  **Modéliser Version, Git tag, Milestone et RC auditée** ;
+4.  **Construire le Catalogue historique au tag d'une Version** ;
+5.  **Recalculer les indicateurs puis adapter snapshots et dashboard sur
+    le nouveau modèle**.
+
+Il serait risqué de commencer par modifier les KPI ou l'interface : ils
+reposent actuellement sur des hypothèses métier devenues obsolètes.
+
+## 3. Ce qui est déjà réutilisable
+
+| Capacité | État | Observation |
+|---|---|---|
+| Repositories configurables | Conforme / réutilisable | `system.yaml` contient une liste de repositories ; le collecteur les traite indépendamment. |
+| Collecte Issues | Partiel | États, labels, type, dates création/fermeture et Milestone sont collectés. |
+| Collecte Pull Requests | Conforme / réutilisable | État, date de merge et références sont disponibles. |
+| GitHub Projects | Partiel | Le statut courant est collecté, mais pas l'historique de transition. |
+| Labels Component | Partiel | Un seul `component` est actuellement extrait alors que le modèle métier autorise plusieurs Components pour une Issue générale. |
+| Criticité / catégories a11y | Partiel | Les données sont collectées mais les règles DQ doivent être resserrées au périmètre Audit Accessibilité. |
+| Milestone | Conforme comme donnée RAW | La Milestone de l'Issue est disponible. |
+| Moteur DQ | Réutilisable | Bonne architecture : les données restent visibles et l'impact peut être métrique-spécifique. |
+| Contrat de métriques | Réutilisable | `Metric` est auto-documenté et porte fiabilité, sources et exclusions. |
+| Snapshots | Réutilisable | La distinction `capturedAt` / observation est déjà structurée. |
+| Diff de snapshots | Partiel | Réutilisable, mais les transitions reposent encore sur `firstDoneAt`. |
+| Dashboard statique | Réutilisable | Bonne séparation présentation / analytics, mais contenu métier à réaligner. |
+| Anonymisation / fixtures | Réutilisable | À faire évoluer avec les nouveaux champs. |
+
+## 4. Matrice des écarts métier V1
+
+| Décision / règle cible | État actuel | Écart | Action V1 | Priorité |
+|---|---|---|---|:---:|
+| D-137 : toute Issue `🐛 Bug` est une Anomalie | Partiel | Le normalizer reconnaît les BUG, mais son modèle suppose un Audit et un Component | Rendre l'Anomalie autonome d'un Audit | P0 |
+| D-138 : origine `AUDIT` / `HORS_AUDIT` | Absent | Aucun champ d'origine ; `auditId` obligatoire | Ajouter `origin` ; rendre `auditId` optionnel | P0 |
+| D-107/108 : Issue générale 0..n Components | Contradictoire | `RawIssue.component?: string` ne porte qu'un Component | Passer à une collection de Components | P0 |
+| D-117 : Audit exactement 1 Component | Contradictoire | Un Audit est artificiellement créé pour quasiment chaque Issue | Créer un Audit uniquement depuis une Issue Audit valide | P0 |
+| D-121/D-135 : Anomalie d'Audit = sub-Issue d'un Audit | Absent | `parents` existe mais le collecteur initialise toujours `parents: []` | Collecter la relation sub-Issue/parent GitHub | P0 |
+| D-124 : Anomalie d'Audit = Issue Type Bug | Partiel | Type Bug collecté ; relation à l'Audit absente | Qualifier après collecte du parent | P0 |
+| D-126/D-129 : criticité et catégorie RGAA obligatoires pour Anomalie Audit Accessibilité | Contradictoire | DQ-001 exige une criticité pour toute Anomalie | Restreindre la règle au bon sous-périmètre | P0 |
+| D-139 : `detectedAt = issue.createdAt` | Presque conforme | Champ nommé `createdAt` | Renommer/exposer sémantiquement `detectedAt` ou documenter le mapping explicite | P1 |
+| D-140 : `correctedAt = date passage Done` | Partiel / non alimenté | `firstDoneAt` existe dans les types mais le collecteur réel ne le renseigne pas | Collecter l'historique Project et matérialiser `correctedAt` | P0 |
+| D-140 : Done / Closed / merge cohérents | Partiel | DQ-004/005 ne couvrent pas complètement la règle | Ajouter des contrôles temporels/états adaptés au workflow | P1 |
+| D-141 : Audit réalisé = Done + Closed | Contradictoire | Audit `status` est basé sur des champs artificiels `auditStatus/auditResult` | Déduire la réalisation des faits GitHub | P0 |
+| D-141 : `Audit.completedAt = passage Done` | Absent | Aucun timestamp réel de Done | Même collecte d'historique Project que pour Anomalie | P0 |
+| Audit verdict = réalisé + 0 anomalie ouverte/détectée selon règle consolidée | Contradictoire | `objectiveAuditResult` provient d'un champ source artificiel | Calculer le verdict à partir de l'Audit et de ses sub-Issues | P0 |
+| D-142 : Milestone = Version cible | Partiel | Milestone RAW disponible, mais `Audit.version` vient de `config.auditVersion` global | Résoudre la Version cible depuis la Milestone | P0 |
+| D-142 : champ explicite RC auditée | Absent | Aucun champ Project dédié collecté | Ajouter configuration + collecte du champ RC auditée | P0 |
+| D-142 : cohérence `M.m.r` / `M.m.r-rc.n` | Absent | Aucun contrôle | Ajouter DQ ciblée | P1 |
+| D-143 : Catalogue historique depuis Git tag `M.m.r` | Absent | Un seul YAML courant est chargé | Ajouter résolution du catalogue à un ref/tag Git | P0 |
+| D-144 : `releasedAt = date création Git tag M.m.r` | Absent | Aucun tag GitHub collecté | Collecter les tags/références et leur timestamp de référence | P0 |
+| État à la Release ≠ connaissance actuelle | Partiel | Snapshots permettent la distinction conceptuelle, mais pas de projection Version/releasedAt | Introduire une vue temporelle Version | P1 |
+| Audit de rattrapage post-PROD non rétroactif | Absent | Pas de `releasedAt` ni `completedAt` métier | Déduire pré-PROD / catch-up par comparaison temporelle | P1 |
+| Couverture historique = audités / Catalogue de la Version | Contradictoire | KPI utilise les Components actifs courants | Calculer par Version avec Catalogue historique | P0 |
+| Conformité = conformes / couverts | Partiel / contradictoire | KPI agrège les Audits terminés, pas le verdict Component×Version applicable | Recalculer au niveau Component×Version | P1 |
+| Dernier Audit terminé applicable pour Component×Version | Absent | Pas de sélection temporelle/applicabilité | Ajouter résolution du verdict applicable | P1 |
+| Audit incomplet ne remplace pas verdict acquis | Absent | Pas de notion de succession d'Audits applicable | Ajouter règle de sélection | P1 |
+| 1 GitHub Anomaly Issue = 1 Anomalie | Conforme dans l'intention | Stable ID par Issue | Conserver | — |
+| Multi-Component : 1 global, 1 par Component | Absent | `componentId` unique | Modéliser relation N-N / projections de métriques | P1 |
+| Hors Audit V1 sans sous-origine | Absent | Aucun `origin` | Ajouter seulement `AUDIT` / `HORS_AUDIT`, sans inférence supplémentaire | P0 |
+
+## 5. Écarts de collecte GitHub
+
+### 5.1 Historique Project V2
+
+Le collecteur GraphQL lit actuellement uniquement la **valeur courante**
+du champ `Status`.
+
+La V1 nécessite la date exacte de passage à `Done` pour : -
+`Anomaly.correctedAt` ; - `Audit.completedAt`.
+
+**Action :** enrichir la collecte avec l'historique des changements du
+Project item / champ Status, ou une source GitHub équivalente permettant
+de dater la transition.
+
+Ne pas remplacer cette date par `closedAt` ou `mergedAt` : ces dates
+servent au contrôle de cohérence.
+
+### 5.2 Relations parent / sub-Issue
+
+`RawIssue.parents` existe mais est toujours initialisé à `[]`.
+
+**Action :** collecter explicitement les relations sub-Issue GitHub et
+conserver les identifiants source des parents.
+
+C'est indispensable pour distinguer : - Bug sub-Issue d'un Audit →
+`AUDIT` ; - Bug sans parent Audit → `HORS_AUDIT`.
+
+### 5.3 Champs Project supplémentaires
+
+La requête GraphQL ne conserve actuellement que le champ nommé `Status`.
+
+**Action :** rendre configurables et collectables les champs
+nécessaires, au minimum : - Status ; - RC auditée.
+
+À terme, la même mécanique pourra porter Velocity, Scheduling, etc.,
+sans les imposer à la V1.
+
+### 5.4 Tags / Versions
+
+Aucune donnée de tag n'est présente dans `RawDataset`.
+
+**Action :** ajouter une représentation de Version/Tag avec au minimum
+: - nom `M.m.r` ; - référence Git/commit ; - `releasedAt` selon D-144.
+
+**Point technique à valider pendant l'implémentation :** l'API GitHub
+distingue tag léger et tag annoté. Le code devra définir précisément
+comment obtenir la « date de création du Git tag » de manière stable
+pour les deux formes, sans modifier la décision métier.
+
+## 6. Refactor cible minimal du modèle normalisé
+
+Le modèle cible V1 devrait au minimum pouvoir exprimer :
+
+``` text
+Anomaly
+- anomalyId
+- libraryId
+- componentIds: 0..n
+- origin: AUDIT | HORS_AUDIT
+- auditId?: string
+- detectedAt
+- correctedAt?
+- status
+- criticality?
+- categories[]
+- pullRequestRefs[]
+- provenance
+- dataQualityStatus
+
+Audit
+- auditId
+- libraryId
+- componentId              // exactement 1
+- sourceIssueId
+- targetVersion            // Milestone M.m.r
+- auditedReleaseCandidate? // pré-PROD
+- completedAt?
+- realized
+- verdict
+- timing: PRE_PROD | CATCH_UP | UNKNOWN
+- provenance
+- dataQualityStatus
+
+Version
+- versionId
+- libraryId / packageId
+- number: M.m.r
+- tag
+- releasedAt
+- historicalCatalogue
+- provenance
+- dataQualityStatus
+```
+
+Le nom exact des propriétés reste une décision d'implémentation ; les
+cardinalités et sémantiques ci-dessus sont métier.
+
+## 7. Règles DQ à reprendre
+
+Les DQ-001→DQ-010 actuelles sont du **legacy implémenté**, pas le
+contrat métier cible.
+
+### À conserver dans l'esprit
+
+-   incohérence Issue / PR ;
+-   données de Component absentes du référentiel ;
+-   labels inconnus ;
+-   impacts DQ métrique-spécifiques.
+
+### À modifier
+
+-   **DQ-001/DQ-002** : criticité obligatoire uniquement pour une
+    Anomalie issue d'un Audit Accessibilité ;
+-   **DQ-003** : pour une Anomalie d'Audit, exiger exactement un parent
+    Audit, pas seulement interdire plusieurs parents ;
+-   **DQ-004/DQ-005** : contrôler la cohérence `Done` / `Closed` / PR
+    merge selon le profil applicable ;
+-   **DQ-006** : ne pas dégrader indistinctement `portfolio.*` ;
+-   **DQ-008/DQ-010** : politique Cancelled encore ouverte (Q-022), donc
+    ne pas les promouvoir comme invariants V1 définitifs ;
+-   **DQ-009** : métriques Release actuelles absentes du catalogue ; à
+    réaligner avec le nouveau modèle Version.
+
+### Nouveaux contrôles nécessaires
+
+Sans imposer dès maintenant leur numérotation : - Audit exactement 1
+Component ; - Anomalie Audit exactement 1 parent Audit ; - Component(s)
+de l'Anomalie cohérents avec son parent Audit ; - Audit pré-PROD avec RC
+auditée renseignée ; - RC auditée cohérente avec la Version cible de la
+Milestone ; - Audit `Done` mais non `Closed`, et inversement ; -
+Anomalie `Done` avec incohérence `Closed` / merge PR selon profil ; -
+tag PROD manquant pour une Version historique ; - Catalogue historique
+impossible à reconstruire.
+
+## 8. Indicateurs : écarts principaux
+
+### Déjà proches de la cible
+
+-   nombre d'Anomalies ;
+-   répartition par criticité ;
+-   répartition par catégorie ;
+-   délai moyen / médian / p90 ;
+-   moteur de fiabilité par métrique.
+
+Le calcul du délai doit simplement passer de :
+
+``` text
+firstDoneAt - createdAt
+```
+
+à la sémantique explicite :
+
+``` text
+correctedAt - detectedAt
+```
+
+### À refaire conceptuellement
+
+**Couverture d'Audit**
+
+Actuel :
+
+``` text
+Components actifs actuellement avec au moins un Audit terminé
+/
+Components actifs actuellement
+```
+
+Cible historique :
+
+``` text
+Components du Catalogue de M.m.r disposant d'un Audit applicable
+/
+Components du Catalogue historique de M.m.r
+```
+
+**Conformité**
+
+Le calcul doit porter sur le verdict applicable au couple
+`Component × Version`, et non simplement sur tous les objets Audit
+terminés.
+
+### À ne pas ajouter artificiellement
+
+Aucun score global synthétique de qualité n'est défini en V1.
+
+## 9. Snapshots et historique
+
+Le moteur de snapshot est une bonne base.
+
+À conserver : - `capturedAt` = instant d'observation du pipeline ; -
+snapshots immuables ; - diff entre observations.
+
+À ajouter : - événements métier (`detectedAt`, `correctedAt`,
+`completedAt`, `releasedAt`) ; - Versions et Catalogues historiques ; -
+distinction entre état connu à `releasedAt` et connaissance actuelle.
+
+Un snapshot ne doit pas devenir le substitut d'une date métier exacte
+lorsqu'elle est disponible depuis GitHub.
+
+## 10. Dashboard
+
+Le dashboard existant est une base technique réutilisable, mais il devra
+être adapté **après** le modèle et les métriques.
+
+Priorités UI V1 : 1. vue portefeuille multi-librairies ; 2. vue
+Bibliothèque / Version ; 3. couverture et conformité distinctes ; 4.
+détail Component avec verdict applicable ; 5. Anomalies Audit / hors
+Audit ; 6. délai détection → correction ; 7. qualité/fiabilité des
+données ; 8. distinction « état à la Release » / « connaissance actuelle
+» lorsqu'une vue historique est affichée.
+
+L'interface ne doit pas présenter `unknown` comme `0` ni une absence
+d'Audit comme une non-conformité.
+
+## 11. État des tests du ZIP
+
+Le ZIP analysé ne contient pas `node_modules`.
+
+Conséquence : - `npm test` ne peut pas démarrer (`vitest: not found`)
+; - le `typecheck` exécuté sans dépendances installées produit des
+erreurs de modules manquants ; - il révèle également au moins des
+décalages de contrat dans les tests, notamment autour de
+`Library.defaultBranch` et de constructions partielles de `Analytics`.
+
+Ces résultats ne permettent pas de conclure que la branche échoue après
+un `npm ci`. Ils indiquent en revanche que la baseline devra être
+vérifiée **avant tout refactor**.
+
+## 12. Ordre d'implémentation recommandé
+
+### Lot I0 --- Baseline technique
+
+-   `npm ci` ;
+-   exécuter `npm test`, `npm run typecheck`, `npm run lint`,
+    `npm run build` ;
+-   corriger uniquement les problèmes de baseline indépendants du
+    nouveau métier ;
+-   figer un état vert.
+
+### Lot I1 --- Contrats de domaine V1
+
+-   Anomaly autonome ;
+-   origine `AUDIT | HORS_AUDIT` ;
+-   `componentIds` multi-valués pour Issue/Anomaly générale ;
+-   Audit réel uniquement depuis Issue Audit ;
+-   Version comme objet métier ;
+-   timestamps métier explicites.
+
+### Lot I2 --- Collecte GitHub enrichie
+
+-   relations sub-Issue ;
+-   historique Status / date Done ;
+-   champs Project configurables dont RC auditée ;
+-   tags / données nécessaires à `releasedAt`.
+
+### Lot I3 --- Normalisation Audit / Anomalie / Version
+
+-   classification Bug ;
+-   origine ;
+-   relations Audit ;
+-   Milestone → targetVersion ;
+-   champ RC → auditedReleaseCandidate ;
+-   `Done + Closed` → Audit réalisé ;
+-   calcul du verdict ;
+-   pré-PROD / catch-up.
+
+### Lot I4 --- Catalogue historique
+
+-   lecture du contenu du Repository au tag `M.m.r` ;
+-   reconstruction du Catalogue applicable ;
+-   contrôles de disponibilité/cohérence.
+
+### Lot I5 --- Data Quality V1
+
+-   réaligner DQ-001→010 ;
+-   ajouter les contrôles nécessaires ;
+-   conserver l'approche d'impact métrique-spécifique.
+
+### Lot I6 --- Analytics V1
+
+-   délais avec timestamps métier ;
+-   couverture par Version ;
+-   conformité Component×Version ;
+-   agrégations multi-Component ;
+-   distinction Audit / hors Audit.
+
+### Lot I7 --- Snapshots / historique
+
+-   intégrer Versions et événements métier ;
+-   conserver observation vs business time ;
+-   calculer état à la Release sans rétroprojection.
+
+### Lot I8 --- Dashboard V1
+
+-   adapter les pages au nouveau contrat ;
+-   vues Version / Component ;
+-   provenance des Anomalies ;
+-   historique et fiabilité ;
+-   accessibilité UI.
+
+### Lot I9 --- Fixtures, anonymisation et non-régression
+
+-   faire évoluer fixtures ;
+-   anonymiser les nouveaux champs ;
+-   tests unitaires des décisions D-137→D-144 ;
+-   tests d'intégration multi-repositories ;
+-   scénarios pré-PROD / catch-up / hors Audit / historique.
+
+## 13. Questions encore ouvertes mais non bloquantes pour démarrer I0/I1
+
+La gap analysis ne transforme pas les questions restantes en décisions
+implicites.
+
+À garder ouvertes notamment : - Q-020 profils exacts de workflow ; -
+Q-021 exceptions à la PR obligatoire ; - Q-022 règles exactes de
+`Cancelled` ; - Q-035 mécanisme complet de conservation de l'état
+historique ; - Q-037/Q-038 Nexus/Jenkins ; - Q-045/Q-046
+représentation/cardinalité de la famille d'Audit si nécessaire ; - Q-068
+disponibilité exacte de l'historique Project ; - Q-097/Q-098/Q-099
+Version affectée des Bugs hors Audit ; - questions V1.1/V2 déjà classées
+comme telles.
+
+Ces points peuvent être instruits au moment du lot qui les consomme.
+
+## 14. Conclusion
+
+**Verdict : faisabilité V1 confirmée, avec refactor métier significatif
+mais architecture générale conservable.**
+
+Le chemin critique est :
+
+``` text
+Contrats métier
+→ collecte GitHub des faits manquants
+→ normalisation
+→ DQ
+→ métriques historiques
+→ snapshots
+→ dashboard
+```
+
+Le prochain travail recommandé est **I0 --- baseline technique**, puis
+**I1 --- contrats de domaine**, sans encore modifier les KPI ou le
+dashboard.
