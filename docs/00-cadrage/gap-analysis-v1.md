@@ -452,3 +452,4 @@ Contrats métier
 Le prochain travail recommandé est **I0 --- baseline technique**, puis
 **I1 --- contrats de domaine**, sans encore modifier les KPI ou le
 dashboard.
+| D-154 : normaliser casse et espaces pour la correspondance stricte | À formaliser | La sémantique exacte de comparaison n’est pas contractualisée | Comparer la valeur complète après `trim`, sans tenir compte de la casse, sans recherche partielle et sans modifier la valeur brute | P0 |

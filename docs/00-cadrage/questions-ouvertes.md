@@ -3248,6 +3248,23 @@ Une valeur brute qui ne correspond à aucune variante explicitement déclarée s
 La normalisation technique éventuellement appliquée avant comparaison (par exemple la casse ou les espaces) n’est pas définie par cette décision et doit être instruite séparément.
 
 **Statut : Établi**
+---
+
+### D-154 --- Normalisation de casse et d’espaces pour la correspondance des Issue Types
+
+La correspondance stricte définie par D-153 porte sur la valeur complète, après une normalisation technique limitée :
+
+- suppression des espaces en début et en fin de valeur (`trim`) ;
+- comparaison insensible à la casse.
+
+Ainsi, une variante configurée `Bug` reconnaît `Bug`, `bug` et `  Bug  `.
+
+Cette normalisation ne transforme pas la correspondance stricte en recherche partielle : `🐛 Bug`, `Bug report` ou `Accessibility bug` restent des variantes différentes qui doivent être déclarées explicitement dans `system.yaml`.
+
+La valeur brute remontée par GitHub reste conservée sans être remplacée par sa forme normalisée, conformément à D-149.
+
+**Statut : Établi**
+
 
 
 

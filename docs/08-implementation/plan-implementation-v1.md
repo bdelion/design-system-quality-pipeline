@@ -289,6 +289,7 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-151, recalculer la notion canonique à chaque pipeline depuis la valeur brute et la configuration courante ; une évolution des mots-clés doit pouvoir reclassifier une Issue existante et recalculer les objets métier dérivés ;
 - conformément à D-152, si plusieurs notions canoniques correspondent, laisser `issueType` absent, n’appliquer aucune priorité implicite et produire une réserve Data Quality contenant la valeur brute, les candidats et le lien vers l’Issue ;
 - conformément à D-153, traiter les entrées de `github.issueTypes.keywords` comme des variantes complètes explicitement autorisées, sans recherche implicite par sous-chaîne ;
+- conformément à D-154, comparer les variantes sur la valeur complète après `trim`, sans tenir compte de la casse, sans recherche partielle et sans modifier `rawIssueType` ;
 - cette situation ne bloque pas le pipeline et doit produire une réserve Data Quality « issueType à déclarer » ;
 - cette réserve doit contenir au minimum la valeur brute non reconnue et un lien vers l’Issue GitHub concernée ;
 - la liste définitive des notions canoniques reste à instruire.

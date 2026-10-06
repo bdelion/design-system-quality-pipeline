@@ -212,6 +212,8 @@ Conformément à D-151, la notion canonique est recalculée à chaque exécution
 
 Conformément à D-153, les valeurs configurées sont des variantes complètes explicitement autorisées. Elles ne sont pas interprétées comme des sous-chaînes : toute variante acceptée doit être déclarée dans `system.yaml`.
 
+Conformément à D-154, la comparaison stricte des variantes applique uniquement un `trim` et une comparaison insensible à la casse. Elle reste une égalité sur la valeur complète et ne modifie jamais la valeur brute conservée.
+
 Conformément à D-152, si plusieurs notions canoniques correspondent à une même valeur brute, aucune n’est retenue : `issueType` reste absent. Le pipeline n’applique aucune priorité implicite et signale l’ambiguïté en Data Quality avec la valeur brute, les notions candidates et le lien vers l’Issue source.
 
 La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
