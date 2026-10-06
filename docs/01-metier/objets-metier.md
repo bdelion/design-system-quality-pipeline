@@ -236,6 +236,12 @@ Conformément à D-162, toute `Issue` normalisée conserve son rattachement éve
 
 Conformément à D-163, toute `Issue` normalisée conserve également ses rattachements et statuts GitHub Projects dans `projectStatuses`. Cette donnée générique est préservée même lorsqu’elle n’est pas utilisée par une spécialisation métier. Les statuts Projects restent distincts de `state`, qui représente uniquement l’état natif `OPEN` ou `CLOSED` de l’Issue.
 
+Conformément à D-164, `Issue` conserve ses relations de parenté via `parentIssueId?: string` et `subIssueIds: string[]`. Ces relations restent génériques et peuvent ensuite être utilisées par les règles de spécialisation métier.
+
+Conformément à D-165, `Issue` conserve également `linkedPullRequestIds: string[]`, contenant les références aux Pull Requests liés.
+
+Conformément à D-166, D-167 et D-168, les informations GitHub Projects `Iteration`, `Velocity` et `Scheduling` sont conservées dans l’Issue normalisée lorsqu’elles existent. Elles appartiennent au socle générique de pilotage de l’Issue ; leur représentation détaillée doit rester alignée avec le contrat GitHub Projects et ne doit pas être inventée avant sa formalisation.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---

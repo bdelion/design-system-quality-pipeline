@@ -3381,6 +3381,54 @@ Les statuts GitHub Projects, par exemple `Backlog`, `Ready`, `In progress`, `In 
 **Statut : Établi**
 
 
+### D-164 — Conservation des relations parent / sous-Issues
+
+Toute `Issue` normalisée conserve ses relations GitHub de parenté.
+
+Le contrat cible porte l’éventuelle Issue parente via `parentIssueId?: string` et les sous-Issues via `subIssueIds: string[]`.
+
+Ces relations appartiennent au socle générique de l’Issue et sont conservées indépendamment de leur utilisation pour reconnaître une anomalie d’Audit, une amélioration d’Audit ou une autre spécialisation métier.
+
+**Statut : Établi**
+
+
+### D-165 — Conservation des Pull Requests liés à l’Issue
+
+Toute `Issue` normalisée conserve les références aux Pull Requests qui lui sont liés dans `linkedPullRequestIds: string[]`.
+
+Cette information appartient au socle générique de l’Issue et reste disponible même lorsqu’elle n’est pas immédiatement utilisée par une spécialisation métier.
+
+**Statut : Établi**
+
+
+### D-166 — Conservation de l’Iteration GitHub Projects
+
+Lorsqu’une `Issue` possède une Iteration dans GitHub Projects, cette information est conservée dans l’Issue normalisée.
+
+L’Iteration est une donnée générique de pilotage de l’Issue. Sa représentation normalisée détaillée sera alignée avec le contrat GitHub Projects ; la présente décision impose sa conservation sans préjuger d’un typage non encore établi.
+
+**Statut : Établi**
+
+
+### D-167 — Conservation du champ Velocity GitHub Projects
+
+Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Velocity`, cette information est conservée dans l’Issue normalisée.
+
+`Velocity` est une donnée générique de pilotage de l’Issue et n’est pas limitée aux Audits ou aux Anomalies. Sa représentation normalisée détaillée sera alignée avec le contrat GitHub Projects.
+
+**Statut : Établi**
+
+
+### D-168 — Conservation du champ Scheduling GitHub Projects
+
+Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Scheduling`, cette information est conservée dans l’Issue normalisée.
+
+`Scheduling` est une donnée générique de pilotage de l’Issue et n’est pas limitée aux Audits ou aux Anomalies. Sa représentation normalisée détaillée sera alignée avec le contrat GitHub Projects.
+
+**Statut : Établi**
+
+
+
 
 
 

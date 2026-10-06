@@ -70,6 +70,13 @@ Conformément à D-162, `Issue` contient également `milestoneId?: string`. Cett
 
 Conformément à D-163, `Issue` conserve également `projectStatuses`, représentant ses rattachements et statuts GitHub Projects. Cette collection reste distincte de `state: 'OPEN' | 'CLOSED'` et est conservée même lorsqu’aucune spécialisation métier ne l’exploite.
 
+Conformément à D-164, `Issue` conserve `parentIssueId?: string` et `subIssueIds: string[]` afin de représenter explicitement les relations GitHub de parenté sans les réserver à une spécialisation métier.
+
+Conformément à D-165, `Issue` conserve `linkedPullRequestIds: string[]` afin de préserver les références aux Pull Requests liés.
+
+Conformément à D-166, D-167 et D-168, `Issue` conserve également, lorsqu’elles existent, les informations GitHub Projects `Iteration`, `Velocity` et `Scheduling`. Leur structure normalisée détaillée doit être définie avec le contrat GitHub Projects ; aucune forme supplémentaire n’est imposée par ces décisions.
+
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts
