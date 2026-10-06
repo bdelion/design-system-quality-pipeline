@@ -62,6 +62,8 @@ Conformément à D-158, le socle générique contient aussi `createdAt: string` 
 
 Conformément à D-159, `Issue` conserve également `labels: string[]`, contenant tous les labels GitHub de l’Issue, qu’ils soient ou non interprétés par le pipeline. Toute propriété métier dérivée d’un label reste séparée de cette donnée source.
 
+Conformément à D-160, `Issue` contient également `repositoryId: string` en plus de `libraryId`. Le repository source est ainsi porté explicitement par l’Issue et n’est pas déduit de la relation Library/repository, ce qui préserve le contrat lors d’une future association d’une Library à plusieurs repositories.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

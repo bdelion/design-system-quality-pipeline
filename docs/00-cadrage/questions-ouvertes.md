@@ -3337,6 +3337,18 @@ Les notions métier dérivées à partir de labels restent séparées de la coll
 **Statut : Établi**
 
 
+### D-160 — Rattachement explicite de l’Issue normalisée au repository
+
+Toute `Issue` normalisée conserve explicitement l’identifiant du repository GitHub dont elle provient dans une propriété `repositoryId`.
+
+Ce rattachement est conservé en plus de `libraryId`. Il ne doit pas être déduit uniquement de la relation actuelle entre une `Library` et un repository, afin de ne pas figer dans le contrat de l’Issue l’hypothèse actuelle « une Library = un repository ».
+
+Cette décision prépare notamment l’évolution cible dans laquelle une même `Library` pourra être associée à plusieurs repositories ou packages.
+
+**Statut : Établi**
+
+
+
 
 
 

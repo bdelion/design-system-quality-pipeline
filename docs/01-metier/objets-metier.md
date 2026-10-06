@@ -228,6 +228,8 @@ Conformément à D-158, toute `Issue` normalisée conserve également `createdAt
 
 Conformément à D-159, toute `Issue` normalisée conserve l’ensemble de ses labels GitHub dans `labels: string[]`, y compris ceux qui ne sont pas interprétés par le pipeline. Les notions métier dérivées depuis certains labels restent des propriétés séparées et ne remplacent jamais cette collection source.
 
+Conformément à D-160, toute `Issue` normalisée conserve explicitement `repositoryId` en plus de `libraryId`. La provenance repository ne doit donc pas être reconstruite uniquement à partir de la Library. Ce choix découple l’Issue de l’hypothèse actuelle « une Library = un repository » et prépare l’évolution vers plusieurs repositories ou packages par Library.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---
