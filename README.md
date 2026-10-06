@@ -1,10 +1,10 @@
 # Design System Quality Pipeline
 
-Pipeline Node.js + TypeScript, en lecture seule côté GitHub, destiné au suivi de la qualité de plusieurs librairies de Design System.
+Pipeline Node.js et TypeScript, en lecture seule côté GitHub, pour collecter et analyser les données de qualité de plusieurs librairies de Design System.
 
-Le projet collecte des données GitHub, les normalise dans un modèle métier, contrôle leur qualité, calcule des indicateurs, produit des snapshots et génère un dashboard HTML statique.
+Le pipeline collecte des données GitHub ou lit une fixture locale, les normalise, évalue leur qualité, calcule des indicateurs et produit un snapshot ainsi qu'un dashboard HTML statique.
 
-> **État du projet :** la documentation métier V1 a été consolidée jusqu'à D-243. Le code présent dans la branche reflète encore le modèle antérieur sur plusieurs points ; le plan d'implémentation V1 décrit la migration à réaliser. Une décision métier établie n'est donc pas nécessairement déjà implémentée.
+> **État actuel :** la migration vers le modèle V1 est en cours sur la branche `feature/dashboard-v1-i0-i9`. Les décisions métier et le plan décrivent la cible ; ils ne signifient pas que toutes les fonctionnalités correspondantes sont déjà implémentées.
 
 La porte d'entrée de la documentation est [`docs/README.md`](docs/README.md).
 
@@ -42,7 +42,7 @@ Principes structurants :
 - snapshots rejouables et comparables ;
 - normalisation déterministe à dataset brut et configuration identiques.
 
-## Cible V1 en cours d'implémentation
+## Cible V1 et état d'avancement
 
 Le modèle cible distingue notamment :
 
@@ -55,6 +55,17 @@ Le modèle cible distingue notamment :
 - `Anomaly.origin = AUDIT | HORS_AUDIT | UNDETERMINED`.
 
 Pour un couple `Component × Version`, la couverture nécessite au moins un Audit terminé applicable. Le verdict courant est calculé à partir de **l'ensemble des Audits terminés applicables**. Un Audit incomplet ne modifie pas le verdict acquis et la seule correction d'une anomalie ne rétablit pas la conformité : un nouvel Audit terminé applicable doit la valider.
+
+Les lots avancent progressivement :
+
+| Lot | État | Avancement |
+|---|---|---|
+| I1 — Contrats de domaine | Terminé | Contrats V1, préservation des Issues génériques, intégrité des relations et déterminisme. |
+| I2 — Collecte GitHub | Partiel | Collecte des Components, parents, champs et historique Projects, tags PROD/RC. La validation avec l'organisation cible et le nom du champ RC auditée restent à établir. |
+| I3 — Normalisation métier | En cours | Première normalisation des Versions à partir des Milestones et tags ; les spécialisations Audit et Anomaly restent à implémenter. |
+| I4 à I9 | À venir | Catalogue historique, Data Quality V1, analytics, snapshots, dashboard V1 et non-régression complète. |
+
+La fixture `fixtures/my-real-dataset-anonymized.json` est une capture antérieure à l'enrichissement I2. Elle contient 1 716 Issues, mais pas les relations parent, les transitions Projects, les champs Project ni les tags. Elle est utile pour tester la compatibilité avec les données historiques, mais ne valide pas la collecte enrichie et ne permet pas de déduire les relations ou les dates absentes. Son catalogue associé ne fournit pas non plus un rattachement vérifié aux repositories anonymisés.
 
 La définition normative et le plan de migration sont documentés dans :
 
@@ -108,17 +119,17 @@ npm run pipeline
 Pour exécuter le pipeline sur la fixture réaliste anonymisée de référence :
 
 ```bash
-npm run pipeline --   --source fixture   --fixture fixtures/my-real-dataset-anonymized.json
+npm run pipeline -- --source fixture --fixture fixtures/my-real-dataset-anonymized.json
 ```
 
-Cette fixture est associée à :
+La fixture utilise des fichiers de configuration dédiés :
 
 ```text
 config/system.my-real-dataset-anonymized.yaml
 config/catalogue.my-real-dataset-anonymized.yaml
 ```
 
-Les petites fixtures synthétiques restent adaptées aux tests unitaires ciblés ; `fixtures/my-real-dataset-anonymized.json` constitue la référence réaliste pour les tests d'intégration, métier et de non-régression.
+La fixture est antérieure aux champs enrichis I2 ; utilisez-la pour les tests de compatibilité, pas comme preuve de bon fonctionnement de ces champs. Les petites fixtures synthétiques restent adaptées aux tests unitaires ciblés.
 
 ### Étapes disponibles
 
@@ -135,7 +146,15 @@ Le pipeline produit un statut `COMPLETE` ou `PARTIAL`. `PARTIAL` signifie que l'
 
 ## Collecte GitHub
 
-Le collecteur GitHub est en lecture seule. Le token est fourni uniquement par l'environnement :
+Le collecteur GitHub est en lecture seule. Le token est fourni uniquement par l'environnement et ne doit pas être inscrit dans un fichier versionné :
+
+Créez d'abord le dossier de sortie s'il n'existe pas :
+
+```powershell
+New-Item -ItemType Directory -Force data/raw
+```
+
+Puis lancez la collecte :
 
 ```powershell
 $env:GITHUB_TOKEN = "..."
@@ -154,32 +173,34 @@ Le fichier `.env` et les données RAW réelles ne doivent pas être versionnés.
 
 ## Anonymisation et validation d'une fixture réelle
 
-Chaîne recommandée :
+Pour utiliser une nouvelle collecte comme fixture de travail, gardez d'abord le RAW réel local, puis anonymisez-le :
 
 ```bash
-npm run fixture:anonymize --   --input data/raw/my-real-dataset.json   --output fixtures/my-real-dataset-anonymized.json
+npm run fixture:anonymize -- --input data/raw/my-real-dataset.json --output fixtures/my-real-dataset-anonymized.json
 ```
 
-L'anonymisation génère également les configurations associées à la fixture. Elle est déterministe à partir de sa seed.
+L'anonymisation génère également les configurations dédiées à cette fixture. Elle est déterministe à partir de sa seed. Vérifiez les fichiers générés et la cohérence du catalogue anonymisé avec les repositories avant de les utiliser dans le pipeline.
 
 Validation :
 
 ```bash
-npm run fixture:validate --   --input fixtures/my-real-dataset-anonymized.json
+npm run fixture:validate -- --input fixtures/my-real-dataset-anonymized.json
 ```
 
-Un rapport Markdown est produit à côté de la fixture. Un manifeste local de traçabilité RAW peut également être généré :
+Un rapport Markdown est produit à côté de la fixture. La commande vérifie les données personnelles détectables et l'intégrité des relations ; elle ne garantit pas à elle seule que toutes les informations métier nécessaires sont présentes.
+
+Un manifeste local de traçabilité RAW peut également être généré :
 
 ```text
 fixtures/my-real-dataset-anonymized.json.trace.json
 ```
 
-Ce manifeste peut contenir des identifiants de la source réelle. Il est local uniquement et les fichiers `*.trace.json` sont exclus par `.gitignore`.
+Ce manifeste peut contenir des identifiants de la source réelle. Ne le partagez pas et ne le versionnez pas ; les fichiers `*.trace.json` sont exclus par `.gitignore`.
 
 Pour enrichir le rapport de validation avec cette trace :
 
 ```bash
-npm run fixture:validate --   --input fixtures/my-real-dataset-anonymized.json   --trace fixtures/my-real-dataset-anonymized.json.trace.json
+npm run fixture:validate -- --input fixtures/my-real-dataset-anonymized.json --trace fixtures/my-real-dataset-anonymized.json.trace.json
 ```
 
 Voir [`docs/08-implementation/anonymisation.md`](docs/08-implementation/anonymisation.md) et [`docs/08-implementation/fixtures.md`](docs/08-implementation/fixtures.md).
@@ -257,9 +278,7 @@ Ne jamais versionner :
 
 ## État d'implémentation
 
-La branche contient une baseline exécutable du pipeline et une documentation V1 plus avancée que le modèle TypeScript actuellement implémenté.
-
-La prochaine étape est l'implémentation des contrats métier I1 dans `src/domain/types.ts` et la normalisation associée, puis l'enrichissement progressif de la collecte GitHub, du Catalogue historique, de la Data Quality, des analytics et du dashboard conformément au plan V1.
+La branche contient une baseline exécutable, les contrats de domaine V1 et une première partie de la collecte et de la normalisation V1. Les consommateurs d'analytics et le dashboard ne sont pas encore migrés vers l'ensemble du modèle V1 ; ils restent à traiter dans les lots suivants. Consultez le plan d'implémentation pour les prérequis et critères d'acceptation de chaque lot.
 
 **Version du package :** `0.1.0`
 **Stack :** Node.js 22 · TypeScript · Commander · Vitest · ESLint
