@@ -64,6 +64,8 @@ Conformément à D-159, `Issue` conserve également `labels: string[]`, contenan
 
 Conformément à D-160, `Issue` contient également `repositoryId: string` en plus de `libraryId`. Le repository source est ainsi porté explicitement par l’Issue et n’est pas déduit de la relation Library/repository, ce qui préserve le contrat lors d’une future association d’une Library à plusieurs repositories.
 
+Conformément à D-161, `Issue` contient également `url: string`, correspondant à son URL GitHub source. Les couches aval utilisent cette valeur pour créer les liens vers GitHub et ne reconstruisent pas l’URL à partir de `repositoryId` et `number`.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

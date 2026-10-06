@@ -3348,6 +3348,18 @@ Cette décision prépare notamment l’évolution cible dans laquelle une même 
 **Statut : Établi**
 
 
+### D-161 — Conservation de l’URL GitHub de l’Issue normalisée
+
+Toute `Issue` normalisée conserve explicitement son URL GitHub dans une propriété `url: string`.
+
+Cette URL est une donnée source de l’Issue. Elle permet aux couches aval, notamment au dashboard et à la Data Quality, de fournir un lien direct vers l’Issue concernée sans reconstruire l’URL à partir du repository et du numéro d’Issue.
+
+La propriété `url` appartient au socle générique de l’Issue et reste disponible indépendamment de l’existence d’une spécialisation métier.
+
+**Statut : Établi**
+
+
+
 
 
 
