@@ -58,6 +58,8 @@ Conformément à D-156, `Issue` conserve aussi le `title` GitHub. Le titre appar
 
 Conformément à D-157, ce socle générique contient également `state: 'OPEN' | 'CLOSED'`. Cette propriété représente l’état natif GitHub de l’Issue et reste distincte de tout statut GitHub Projects.
 
+Conformément à D-158, le socle générique contient aussi `createdAt: string` et `closedAt?: string`. Ces dates représentent respectivement la création et la fermeture GitHub de l’Issue. Elles ne remplacent aucune date métier dérivée, notamment `detectedAt`, `correctedAt` ou `completedAt`.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

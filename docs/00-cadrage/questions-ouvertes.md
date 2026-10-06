@@ -3312,6 +3312,21 @@ La propriété `state` appartient au socle générique de l’Issue et reste dis
 **Statut : Établi**
 
 
+### D-158 — Conservation des dates GitHub natives de l’Issue normalisée
+
+Toute `Issue` normalisée conserve les dates GitHub natives suivantes :
+
+- `createdAt` : date de création de l’Issue ;
+- `closedAt` : date de fermeture de l’Issue lorsqu’elle est fermée, propriété absente sinon.
+
+Ces dates appartiennent au socle générique de l’Issue et restent disponibles indépendamment de l’existence d’une spécialisation métier.
+
+Elles constituent des faits GitHub et ne doivent pas être confondues avec les dates métier dérivées telles que `detectedAt` pour une anomalie, `correctedAt` pour sa correction ou `completedAt` pour un audit.
+
+**Statut : Établi**
+
+
+
 
 ---
 

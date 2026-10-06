@@ -289,6 +289,7 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-155, accepter une Issue sans Issue Type : `rawIssueType` et `issueType` sont alors absents, l’Issue reste normalisée et une réserve Data Quality non bloquante « issueType manquant » doit référencer l’Issue GitHub ; distinguer ce cas de « issueType à déclarer » défini par D-148 ;
 - conformément à D-156, conserver et propager le `title` GitHub dans chaque `Issue` normalisée afin qu’il soit directement disponible pour les couches aval ;
 - conformément à D-157, conserver et propager `state: 'OPEN' | 'CLOSED'` dans chaque `Issue` normalisée ; ne pas confondre cet état GitHub avec le statut GitHub Projects ;
+- conformément à D-158, conserver et propager `createdAt` et `closedAt?` dans chaque `Issue` normalisée ; les maintenir distincts des dates métier dérivées (`detectedAt`, `correctedAt`, `completedAt`) ;
 - conformément à D-151, recalculer la notion canonique à chaque pipeline depuis la valeur brute et la configuration courante ; une évolution des mots-clés doit pouvoir reclassifier une Issue existante et recalculer les objets métier dérivés ;
 - conformément à D-152, si plusieurs notions canoniques correspondent, laisser `issueType` absent, n’appliquer aucune priorité implicite et produire une réserve Data Quality contenant la valeur brute, les candidats et le lien vers l’Issue ;
 - conformément à D-153, traiter les entrées de `github.issueTypes.keywords` comme des variantes complètes explicitement autorisées, sans recherche implicite par sous-chaîne ;

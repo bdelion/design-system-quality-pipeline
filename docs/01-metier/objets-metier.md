@@ -224,6 +224,8 @@ Conformément à D-156, toute `Issue` normalisée conserve également son `title
 
 Conformément à D-157, toute `Issue` normalisée conserve son état GitHub dans `state`, avec les valeurs `OPEN` ou `CLOSED`. Cet état natif de l’Issue ne doit pas être confondu avec le statut GitHub Projects (`Backlog`, `Ready`, `In progress`, `In review`, `Done`, etc.). Il est conservé même lorsqu’aucune spécialisation métier n’est dérivée de l’Issue.
 
+Conformément à D-158, toute `Issue` normalisée conserve également `createdAt` et, lorsqu’elle est fermée, `closedAt`. Ces propriétés représentent les dates GitHub natives de création et de fermeture de l’Issue. Elles restent distinctes des dates métier dérivées telles que `detectedAt`, `correctedAt` et `completedAt`.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---
