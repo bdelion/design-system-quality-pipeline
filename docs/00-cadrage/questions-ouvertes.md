@@ -3265,6 +3265,31 @@ La valeur brute remontée par GitHub reste conservée sans être remplacée par 
 
 **Statut : Établi**
 
+---
+
+### D-155 --- Conservation et signalement d’une Issue sans Issue Type
+
+Lorsqu’une Issue GitHub ne possède aucun Issue Type, elle reste conservée dans le modèle normalisé.
+
+Dans ce cas :
+
+- `rawIssueType` est absent ;
+- `issueType` est absent ;
+- aucune valeur artificielle, notamment `UNKNOWN`, n’est injectée ;
+- le pipeline reste non bloquant.
+
+La Data Quality doit produire un élément explicite **« issueType manquant »** contenant au minimum un lien vers l’Issue GitHub concernée.
+
+Ce cas est distinct d’un Issue Type présent mais non reconnu par la configuration :
+
+- Issue Type absent → **« issueType manquant »** ;
+- Issue Type présent mais non déclaré → **« issueType à déclarer »**, conformément à D-148.
+
+L’identifiant `DQ-xxx` définitif de cette règle sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
+
+**Statut : Établi**
+
+
 
 
 

@@ -453,3 +453,4 @@ Le prochain travail recommandé est **I0 --- baseline technique**, puis
 **I1 --- contrats de domaine**, sans encore modifier les KPI ou le
 dashboard.
 | D-154 : normaliser casse et espaces pour la correspondance stricte | À formaliser | La sémantique exacte de comparaison n’est pas contractualisée | Comparer la valeur complète après `trim`, sans tenir compte de la casse, sans recherche partielle et sans modifier la valeur brute | P0 |
+| D-155 : conserver et signaler une Issue sans Issue Type | Absent | Le contrat cible ne distingue pas encore explicitement l’absence totale d’Issue Type d’une valeur présente mais non reconnue | Rendre `rawIssueType` et `issueType` optionnels dans ce cas, conserver l’Issue et produire une réserve Data Quality non bloquante « issueType manquant » avec le lien vers l’Issue source | P0 |

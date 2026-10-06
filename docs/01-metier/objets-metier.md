@@ -218,7 +218,9 @@ Conformément à D-152, si plusieurs notions canoniques correspondent à une mê
 
 La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
 
-**Statut : ÉTABLI pour la conservation exhaustive, la conservation du type brut, sa séparation de la notion canonique et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
+Conformément à D-155, l’absence totale d’Issue Type n’empêche pas la conservation de l’Issue. Dans ce cas, `rawIssueType` et `issueType` sont tous deux absents. Aucune valeur artificielle n’est injectée. Une réserve Data Quality non bloquante « issueType manquant » doit fournir un lien vers l’Issue GitHub concernée. Ce cas reste distinct d’une valeur présente mais non reconnue, traitée par D-148 comme « issueType à déclarer ».
+
+**Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ------------------------------------------------------------------------
 
