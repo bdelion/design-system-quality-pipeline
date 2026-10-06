@@ -10,7 +10,7 @@ function snapshot(id: string, capturedAt: string, anomalies: Snapshot['normalize
     rawData: { collectedAt: capturedAt, repositories: [], catalogueComponents: [], nexusAvailable: true },
     normalizedData: { libraries: [], components: [], audits: [], anomalies, pullRequests: [] },
     dataQuality: { issues: [], summary: { INFO: 0, WARNING: 0, ERROR: 0 } },
-    analytics: { metrics: {} },
+    analytics: { metrics: {} } as Snapshot['analytics'],
     ruleVersion: 'test',
     modelVersion: 'test',
     reliability: 'reliable'

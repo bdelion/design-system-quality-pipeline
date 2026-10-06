@@ -21,7 +21,7 @@ function containsPhone(value: string): boolean {
 
 export function sanitizeText(value: string, options: SanitizeOptions): { value: string; changed: boolean } {
   if (options.strictText) return { value: '[anonymized]', changed: value !== '[anonymized]' };
-  let next = value
+  const next = value
     .replace(reset(GITHUB_TOKEN), '[token-redacted]')
     .replace(reset(BEARER), 'Bearer [redacted]')
     .replace(reset(EMAIL), '[email-redacted]')

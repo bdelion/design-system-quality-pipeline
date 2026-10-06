@@ -45,7 +45,7 @@ program.command('fixture:anonymize')
     const result = anonymizeDataset(input, config);
     const mapper = createAnonymizationMapper(config.seed);
     const pipelineConfig = anonymizePipelineConfig(await loadConfig('github'), input, mapper);
-    const catalogueConfig = anonymizeCatalogue(await loadCatalogue('github'), config, mapper);
+    const catalogueConfig = anonymizeCatalogue(await loadCatalogue('github'), input, config, mapper);
     const validation = validateAnonymizedDataset(result.dataset);
     const integrityErrors = assertRelationalIntegrity(result.dataset);
     result.report.suspiciousStrings = validation.findings.length;

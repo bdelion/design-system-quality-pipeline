@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import fixture from '../fixtures/github.json' with { type: 'json' };
+import fixture from '../fixtures/my-real-dataset-anonymized.json' with { type: 'json' };
 import { anonymizeDataset } from '../src/anonymization/anonymizer.js';
 import { assertRelationalIntegrity, inspectRelationalIntegrity, validateAnonymizedDataset } from '../src/anonymization/validator.js';
 import { findSuspiciousStrings } from '../src/anonymization/sanitize.js';
@@ -19,13 +19,13 @@ describe('fixture anonymizer', () => {
   });
   it('shifts dates consistently', () => {
     const result = anonymizeDataset(fixture as RawDataset, options);
-    const original = new Date(fixture.repositories[0].issues[0].createdAt).getTime();
-    const anonymized = new Date(result.dataset.repositories[0].issues[0].createdAt).getTime();
+    const original = new Date(fixture.repositories[0]!.issues[0]!.createdAt).getTime();
+    const anonymized = new Date(result.dataset.repositories[0]!.issues[0]!.createdAt).getTime();
     expect(anonymized - original).toBe(-100 * 86_400_000);
   });
   it('removes free-form text and obvious PII', () => {
     const result = anonymizeDataset(fixture as RawDataset, options);
-    expect(result.dataset.repositories[0].issues[0].title).toBe('[anonymized issue]');
+    expect(result.dataset.repositories[0]!.issues[0]!.title).toBe('[anonymized issue]');
     expect(validateAnonymizedDataset(result.dataset).valid).toBe(true);
   });
 
@@ -65,8 +65,8 @@ describe('fixture anonymizer', () => {
 
   it('can anonymize component names when requested', () => {
     const result = anonymizeDataset(fixture as RawDataset, { ...options, preserveComponentNames: false });
-    expect(result.dataset.catalogueComponents).not.toContain(fixture.catalogueComponents[0]);
-    expect(result.dataset.repositories[0].issues[0].component).not.toBe(fixture.repositories[0].issues[0].component);
+    expect(result.dataset.catalogueComponents).not.toContain(fixture.catalogueComponents[0]!);
+    expect(result.dataset.repositories[0]!.issues[0]!.component).not.toBe(fixture.repositories[0]!.issues[0]!.component);
   });
 
   it('preserves analytical issue, project status and milestone fields', () => {
@@ -88,11 +88,11 @@ describe('fixture anonymizer', () => {
       }]
     };
 
-    const result = anonymizeDataset(source, options).dataset.repositories[0].issues[0];
-    expect(result.labels).toEqual(source.repositories[0].issues[0].labels);
+    const result = anonymizeDataset(source, options).dataset.repositories[0]!.issues[0]!;
+    expect(result.labels).toEqual(source.repositories[0]!.issues[0]!.labels);
     expect(result.state).toBe('OPEN');
     expect(result.issueType).toBe('BUG');
-    expect(result.projectStatuses[0].status).toBe('🏗 In progress');
+    expect(result.projectStatuses[0]!.status).toBe('🏗 In progress');
     expect(result.milestone).toMatchObject({ title: '1.8.0', state: 'open' });
     expect(result.milestone?.id).not.toBe(7);
   });
@@ -109,7 +109,7 @@ describe('fixture anonymizer', () => {
       }]
     } as unknown as RawDataset;
 
-    const result = anonymizeDataset(source, options).dataset.repositories[0].issues[0].milestone as Record<string, unknown>;
+    const result = anonymizeDataset(source, options).dataset.repositories[0]!.issues[0]!.milestone;
     expect(result).toEqual({ id: expect.any(Number), number: 7, title: '1.8.0', state: 'open' });
     expect(result).not.toHaveProperty('description');
     expect(result).not.toHaveProperty('creator');
@@ -127,8 +127,8 @@ describe('fixture validation report', () => {
     const report = buildValidationReport(dataset, validation, [], 'fixture.json');
     if (validation.findings.length) {
       expect(report).toContain('### Detailed findings');
-      expect(report).toContain(validation.findings[0].path);
-      expect(report).toContain(validation.findings[0].value);
+      expect(report).toContain(validation.findings[0]!.path);
+      expect(report).toContain(validation.findings[0]!.value);
     }
   });
 });
