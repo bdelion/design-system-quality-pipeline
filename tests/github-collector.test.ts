@@ -25,7 +25,7 @@ describe('collecteur GitHub', () => {
       }
       if (url.includes('/issues?')) {
         return new Response(JSON.stringify([
-          { id: 12, number: 12, title: 'Fix focus', state: 'open', labels: [{ name: 'Component:Button' }, { name: 'criticite:major' }, { name: 'rgaa:focus' }], body: 'Fixes #42', created_at: '2026-09-01T00:00:00Z', pull_request: undefined },
+          { id: 12, number: 12, title: 'Fix focus', html_url: 'https://github.com/acme/design-system/issues/12', type: { name: 'Bug' }, state: 'open', labels: [{ name: 'Component:Button' }, { name: 'criticite:major' }, { name: 'rgaa:focus' }], body: 'Fixes #42', created_at: '2026-09-01T00:00:00Z', pull_request: undefined },
           { id: 42, number: 42, title: 'A pull request', state: 'open', labels: [], created_at: '2026-09-01T00:00:00Z', pull_request: { url: 'https://api.github.com/repos/acme/design-system/pulls/42' } }
         ]), { status: 200, headers: { link: '<https://api.github.com/repos/acme/design-system/issues?state=all&per_page=100&page=2>; rel="next"' } });
       }
@@ -50,6 +50,7 @@ describe('collecteur GitHub', () => {
     expect(dataset.repositories[0]?.issues).toHaveLength(2);
     expect(dataset.repositories[0]?.pullRequests[0]?.state).toBe('MERGED');
     expect(dataset.repositories[0]?.issues[0]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
+    expect(dataset.repositories[0]?.issues[0]).toMatchObject({ rawIssueType: 'Bug', url: 'https://github.com/acme/design-system/issues/12' });
     expect(dataset.repositories[0]?.issues[1]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
     expect(dataset.repositories[0]?.pullRequests[0]?.relatedIssueIds).toEqual(['acme/design-system:issue:12']);
     expect(requests.some((url) => url.includes('page=2'))).toBe(true);

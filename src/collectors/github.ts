@@ -6,6 +6,7 @@ interface GithubIssue {
   id: number;
   number: number;
   title: string;
+  html_url: string;
   state: 'open' | 'closed';
   labels: Array<{ name?: string }>;
   body?: string | null;
@@ -166,6 +167,8 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
     id: `${repository}:issue:${issue.number}`,
     number: issue.number,
     title: issue.title,
+    url: issue.html_url,
+    ...(issue.type?.name ? { rawIssueType: issue.type.name } : {}),
     state: issue.state.toUpperCase() as RawIssue['state'],
     issueType: issueType as RawIssue['issueType'],
     labels,

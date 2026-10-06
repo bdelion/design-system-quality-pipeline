@@ -9,7 +9,6 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "clean": "node scripts/clean.mjs",
     "collect": "tsx src/cli.ts collect",
     "validate": "tsx src/cli.ts validate",
@@ -21,6 +20,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "fixture:anonymize": "tsx src/cli.ts fixture:anonymize",
     "fixture:validate": "tsx src/cli.ts fixture:validate"
   },

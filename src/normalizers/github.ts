@@ -6,6 +6,8 @@ import type {
   Audit,
   Component,
   DataQualityStatus,
+  Issue,
+  CanonicalIssueType,
   Library,
   NormalizedData,
   PullRequest,
@@ -35,6 +37,7 @@ export function normalizeGithub(
     raw.repositories.map((repository, index) => [repository.name, libraries[index]!])
   );
   const componentsByName = new Map<string, Component>();
+  const issues: Issue[] = [];
   const audits: Audit[] = [];
   const anomalies: Anomaly[] = [];
   const pullRequests: PullRequest[] = [];
@@ -73,6 +76,50 @@ export function normalizeGithub(
       const componentId = stableId('component', `${library.libraryId}:${componentName}`);
       const cancelledProjectStatuses = (issue.projectStatuses ?? [])
         .filter((projectStatus) => rules.cancelledProjectStatuses.some((cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()));
+      const issueTypeRecognition = recognizeIssueType(issue.rawIssueType, rules);
+      const componentIds = issue.labels
+        .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
+        .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
+        .filter(Boolean)
+        .map((name) => stableId('component', `${library.libraryId}:${name}`));
+      const criticalities = issue.labels
+        .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase()))
+        .map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).trim());
+      const accessibilityCategories = issue.labels
+        .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase()))
+        .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length).trim());
+      issues.push({
+        issueId: issue.id,
+        repositoryId: repository.id,
+        libraryId: library.libraryId,
+        number: issue.number,
+        title: issue.title,
+        url: issue.url ?? `https://github.com/${repository.owner}/${repository.name}/issues/${issue.number}`,
+        state: issue.state,
+        createdAt: issue.createdAt,
+        ...(issue.closedAt ? { closedAt: issue.closedAt } : {}),
+        labels: [...issue.labels],
+        ...(issue.milestone ? { milestoneId: String(issue.milestone.id) } : {}),
+        ...(issue.rawIssueType ? { rawIssueType: issue.rawIssueType } : {}),
+        ...(issueTypeRecognition.issueType ? { issueType: issueTypeRecognition.issueType } : {}),
+        ...(issueTypeRecognition.candidateIssueTypes.length > 1
+          ? { candidateIssueTypes: issueTypeRecognition.candidateIssueTypes }
+          : {}),
+        componentIds,
+        criticalities,
+        accessibilityCategories,
+        ...(issue.parents.length === 1 ? { parentIssueId: issue.parents[0] } : {}),
+        subIssueIds: [],
+        linkedPullRequestIds: [...issue.linkedPullRequestIds],
+        projectContexts: (issue.projectStatuses ?? []).map((projectStatus) => ({
+          projectId: projectStatus.projectId,
+          projectName: projectStatus.projectName,
+          rawStatus: projectStatus.status,
+          statusHistory: []
+        })),
+        provenance: { source: 'github', sourceId: issue.id, collectedAt: raw.collectedAt },
+        dataQualityStatus: collectedStatus
+      });
       if (!componentsByName.has(`${library.libraryId}:${componentName}`)) {
         const catalogueComponent = catalogueByRepositoryAndName.get(`${repository.name}:${componentName}`);
         const inCatalogue = Boolean(catalogueComponent) || raw.catalogueComponents.includes(componentName);
@@ -157,7 +204,14 @@ export function normalizeGithub(
     }
   }
 
-  return { libraries, components: [...componentsByName.values()], audits, anomalies, pullRequests };
+  const issueById = new Map(issues.map((issue) => [issue.issueId, issue]));
+  for (const issue of issues) {
+    if (!issue.parentIssueId) continue;
+    const parent = issueById.get(issue.parentIssueId);
+    if (parent && !parent.subIssueIds.includes(issue.issueId)) parent.subIssueIds.push(issue.issueId);
+  }
+
+  return { libraries, components: [...componentsByName.values()], issues, audits, anomalies, pullRequests };
 }
 
 /** Convertit les métadonnées du catalogue vers le modèle Component. */
@@ -190,4 +244,25 @@ function criticalityValue(
     ?? (['blocking', 'major', 'minor'].includes(normalized)
       ? normalized as Anomaly['criticality']
       : undefined);
+}
+
+
+/** Reconnait strictement une valeur d'Issue Type à partir des variantes configurées. */
+function recognizeIssueType(
+  rawValue: string | undefined,
+  rules: GithubProcessingConfig
+): { issueType?: CanonicalIssueType; candidateIssueTypes: CanonicalIssueType[] } {
+  if (!rawValue) return { candidateIssueTypes: [] };
+  const normalizedRaw = rawValue.trim().toLowerCase();
+  const candidates = Object.entries(rules.issueTypes.keywords)
+    .filter(([, variants]) => variants.some((variant) => variant.trim().toLowerCase() === normalizedRaw))
+    .map(([canonical]) => canonical)
+    .filter((canonical): canonical is CanonicalIssueType =>
+      ['EPIC', 'AUDIT', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(canonical)
+    );
+
+  if (candidates.length === 1) {
+    return { issueType: candidates[0]!, candidateIssueTypes: candidates };
+  }
+  return { candidateIssueTypes: candidates };
 }

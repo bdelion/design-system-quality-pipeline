@@ -35,7 +35,12 @@ export interface RawIssue {
   number: number;
   title: string;
   state: 'OPEN' | 'CLOSED';
+  /** Legacy canonicalized value kept until all fixtures are migrated. */
   issueType: 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE' | 'OTHER' | 'UNKNOWN';
+  /** Raw GitHub Issue Type, when GitHub provides one. */
+  rawIssueType?: string;
+  /** Canonical web URL collected from GitHub. Legacy fixtures may omit it. */
+  url?: string;
   labels: string[];
   component?: string;
   criticities: string[];
