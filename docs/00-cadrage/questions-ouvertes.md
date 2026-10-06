@@ -3235,6 +3235,21 @@ La correction attendue porte sur la configuration de reconnaissance afin de rend
 
 **Statut : Établi**
 
+---
+
+### D-153 --- Correspondance stricte des variantes d’Issue Type
+
+Les valeurs configurées dans `github.issueTypes.keywords` sont des variantes complètes explicitement autorisées, et non des fragments à rechercher dans la valeur brute remontée par GitHub.
+
+La reconnaissance d’une notion canonique nécessite donc une correspondance avec une variante explicitement déclarée dans `system.yaml`. Déclarer `bug` ne doit pas reconnaître implicitement `🐛 Bug`, `Bug report` ou `Accessibility bug`. Ces variantes doivent être déclarées séparément si elles sont acceptées.
+
+Une valeur brute qui ne correspond à aucune variante explicitement déclarée suit le comportement défini par D-148 et D-150. Une valeur correspondant à plusieurs notions suit D-152.
+
+La normalisation technique éventuellement appliquée avant comparaison (par exemple la casse ou les espaces) n’est pas définie par cette décision et doit être instruite séparément.
+
+**Statut : Établi**
+
+
 
 
 
