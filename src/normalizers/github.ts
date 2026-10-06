@@ -13,6 +13,8 @@ import type {
   PullRequest,
   RawDataset
 } from '../domain/types.js';
+import { rawComponentNames } from '../lib/components.js';
+import { normalizeVersions } from './versions.js';
 
 const collectedStatus: DataQualityStatus = 'reliable';
 
@@ -76,8 +78,7 @@ export function normalizeGithub(
   for (const repository of repositories) {
     const library = libraryByRepository.get(repository.name)!;
     for (const issue of orderedIssues(repository)) {
-      const componentNames = issue.components
-        ?? (issue.component ? [issue.component] : []);
+      const componentNames = rawComponentNames(issue, rules.labels.componentPrefix);
       const cancelledProjectStatuses = (issue.projectStatuses ?? [])
         .filter((projectStatus) => rules.cancelledProjectStatuses.some((cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()));
       for (const componentName of [...componentNames].sort()) {
@@ -188,8 +189,7 @@ export function normalizeGithub(
     const pullRequestIds = new Set(repository.pullRequests.map((pullRequest) => pullRequest.id));
     for (const sourceIssue of orderedIssues(repository)) {
       const issueId = issueIdByRawId.get(sourceIssue.id)!;
-      const componentNames = sourceIssue.components
-        ?? (sourceIssue.component ? [sourceIssue.component] : []);
+      const componentNames = rawComponentNames(sourceIssue, rules.labels.componentPrefix);
       const componentIds = componentNames
         .map((name) => componentsByName.get(`${library.libraryId}:${name}`)?.componentId)
         .filter((componentId): componentId is string => componentId !== undefined)
@@ -268,7 +268,7 @@ export function normalizeGithub(
     components: [...componentsByName.values()].sort((left, right) => left.componentId.localeCompare(right.componentId)),
     issues: issues.sort((left, right) => left.issueId.localeCompare(right.issueId)),
     milestones: [...milestonesById.values()].sort((left, right) => left.milestoneId.localeCompare(right.milestoneId)),
-    versions: [],
+    versions: normalizeVersions(raw, libraries, [...milestonesById.values()]),
     componentVersions: [],
     audits: [],
     anomalies: [],

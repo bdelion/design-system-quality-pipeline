@@ -520,6 +520,10 @@ Collecter les faits GitHub nécessaires au modèle V1 sans appliquer de règle m
 
 Le collecteur doit restituer des faits ; le normalizer doit les interpréter.
 
+La fixture `fixtures/my-real-dataset-anonymized.json` est une capture antérieure à l’enrichissement I2 : elle contient 1 716 Issues et les labels Component, mais pas les champs RAW `components`, les parents, les transitions Project, les champs Project ou les tags. Le normalizer conserve une compatibilité ciblée en récupérant les Components depuis les labels uniquement lorsque les champs Component structurés sont absents. Des cas représentatifs de cette fixture sont testés ; elle ne permet pas de valider la collecte I2 ni de déduire les faits manquants.
+
+Le catalogue associé à cette fixture référence des repositories qui ne correspondent pas aux repositories de la fixture. Il ne peut donc pas servir à valider le rattachement des Components ; aucune association par ordre ou par nom approximatif ne doit être inventée. Il faudra régénérer la fixture et ses configurations ensemble, ou obtenir un manifeste de correspondance fiable.
+
 ### 7.2 Prérequis
 
 I1 terminé.
@@ -730,7 +734,7 @@ Les Improvements d’Audit ne doivent pas dégrader la conformité.
 
 #### Version
 
-Construire les objets Version à partir des références `M.m.r` disponibles.
+Construire les objets Version à partir des tags PROD exacts `M.m.r` et des Milestones exactes `M.m.r` ou `M.m.r-Audit`. Une Version reconnue par Milestone sans tag est conservée comme non publiée conformément à D-203 ; `releasedAt` reste absent et une Data Quality non bloquante sera ajoutée en I5. Une Release Candidate seule ne crée pas une Version PROD. Tant que le Catalogue historique n’est pas reconstruit en I4, `catalogueStatus` reste `unknown`.
 
 La Milestone sert à rattacher l’Audit à sa Version cible.
 

@@ -1,6 +1,7 @@
 import pLimit from 'p-limit';
 import type { RawDataset, RawIssue, RawPullRequest, RawRepository, RawTag } from '../domain/types.js';
 import type { GithubProcessingConfig } from '../config.js';
+import { componentNamesFromLabels } from '../lib/components.js';
 
 interface GithubIssue {
   id: number;
@@ -210,9 +211,7 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
 /** Convertit une issue GitHub en conservant ses labels et relations explicites. */
 function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber: Map<number, GithubPullRequest>, rules: GithubProcessingConfig, timeline: GithubTimelineEvent[], parentId: string | undefined, graphqlPullRequests: GithubGraphqlPullRequest[], projectStatuses: GithubProjectStatus[], projectFields: NonNullable<RawIssue['projectFields']>): RawIssue {
   const labels = issue.labels.map((label) => label.name).filter((label): label is string => Boolean(label));
-  const components = labels
-    .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
-    .map((label) => label.slice(rules.labels.componentPrefix.length));
+  const components = componentNamesFromLabels(labels, rules.labels.componentPrefix);
   const linkedPullRequestNumbers = [...new Set([
     ...extractClosingReferences(issue.body, rules.closingKeywords),
     ...extractClosingReferences(issue.title, rules.closingKeywords),
