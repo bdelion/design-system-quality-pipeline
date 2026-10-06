@@ -3289,6 +3289,18 @@ L’identifiant `DQ-xxx` définitif de cette règle sera attribué lors du lot I
 
 **Statut : Établi**
 
+
+### D-156 — Conservation du titre dans l’Issue normalisée
+
+Toute `Issue` normalisée conserve le titre de l’Issue GitHub dans une propriété `title`.
+
+Le titre fait partie des données génériques de l’Issue, indépendamment de l’existence d’une spécialisation métier telle que `Audit`, `Anomaly` ou `AuditImprovement`. Il reste ainsi disponible pour les couches aval, notamment le dashboard et la Data Quality, sans nécessiter un retour au `RawDataset`.
+
+Cette décision ne préjuge pas encore des autres propriétés minimales de l’entité `Issue`, qui sont instruites séparément.
+
+**Statut : Établi**
+
+
 ---
 
 ## 4. Questions ouvertes — Librairies, Packages et Repositories

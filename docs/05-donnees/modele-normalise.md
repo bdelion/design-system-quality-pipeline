@@ -54,6 +54,8 @@ Conformément à D-154, la résolution compare la valeur complète après `trim`
 
 Conformément à D-155, l’absence totale d’Issue Type est également représentable : `rawIssueType` et `issueType` sont alors absents. L’Issue reste dans `NormalizedData`, aucune valeur `UNKNOWN` n’est injectée et la Data Quality produit une réserve non bloquante « issueType manquant » avec un lien vers l’Issue GitHub. Ce cas est distinct d’un `rawIssueType` présent mais non reconnu, qui relève de « issueType à déclarer » selon D-148.
 
+Conformément à D-156, `Issue` conserve aussi le `title` GitHub. Le titre appartient au socle générique normalisé et reste disponible pour les traitements aval, qu’une spécialisation métier soit dérivée ou non.
+
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts

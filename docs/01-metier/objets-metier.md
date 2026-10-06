@@ -220,6 +220,8 @@ La liste définitive des notions canoniques reste à préciser.
 
 Conformément à D-155, l’absence totale d’Issue Type n’empêche pas la conservation de l’Issue. Dans ce cas, `rawIssueType` et `issueType` sont tous deux absents. Aucune valeur artificielle n’est injectée. Une réserve Data Quality non bloquante « issueType manquant » doit fournir un lien vers l’Issue GitHub concernée. Ce cas reste distinct d’une valeur présente mais non reconnue, traitée par D-148 comme « issueType à déclarer ».
 
+Conformément à D-156, toute `Issue` normalisée conserve également son `title` GitHub. Cette propriété générique est conservée même lorsqu’aucun objet métier spécialisé n’est dérivé de l’Issue. Elle peut être exploitée par les couches aval, notamment le dashboard et la Data Quality, sans revenir au `RawDataset`.
+
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation optionnelle du type brut, sa séparation de la notion canonique, le traitement des types absents/non reconnus et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ---
