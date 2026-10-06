@@ -99,7 +99,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   // Les avertissements dégradent la fiabilité sans empêcher le calcul des indicateurs.
   it('reports a partial reliability when DQ warnings or errors exist', () => {
     const analytics = calculateKpis(normalized, issues);
-    expect(analytics.metrics['anomaly.correctedEver']?.reliability.status).toBe('reliable');
+    expect(analytics.metrics['anomaly.correctedEver']?.reliability.status).toBe('partial');
     expect(analytics.openAnomalies.value).toBe(3);
     expect(analytics.averageCorrectionDelayDays.value).toBeGreaterThan(0);
     expect(analytics.medianCorrectionDelayDays.value).toBeGreaterThan(0);

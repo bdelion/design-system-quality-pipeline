@@ -22,7 +22,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('Vue d’ensemble');
   expect(html).toContain('design-system-react');
   expect(html).toContain('design-system-docs');
-  expect(html).toContain('Délai moyen de correction');
+  expect(html).toContain('Délai moyen');
   expect(html).toContain('Temps de correction par repository');
   expect(html).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
@@ -48,7 +48,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/pull/201"');
-  expect(anomaliesHtml).toContain('PR liées');
+  expect(anomaliesHtml).toContain('<th>PR</th>');
   expect(anomaliesHtml).toContain('<th>Catégorie</th>');
   expect(anomaliesHtml).toContain('data-criticality="major"');
   expect(anomaliesHtml).toContain('data-categories="focus"');

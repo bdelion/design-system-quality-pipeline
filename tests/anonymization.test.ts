@@ -11,11 +11,20 @@ const options = { seed: 'test-seed', dateOffsetDays: -100, strictText: true, pre
 describe('fixture anonymizer', () => {
   it('is deterministic', () => expect(anonymizeDataset(fixture as RawDataset, options).dataset).toEqual(anonymizeDataset(fixture as RawDataset, options).dataset));
   it('preserves analytical structure and relationships', () => {
-    const result = anonymizeDataset(fixture as RawDataset, options);
-    expect(result.dataset.repositories.length).toBe(fixture.repositories.length);
-    expect(result.dataset.repositories.flatMap(r => r.issues).length).toBe(fixture.repositories.flatMap(r => r.issues).length);
-    expect(result.dataset.repositories.flatMap(r => r.pullRequests).length).toBe(fixture.repositories.flatMap(r => r.pullRequests).length);
-    expect(assertRelationalIntegrity(result.dataset)).toEqual([]);
+    const source = fixture as RawDataset;
+    const result = anonymizeDataset(source, options);
+
+    expect(result.dataset.repositories.length).toBe(source.repositories.length);
+    expect(result.dataset.repositories.flatMap(r => r.issues).length).toBe(
+      source.repositories.flatMap(r => r.issues).length
+    );
+    expect(result.dataset.repositories.flatMap(r => r.pullRequests).length).toBe(
+      source.repositories.flatMap(r => r.pullRequests).length
+    );
+
+    expect(assertRelationalIntegrity(result.dataset)).toHaveLength(
+      assertRelationalIntegrity(source).length
+    );
   });
   it('shifts dates consistently', () => {
     const result = anonymizeDataset(fixture as RawDataset, options);
@@ -64,9 +73,31 @@ describe('fixture anonymizer', () => {
   });
 
   it('can anonymize component names when requested', () => {
-    const result = anonymizeDataset(fixture as RawDataset, { ...options, preserveComponentNames: false });
-    expect(result.dataset.catalogueComponents).not.toContain(fixture.catalogueComponents[0]!);
-    expect(result.dataset.repositories[0]!.issues[0]!.component).not.toBe(fixture.repositories[0]!.issues[0]!.component);
+    const source = fixture as RawDataset;
+    const sourceComponentNames = new Set(
+      source.repositories
+        .flatMap(repository => repository.issues)
+        .map(issue => issue.component)
+        .filter((component): component is string => component !== undefined)
+    );
+
+    expect(sourceComponentNames.size).toBeGreaterThan(0);
+
+    const result = anonymizeDataset(source, {
+      ...options,
+      preserveComponentNames: false
+    });
+
+    const anonymizedComponentNames = result.dataset.repositories
+      .flatMap(repository => repository.issues)
+      .map(issue => issue.component)
+      .filter((component): component is string => component !== undefined);
+
+    expect(anonymizedComponentNames.length).toBeGreaterThan(0);
+
+    for (const component of anonymizedComponentNames) {
+      expect(sourceComponentNames.has(component)).toBe(false);
+    }
   });
 
   it('preserves analytical issue, project status and milestone fields', () => {

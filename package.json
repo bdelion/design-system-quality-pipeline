@@ -5,7 +5,7 @@
   "description": "GitHub-first, read-only quality pipeline for Design Systems.",
   "type": "module",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.15.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
