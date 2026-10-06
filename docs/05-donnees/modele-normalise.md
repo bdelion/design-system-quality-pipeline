@@ -28,10 +28,17 @@ Le modèle TypeScript actuel contient principalement :
 Cet inventaire décrit **l'état du code actuel**. Il ne doit pas être
 interprété comme le modèle métier cible complet.
 
-Les décisions D-001 à D-136 ont déjà établi ou introduit des concepts
+La décision D-145 établit que le modèle cible doit également contenir
+une entité générique `Issue` pour chaque Issue GitHub collectée. Les
+objets spécialisés tels que `Audit`, `Anomaly` ou une Improvement
+d'Audit sont dérivés des Issues concernées sans supprimer leur
+représentation générique.
+
+Les décisions métier ont également établi ou introduit des concepts
 supplémentaires, notamment autour des Packages, Versions, Improvements,
 Catalogues historiques et Audits applicables. Leur traduction dans le
-modèle normalisé sera définie après la consolidation métier.
+modèle normalisé est réalisée progressivement dans les lots
+d'implémentation V1.
 
 ## Relations
 
@@ -39,7 +46,9 @@ Les objets normalisés sont reliés par des identifiants stables.
 
 Le normaliseur peut ainsi établir des relations entre :
 
+-   Library et Issues ;
 -   Library et Components ;
+-   Issues et objets métier spécialisés dérivés ;
 -   Components et Audits ;
 -   Audits et Anomalies ;
 -   Issues et Pull Requests selon les données disponibles.

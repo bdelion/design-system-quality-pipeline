@@ -185,11 +185,23 @@ Elle peut notamment porter :
 
 Une Issue n'est pas automatiquement une Anomalie.
 
+Toutes les Issues GitHub collectées sont conservées dans le modèle
+normalisé sous la forme d'une entité générique `Issue`, y compris
+lorsqu'elles ne correspondent à aucun objet métier spécialisé.
+
+Lorsqu'une Issue satisfait les règles d'un objet spécialisé, cet objet
+est dérivé de l'Issue sans la remplacer. Une même donnée source peut
+donc être représentée par l'`Issue` normalisée et par l'objet métier
+spécialisé correspondant, reliés par leur identité ou leur provenance.
+
 Une Issue qui concerne effectivement un Composant doit porter le label
 correspondant. Une Issue réellement transverse peut ne porter aucun
 Composant.
 
-**Statut : ÉTABLI.**
+La représentation exacte de l'identité et du type de l'`Issue`
+normalisée reste à préciser.
+
+**Statut : ÉTABLI pour la conservation exhaustive ; contrat détaillé À CONFIRMER.**
 
 ------------------------------------------------------------------------
 

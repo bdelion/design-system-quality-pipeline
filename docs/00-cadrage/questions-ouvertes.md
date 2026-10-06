@@ -3066,6 +3066,32 @@ enrichir la connaissance actuelle de la Version, mais ne doivent pas
 
 ---
 
+### D-145 --- Conservation exhaustive des Issues dans le modèle normalisé
+
+Le modèle normalisé conserve toutes les Issues GitHub collectées, y compris lorsqu'elles ne correspondent ni à un Audit, ni à une Anomalie, ni à une Improvement d'Audit.
+
+Une entité générique `Issue` représente ce patrimoine GitHub dans le modèle normalisé.
+
+Les objets métier spécialisés sont dérivés des Issues qui satisfont leurs règles respectives sans remplacer l'Issue source :
+
+``` text
+GitHub Issue
+      ↓
+Issue normalisée
+      ├── peut matérialiser un Audit
+      ├── peut matérialiser une Anomalie
+      ├── peut matérialiser une Improvement d'Audit
+      └── peut ne produire aucun objet métier spécialisé
+```
+
+Ainsi, une Issue qui ne produit aucun objet spécialisé reste disponible dans `NormalizedData` et conserve sa valeur pour l'analyse du patrimoine GitHub, la traçabilité et les évolutions futures.
+
+La représentation exacte de l'identité et du type d'une `Issue` normalisée reste à préciser dans les décisions suivantes.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package

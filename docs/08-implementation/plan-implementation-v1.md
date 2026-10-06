@@ -42,7 +42,7 @@ L’ordre d’implémentation est volontaire : les couches aval ne doivent pas c
 
 L’ordre de priorité est le suivant :
 
-1. décisions métier consolidées D-001 à D-144 ;
+1. décisions métier consolidées D-001 à D-145 ;
 2. documentation métier et règles consolidées ;
 3. contrat de données cible ;
 4. code et tests existants ;
@@ -214,7 +214,7 @@ Une branche de référence verte sur laquelle le refactor métier peut commencer
 
 Faire évoluer les contrats TypeScript afin que le modèle puisse représenter les décisions métier V1 sans dépendre encore de la disponibilité réelle des données GitHub.
 
-Les décisions particulièrement concernées sont D-107, D-108 et D-117 à D-144.
+Les décisions particulièrement concernées sont D-107, D-108 et D-117 à D-145.
 
 ### 6.2 Prérequis
 
@@ -267,6 +267,18 @@ interface RawIssue {
 Pendant la migration, `component?: string` peut être toléré uniquement comme compatibilité transitoire si cela évite un changement atomique trop large. La cible V1 reste une collection.
 
 Prévoir également un contrat RAW capable de porter les champs Project collectés sans les réduire au seul `Status`.
+
+#### Issue
+
+Introduire une entité générique `Issue` dans le modèle normalisé conformément à D-145.
+
+Le contrat détaillé de cette entité sera complété au fil des décisions I1 suivantes. À ce stade, les invariants établis sont :
+
+- toute Issue GitHub collectée produit une `Issue` normalisée ;
+- une `Issue` normalisée peut ne produire aucun objet métier spécialisé ;
+- lorsqu'un `Audit`, une `Anomaly` ou une Improvement d'Audit est dérivé d'une Issue, l'`Issue` normalisée reste présente ;
+- la relation entre l'Issue et l'objet spécialisé dérivé doit rester traçable ;
+- aucun choix supplémentaire sur la représentation de `issueType` n'est figé par D-145.
 
 #### Anomaly
 
@@ -345,12 +357,13 @@ interface Version {
 
 #### NormalizedData
 
-Ajouter les Versions :
+Ajouter les Issues et les Versions :
 
 ``` ts
 interface NormalizedData {
   libraries: Library[];
   components: Component[];
+  issues: Issue[];
   versions: Version[];
   audits: Audit[];
   anomalies: Anomaly[];
@@ -362,18 +375,23 @@ interface NormalizedData {
 
 Dans `tests/domain-contract.test.ts` ou `tests/pipeline.test.ts` :
 
-1. un Bug sans parent Audit est représentable comme `HORS_AUDIT` ;
-2. un Bug d’Audit peut porter un `auditId` ;
-3. une Anomalie peut porter zéro, un ou plusieurs `componentIds` selon le contexte général ;
-4. un Audit exige exactement un `componentId` ;
-5. `detectedAt` et `correctedAt` sont distincts ;
-6. une Version peut exister avec un `releasedAt` inconnu ;
-7. `NormalizedData` contient une collection `versions`.
+1. toute Issue GitHub collectée est représentable dans `NormalizedData.issues` ;
+2. une Issue sans objet métier spécialisé reste présente dans le modèle normalisé ;
+3. une Issue ayant produit un objet spécialisé reste également présente et la relation est traçable ;
+4. un Bug sans parent Audit est représentable comme `HORS_AUDIT` ;
+5. un Bug d’Audit peut porter un `auditId` ;
+6. une Anomalie peut porter zéro, un ou plusieurs `componentIds` selon le contexte général ;
+7. un Audit exige exactement un `componentId` ;
+8. `detectedAt` et `correctedAt` sont distincts ;
+9. une Version peut exister avec un `releasedAt` inconnu ;
+10. `NormalizedData` contient une collection `versions`.
 
-Adapter les tests qui construisent directement `Anomaly`, `Audit`, `Library`, `NormalizedData` ou `Snapshot`.
+Adapter les tests qui construisent directement `Issue`, `Anomaly`, `Audit`, `Library`, `NormalizedData` ou `Snapshot`.
 
 ### 6.6 Critères d’acceptation
 
+- Le modèle TypeScript conserve toutes les Issues GitHub collectées dans `NormalizedData.issues`.
+- La spécialisation d'une Issue en Audit, Anomaly ou Improvement d'Audit ne supprime pas l'Issue normalisée source.
 - Le modèle TypeScript permet de représenter un Bug hors Audit sans valeur factice d’`auditId`.
 - Le modèle permet de représenter une Issue multi-Component.
 - Un Audit ne peut pas être représenté avec plusieurs Components dans son contrat métier.
