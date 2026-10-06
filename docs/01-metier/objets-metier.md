@@ -200,9 +200,11 @@ Composant.
 
 L’`Issue` normalisée conserve son type d’Issue GitHub/métier collecté dans un champ `issueType`. Ce type participe, avec les relations de l’Issue et les autres règles métier applicables, à la dérivation éventuelle des objets spécialisés.
 
-La liste définitive des valeurs autorisées de `issueType` et leur sémantique détaillée restent à préciser.
+Les Issue Types relèvent d’un vocabulaire global au système, commun aux repositories suivis. Les valeurs effectivement rencontrées peuvent être inventoriées à partir de l’ensemble des Issues collectées. Leur interprétation métier repose sur une configuration globale de reconnaissance associant chaque notion canonique à une ou plusieurs valeurs ou mots-clés acceptés, dans la continuité de `github.issueTypes.keywords` dans `system.yaml`.
 
-**Statut : ÉTABLI pour la conservation exhaustive et la conservation du type ; valeurs de `issueType` À CONFIRMER.**
+La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
+
+**Statut : ÉTABLI pour la conservation exhaustive, la conservation du type et le principe de reconnaissance globale configurable ; notions canoniques et valeurs non reconnues À CONFIRMER.**
 
 ------------------------------------------------------------------------
 

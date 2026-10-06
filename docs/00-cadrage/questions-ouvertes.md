@@ -3116,6 +3116,38 @@ La liste définitive des valeurs autorisées de `issueType` et leur sémantique 
 
 ---
 
+### D-147 --- Vocabulaire global des Issue Types et reconnaissance configurable
+
+Les Issue Types constituent un vocabulaire commun au système et ne sont pas configurés repository par repository. À terme, les repositories suivis doivent converger vers les mêmes notions d’Issue Type.
+
+La liste des types effectivement rencontrés peut être déduite de l’ensemble des Issues collectées. Cette découverte des valeurs observées ne remplace toutefois pas la configuration nécessaire à leur interprétation métier.
+
+La configuration système porte une couche de reconnaissance globale qui associe une notion canonique à une ou plusieurs valeurs ou mots-clés acceptés. Le mécanisme déjà présent dans `system.yaml` sous `github.issueTypes.keywords` constitue la base de ce contrat.
+
+``` yaml
+github:
+  issueTypes:
+    keywords:
+      AUDIT:
+        - "audit"
+      BUG:
+        - "bug"
+        - "rgaa"
+        - "a11y"
+```
+
+Ainsi :
+
+- les valeurs observées dans les données GitHub peuvent être inventoriées sans être pré-déclarées repository par repository ;
+- les notions métier reconnues par le pipeline sont configurées globalement ;
+- une notion canonique peut accepter plusieurs mots-clés ou variantes ;
+- la configuration n’a pas vocation à recopier exhaustivement toutes les valeurs observées ;
+- la liste définitive des notions canoniques et le comportement à appliquer à une valeur observée non reconnue restent à instruire séparément.
+
+**Statut : Établi**
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package
