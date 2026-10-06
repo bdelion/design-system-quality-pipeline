@@ -204,9 +204,11 @@ Les Issue Types relèvent d’un vocabulaire global au système, commun aux repo
 
 Conformément à D-148, une valeur d’Issue Type non reconnue reste portée par l’Issue sous sa forme brute. Elle déclenche une réserve Data Quality non bloquante « issueType à déclarer », avec la valeur concernée et un lien vers l’Issue GitHub source.
 
+Conformément à D-149, l’Issue distingue explicitement la valeur brute d’Issue Type remontée par GitHub de la notion canonique reconnue par le pipeline. La reconnaissance ne remplace jamais la valeur source : plusieurs valeurs brutes peuvent converger vers une même notion canonique.
+
 La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
 
-**Statut : ÉTABLI pour la conservation exhaustive, la conservation du type et le principe de reconnaissance globale configurable ; notions canoniques et valeurs non reconnues À CONFIRMER.**
+**Statut : ÉTABLI pour la conservation exhaustive, la conservation du type brut, sa séparation de la notion canonique et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**
 
 ------------------------------------------------------------------------
 

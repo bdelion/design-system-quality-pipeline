@@ -3167,6 +3167,24 @@ L’identifiant `DQ-xxx` de cette règle n’est pas attribué à ce stade. Il s
 
 ---
 
+### D-149 --- Séparation de la valeur brute et de la notion canonique d’Issue Type
+
+L’Issue normalisée conserve séparément :
+
+- la valeur brute de l’Issue Type telle qu’elle est remontée par GitHub ;
+- la notion canonique reconnue par le pipeline à partir de la configuration globale `github.issueTypes.keywords`.
+
+La canonicalisation ne doit jamais écraser ni remplacer la valeur brute GitHub. Plusieurs valeurs brutes peuvent ainsi être reconnues comme une même notion canonique.
+
+Lorsqu’aucune notion canonique n’est reconnue, la valeur brute reste disponible et le comportement Data Quality défini par D-148 s’applique.
+
+Le type TypeScript exact représentant l’absence de notion canonique n’est pas fixé par cette décision.
+
+**Statut : Établi**
+
+
+---
+
 # 4. Questions ouvertes — Librairies, Packages et Repositories
 
 ## Q-001 — Propriétés du Package

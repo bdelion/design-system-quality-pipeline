@@ -284,6 +284,7 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - les valeurs observées peuvent être inventoriées depuis l’ensemble des Issues collectées ;
 - la reconnaissance métier repose sur une configuration globale associant chaque notion canonique à une ou plusieurs valeurs ou mots-clés acceptés, dans la continuité de `github.issueTypes.keywords` dans `system.yaml` ;
 - conformément à D-148, une valeur non reconnue reste conservée sous sa forme brute sur l’Issue normalisée ;
+- conformément à D-149, l’Issue normalisée porte séparément la valeur brute GitHub et la notion canonique reconnue ; la canonicalisation ne remplace jamais la valeur brute ;
 - cette situation ne bloque pas le pipeline et doit produire une réserve Data Quality « issueType à déclarer » ;
 - cette réserve doit contenir au minimum la valeur brute non reconnue et un lien vers l’Issue GitHub concernée ;
 - la liste définitive des notions canoniques reste à instruire.
