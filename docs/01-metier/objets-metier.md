@@ -206,6 +206,8 @@ Conformément à D-148, une valeur d’Issue Type non reconnue reste portée par
 
 Conformément à D-149, l’Issue distingue explicitement la valeur brute d’Issue Type remontée par GitHub de la notion canonique reconnue par le pipeline. La reconnaissance ne remplace jamais la valeur source : plusieurs valeurs brutes peuvent converger vers une même notion canonique.
 
+Conformément à D-150, lorsqu’aucune notion canonique n’est reconnue, cette propriété est absente. Aucune valeur canonique `UNKNOWN` n’est injectée comme valeur de repli ; la valeur brute et la réserve Data Quality définie par D-148 portent explicitement cette situation.
+
 La liste définitive des notions canoniques ainsi que le traitement d’une valeur observée non reconnue restent à préciser.
 
 **Statut : ÉTABLI pour la conservation exhaustive, la conservation du type brut, sa séparation de la notion canonique et le principe de reconnaissance globale configurable ; liste définitive des notions canoniques À CONFIRMER.**

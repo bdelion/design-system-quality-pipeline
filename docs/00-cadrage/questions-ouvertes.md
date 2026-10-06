@@ -3182,6 +3182,28 @@ Le type TypeScript exact représentant l’absence de notion canonique n’est p
 
 **Statut : Établi**
 
+---
+
+### D-150 --- Absence de notion canonique pour un Issue Type non reconnu
+
+Lorsqu’une valeur brute d’Issue Type ne correspond à aucune notion canonique reconnue par la configuration, l’Issue normalisée ne reçoit aucune valeur canonique de repli.
+
+Le contrat cible est conceptuellement :
+
+```ts
+interface Issue {
+  rawIssueType: string;
+  issueType?: CanonicalIssueType;
+}
+```
+
+Ainsi, une valeur brute telle que `Task` non déclarée reste portée par `rawIssueType`, tandis que `issueType` est absent.
+
+La valeur canonique `UNKNOWN` ne doit pas être utilisée pour masquer l’absence de reconnaissance. Le signalement Data Quality défini par D-148 reste applicable.
+
+**Statut : Établi**
+
+
 
 ---
 
