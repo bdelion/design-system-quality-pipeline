@@ -20,6 +20,9 @@ describe('collecteur GitHub', () => {
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
       }
+      if (url.includes('/git/matching-refs/tags/')) {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
       if (url.includes('/issues?') && url.includes('page=2')) {
         return new Response(JSON.stringify([{ id: 13, number: 13, title: 'Button audit', state: 'closed', labels: [{ name: 'Component:Button' }], created_at: '2026-09-02T00:00:00Z', closed_at: '2026-09-03T00:00:00Z' }]), { status: 200 });
       }
@@ -66,6 +69,7 @@ describe('collecteur GitHub', () => {
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
       }
+      if (url.includes('/git/matching-refs/tags/')) return new Response(JSON.stringify([]), { status: 200 });
       if (url.includes('/issues?')) {
         return new Response(JSON.stringify([{ id: 13, number: 13, title: 'Button audit', state: 'closed', labels: [{ name: 'Component:Button' }], created_at: '2026-09-02T00:00:00Z', closed_at: '2026-09-03T00:00:00Z' }]), { status: 200 });
       }

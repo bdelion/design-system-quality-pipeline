@@ -29,7 +29,17 @@ function dataset(): RawDataset {
     repositories: [{
       id: 'repo-1', name: 'ds-react', owner: 'acme', defaultBranch: 'main', pullRequests: [],
       issues: [
-        rawIssue('audit-1', 1, 'audit', ['Component:Button']),
+        Object.assign(
+          rawIssue('audit-1', 1, 'audit', ['Component:Button']),
+            {
+              milestone: {
+                id: 421,
+                number: 421,
+                title: '4.2.1',
+                state: 'open' as const,
+              },
+            },
+        ),
         rawIssue('bug-audit', 2, 'bug', ['Component:Button'], ['audit-1']),
         rawIssue('bug-free', 3, 'bug', ['Component:Button', 'Component:Input']),
         rawIssue('bug-invalid-parent', 4, 'bug', ['Component:Button'], ['missing-audit']),
@@ -70,9 +80,16 @@ describe('I1 specialization normalization', () => {
   });
 
   it('does not materialize an Audit when the target version is indeterminable', () => {
-    const normalized = normalizeGithub(dataset(), rules);
+    const raw = dataset();
+    const auditIssue = raw.repositories[0]?.issues.find((issue) => issue.id === 'audit-1');
+    if (auditIssue) {
+      delete auditIssue.milestone;
+    }
+    const normalized = normalizeGithub(raw, rules);
     expect(normalized.audits).toHaveLength(0);
-    expect(normalized.anomalies.find((anomaly) => anomaly.issueId === 'bug-audit')?.origin).toBe('UNDETERMINED');
+    expect(
+      normalized.anomalies.find((anomaly) => anomaly.issueId === 'bug-audit')?.origin,
+    ).toBe('UNDETERMINED');
   });
 
   it('keeps business specialization identifiers deterministic when source order changes', () => {

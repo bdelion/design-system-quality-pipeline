@@ -1,5 +1,5 @@
 import pLimit from 'p-limit';
-import type { RawDataset, RawIssue, RawPullRequest, RawRepository } from '../domain/types.js';
+import type { RawDataset, RawGitTag, RawIssue, RawPullRequest, RawRepository } from '../domain/types.js';
 import type { GithubProcessingConfig } from '../config.js';
 
 interface GithubIssue {
@@ -49,6 +49,16 @@ interface GithubProjectCard {
 
 type GithubTimelineEvent = Record<string, unknown>;
 
+interface GithubGitRef {
+  ref: string;
+  object: { type: 'tag' | 'commit'; sha: string };
+}
+
+interface GithubAnnotatedTag {
+  tag: string;
+  tagger?: { date?: string };
+}
+
 interface GithubRepository {
   id: number;
   name: string;
@@ -82,6 +92,7 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
   const repository = await githubGet<GithubRepository>(apiUrl, `/repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(repositoryName)}`, options);
   const issues = await githubGetAll<GithubIssue>(apiUrl, `/repos/${repository.full_name}/issues?state=all&per_page=100`, options);
   const pullRequests = await githubGetAll<GithubPullRequest>(apiUrl, `/repos/${repository.full_name}/pulls?state=all&per_page=100`, options);
+  const gitTags = await collectGitTags(apiUrl, repository.full_name, options);
   const rawPullRequests = pullRequests.map((pullRequest) => toRawPullRequest(pullRequest, repository.full_name, options.rules));
   const pullRequestByNumber = new Map(pullRequests.map((pullRequest) => [pullRequest.number, pullRequest]));
   // Les pull requests apparaissent aussi dans l'endpoint des issues : elles sont écartées ici.
@@ -144,8 +155,21 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
     owner: repository.owner.login,
     defaultBranch: repository.default_branch,
     issues: rawIssues,
-    pullRequests: rawPullRequests
+    pullRequests: rawPullRequests,
+    gitTags
   };
+}
+
+
+/** Collecte les tags Git sans inventer de date pour les lightweight tags. */
+async function collectGitTags(apiUrl: string, repository: string, options: GithubCollectorOptions): Promise<RawGitTag[]> {
+  const refs = await githubGetAll<GithubGitRef>(apiUrl, `/repos/${repository}/git/matching-refs/tags/?per_page=100`, options);
+  return Promise.all(refs.map(async (ref) => {
+    const name = ref.ref.replace(/^refs\/tags\//, '');
+    if (ref.object.type !== 'tag') return { name };
+    const tag = await githubGet<GithubAnnotatedTag>(apiUrl, `/repos/${repository}/git/tags/${ref.object.sha}`, options);
+    return tag.tagger?.date ? { name, createdAt: tag.tagger.date } : { name };
+  }));
 }
 
 /** Convertit une issue GitHub en conservant ses labels et relations explicites. */

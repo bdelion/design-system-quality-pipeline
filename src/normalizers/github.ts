@@ -13,7 +13,8 @@ import type {
   NormalizedData,
   PullRequest,
   RawDataset,
-  RawIssue
+  RawIssue,
+  Version
 } from '../domain/types.js';
 
 const collectedStatus: DataQualityStatus = 'reliable';
@@ -40,6 +41,7 @@ export function normalizeGithub(
   );
   const componentsByName = new Map<string, Component>();
   const issues: Issue[] = [];
+  const versions: Version[] = [];
   const audits: Audit[] = [];
   const anomalies: Anomaly[] = [];
   const auditImprovements: AuditImprovement[] = [];
@@ -50,6 +52,38 @@ export function normalizeGithub(
       .map((component) => [`${component.repository}:${component.name}`, component])
   );
   const resolvedAuditVersion = auditVersion ?? catalogue?.version ?? 'unknown';
+
+  const versionByLibraryAndNumber = new Map<string, Version>();
+  for (const repository of raw.repositories) {
+    const library = libraryByRepository.get(repository.name)!;
+    const milestoneByVersion = new Map<string, string>();
+    for (const issue of repository.issues) {
+      const number = prodVersionNumber(issue.milestone?.title);
+      if (number && issue.milestone) milestoneByVersion.set(number, String(issue.milestone.id));
+    }
+    const tagByVersion = new Map(
+      (repository.gitTags ?? [])
+        .map((tag) => [prodVersionNumber(tag.name), tag] as const)
+        .filter((entry): entry is [string, NonNullable<typeof entry[1]>] => Boolean(entry[0]))
+    );
+    const numbers = new Set([...milestoneByVersion.keys(), ...tagByVersion.keys()]);
+    for (const number of [...numbers].sort()) {
+      const tag = tagByVersion.get(number);
+      const milestoneId = milestoneByVersion.get(number);
+      const version: Version = {
+        versionId: stableId('version', `${library.libraryId}:${number}`),
+        libraryId: library.libraryId,
+        number,
+        ...(tag?.createdAt ? { releasedAt: tag.createdAt } : {}),
+        ...(milestoneId ? { milestoneId } : {}),
+        ...(tag ? { prodTag: { name: tag.name, ...(tag.createdAt ? { createdAt: tag.createdAt } : {}) } } : {}),
+        provenance: { source: 'github', sourceId: tag?.name ?? milestoneId ?? `version:${library.libraryId}:${number}`, collectedAt: raw.collectedAt,},
+        dataQualityStatus: tag?.createdAt ? collectedStatus : 'partial'
+      };
+      versions.push(version);
+      versionByLibraryAndNumber.set(`${library.libraryId}:${number}`, version);
+    }
+  }
 
   // Le catalogue peut matérialiser un composant même lorsqu'aucune issue GitHub ne le mentionne.
   for (const catalogueComponent of catalogue?.components ?? []) {
@@ -185,7 +219,16 @@ export function normalizeGithub(
 
   for (const issue of issues) {
     const rawIssue = rawIssueById.get(issue.issueId);
-    if (specializationIssueType(issue, rawIssue) !== 'AUDIT' || issue.componentIds.length !== 1 || !hasKnownAuditVersion) continue;
+    if (specializationIssueType(issue, rawIssue) !== 'AUDIT' || issue.componentIds.length !== 1) continue;
+    const targetNumber = rawIssue?.rawIssueType !== undefined
+      ? prodVersionNumber(rawIssue.milestone?.title)
+      : (hasKnownAuditVersion ? resolvedAuditVersion : undefined);
+    const targetVersion = targetNumber
+      ? versionByLibraryAndNumber.get(`${issue.libraryId}:${targetNumber}`)
+      : undefined;
+    // Legacy fixtures predate Version[] and keep using the configured auditVersion bridge.
+    const legacyVersion = rawIssue?.rawIssueType === undefined && targetNumber ? targetNumber : undefined;
+    if (!targetVersion && !legacyVersion) continue;
     const componentId = issue.componentIds[0]!;
     const auditId = stableId('audit', issue.issueId);
     const audit: Audit = {
@@ -193,7 +236,8 @@ export function normalizeGithub(
       issueId: issue.issueId,
       libraryId: issue.libraryId,
       componentId,
-      version: resolvedAuditVersion,
+      ...(targetVersion ? { versionId: targetVersion.versionId } : {}),
+      version: targetVersion?.number ?? legacyVersion!,
       status: rawIssue?.auditStatus ?? 'in_progress',
       sourceIssueId: issue.issueId,
       objectiveAuditResult: rawIssue?.auditResult ?? 'in_progress',
@@ -263,6 +307,7 @@ export function normalizeGithub(
     libraries,
     components: [...componentsByName.values()],
     issues,
+    versions,
     audits,
     anomalies,
     auditImprovements,
@@ -312,6 +357,12 @@ function criticalityValue(
  * their legacy issueType is used only to keep the migration executable until
  * those fixtures are recollected. It is deliberately not copied into Issue.
  */
+function prodVersionNumber(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const normalized = value.trim();
+  return /^\d+\.\d+\.\d+$/.test(normalized) ? normalized : undefined;
+}
+
 function specializationIssueType(issue: Issue, rawIssue: RawIssue | undefined): CanonicalIssueType | undefined {
   if (rawIssue?.rawIssueType !== undefined) return issue.issueType;
   const legacy = rawIssue?.issueType;

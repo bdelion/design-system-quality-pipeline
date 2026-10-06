@@ -27,6 +27,15 @@ export interface RawRepository {
   defaultBranch: string;
   issues: RawIssue[];
   pullRequests: RawPullRequest[];
+  /** Git tags collected from the repository. Legacy fixtures may omit them. */
+  gitTags?: RawGitTag[];
+}
+
+/** Git tag evidence used to establish PROD publication dates. */
+export interface RawGitTag {
+  name: string;
+  /** Present only when GitHub exposes a trustworthy annotated-tag date. */
+  createdAt?: string;
 }
 
 /** Issue GitHub conservée dans le modèle RAW avant normalisation. */
