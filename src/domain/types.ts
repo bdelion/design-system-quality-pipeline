@@ -8,6 +8,10 @@ export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'ano
 export type MetricReliabilityStatus = DataQualityStatus;
 export type AuditStatus = 'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
+export type CanonicalIssueType = 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE';
+export type CanonicalProjectStatus = 'BACKLOG' | 'READY' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'CANCELLED';
+export type AnomalyOrigin = 'AUDIT' | 'HORS_AUDIT' | 'UNDETERMINED';
+export type ComponentVersionVerdict = 'NON_COUVERT' | 'CONFORME' | 'NON_CONFORME';
 
 /** Trace l'origine technique d'une entité normalisée. */
 export interface Provenance {
@@ -108,6 +112,97 @@ export interface Component {
   dataQualityStatus: DataQualityStatus;
 }
 
+/** Valeur d'Iteration conservée dans le contexte du GitHub Project source. */
+export interface ProjectIteration {
+  iterationId: string;
+  title: string;
+  startDate?: string;
+  durationDays?: number;
+  endDate?: string;
+}
+
+/** Transition de statut observée dans un GitHub Project. */
+export interface ProjectStatusTransition {
+  previousRawStatus?: string;
+  rawStatus: string;
+  status?: CanonicalProjectStatus;
+  candidateStatuses?: CanonicalProjectStatus[];
+  transitionedAt: string;
+}
+
+/** Données d'une Issue contextualisées par le GitHub Project qui les porte. */
+export interface IssueProjectContext {
+  projectId: string;
+  projectName: string;
+  rawStatus?: string;
+  status?: CanonicalProjectStatus;
+  candidateStatuses?: CanonicalProjectStatus[];
+  iteration?: ProjectIteration;
+  rawVelocity?: string | number;
+  velocity?: number;
+  rawScheduling?: string | number;
+  statusHistory: ProjectStatusTransition[];
+}
+
+/** Issue GitHub générique conservée exhaustivement dans le modèle normalisé. */
+export interface Issue {
+  issueId: string;
+  repositoryId: string;
+  libraryId: string;
+  number: number;
+  title: string;
+  url: string;
+  state: 'OPEN' | 'CLOSED';
+  createdAt: string;
+  closedAt?: string;
+  labels: string[];
+  milestoneId?: string;
+  rawIssueType?: string;
+  issueType?: CanonicalIssueType;
+  candidateIssueTypes?: CanonicalIssueType[];
+  componentIds: string[];
+  criticalities: string[];
+  accessibilityCategories: string[];
+  parentIssueId?: string;
+  subIssueIds: string[];
+  linkedPullRequestIds: string[];
+  projectContexts: IssueProjectContext[];
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+/** Version PROD canonique et faits Git associés. */
+export interface Version {
+  versionId: string;
+  libraryId: string;
+  number: string;
+  releasedAt?: string;
+  milestoneId?: string;
+  prodTag?: { name: string; createdAt?: string };
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+/** Présence historique explicite d'un Component dans une Version. */
+export interface ComponentVersion {
+  componentVersionId: string;
+  componentId: string;
+  versionId: string;
+  verdict: ComponentVersionVerdict;
+  applicableAuditIds: string[];
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+/** Amélioration rattachée de manière univoque à un Audit valide. */
+export interface AuditImprovement {
+  auditImprovementId: string;
+  issueId: string;
+  auditId: string;
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
 /** Pull request indépendante du format de l'API GitHub. */
 export interface PullRequest {
   pullRequestId: string;
@@ -122,7 +217,11 @@ export interface PullRequest {
 /** Anomalie qualité rattachée à un composant et à un audit. */
 export interface Anomaly {
   anomalyId: string;
+  issueId?: string;
+  origin?: AnomalyOrigin;
+  /** @deprecated I1 migration compatibility. AUDIT anomalies will ultimately use the optional relation below. */
   auditId: string;
+  /** @deprecated I1 migration compatibility. Source Component relations are carried by Issue.componentIds. */
   componentId: string;
   criticality: 'blocking' | 'major' | 'minor' | undefined;
   categories: string[];
@@ -142,10 +241,17 @@ export interface Anomaly {
 /** Audit normalisé à partir des données disponibles. */
 export interface Audit {
   auditId: string;
+  issueId?: string;
   libraryId: string;
   componentId: string;
+  versionId?: string;
+  auditedReleaseCandidate?: string;
+  auditedReleaseCandidateTag?: { name: string; createdAt?: string };
+  completedAt?: string;
+  /** @deprecated I1 migration compatibility. Use versionId and Version.number. */
   version: string;
   status: AuditStatus;
+  /** @deprecated I1 migration compatibility. Use issueId. */
   sourceIssueId: string;
   objectiveAuditResult: AuditStatus;
   provenance: Provenance;
@@ -241,8 +347,16 @@ export interface Analytics {
 export interface NormalizedData {
   libraries: Library[];
   components: Component[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  issues?: Issue[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  versions?: Version[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  componentVersions?: ComponentVersion[];
   audits: Audit[];
   anomalies: Anomaly[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  auditImprovements?: AuditImprovement[];
   pullRequests: PullRequest[];
 }
 
