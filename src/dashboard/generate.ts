@@ -225,7 +225,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const criticalityCoverage = metricOrUnknown(metrics, 'anomaly.criticalityCoverage');
 
   const rows = snapshot.normalizedData.anomalies.map((anomaly) => {
-    const component = snapshot.normalizedData.components.find((item) => item.componentId === anomaly.componentId);
+    const component = anomaly.componentId ? snapshot.normalizedData.components.find((item) => item.componentId === anomaly.componentId) : undefined;
     const repositoryName = libraryById.get(component?.libraryId ?? '') ?? 'repository inconnu';
     const status = anomaly.cancelled ? 'cancelled' : anomaly.status;
     const statusLabel = anomaly.cancelled ? 'Annulée' : anomalyStatusLabel(anomaly.status);
@@ -237,7 +237,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
     const delay = anomaly.firstDoneAt ? `${delayDays(anomaly.createdAt, anomaly.firstDoneAt).toFixed(1)} j` : '—';
     return `<tr data-table-row data-repository="${escapeHtml(repositoryName)}" data-status="${status}" data-criticality="${escapeHtml(criticality)}" data-categories="${escapeHtml(anomaly.categories.join('|'))}">
       <td><strong>${escapeHtml(anomaly.anomalyId)}</strong><small>${githubReference(snapshot, anomaly.provenance.sourceId ?? 'source inconnue', githubUrl)}</small></td>
-      <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name ?? anomaly.componentId)}</small></td>
+      <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name ?? anomaly.componentId ?? 'composant non déterminé')}</small></td>
       <td><span class="tag tag-${criticality}">${criticalityLabel(anomaly.criticality)}</span></td>
       <td>${escapeHtml(categoriesText)}</td>
       <td><span class="state state-${status}">${statusLabel}</span></td>
@@ -395,6 +395,7 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   }
   const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
   for (const anomaly of snapshot.normalizedData.anomalies) {
+    if (!anomaly.componentId) continue;
     const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
     list.push(anomaly);
     anomaliesByComponent.set(anomaly.componentId, list);
@@ -465,6 +466,7 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   for (const audit of completedAudits) completedByComponent.set(audit.componentId, audit);
   const anomaliesByComponent = new Map<string, typeof snapshot.normalizedData.anomalies>();
   for (const anomaly of snapshot.normalizedData.anomalies) {
+    if (!anomaly.componentId) continue;
     const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
     list.push(anomaly);
     anomaliesByComponent.set(anomaly.componentId, list);
@@ -556,7 +558,7 @@ function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
   return snapshot.normalizedData.libraries.map((library) => {
     const components = snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId);
     const componentIds = new Set(components.map((component) => component.componentId));
-    const anomalies = snapshot.normalizedData.anomalies.filter((anomaly) => componentIds.has(anomaly.componentId));
+    const anomalies = snapshot.normalizedData.anomalies.filter((anomaly) => anomaly.componentId ? componentIds.has(anomaly.componentId) : false);
     const pullRequests = snapshot.normalizedData.pullRequests.filter((pullRequest) => pullRequest.repository === library.name);
     const open = anomalies.filter((anomaly) => anomaly.status === 'open' || anomaly.status === 'reopened').length;
     const reliability = components.some((component) => component.dataQualityStatus !== 'reliable') ? 'partielle' : 'fiable';
@@ -568,7 +570,7 @@ function delayRows(snapshot: Snapshot): string {
   const libraryById = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
   return snapshot.normalizedData.libraries.map((library) => {
     const componentIds = new Set(snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId).map((component) => component.componentId));
-    const delays = snapshot.normalizedData.anomalies.filter((anomaly) => componentIds.has(anomaly.componentId) && anomaly.firstDoneAt).map((anomaly) => (Date.parse(anomaly.firstDoneAt!) - Date.parse(anomaly.createdAt)) / 86_400_000).sort((left, right) => left - right);
+    const delays = snapshot.normalizedData.anomalies.filter((anomaly) => anomaly.componentId ? componentIds.has(anomaly.componentId) && Boolean(anomaly.firstDoneAt) : false).map((anomaly) => (Date.parse(anomaly.firstDoneAt!) - Date.parse(anomaly.createdAt)) / 86_400_000).sort((left, right) => left - right);
     const average = delays.length === 0 ? 'inconnu' : `${(delays.reduce((total, delay) => total + delay, 0) / delays.length).toFixed(1)} j`;
     const median = delays.length === 0 ? 'inconnu' : `${(delays.length % 2 === 1 ? (delays[Math.floor(delays.length / 2)] ?? 0) : ((delays[delays.length / 2 - 1] ?? 0) + (delays[delays.length / 2] ?? 0)) / 2).toFixed(1)} j`;
     const longest = delays.length === 0 ? 'inconnu' : `${(delays[delays.length - 1] ?? 0).toFixed(1)} j`;

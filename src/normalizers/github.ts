@@ -4,6 +4,7 @@ import type { Catalogue, CatalogueComponent } from '../catalogue.js';
 import type {
   Anomaly,
   Audit,
+  AuditImprovement,
   Component,
   DataQualityStatus,
   Issue,
@@ -11,7 +12,8 @@ import type {
   Library,
   NormalizedData,
   PullRequest,
-  RawDataset
+  RawDataset,
+  RawIssue
 } from '../domain/types.js';
 
 const collectedStatus: DataQualityStatus = 'reliable';
@@ -40,6 +42,7 @@ export function normalizeGithub(
   const issues: Issue[] = [];
   const audits: Audit[] = [];
   const anomalies: Anomaly[] = [];
+  const auditImprovements: AuditImprovement[] = [];
   const pullRequests: PullRequest[] = [];
   const catalogueByRepositoryAndName = new Map(
     catalogue?.components
@@ -74,14 +77,21 @@ export function normalizeGithub(
     for (const issue of repository.issues) {
       const componentName = issue.component ?? 'unknown';
       const componentId = stableId('component', `${library.libraryId}:${componentName}`);
-      const cancelledProjectStatuses = (issue.projectStatuses ?? [])
-        .filter((projectStatus) => rules.cancelledProjectStatuses.some((cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()));
       const issueTypeRecognition = recognizeIssueType(issue.rawIssueType, rules);
-      const componentIds = issue.labels
+      const recognizedComponentIds = issue.labels
         .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
         .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
         .filter(Boolean)
         .map((name) => stableId('component', `${library.libraryId}:${name}`));
+      // Transitional bridge for pre-I1 fixtures: legacy fixtures expose the
+      // resolved component through RawIssue.component but do not yet carry the
+      // native rawIssueType/complete I1 facts. Never use this fallback for new
+      // I1 collections.
+      const componentIds = issue.rawIssueType === undefined
+        && recognizedComponentIds.length === 0
+        && issue.component
+        ? [componentId]
+        : recognizedComponentIds;
       const criticalities = issue.labels
         .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase()))
         .map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).trim());
@@ -140,52 +150,6 @@ export function normalizeGithub(
           dataQualityStatus: inCatalogue ? 'reliable' : 'partial'
         });
       }
-      const auditId = stableId(
-        'audit',
-        `${library.libraryId}:${componentName}:${resolvedAuditVersion}`
-      );
-      if (!audits.some((audit) => audit.auditId === auditId)) {
-        audits.push({
-          auditId,
-          libraryId: library.libraryId,
-          componentId,
-          version: resolvedAuditVersion,
-          status: issue.auditStatus ?? 'in_progress',
-          sourceIssueId: issue.parents[0] ?? issue.id,
-          objectiveAuditResult: issue.auditResult ?? 'in_progress',
-          provenance: {
-            source: 'github',
-            sourceId: issue.parents[0] ?? issue.id,
-            collectedAt: raw.collectedAt
-          },
-          dataQualityStatus: 'partial'
-        });
-      }
-      // Les audits sont créés pour toutes les issues, mais seules les issues BUG deviennent des anomalies.
-      if (issue.issueType !== rules.issueTypes.anomaly) continue;
-      anomalies.push({
-        anomalyId: stableId('anomaly', issue.id),
-        auditId,
-        componentId,
-        criticality: criticalityValue(issue.criticities[0], rules),
-        categories: issue.labels
-          .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase()))
-          .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length)),
-        status: issue.state === 'OPEN' ? 'open' : 'done',
-        createdAt: issue.createdAt,
-        firstDoneAt: issue.firstDoneAt,
-        everCorrected: Boolean(issue.firstDoneAt),
-        pullRequestRefs: issue.linkedPullRequestIds,
-        parentRefs: issue.parents,
-        provenance: {
-          source: 'github',
-          sourceId: issue.id,
-          collectedAt: raw.collectedAt
-        },
-        dataQualityStatus: collectedStatus,
-        cancelled: cancelledProjectStatuses.length > 0,
-        cancelledProjectStatuses
-      });
     }
     for (const pullRequest of repository.pullRequests) {
       pullRequests.push({
@@ -211,7 +175,99 @@ export function normalizeGithub(
     if (parent && !parent.subIssueIds.includes(issue.issueId)) parent.subIssueIds.push(issue.issueId);
   }
 
-  return { libraries, components: [...componentsByName.values()], issues, audits, anomalies, pullRequests };
+  // I1 specializations are derived only from normalized Issue facts. Invalid
+  // cardinalities never create duplicate or artificial business entities.
+  const rawIssueById = new Map(
+    raw.repositories.flatMap((repository) => repository.issues).map((issue) => [issue.id, issue])
+  );
+  const auditByIssueId = new Map<string, Audit>();
+  const hasKnownAuditVersion = resolvedAuditVersion !== 'unknown';
+
+  for (const issue of issues) {
+    const rawIssue = rawIssueById.get(issue.issueId);
+    if (specializationIssueType(issue, rawIssue) !== 'AUDIT' || issue.componentIds.length !== 1 || !hasKnownAuditVersion) continue;
+    const componentId = issue.componentIds[0]!;
+    const auditId = stableId('audit', issue.issueId);
+    const audit: Audit = {
+      auditId,
+      issueId: issue.issueId,
+      libraryId: issue.libraryId,
+      componentId,
+      version: resolvedAuditVersion,
+      status: rawIssue?.auditStatus ?? 'in_progress',
+      sourceIssueId: issue.issueId,
+      objectiveAuditResult: rawIssue?.auditResult ?? 'in_progress',
+      provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
+      dataQualityStatus: collectedStatus
+    };
+    audits.push(audit);
+    auditByIssueId.set(issue.issueId, audit);
+  }
+
+  for (const issue of issues) {
+    const rawIssue = rawIssueById.get(issue.issueId);
+    const parentIds = rawIssue?.parents ?? [];
+    const validParentAudits = parentIds
+      .map((parentId) => auditByIssueId.get(parentId))
+      .filter((audit): audit is Audit => Boolean(audit));
+
+    const specializationType = specializationIssueType(issue, rawIssue);
+
+    if (specializationType === 'BUG') {
+      const origin: Anomaly['origin'] = parentIds.length === 0
+        ? 'HORS_AUDIT'
+        : validParentAudits.length === 1 && parentIds.length === 1
+          ? 'AUDIT'
+          : 'UNDETERMINED';
+      const audit = origin === 'AUDIT' ? validParentAudits[0] : undefined;
+      const cancelledProjectStatuses = (rawIssue?.projectStatuses ?? [])
+        .filter((projectStatus) => rules.cancelledProjectStatuses.some(
+          (cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()
+        ));
+      const legacyComponentId = audit?.componentId
+        ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
+      anomalies.push({
+        anomalyId: stableId('anomaly', issue.issueId),
+        issueId: issue.issueId,
+        origin,
+        ...(audit ? { auditId: audit.auditId } : {}),
+        ...(legacyComponentId ? { componentId: legacyComponentId } : {}),
+        criticality: criticalityValue(rawIssue?.criticities[0], rules),
+        categories: [...issue.accessibilityCategories],
+        status: issue.state === 'OPEN' ? 'open' : 'done',
+        createdAt: issue.createdAt,
+        firstDoneAt: rawIssue?.firstDoneAt,
+        everCorrected: Boolean(rawIssue?.firstDoneAt),
+        pullRequestRefs: [...issue.linkedPullRequestIds],
+        parentRefs: [...parentIds],
+        provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
+        dataQualityStatus: collectedStatus,
+        cancelled: cancelledProjectStatuses.length > 0,
+        cancelledProjectStatuses
+      });
+      continue;
+    }
+
+    if (specializationType === 'FEATURE' && parentIds.length === 1 && validParentAudits.length === 1) {
+      auditImprovements.push({
+        auditImprovementId: stableId('audit-improvement', issue.issueId),
+        issueId: issue.issueId,
+        auditId: validParentAudits[0]!.auditId,
+        provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
+        dataQualityStatus: collectedStatus
+      });
+    }
+  }
+
+  return {
+    libraries,
+    components: [...componentsByName.values()],
+    issues,
+    audits,
+    anomalies,
+    auditImprovements,
+    pullRequests
+  };
 }
 
 /** Convertit les métadonnées du catalogue vers le modèle Component. */
@@ -246,6 +302,23 @@ function criticalityValue(
       : undefined);
 }
 
+
+
+/**
+ * Transitional specialization bridge for pre-I1 fixtures.
+ *
+ * New data always derives specialization from the canonical Issue Type
+ * recalculated from rawIssueType. Old fixtures do not contain rawIssueType;
+ * their legacy issueType is used only to keep the migration executable until
+ * those fixtures are recollected. It is deliberately not copied into Issue.
+ */
+function specializationIssueType(issue: Issue, rawIssue: RawIssue | undefined): CanonicalIssueType | undefined {
+  if (rawIssue?.rawIssueType !== undefined) return issue.issueType;
+  const legacy = rawIssue?.issueType;
+  return legacy && ['EPIC', 'AUDIT', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(legacy)
+    ? legacy as CanonicalIssueType
+    : undefined;
+}
 
 /** Reconnait strictement une valeur d'Issue Type à partir des variantes configurées. */
 function recognizeIssueType(

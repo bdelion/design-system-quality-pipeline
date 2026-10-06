@@ -225,9 +225,9 @@ export interface Anomaly {
   issueId?: string;
   origin?: AnomalyOrigin;
   /** @deprecated I1 migration compatibility. AUDIT anomalies will ultimately use the optional relation below. */
-  auditId: string;
+  auditId?: string;
   /** @deprecated I1 migration compatibility. Source Component relations are carried by Issue.componentIds. */
-  componentId: string;
+  componentId?: string;
   criticality: 'blocking' | 'major' | 'minor' | undefined;
   categories: string[];
   status: AnomalyStatus;

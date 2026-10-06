@@ -73,7 +73,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(graphHtml).toContain('map-repository');
   expect(graphHtml).toContain('map-component');
   expect(graphHtml).toContain('map-node');
-  expect(graphHtml).toContain('PR liée');
+  expect(graphHtml).toContain('<option value="pr">Pull requests</option>');
   const graphScript = await readFile(resolve(output, 'dashboard/assets/graph.js'), 'utf8');
   expect(graphScript).toContain('data-map-node');
   expect(graphScript).toContain('data-map-kind-filter');
