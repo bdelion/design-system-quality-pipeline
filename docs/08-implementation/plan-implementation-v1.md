@@ -300,6 +300,12 @@ Le contrat détaillé de cette entité sera complété au fil des décisions I1 
 - conformément à D-166, conserver l’Iteration GitHub Projects lorsqu’elle existe, avec un contrat détaillé aligné sur le modèle Projects ;
 - conformément à D-167, conserver la valeur `Velocity` lorsqu’elle existe, sans la réserver à une spécialisation métier ;
 - conformément à D-168, conserver la valeur `Scheduling` lorsqu’elle existe, sans la réserver à une spécialisation métier ;
+- conformément à D-169, dériver et conserver `componentIds: string[]` depuis les labels de Component reconnus, sans supprimer les labels source ;
+- conformément à D-170, conserver les criticités reconnues au niveau de l’Issue et réserver les contraintes RGAA aux spécialisations concernées ;
+- conformément à D-171, conserver les catégories Accessibility reconnues au niveau de l’Issue sans figer prématurément leur vocabulaire ;
+- conformément à D-172, structurer les données GitHub Projects par Project d’origine et interdire leur fusion implicite entre Projects ;
+- conformément à D-173, conserver les valeurs Project brutes non reconnues, ne pas produire de canonique artificiel et émettre une Data Quality non bloquante dont le numéro sera attribué en I5 ;
+
 
 - conformément à D-151, recalculer la notion canonique à chaque pipeline depuis la valeur brute et la configuration courante ; une évolution des mots-clés doit pouvoir reclassifier une Issue existante et recalculer les objets métier dérivés ;
 - conformément à D-152, si plusieurs notions canoniques correspondent, laisser `issueType` absent, n’appliquer aucune priorité implicite et produire une réserve Data Quality contenant la valeur brute, les candidats et le lien vers l’Issue ;

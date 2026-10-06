@@ -76,6 +76,15 @@ Conformément à D-165, `Issue` conserve `linkedPullRequestIds: string[]` afin d
 
 Conformément à D-166, D-167 et D-168, `Issue` conserve également, lorsqu’elles existent, les informations GitHub Projects `Iteration`, `Velocity` et `Scheduling`. Leur structure normalisée détaillée doit être définie avec le contrat GitHub Projects ; aucune forme supplémentaire n’est imposée par ces décisions.
 
+Conformément à D-169, `Issue` conserve `componentIds: string[]`, dérivé des labels de Component reconnus. Cette propriété ne remplace jamais `labels` et accepte une cardinalité de zéro à plusieurs Components.
+
+Conformément à D-170 et D-171, `Issue` conserve les criticités et catégories Accessibility reconnues depuis ses labels. Ces données génériques restent distinctes des contraintes métier appliquées ensuite aux spécialisations, notamment aux anomalies d’Audit Accessibility.
+
+Conformément à D-172, les informations GitHub Projects sont structurées par Project d’origine. Chaque ensemble de statut, Iteration, `Velocity`, `Scheduling` ou autre valeur Project doit rester rattaché à l’identifiant du Project qui le porte.
+
+Conformément à D-173, lorsqu’une valeur Project soumise à reconnaissance n’est pas reconnue, sa valeur brute est conservée, aucune valeur canonique artificielle n’est produite et une Data Quality non bloquante est émise. Le contrat détaillé brut/canonique des champs Project sera précisé avec leur modèle normalisé.
+
+
 
 La liste définitive des notions canoniques reste à préciser.
 

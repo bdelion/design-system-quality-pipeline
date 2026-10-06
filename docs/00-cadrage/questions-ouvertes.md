@@ -3428,6 +3428,62 @@ Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Scheduli
 **Statut : Établi**
 
 
+### D-169 — Conservation des Components dérivés dans l’Issue normalisée
+
+Toute `Issue` normalisée conserve les références vers les Components reconnus à partir de ses labels dans `componentIds: string[]`.
+
+Cette propriété dérivée complète, sans les remplacer, les `labels` GitHub conservés conformément à D-159. Une Issue générique peut référencer zéro, un ou plusieurs Components.
+
+La dérivation des `componentIds` doit rester traçable vers les labels source et ne doit pas supprimer les labels non interprétés.
+
+**Statut : Établi**
+
+
+### D-170 — Conservation des criticités reconnues dans l’Issue normalisée
+
+Toute `Issue` normalisée conserve les informations de criticité reconnues à partir de ses labels, même lorsque l’Issue n’est pas ensuite spécialisée en anomalie d’Audit Accessibility.
+
+Cette conservation au niveau générique ne donne pas automatiquement une sémantique métier RGAA à la criticité. Les règles de validité et de cardinalité propres aux anomalies d’Audit Accessibility restent appliquées dans la spécialisation métier.
+
+Les labels GitHub source restent conservés conformément à D-159.
+
+**Statut : Établi**
+
+
+### D-171 — Conservation des catégories Accessibility reconnues dans l’Issue normalisée
+
+Toute `Issue` normalisée conserve les catégories Accessibility reconnues à partir de ses labels, même lorsque l’Issue n’est pas ensuite spécialisée en anomalie d’Audit Accessibility.
+
+Cette conservation générique ne préjuge ni du vocabulaire définitif des catégories Accessibility ni des règles de cardinalité applicables à une spécialisation métier. Le vocabulaire reste configurable ou à définir selon les décisions dédiées.
+
+Les labels GitHub source restent conservés conformément à D-159.
+
+**Statut : Établi**
+
+
+### D-172 — Structuration des données GitHub Projects par Project d’origine
+
+Lorsqu’une `Issue` appartient à plusieurs GitHub Projects, ses informations Project sont conservées dans le contexte du Project dont elles proviennent.
+
+Les données telles que le statut, l’Iteration, `Velocity` et `Scheduling` ne sont donc pas fusionnées en valeurs uniques au niveau de l’Issue lorsqu’elles proviennent de Projects différents.
+
+Le modèle normalisé doit permettre d’identifier le Project source de chaque ensemble de valeurs Project.
+
+**Statut : Établi**
+
+
+### D-173 — Conservation et signalement des valeurs GitHub Projects non reconnues
+
+Lorsqu’une valeur GitHub Projects collectée n’est pas reconnue par la configuration du pipeline, sa valeur brute est conservée.
+
+Aucune valeur canonique artificielle n’est créée pour masquer l’absence de reconnaissance. Le pipeline continue son exécution et une Data Quality non bloquante signale la valeur à déclarer ou à traiter.
+
+Cette règle s’applique aux valeurs Project soumises à reconnaissance ou canonicalisation. Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
+
+**Statut : Établi**
+
+
+
 
 
 
