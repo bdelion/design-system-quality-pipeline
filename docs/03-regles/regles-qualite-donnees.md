@@ -300,7 +300,7 @@ Anomaly Accessibilité → exactement 1 catégorie a11y
 
 Cette liste identifie des besoins de contrôle.
 
-Les contrôles temporels établis par D-140, D-141 et D-188 sont désormais matérialisés par `DQ-011` à `DQ-014`. Les autres besoins listés ci-dessus restent à spécifier avant attribution d’un identifiant DQ.
+Les contrôles temporels établis par D-140, D-141 et D-188 sont matérialisés par `DQ-011` à `DQ-014`. Les contrôles de disponibilité du Catalogue historique établis par D-211 et D-212 sont matérialisés par `DQ-015` et `DQ-016`. Les autres besoins listés ci-dessus restent à spécifier avant attribution d’un identifiant DQ.
 
 ## 5. Points techniques à corriger plus tard
 

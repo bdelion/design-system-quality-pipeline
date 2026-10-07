@@ -377,7 +377,9 @@ function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): strin
     'DQ-011': 'L’Anomalie Done + Closed n’a pas de correctedAt déterminable à partir de l’historique Project.',
     'DQ-012': 'L’Audit Done + Closed n’a pas de completedAt déterminable à partir de l’historique Project.',
     'DQ-013': 'L’Anomalie est Done dans le Project alors que son Issue GitHub est encore ouverte.',
-    'DQ-014': 'L’Audit est Done dans le Project alors que son Issue GitHub est encore ouverte.'
+    'DQ-014': 'L’Audit est Done dans le Project alors que son Issue GitHub est encore ouverte.',
+    'DQ-015': 'Le catalogue historique est absent au tag PROD exact de la Version.',
+    'DQ-016': 'Le catalogue historique est invalide au tag PROD exact de la Version.'
   }[issue.ruleId] ?? issue.message);
 }
 

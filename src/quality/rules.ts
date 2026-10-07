@@ -64,6 +64,29 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
   for (const component of data.components) {
     if (component.discoverySource === 'suggested') add('DQ-006', 'WARNING', 'include', 'component', component.componentId, 'Source component is absent from the catalogue.');
   }
+
+  // I4.3: a PROD tag is authoritative for the Version, but historical catalogue
+  // evidence may still be unavailable. Never substitute the current catalogue.
+  const libraryByRepository = new Map(data.libraries.map((library) => [library.repository, library]));
+  const versionByLibraryAndNumber = new Map((data.versions ?? []).map((version) => [`${version.libraryId}:${version.number}`, version]));
+  const reportedCatalogueEvidence = new Set<string>();
+  for (const repository of raw.repositories) {
+    const library = libraryByRepository.get(`${repository.owner}/${repository.name}`);
+    if (!library) continue;
+    for (const catalogue of repository.historicalCatalogues ?? []) {
+      if (catalogue.status === 'available') continue;
+      const version = versionByLibraryAndNumber.get(`${library.libraryId}:${catalogue.tagName}`);
+      if (!version) continue;
+      const key = `${catalogue.status}:${version.versionId}`;
+      if (reportedCatalogueEvidence.has(key)) continue;
+      reportedCatalogueEvidence.add(key);
+      if (catalogue.status === 'missing') {
+        add('DQ-015', 'WARNING', 'include', 'version', version.versionId, `Historical catalogue is missing at PROD tag ${catalogue.tagName}.`);
+      } else {
+        add('DQ-016', 'WARNING', 'include', 'version', version.versionId, `Historical catalogue is invalid at PROD tag ${catalogue.tagName}.`);
+      }
+    }
+  }
   if (!raw.nexusAvailable) add('DQ-009', 'WARNING', 'include', 'dataset', 'nexus', 'Nexus is unavailable; release evidence is unknown.');
   return applyMetricImpacts(issues, [
     'portfolio.repositories', 'portfolio.libraries', 'portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage',

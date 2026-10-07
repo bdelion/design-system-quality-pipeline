@@ -55,3 +55,12 @@ rules:
     severity: WARNING
     action: include
     message: "Audit Project status is Done while the GitHub issue is still open."
+
+  - id: DQ-015
+    severity: WARNING
+    action: include
+    message: "Historical catalogue is missing at the exact PROD tag."
+  - id: DQ-016
+    severity: WARNING
+    action: include
+    message: "Historical catalogue is invalid at the exact PROD tag."
