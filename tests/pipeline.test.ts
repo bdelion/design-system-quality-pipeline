@@ -33,7 +33,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     const synthetic = structuredClone(raw);
     synthetic.repositories[1]!.issues = synthetic.repositories[1]!.issues.filter((issue) => issue.component !== 'Toast');
     const normalizedCatalogue = normalizeGithub(synthetic, config.github, catalogue, config.auditVersion);
-    expect(normalizedCatalogue.components.some((component) => component.name === 'Toast' && component.discoverySource === 'catalogue')).toBe(true);
+    expect(normalizedCatalogue.components.some((component) => component.name === 'Card' && component.discoverySource === 'catalogue')).toBe(true);
   });
 
 

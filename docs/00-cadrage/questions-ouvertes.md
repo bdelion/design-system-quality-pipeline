@@ -4975,6 +4975,7 @@ comme source du verdict courant.
 La date de réalisation d'un Audit nécessite de connaître l'instant où l'Issue est devenue `Done` ainsi que sa date de fermeture, afin de retenir l'instant où la seconde condition `Done + Closed` a été satisfaite.
 
 La documentation du schéma GitHub GraphQL expose `ProjectV2ItemStatusChangedEvent` dans la timeline d'une Issue ; le collecteur l'interroge avec pagination, en complément des événements REST des Projects classiques. Cela établit la disponibilité du type d'événement dans le schéma, mais pas son accès effectif avec les permissions ni sa couverture dans l'organisation cible.
+Il reste à vérifier que la source GitHub collectée permet d'obtenir de manière fiable l'historique ou la date de transition du Project vers `Done`.
 
 La validation sur un dépôt réel reste nécessaire. En cas d'historique indisponible ou incomplet, aucune date ne doit être inventée ; le traitement non bloquant et le signalement Data Quality de D-188 restent à finaliser en I5.
 
