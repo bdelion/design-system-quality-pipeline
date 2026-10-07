@@ -57,20 +57,24 @@ export function normalizeGithub(
   const versionByLibraryAndNumber = new Map<string, Version>();
   for (const repository of raw.repositories) {
     const library = libraryByRepository.get(repository.name)!;
-    const milestoneByVersion = new Map<string, string>();
+    const milestoneIdsByVersion = new Map<string, Set<string>>();
     for (const issue of repository.issues) {
       const number = prodVersionNumber(issue.milestone?.title);
-      if (number && issue.milestone) milestoneByVersion.set(number, String(issue.milestone.id));
+      if (!number || !issue.milestone) continue;
+      const milestoneIds = milestoneIdsByVersion.get(number) ?? new Set<string>();
+      milestoneIds.add(String(issue.milestone.id));
+      milestoneIdsByVersion.set(number, milestoneIds);
     }
     const tagByVersion = new Map(
       (repository.gitTags ?? [])
         .map((tag) => [prodVersionNumber(tag.name), tag] as const)
         .filter((entry): entry is [string, NonNullable<typeof entry[1]>] => Boolean(entry[0]))
     );
-    const numbers = new Set([...milestoneByVersion.keys(), ...tagByVersion.keys()]);
+    const numbers = new Set([...milestoneIdsByVersion.keys(), ...tagByVersion.keys()]);
     for (const number of [...numbers].sort()) {
       const tag = tagByVersion.get(number);
-      const milestoneId = milestoneByVersion.get(number);
+      const milestoneIds = [...(milestoneIdsByVersion.get(number) ?? [])].sort();
+      const milestoneId = milestoneIds.length === 1 ? milestoneIds[0] : undefined;
       const version: Version = {
         versionId: stableId('version', `${library.libraryId}:${number}`),
         libraryId: library.libraryId,

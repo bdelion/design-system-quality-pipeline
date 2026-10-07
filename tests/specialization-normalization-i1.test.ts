@@ -111,4 +111,36 @@ describe('I1 specialization normalization', () => {
     expect(second.auditImprovements?.map((item) => item.auditImprovementId).sort())
       .toEqual(first.auditImprovements?.map((item) => item.auditImprovementId).sort());
   });
+  it('keeps ambiguous Audit relations unresolved without duplicating specializations', () => {
+    const raw = dataset();
+    raw.repositories[0]!.issues.push(
+      Object.assign(rawIssue('audit-2', 8, 'audit', ['Component:Button']), {
+        milestone: { id: 421, number: 421, title: '4.2.1', state: 'open' as const }
+      }),
+      rawIssue('bug-ambiguous', 9, 'bug', ['Component:Button'], ['audit-1', 'audit-2']),
+      rawIssue('feature-ambiguous', 10, 'feature', ['Component:Button'], ['audit-1', 'audit-2'])
+    );
+
+    const normalized = normalizeGithub(raw, rules, undefined, '4.2.1');
+    const anomaly = normalized.anomalies.find((item) => item.issueId === 'bug-ambiguous');
+
+    expect(anomaly).toMatchObject({ origin: 'UNDETERMINED' });
+    expect(anomaly?.auditId).toBeUndefined();
+    expect(normalized.anomalies.filter((item) => item.issueId === 'bug-ambiguous')).toHaveLength(1);
+    expect(normalized.auditImprovements?.some((item) => item.issueId === 'feature-ambiguous')).toBe(false);
+  });
+
+  it('only materializes references to existing normalized entities', () => {
+    const normalized = normalizeGithub(dataset(), rules, undefined, '4.2.1');
+    const issueIds = new Set(normalized.issues?.map((issue) => issue.issueId));
+    const auditIds = new Set(normalized.audits.map((audit) => audit.auditId));
+    const versionIds = new Set(normalized.versions?.map((version) => version.versionId));
+
+    expect(normalized.audits.every((audit) => issueIds.has(audit.issueId))).toBe(true);
+    expect(normalized.audits.every((audit) => !audit.versionId || versionIds.has(audit.versionId))).toBe(true);
+    expect(normalized.anomalies.every((anomaly) => issueIds.has(anomaly.issueId))).toBe(true);
+    expect(normalized.anomalies.every((anomaly) => !anomaly.auditId || auditIds.has(anomaly.auditId))).toBe(true);
+    expect(normalized.auditImprovements?.every((item) => issueIds.has(item.issueId) && auditIds.has(item.auditId))).toBe(true);
+  });
+
 });

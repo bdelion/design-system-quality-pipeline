@@ -65,4 +65,18 @@ describe('I1 Version normalization', () => {
     expect(normalized.versions?.[0]?.prodTag).toEqual({ name: '4.2.1' });
     expect(normalized.versions?.[0]?.releasedAt).toBeUndefined();
   });
+
+  it('does not select a milestone by collection order when several milestones identify the same PROD number', () => {
+    const first = dataset(auditIssue('audit-1', '4.2.1'), []);
+    first.repositories[0]!.issues.push({ ...auditIssue('audit-2', '4.2.1'), milestone: { id: 99, number: 99, title: '4.2.1', state: 'open' } });
+    const reversed = structuredClone(first);
+    reversed.repositories[0]!.issues.reverse();
+
+    const a = normalizeGithub(first, rules);
+    const b = normalizeGithub(reversed, rules);
+
+    expect(a.versions?.[0]?.milestoneId).toBeUndefined();
+    expect(b.versions?.[0]?.milestoneId).toBeUndefined();
+    expect(b.versions?.[0]?.versionId).toBe(a.versions?.[0]?.versionId);
+  });
 });

@@ -244,8 +244,8 @@ export interface PullRequest {
 /** Anomalie qualité rattachée à un composant et à un audit. */
 export interface Anomaly {
   anomalyId: string;
-  issueId?: string;
-  origin?: AnomalyOrigin;
+  issueId: string;
+  origin: AnomalyOrigin;
   /** @deprecated I1 migration compatibility. AUDIT anomalies will ultimately use the optional relation below. */
   auditId?: string;
   /** @deprecated I1 migration compatibility. Source Component relations are carried by Issue.componentIds. */
@@ -274,7 +274,7 @@ export interface Anomaly {
 /** Audit normalisé à partir des données disponibles. */
 export interface Audit {
   auditId: string;
-  issueId?: string;
+  issueId: string;
   libraryId: string;
   componentId: string;
   versionId?: string;

@@ -85,7 +85,7 @@ describe('I1 normalized domain contracts', () => {
   it('supports AUDIT, HORS_AUDIT and UNDETERMINED anomaly origins', () => {
     const origins: AnomalyOrigin[] = ['AUDIT', 'HORS_AUDIT', 'UNDETERMINED'];
     expect(origins).toEqual(['AUDIT', 'HORS_AUDIT', 'UNDETERMINED']);
-    expectTypeOf<Anomaly['origin']>().toEqualTypeOf<AnomalyOrigin | undefined>();
+    expectTypeOf<Anomaly['origin']>().toEqualTypeOf<AnomalyOrigin>();
   });
 
   it('requires a valid Audit relation for AuditImprovement', () => {
