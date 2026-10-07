@@ -87,6 +87,34 @@ describe('V1 analytics', () => {
     expect(metrics['anomaly.correctionDelay.average']?.value).toBe(2);
     expect(metrics['anomaly.byOrigin.AUDIT']?.value).toBe(1);
     expect(metrics['anomaly.byOrigin.HORS_AUDIT']?.value).toBe(1);
+    expect(metrics['anomaly.audit.total']).toMatchObject({ value: 1, numerator: 1, denominator: 1 });
+    expect(metrics['anomaly.audit.open']?.value).toBe(0);
+    expect(metrics['anomaly.audit.done']?.value).toBe(1);
+    expect(metrics['anomaly.audit.byCriticality.major']?.value).toBe(1);
+    expect(metrics['anomaly.audit.byCategory.focus']?.value).toBe(1);
+    expect(metrics['anomaly.audit.criticalityCoverage']?.value).toBe(100);
+    expect(metrics['anomaly.audit.correctionDelay.average']?.value).toBe(2);
+  });
+
+  it('applies audit-specific data-quality exclusions without changing global anomaly counts', () => {
+    const qualityIssue = {
+      id: 'DQ-003:raw-issue-1',
+      ruleId: 'DQ-003',
+      severity: 'ERROR' as const,
+      action: 'exclude' as const,
+      entityType: 'issue',
+      entityId: 'raw-issue-1',
+      message: 'Anomaly has incompatible multiple parents.',
+      detectedAt: collectedAt,
+      impacts: []
+    };
+    const metrics = calculateMetrics(dataset(), [qualityIssue], collectedAt);
+
+    expect(metrics['anomaly.total']?.value).toBe(2);
+    expect(metrics['anomaly.audit.total']).toMatchObject({
+      value: 0,
+      exclusions: [{ entityId: 'raw-issue-1', ruleId: 'DQ-003' }]
+    });
   });
 
   it('returns unknown, not zero, when historical catalogue evidence is unavailable', () => {

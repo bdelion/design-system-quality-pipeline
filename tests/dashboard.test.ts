@@ -60,10 +60,18 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(auditsHtml).toContain('Component × Version → Audit → Anomalies');
   expect(auditsHtml).toContain('Composants actifs');
   expect(auditsHtml).toContain('Couverture');
-  expect(auditsHtml).toContain('Traçabilité de chaque Audit');
+  expect(auditsHtml).toContain('Traçabilité et Improvements');
   expect(auditsHtml).toContain('Component / source');
   expect(auditsHtml).toContain('Verdict applicable');
   expect(auditsHtml).toContain('design-system-react');
+  expect(auditsHtml).toContain('Anomalies rattachées à un Audit');
+  expect(auditsHtml).toContain('Par criticité RGAA');
+  expect(auditsHtml).toContain('Statut courant Done');
+  expect(auditsHtml).toContain('data-audit-anomaly-criticality');
+  expect(auditsHtml).toContain('data-audit-anomaly-category');
+  expect(auditsHtml).toContain('data-audit-scope-version');
+  expect(auditsHtml).toContain('Délai moyen observé');
+  expect(auditsHtml).toContain('provisoire');
   const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
@@ -109,5 +117,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(appScript).toContain('sortableTables');
   expect(appScript).toContain('aria-sort');
   expect(appScript).toContain('data-reset-activity-filters');
+  expect(appScript).toContain('data-reset-audit-anomaly-filters');
+  expect(appScript).toContain('data-reset-audit-scope-filters');
   await rm(output, { recursive: true, force: true });
 });

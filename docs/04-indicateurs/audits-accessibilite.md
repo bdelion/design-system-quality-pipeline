@@ -160,8 +160,10 @@ catégorie :
 ♿ a11y:xxx
 ```
 
-Chaque Anomalie d'Audit Accessibilité possède exactement une catégorie
-a11y selon le modèle établi.
+Le besoin métier prévoit une catégorie a11y par Anomalie. Le modèle
+courant accepte toutefois une liste de catégories ; tant que cette
+cardinalité n'est pas contrôlée, le Dashboard affiche les catégories
+observées et précise qu'une Anomalie peut contribuer à plusieurs catégories.
 
 ---
 
@@ -194,6 +196,11 @@ GitHub Issue State = Closed
 ```
 
 Une Anomalie traitée reste dans l'historique.
+
+**Disponibilité actuelle :** le Dashboard expose le statut courant et le
+nombre d'Anomalies d'Audit Accessibilité observées par statut. Il ne calcule
+pas encore le taux historique Done + Closed : un statut courant ne prouve
+pas qu'une Issue n'a jamais été rouverte et refermée.
 
 ---
 
@@ -242,6 +249,11 @@ Les dates métier exactes ne sont pas encore établies :
 
 Aucune formule normative de délai ne doit être figée avant résolution de
 ces questions.
+
+Le Dashboard présente à titre provisoire les délais observés entre la date
+de détection disponible et la première transition vers Done (moyenne,
+médiane et P90). Ces valeurs ne sont pas le taux de traitement Done + Closed
+et doivent être interprétées avec les réserves Q-013 et Q-014.
 
 ---
 

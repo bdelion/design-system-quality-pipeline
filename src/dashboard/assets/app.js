@@ -137,4 +137,56 @@ document.querySelector('[data-reset-activity-filters]')?.addEventListener('click
   [activityText, activityRepository, activityStatus].forEach((control) => { if (control) control.value = ''; });
   applyActivityFilters();
 });
+
+const auditAnomalyRows = [...document.querySelectorAll('[data-audit-anomaly-row]')];
+const auditAnomalyFilters = {
+  search: document.querySelector('[data-audit-anomaly-search]'),
+  criticality: document.querySelector('[data-audit-anomaly-criticality]'),
+  category: document.querySelector('[data-audit-anomaly-category]'),
+  status: document.querySelector('[data-audit-anomaly-status]')
+};
+function applyAuditAnomalyFilters() {
+  const query = (auditAnomalyFilters.search?.value || '').toLowerCase();
+  auditAnomalyRows.forEach((row) => {
+    const matches = (!query || row.dataset.search.includes(query))
+      && (!auditAnomalyFilters.criticality?.value || row.dataset.criticality === auditAnomalyFilters.criticality.value)
+      && (!auditAnomalyFilters.category?.value
+        || (auditAnomalyFilters.category.value === '__none__'
+          ? !row.dataset.categories
+          : row.dataset.categories.split('|').includes(auditAnomalyFilters.category.value)))
+      && (!auditAnomalyFilters.status?.value || row.dataset.status === auditAnomalyFilters.status.value);
+    row.hidden = !matches;
+  });
+}
+Object.values(auditAnomalyFilters).filter(Boolean).forEach((control) => control.addEventListener('input', applyAuditAnomalyFilters));
+document.querySelector('[data-reset-audit-anomaly-filters]')?.addEventListener('click', () => {
+  Object.values(auditAnomalyFilters).forEach((control) => { if (control) control.value = ''; });
+  applyAuditAnomalyFilters();
+});
+applyAuditAnomalyFilters();
+
+const auditScopeRows = [...document.querySelectorAll('[data-audit-scope-row]')];
+const auditScopeFilters = {
+  search: document.querySelector('[data-audit-scope-search]'),
+  library: document.querySelector('[data-audit-scope-library]'),
+  version: document.querySelector('[data-audit-scope-version]'),
+  verdict: document.querySelector('[data-audit-scope-verdict]')
+};
+function applyAuditScopeFilters() {
+  const query = (auditScopeFilters.search?.value || '').toLowerCase();
+  auditScopeRows.forEach((row) => {
+    const matches = (!query || row.dataset.search.includes(query))
+      && (!auditScopeFilters.library?.value || row.dataset.library === auditScopeFilters.library.value)
+      && (!auditScopeFilters.version?.value || row.dataset.version === auditScopeFilters.version.value)
+      && (!auditScopeFilters.verdict?.value || row.dataset.verdict === auditScopeFilters.verdict.value);
+    row.hidden = !matches;
+  });
+}
+Object.values(auditScopeFilters).filter(Boolean).forEach((control) => control.addEventListener('input', applyAuditScopeFilters));
+document.querySelector('[data-reset-audit-scope-filters]')?.addEventListener('click', () => {
+  Object.values(auditScopeFilters).forEach((control) => { if (control) control.value = ''; });
+  applyAuditScopeFilters();
+});
+applyAuditScopeFilters();
+
 applyActivityFilters();

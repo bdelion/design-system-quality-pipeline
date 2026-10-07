@@ -123,6 +123,9 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
     'anomaly.byOrigin.*', 'anomaly.criticalityCoverage', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
     'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge',
+    'anomaly.audit.total', 'anomaly.audit.open', 'anomaly.audit.inProgress', 'anomaly.audit.done', 'anomaly.audit.correctedEver',
+    'anomaly.audit.criticalityCoverage', 'anomaly.audit.byCriticality.*', 'anomaly.audit.byCategory.*',
+    'anomaly.audit.correctionDelay.average', 'anomaly.audit.correctionDelay.median', 'anomaly.audit.correctionDelay.p90',
     'anomaly.flow.created', 'anomaly.flow.corrected', 'anomaly.flow.reopened', 'anomaly.flow.cancelled'
   ]);
 }

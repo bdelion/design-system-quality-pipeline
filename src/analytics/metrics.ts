@@ -102,7 +102,10 @@ export function calculateMetrics(
     'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
     'anomaly.criticalityCoverage', 'anomaly.byCategory.*', 'anomaly.byOrigin.*', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
-    'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
+    'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge',
+    'anomaly.audit.total', 'anomaly.audit.open', 'anomaly.audit.inProgress', 'anomaly.audit.done', 'anomaly.audit.correctedEver',
+    'anomaly.audit.criticalityCoverage', 'anomaly.audit.byCriticality.*',
+    'anomaly.audit.correctionDelay.average', 'anomaly.audit.correctionDelay.median', 'anomaly.audit.correctionDelay.p90'
   ];
   assertMetricContract(metricIds);
 
@@ -110,7 +113,10 @@ export function calculateMetrics(
     `version.auditCoverage.${version.versionId}`,
     `version.conformityRate.${version.versionId}`
   ]);
-  const allMetricIds = [...metricIds, ...versionMetricIds];
+  const auditCategoryMetricIds = [...new Set(data.anomalies
+    .filter((anomaly) => anomaly.origin === 'AUDIT')
+    .flatMap((anomaly) => anomaly.categories.map((category) => `anomaly.audit.byCategory.${category}`)))];
+  const allMetricIds = [...metricIds, ...versionMetricIds, ...auditCategoryMetricIds];
   const issues = applyMetricImpacts(dqIssues, allMetricIds);
   const m: Record<string, Metric> = {};
   const repositoryIds = [...new Set(data.libraries.map((library) => library.repository))];
@@ -272,5 +278,61 @@ export function calculateMetrics(
     ? Math.max(...open.map((anomaly) => observedTimestamp - Date.parse(anomaly.detectedAt))) / 86_400_000
     : undefined;
   m['anomaly.backlog.oldestAge'] = metric('anomaly.backlog.oldestAge', oldest === undefined ? 'unknown' : Number(oldest.toFixed(1)), open.length, open.length, open.map((anomaly) => anomaly.anomalyId), issues);
+
+  const auditAnomalies = anomalies.filter((anomaly) => anomaly.origin === 'AUDIT');
+  const auditAnomalyIds = (metricId: string) => auditAnomalies
+    .filter((anomaly) => !anomaly.excluded(metricId))
+    .map((anomaly) => anomaly.anomalyId);
+  const auditTotalIds = auditAnomalyIds('anomaly.audit.total');
+  m['anomaly.audit.total'] = metric('anomaly.audit.total', auditTotalIds.length, auditTotalIds.length, auditAnomalies.length, auditTotalIds, issues);
+  const auditHasUnknownStatus = auditAnomalies.some((anomaly) => anomaly.status === undefined && !anomaly.excluded('anomaly.audit.open'));
+  const auditStateMetric = (metricId: string, status: CurrentAnomalyStatus) => {
+    const ids = auditAnomalyIds(metricId).filter((id) =>
+      auditAnomalies.find((anomaly) => anomaly.anomalyId === id)?.status === status
+    );
+    return metric(metricId, auditHasUnknownStatus ? 'unknown' : ids.length, ids.length, auditHasUnknownStatus ? 'unknown' : auditTotalIds.length, ids, issues);
+  };
+  m['anomaly.audit.open'] = auditStateMetric('anomaly.audit.open', 'open');
+  m['anomaly.audit.inProgress'] = auditStateMetric('anomaly.audit.inProgress', 'in_progress');
+  m['anomaly.audit.done'] = auditStateMetric('anomaly.audit.done', 'done');
+  for (const criticality of ['blocking', 'major', 'minor'] as const) {
+    const id = `anomaly.audit.byCriticality.${criticality}`;
+    const ids = auditAnomalyIds(id).filter((anomalyId) =>
+      auditAnomalies.find((anomaly) => anomaly.anomalyId === anomalyId)?.criticality === criticality
+    );
+    m[id] = metric(id, ids.length, ids.length, auditTotalIds.length, ids, issues);
+  }
+  const auditClassified = auditAnomalies.filter((anomaly) =>
+    anomaly.criticality && !anomaly.excluded('anomaly.audit.criticalityCoverage')
+  );
+  m['anomaly.audit.criticalityCoverage'] = metric('anomaly.audit.criticalityCoverage', auditTotalIds.length
+    ? Number(((auditClassified.length / auditTotalIds.length) * 100).toFixed(1))
+    : 'unknown', auditClassified.length, auditTotalIds.length, auditClassified.map((anomaly) => anomaly.anomalyId), issues);
+  const auditCategories = [...new Set(auditAnomalies.flatMap((anomaly) => anomaly.categories))];
+  for (const category of auditCategories) {
+    const id = `anomaly.audit.byCategory.${category}`;
+    const ids = auditAnomalyIds(id).filter((anomalyId) =>
+      auditAnomalies.find((anomaly) => anomaly.anomalyId === anomalyId)?.categories.includes(category)
+    );
+    m[id] = metric(id, ids.length, ids.length, auditTotalIds.length, ids, issues);
+  }
+  const correctedAuditAnomalies = auditAnomalies.filter((anomaly) => Boolean(anomaly.correctedAt)
+    && Number.isFinite(Date.parse(anomaly.correctedAt ?? ''))
+    && Number.isFinite(Date.parse(anomaly.detectedAt))
+    && Date.parse(anomaly.correctedAt ?? '') >= Date.parse(anomaly.detectedAt)
+    && !anomaly.excluded('anomaly.audit.correctionDelay.average'));
+  const auditDelays = correctedAuditAnomalies.flatMap((anomaly) => anomaly.correctedAt
+    ? [(Date.parse(anomaly.correctedAt) - Date.parse(anomaly.detectedAt)) / 86_400_000]
+    : []);
+  const auditAverage = auditDelays.length
+    ? Number((auditDelays.reduce((sum, delay) => sum + delay, 0) / auditDelays.length).toFixed(1))
+    : 'unknown';
+  const auditMed = median(auditDelays);
+  const auditP90 = percentile(auditDelays, 0.9);
+  const correctedAuditIds = correctedAuditAnomalies.map((anomaly) => anomaly.anomalyId);
+  m['anomaly.audit.correctedEver'] = metric('anomaly.audit.correctedEver', correctedAuditIds.length, correctedAuditIds.length, auditTotalIds.length, correctedAuditIds, issues);
+  m['anomaly.audit.correctionDelay.average'] = metric('anomaly.audit.correctionDelay.average', auditAverage, auditDelays.length, auditDelays.length, correctedAuditIds, issues);
+  m['anomaly.audit.correctionDelay.median'] = metric('anomaly.audit.correctionDelay.median', auditMed === undefined ? 'unknown' : Number(auditMed.toFixed(1)), auditDelays.length, auditDelays.length, correctedAuditIds, issues);
+  m['anomaly.audit.correctionDelay.p90'] = metric('anomaly.audit.correctionDelay.p90', auditP90 === undefined ? 'unknown' : Number(auditP90.toFixed(1)), auditDelays.length, auditDelays.length, correctedAuditIds, issues);
   return m;
 }

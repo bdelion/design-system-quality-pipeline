@@ -18,6 +18,8 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
   { id: 'portfolio.components', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de composants actifs dans le périmètre du patrimoine.' },
   { id: 'portfolio.componentsAudited', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de Components actifs couverts dans au moins une Version historique.' },
   { id: 'portfolio.auditCoverage', unit: 'percentage', scope: 'portfolio', kind: 'ratio', definition: 'Paires Component × Version couvertes par un Audit terminé / paires du Catalogue historique connu.', numeratorLabel: 'Paires couvertes', denominatorLabel: 'Paires historiques connues' },
+  { id: 'library.auditCoverage.*', unit: 'percentage', scope: 'library', kind: 'ratio', definition: 'Paires Component × Version de la bibliothèque couvertes par un Audit terminé / paires de ses Catalogues historiques connus.' },
+  { id: 'library.conformityRate.*', unit: 'percentage', scope: 'library', kind: 'ratio', definition: 'Paires Component × Version couvertes et conformes / paires couvertes de la bibliothèque.' },
   { id: 'version.auditCoverage.*', unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components du Catalogue historique de la Version disposant d’un Audit terminé / Components du Catalogue historique.' },
   { id: 'version.conformityRate.*', unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components couverts dont le dernier Audit applicable est conforme / Components couverts.' },
 
@@ -38,6 +40,17 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
   { id: 'anomaly.criticalityCoverage', unit: 'percentage', scope: 'anomaly', kind: 'ratio', definition: 'Anomalies valides disposant d’une criticité exploitable / anomalies valides.', numeratorLabel: 'Anomalies avec criticité', denominatorLabel: 'Anomalies valides' },
   { id: 'anomaly.byCategory.*', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides portant la catégorie considérée.' },
   { id: 'anomaly.byOrigin.*', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies par origine métier déterminée.' },
+  { id: 'anomaly.audit.total', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies rattachées à un Audit Accessibilité déterminé.' },
+  { id: 'anomaly.audit.open', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité actuellement ouvertes.' },
+  { id: 'anomaly.audit.inProgress', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité actuellement en cours.' },
+  { id: 'anomaly.audit.done', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité actuellement terminées.' },
+  { id: 'anomaly.audit.correctedEver', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité disposant d’une date de première transition vers Done.' },
+  { id: 'anomaly.audit.criticalityCoverage', unit: 'percentage', scope: 'anomaly', kind: 'ratio', definition: 'Anomalies d’Audit Accessibilité disposant d’une criticité exploitable / anomalies d’Audit Accessibilité.' },
+  { id: 'anomaly.audit.byCriticality.*', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité par criticité.' },
+  { id: 'anomaly.audit.byCategory.*', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité par catégorie.' },
+  { id: 'anomaly.audit.correctionDelay.average', unit: 'days', scope: 'anomaly', kind: 'duration', definition: 'Délai observé moyen entre détection et première transition vers Done pour les anomalies d’Audit Accessibilité.' },
+  { id: 'anomaly.audit.correctionDelay.median', unit: 'days', scope: 'anomaly', kind: 'duration', definition: 'Délai observé médian entre détection et première transition vers Done pour les anomalies d’Audit Accessibilité.' },
+  { id: 'anomaly.audit.correctionDelay.p90', unit: 'days', scope: 'anomaly', kind: 'duration', definition: 'P90 observé entre détection et première transition vers Done pour les anomalies d’Audit Accessibilité.' },
   { id: 'anomaly.correctedEver', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides ayant déjà atteint une première correction métier.' },
   { id: 'anomaly.reopened', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies actuellement dans l’état rouvert.', notes: 'Ce n’est pas un flux de réouvertures sur une période.' },
   { id: 'anomaly.cancelled', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Indéterminé tant que la sémantique du statut Cancelled n’est pas établie (Q-022).' },
@@ -61,6 +74,18 @@ export function getMetricContract(id: string): MetricContract | undefined {
       : undefined)
     ?? (id.startsWith('version.conformityRate.')
       ? { id, unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components couverts dont le dernier Audit applicable est conforme / Components couverts.' }
+      : undefined)
+    ?? (id.startsWith('library.auditCoverage.')
+      ? { id, unit: 'percentage', scope: 'library', kind: 'ratio', definition: 'Paires Component × Version de la bibliothèque couvertes par un Audit terminé / paires de ses Catalogues historiques connus.' }
+      : undefined)
+    ?? (id.startsWith('library.conformityRate.')
+      ? { id, unit: 'percentage', scope: 'library', kind: 'ratio', definition: 'Paires Component × Version couvertes et conformes / paires couvertes de la bibliothèque.' }
+      : undefined)
+    ?? (id.startsWith('anomaly.audit.byCriticality.')
+      ? { id, unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité par criticité.' }
+      : undefined)
+    ?? (id.startsWith('anomaly.audit.byCategory.')
+      ? { id, unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies d’Audit Accessibilité par catégorie.' }
       : undefined)
     ?? (id.startsWith('anomaly.byOrigin.') ? contractById.get('anomaly.byOrigin.*') : undefined);
 }
