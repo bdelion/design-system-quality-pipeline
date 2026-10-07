@@ -405,6 +405,22 @@ export interface NormalizedData {
   pullRequests: PullRequest[];
 }
 
+/** Projection historique d'une Version, figée selon les dates métier. */
+export interface VersionHistoricalView {
+  versionId: string;
+  releasedAt: string;
+  componentVersions: ComponentVersion[];
+  audits: Audit[];
+  anomalies: Anomaly[];
+}
+
+export interface VersionHistoricalState {
+  versionId: string;
+  releasedAt: string;
+  atRelease: VersionHistoricalView;
+  currentKnowledge: VersionHistoricalView;
+}
+
 /** Snapshot immuable regroupant sources, résultats et décisions de qualité. */
 export interface Snapshot {
   snapshotId: string;
@@ -417,4 +433,6 @@ export interface Snapshot {
   ruleVersion: string;
   modelVersion: string;
   reliability: DataQualityStatus;
+  /** Release-time projection versus knowledge available at capture time. */
+  historicalStates?: VersionHistoricalState[];
 }

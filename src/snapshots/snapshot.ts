@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import type { Analytics, DataQualityIssue, NormalizedData, RawDataset, Snapshot } from '../domain/types.js';
+import { buildVersionHistoricalStates } from './history.js';
 
 /** Assemble un snapshot immuable et calcule sa fiabilité globale. */
-export function buildSnapshot(rawData: RawDataset, normalizedData: NormalizedData, dqIssues: DataQualityIssue[], analytics: Analytics, modelVersion: string, ruleVersion: string, scope: string): Snapshot {
-  const capturedAt = new Date().toISOString();
+export function buildSnapshot(rawData: RawDataset, normalizedData: NormalizedData, dqIssues: DataQualityIssue[], analytics: Analytics, modelVersion: string, ruleVersion: string, scope: string, capturedAt: string = new Date().toISOString()): Snapshot {
   // Une alerte, y compris un simple avertissement, rend le snapshot partiel.
   const reliability = dqIssues.some((issue) => issue.severity === 'ERROR') ? 'partial' : dqIssues.length > 0 ? 'partial' : 'reliable';
   return {
@@ -23,6 +23,7 @@ export function buildSnapshot(rawData: RawDataset, normalizedData: NormalizedDat
     analytics: structuredClone(analytics),
     ruleVersion,
     modelVersion,
-    reliability
+    reliability,
+    historicalStates: buildVersionHistoricalStates(normalizedData)
   };
 }

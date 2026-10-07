@@ -22,3 +22,12 @@
 - absence de restauration automatique de conformité après simple correction d’une anomalie ;
 - métriques historiques `componentVersion.*` avec séparation couverture / conformité ;
 - propagation de la fiabilité Data Quality vers ces métriques.
+
+## I7 — snapshots et historique
+
+- distingue l'état d'une Version à sa Release de la connaissance actuelle ;
+- empêche la rétroprojection des Audits de rattrapage et Anomalies postérieurs à la Release ;
+- sélectionne le Snapshot précédent par `capturedAt` parmi les Snapshots de même scope/modelVersion/ruleVersion ;
+- étend les diffs aux Versions et relations ComponentVersion ;
+- utilise `correctedAt` comme preuve métier de correction dans les flows ;
+- expose des séries de métriques fondées sur les valeurs persistées, sans recalcul du passé.

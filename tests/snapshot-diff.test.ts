@@ -28,7 +28,7 @@ describe('snapshot diff', () => {
   it('detects created, corrected and reopened anomalies', () => {
     const before = snapshot('s1', '2026-09-10T00:00:00Z', [base]);
     const after = snapshot('s2', '2026-09-11T00:00:00Z', [
-      { ...base, status: 'reopened', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
+      { ...base, status: 'reopened', correctedAt: '2026-09-10T12:00:00Z', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
       { ...base, anomalyId: 'a2' }
     ]);
     const diff = diffSnapshots(before, after);
@@ -46,7 +46,7 @@ describe('snapshot flow metrics', () => {
   it('exposes period-bound flow metrics', () => {
     const before = snapshot('s1', '2026-09-10T00:00:00Z', [base]);
     const after = snapshot('s2', '2026-09-11T00:00:00Z', [
-      { ...base, status: 'reopened', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
+      { ...base, status: 'reopened', correctedAt: '2026-09-10T12:00:00Z', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
       { ...base, anomalyId: 'a2' }
     ]);
     const flows = calculateFlowMetrics(diffSnapshots(before, after));

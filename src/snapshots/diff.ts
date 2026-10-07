@@ -1,4 +1,4 @@
-import type { Audit, Anomaly, Component, Library, PullRequest, Snapshot } from '../domain/types.js';
+import type { Audit, Anomaly, Component, ComponentVersion, Library, PullRequest, Snapshot, Version } from '../domain/types.js';
 
 export interface EntityDelta<TId extends string = string> {
   added: TId[];
@@ -21,6 +21,8 @@ export interface SnapshotDiff {
   components: EntityDelta;
   audits: EntityDelta;
   anomalies: EntityDelta;
+  versions: EntityDelta;
+  componentVersions: EntityDelta;
   pullRequests: EntityDelta;
   anomalyTransitions: AnomalyTransition[];
   anomaliesCreated: string[];
@@ -63,7 +65,7 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     if (previous.status !== current.status) {
       anomalyTransitions.push({ anomalyId, from: previous.status, to: current.status });
     }
-    if (!previous.firstDoneAt && current.firstDoneAt) anomaliesCorrected.push(anomalyId);
+    if (!previous.correctedAt && current.correctedAt) anomaliesCorrected.push(anomalyId);
     if (previous.status !== 'reopened' && current.status === 'reopened') anomaliesReopened.push(anomalyId);
     if (!previous.cancelled && current.cancelled) anomaliesCancelled.push(anomalyId);
   }
@@ -79,6 +81,8 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     libraries: delta(before.normalizedData.libraries, after.normalizedData.libraries, (item: Library) => item.libraryId),
     components: delta(before.normalizedData.components, after.normalizedData.components, (item: Component) => item.componentId),
     audits: delta(before.normalizedData.audits, after.normalizedData.audits, (item: Audit) => item.auditId),
+    versions: delta(before.normalizedData.versions ?? [], after.normalizedData.versions ?? [], (item: Version) => item.versionId),
+    componentVersions: delta(before.normalizedData.componentVersions ?? [], after.normalizedData.componentVersions ?? [], (item: ComponentVersion) => item.componentVersionId),
     anomalies: delta(before.normalizedData.anomalies, after.normalizedData.anomalies, (item: Anomaly) => item.anomalyId),
     pullRequests: delta(before.normalizedData.pullRequests, after.normalizedData.pullRequests, (item: PullRequest) => item.pullRequestId),
     anomalyTransitions,

@@ -13,6 +13,7 @@ import { loadCatalogue } from './catalogue.js';
 import { calculateFlowMetrics } from './analytics/flows.js';
 import { applyComponentVersionVerdicts } from './analytics/component-versions.js';
 import { diffSnapshots } from './snapshots/diff.js';
+import { latestComparableSnapshot } from './snapshots/history.js';
 import { readdir } from 'node:fs/promises';
 
 export type CollectionSource = 'fixture' | 'github';
@@ -39,16 +40,21 @@ export async function runPipeline(source: CollectionSource = 'fixture', selected
   applyComponentVersionVerdicts(normalized);
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);
   const analytics = calculateKpis(normalized, qualityIssues);
-  const previousSnapshot = await loadLatestSnapshot();
-  if (previousSnapshot && previousSnapshot.capturedAt < raw.collectedAt) {
+  const capturedAt = new Date().toISOString();
+  const previousSnapshot = latestComparableSnapshot(await loadSnapshots(), {
+    scope: config.scope,
+    modelVersion: config.modelVersion,
+    ruleVersion: config.ruleVersion
+  });
+  if (previousSnapshot && previousSnapshot.capturedAt < capturedAt) {
     const diff = diffSnapshots(previousSnapshot, {
-      snapshotId: 'pending', capturedAt: raw.collectedAt, scope: config.scope, rawData: raw, normalizedData: normalized,
+      snapshotId: 'pending', capturedAt, scope: config.scope, rawData: raw, normalizedData: normalized,
       dataQuality: { issues: qualityIssues, summary: { INFO: 0, WARNING: 0, ERROR: 0 } }, analytics,
       ruleVersion: config.ruleVersion, modelVersion: config.modelVersion, reliability: 'partial'
     });
     analytics.flows = calculateFlowMetrics(diff, qualityIssues);
   }
-  const snapshot = buildSnapshot(raw, normalized, qualityIssues, analytics, config.modelVersion, config.ruleVersion, config.scope);
+  const snapshot = buildSnapshot(raw, normalized, qualityIssues, analytics, config.modelVersion, config.ruleVersion, config.scope, capturedAt);
   await writeJson(`${runPath}/${snapshot.snapshotId}.json`, snapshot);
   await writeJson(`${currentPath}/snapshot.json`, snapshot);
   await generateDashboard(snapshot, dashboardPath, config.githubUrl);
@@ -56,13 +62,12 @@ export async function runPipeline(source: CollectionSource = 'fixture', selected
 }
 
 
-async function loadLatestSnapshot(): Promise<Snapshot | undefined> {
+async function loadSnapshots(): Promise<Snapshot[]> {
   try {
-    const files = (await readdir(runPath)).filter((file: string) => file.endsWith('.json')).sort();
-    const latest = files.at(-1);
-    return latest ? await readJson<Snapshot>(`${runPath}/${latest}`) : undefined;
+    const files = (await readdir(runPath)).filter((file: string) => file.endsWith('.json'));
+    return await Promise.all(files.map((file: string) => readJson<Snapshot>(`${runPath}/${file}`)));
   } catch {
-    return undefined;
+    return [];
   }
 }
 

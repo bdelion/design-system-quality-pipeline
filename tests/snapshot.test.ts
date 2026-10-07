@@ -18,5 +18,6 @@ import { loadConfig } from '../src/config.js';
     expect(snapshot.normalizedData.anomalies).toHaveLength(7);
     expect(snapshot.ruleVersion).toBe('dq-test');
     expect(snapshot.dataQuality.summary.WARNING).toBeGreaterThan(0);
+    expect(snapshot.historicalStates).toBeDefined();
   });
 });
