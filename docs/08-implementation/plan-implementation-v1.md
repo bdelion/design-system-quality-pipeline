@@ -888,6 +888,17 @@ Bloque le calcul correct de la couverture historique dans I6.
 
 Chaque Version analysée peut être associée à son Catalogue historique ou à un état explicite d’indisponibilité.
 
+### 9.9 Implémentation I4
+
+I4 est découpé en deux incréments vérifiables :
+
+- **I4.1 — collecte historique** : lecture et validation de `config/catalogue.yaml` au tag PROD exact, avec conservation explicite des états `available`, `missing` et `invalid` dans le RAW ;
+- **I4.2 — identité historique** : matérialisation des relations `ComponentVersion` uniquement pour les Catalogues `available`.
+
+Pour I4.2, l’identité d’un Component est conservée tant que les Catalogues historiques disponibles ne prouvent pas sa disparition. Un Catalogue `missing` ou `invalid` constitue une absence de preuve et ne provoque donc aucune rupture d’identité. En revanche, si un Catalogue `available` ne contient plus un Component précédemment présent, son identité est terminée ; toute réapparition ultérieure crée un nouveau `componentId`, conformément à D-218.
+
+`ComponentVersion` matérialise à ce stade la présence historique et sa provenance. Le `verdict` et les `applicableAuditIds` restent non calculés jusqu’au lot analytique qui applique D-220 à D-228 ; I4 ne produit pas artificiellement `NON_COUVERT`.
+
 ---
 
 ## 10. Lot I5 — Data Quality V1

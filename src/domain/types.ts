@@ -225,8 +225,10 @@ export interface ComponentVersion {
   componentVersionId: string;
   componentId: string;
   versionId: string;
-  verdict: ComponentVersionVerdict;
-  applicableAuditIds: string[];
+  /** Calculated later from applicable completed Audits (D-220..D-228). */
+  verdict?: ComponentVersionVerdict;
+  /** Calculated together with the aggregate verdict. */
+  applicableAuditIds?: string[];
   provenance: Provenance;
   dataQualityStatus: DataQualityStatus;
 }

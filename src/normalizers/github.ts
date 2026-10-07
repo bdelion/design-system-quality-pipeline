@@ -6,6 +6,7 @@ import type {
   Audit,
   AuditImprovement,
   Component,
+  ComponentVersion,
   DataQualityStatus,
   Issue,
   CanonicalIssueType,
@@ -43,6 +44,7 @@ export function normalizeGithub(
   const componentsByName = new Map<string, Component>();
   const issues: Issue[] = [];
   const versions: Version[] = [];
+  const componentVersions: ComponentVersion[] = [];
   const audits: Audit[] = [];
   const anomalies: Anomaly[] = [];
   const auditImprovements: AuditImprovement[] = [];
@@ -90,14 +92,90 @@ export function normalizeGithub(
     }
   }
 
+  // I4.2: materialize historical Component x Version presence only from exact
+  // PROD-tag catalogue evidence. Missing/invalid catalogues are unknown evidence,
+  // never interpreted as component disappearance.
+  const historicalComponentsById = new Map<string, Component>();
+  const historicalComponentNames = new Set<string>();
+  const latestHistoricalComponentIdByName = new Map<string, string>();
+  for (const repository of raw.repositories) {
+    const library = libraryByRepository.get(repository.name)!;
+    const snapshots = (repository.historicalCatalogues ?? [])
+      .filter((snapshot) => snapshot.status === 'available')
+      .flatMap((snapshot) => {
+        const number = prodVersionNumber(snapshot.tagName);
+        return number ? [{ snapshot, number }] : [];
+      })
+      .filter((entry) => versionByLibraryAndNumber.has(`${library.libraryId}:${entry.number}`))
+      .sort((left, right) => compareProdVersions(left.number, right.number));
+
+    let previousKnownNames: Set<string> | undefined;
+    const activeComponentIdByName = new Map<string, string>();
+    for (const { snapshot, number } of snapshots) {
+      const version = versionByLibraryAndNumber.get(`${library.libraryId}:${number}`)!;
+      const names = new Set(snapshot.componentNames);
+
+      // An absence in an available catalogue is positive evidence that the
+      // previous identity ended. Unknown snapshots never execute this branch.
+      if (previousKnownNames) {
+        for (const previousName of previousKnownNames) {
+          if (!names.has(previousName)) {
+            const endedComponentId = activeComponentIdByName.get(previousName);
+            const endedComponent = endedComponentId ? historicalComponentsById.get(endedComponentId) : undefined;
+            if (endedComponent) endedComponent.status = 'removed';
+            activeComponentIdByName.delete(previousName);
+            latestHistoricalComponentIdByName.delete(`${library.libraryId}:${previousName}`);
+          }
+        }
+      }
+
+      for (const name of [...names].sort()) {
+        let componentId = activeComponentIdByName.get(name);
+        if (!componentId) {
+          const hasPreviousIdentity = [...historicalComponentsById.values()].some(
+            (component) => component.libraryId === library.libraryId && component.name === name
+          );
+          componentId = hasPreviousIdentity
+            ? stableId('component', `${library.libraryId}:${name}:from:${number}`)
+            : stableId('component', `${library.libraryId}:${name}`);
+          activeComponentIdByName.set(name, componentId);
+          historicalComponentNames.add(`${library.libraryId}:${name}`);
+          if (!historicalComponentsById.has(componentId)) {
+            historicalComponentsById.set(componentId, {
+              componentId,
+              name,
+              libraryId: library.libraryId,
+              status: 'active',
+              aliases: [],
+              discoverySource: 'catalogue',
+              tags: [],
+              provenance: { source: 'catalogue', sourceId: `${snapshot.tagName}:${name}`, collectedAt: raw.collectedAt },
+              dataQualityStatus: collectedStatus
+            });
+          }
+        }
+        componentVersions.push({
+          componentVersionId: stableId('component-version', `${componentId}:${version.versionId}`),
+          componentId,
+          versionId: version.versionId,
+          provenance: { source: 'catalogue', sourceId: `${snapshot.tagName}:${name}`, collectedAt: raw.collectedAt },
+          dataQualityStatus: collectedStatus
+        });
+        latestHistoricalComponentIdByName.set(`${library.libraryId}:${name}`, componentId);
+      }
+      previousKnownNames = names;
+    }
+  }
+
   // Le catalogue peut matérialiser un composant même lorsqu'aucune issue GitHub ne le mentionne.
   for (const catalogueComponent of catalogue?.components ?? []) {
     if (!catalogueComponent.repository) continue;
     const library = libraryByRepository.get(catalogueComponent.repository);
     if (!library) continue;
     const key = `${library.libraryId}:${catalogueComponent.name}`;
+    const componentId = currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames);
     componentsByName.set(key, {
-      componentId: stableId('component', key),
+      componentId,
       name: catalogueComponent.name,
       libraryId: library.libraryId,
       status: catalogueComponent.status === 'stable' ? 'active' : catalogueComponent.status,
@@ -115,13 +193,17 @@ export function normalizeGithub(
     const library = libraryByRepository.get(repository.name)!;
     for (const issue of repository.issues) {
       const componentName = issue.component ?? 'unknown';
-      const componentId = stableId('component', `${library.libraryId}:${componentName}`);
+      const componentKey = `${library.libraryId}:${componentName}`;
+      const componentId = currentComponentId(componentKey, latestHistoricalComponentIdByName, historicalComponentNames);
       const issueTypeRecognition = recognizeIssueType(issue.rawIssueType, rules);
       const recognizedComponentIds = issue.labels
         .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
         .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
         .filter(Boolean)
-        .map((name) => stableId('component', `${library.libraryId}:${name}`));
+        .map((name) => {
+          const key = `${library.libraryId}:${name}`;
+          return currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames);
+        });
       // Transitional bridge for pre-I1 fixtures: legacy fixtures expose the
       // resolved component through RawIssue.component but do not yet carry the
       // native rawIssueType/complete I1 facts. Never use this fallback for new
@@ -347,14 +429,53 @@ export function normalizeGithub(
 
   return {
     libraries,
-    components: [...componentsByName.values()],
+    components: mergeComponents(historicalComponentsById, componentsByName),
     issues,
     versions,
+    componentVersions,
     audits,
     anomalies,
     auditImprovements,
     pullRequests
   };
+}
+
+
+/** Resolve the current identity without reusing an identity whose disappearance was proven. */
+function currentComponentId(
+  key: string,
+  latestHistoricalComponentIdByName: Map<string, string>,
+  historicalComponentNames: Set<string>
+): string {
+  return latestHistoricalComponentIdByName.get(key)
+    ?? (historicalComponentNames.has(key)
+      ? stableId('component', `${key}:current`)
+      : stableId('component', key));
+}
+
+/** Merge historical identities with richer current-catalogue/current-Issue metadata. */
+function mergeComponents(
+  historical: Map<string, Component>,
+  currentByName: Map<string, Component>
+): Component[] {
+  const byId = new Map(historical);
+  for (const component of currentByName.values()) byId.set(component.componentId, component);
+  return [...byId.values()].sort((left, right) =>
+    left.libraryId.localeCompare(right.libraryId)
+      || left.name.localeCompare(right.name)
+      || left.componentId.localeCompare(right.componentId)
+  );
+}
+
+/** Numeric comparison for strict M.m.r production versions. */
+function compareProdVersions(left: string, right: string): number {
+  const leftParts = left.split('.').map(Number);
+  const rightParts = right.split('.').map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = leftParts[index]! - rightParts[index]!;
+    if (difference !== 0) return difference;
+  }
+  return 0;
 }
 
 /** Convertit les métadonnées du catalogue vers le modèle Component. */

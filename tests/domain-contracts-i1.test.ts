@@ -80,6 +80,13 @@ describe('I1 normalized domain contracts', () => {
     };
     expect(relation.verdict).toBe('NON_COUVERT');
     expect(relation.applicableAuditIds).toEqual([]);
+
+    const historicalPresence: ComponentVersion = {
+      componentVersionId: 'cv-presence', componentId: 'component-button', versionId: 'version-4.2.1',
+      provenance: { source: 'catalogue', sourceId: '4.2.1:Button', collectedAt: '2026-10-06T10:00:00Z' },
+      dataQualityStatus: 'reliable'
+    };
+    expect(historicalPresence.verdict).toBeUndefined();
   });
 
   it('supports AUDIT, HORS_AUDIT and UNDETERMINED anomaly origins', () => {
