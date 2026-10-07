@@ -253,7 +253,13 @@ export interface Anomaly {
   criticality: 'blocking' | 'major' | 'minor' | undefined;
   categories: string[];
   status: AnomalyStatus;
+  /** Date métier de détection : date de création de l'Issue source. */
+  detectedAt: string;
+  /** Date métier de correction : transition Project canonique unique vers DONE. */
+  correctedAt?: string;
+  /** @deprecated I3 migration compatibility. Use detectedAt. */
   createdAt: string;
+  /** @deprecated I3 migration compatibility. Use correctedAt. */
   firstDoneAt: string | undefined;
   technicalCorrectedAt?: string;
   everCorrected: boolean;

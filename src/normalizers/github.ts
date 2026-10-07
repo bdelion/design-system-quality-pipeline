@@ -262,6 +262,7 @@ export function normalizeGithub(
     if (!targetVersion && !legacyVersion) continue;
     const componentId = issue.componentIds[0]!;
     const auditId = stableId('audit', issue.issueId);
+    const completedAt = auditCompletedAt(issue);
     const audit: Audit = {
       auditId,
       issueId: issue.issueId,
@@ -272,6 +273,7 @@ export function normalizeGithub(
       status: rawIssue?.auditStatus ?? 'in_progress',
       sourceIssueId: issue.issueId,
       objectiveAuditResult: rawIssue?.auditResult ?? 'in_progress',
+      ...(completedAt ? { completedAt } : {}),
       provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
       dataQualityStatus: collectedStatus
     };
@@ -301,6 +303,7 @@ export function normalizeGithub(
         ));
       const legacyComponentId = audit?.componentId
         ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
+      const correctedAt = businessCorrectedAt(issue);
       anomalies.push({
         anomalyId: stableId('anomaly', issue.issueId),
         issueId: issue.issueId,
@@ -310,9 +313,13 @@ export function normalizeGithub(
         criticality: criticalityValue(rawIssue?.criticities[0], rules),
         categories: [...issue.accessibilityCategories],
         status: issue.state === 'OPEN' ? 'open' : 'done',
+        detectedAt: issue.createdAt,
+        ...(correctedAt ? { correctedAt } : {}),
         createdAt: issue.createdAt,
-        firstDoneAt: rawIssue?.firstDoneAt,
-        everCorrected: Boolean(rawIssue?.firstDoneAt),
+        firstDoneAt: rawIssue?.rawIssueType !== undefined ? correctedAt : rawIssue?.firstDoneAt,
+        everCorrected: rawIssue?.rawIssueType !== undefined
+          ? correctedAt !== undefined
+          : Boolean(rawIssue?.firstDoneAt),
         pullRequestRefs: [...issue.linkedPullRequestIds],
         parentRefs: [...parentIds],
         provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
@@ -388,6 +395,33 @@ function criticalityValue(
  * their legacy issueType is used only to keep the migration executable until
  * those fixtures are recollected. It is deliberately not copied into Issue.
  */
+/**
+ * Retourne l'unique transition canonique vers DONE.
+ * Zéro ou plusieurs transitions sont volontairement indéterminables (D-187/D-188).
+ */
+function uniqueDoneTransitionAt(issue: Issue): string | undefined {
+  const doneTransitions = issue.projectContexts.flatMap((context) =>
+    context.statusHistory.filter((transition) => transition.status === 'DONE')
+  );
+  return doneTransitions.length === 1 ? doneTransitions[0]!.transitionedAt : undefined;
+}
+
+/** Date métier de correction d'une anomalie (D-140). */
+function businessCorrectedAt(issue: Issue): string | undefined {
+  return uniqueDoneTransitionAt(issue);
+}
+
+/**
+ * Date de réalisation d'un Audit (D-141).
+ * L'Issue doit être fermée, son état Project courant doit être DONE et l'entrée
+ * dans DONE doit être déterminable sans ambiguïté.
+ */
+function auditCompletedAt(issue: Issue): string | undefined {
+  if (issue.state !== 'CLOSED') return undefined;
+  if (!issue.projectContexts.some((context) => context.status === 'DONE')) return undefined;
+  return uniqueDoneTransitionAt(issue);
+}
+
 function numericProjectValue(value: string | number): number | undefined {
   if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
   const trimmed = value.trim();

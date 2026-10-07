@@ -19,7 +19,7 @@ function snapshot(id: string, capturedAt: string, anomalies: Snapshot['normalize
 
 const base = {
   anomalyId: 'a1', auditId: 'au1', componentId: 'c1', criticality: 'major' as const, categories: ['focus'],
-  status: 'open' as const, createdAt: '2026-09-01T00:00:00Z', firstDoneAt: undefined, everCorrected: false,
+  status: 'open' as const, createdAt: '2026-09-01T00:00:00Z', detectedAt: '2026-09-01T00:00:00Z', firstDoneAt: undefined, everCorrected: false,
   pullRequestRefs: [], parentRefs: [], provenance: { source: 'github' as const, collectedAt: '2026-09-01T00:00:00Z' },
   dataQualityStatus: 'reliable' as const, cancelled: false, cancelledProjectStatuses: []
 };

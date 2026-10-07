@@ -6,7 +6,7 @@ import type { DataQualityIssue, Snapshot } from '../src/domain/types.js';
 function snapshot(id: string, capturedAt: string, status: 'open' | 'done', firstDoneAt?: string): Snapshot {
   const anomaly = {
     anomalyId: 'a1', auditId: 'au1', componentId: 'c1', criticality: 'major' as const,
-    categories: ['focus'], status, createdAt: '2026-09-01T00:00:00Z', firstDoneAt,
+    categories: ['focus'], status, createdAt: '2026-09-01T00:00:00Z', detectedAt: '2026-09-01T00:00:00Z', firstDoneAt,
     everCorrected: Boolean(firstDoneAt), pullRequestRefs: [], parentRefs: [],
     provenance: { source: 'github' as const, collectedAt: capturedAt },
     dataQualityStatus: 'reliable' as const, cancelled: false, cancelledProjectStatuses: []
