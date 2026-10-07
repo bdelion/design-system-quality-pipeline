@@ -135,3 +135,19 @@ Un score global de qualité d'une Version n'est pas encore défini.
 
 Aucun taux de couverture, de conformité ou de traitement ne doit être
 renommé « score qualité » sans décision métier explicite.
+
+## Analytics V2 — Component × Version
+
+À partir d’I6, chaque relation historique `ComponentVersion` reçoit un verdict calculé à partir des Audits terminés applicables (D-220 à D-228).
+
+- `NON_COUVERT` : aucun Audit terminé applicable ;
+- `CONFORME` : le groupe d’Audits terminés applicable ne porte aucune anomalie d’Audit et tous ses résultats objectifs sont conformes ;
+- `NON_CONFORME` : au moins un Audit applicable n’est pas conforme ou une anomalie issue de ce groupe d’Audits impose une revalidation.
+
+L’applicabilité est héritée sur les Versions PROD suivantes pour une même identité stable de Component. Lorsqu’un nouveau groupe d’Audits terminés existe sur une Version plus récente, il supersède les groupes plus anciens. Plusieurs Audits terminés visant cette même Version la plus récente sont agrégés ensemble. Un Audit plus récent mais incomplet n’interrompt pas le verdict acquis.
+
+La fermeture ou correction d’une anomalie issue d’un Audit ne restaure jamais à elle seule la conformité : un nouvel Audit terminé applicable doit établir un nouveau verdict. Les `AuditImprovement` et anomalies `HORS_AUDIT` n’interviennent pas dans ce calcul.
+
+Les métriques dédiées sont `componentVersion.total`, `componentVersion.covered`, `componentVersion.auditCoverage`, `componentVersion.conform`, `componentVersion.nonConform` et `componentVersion.conformityRate`. Le dénominateur du taux de conformité est exclusivement constitué des `ComponentVersion` couverts ; `NON_COUVERT` n’est jamais assimilé à `NON_CONFORME`.
+
+Si la preuve historique est insuffisante (Catalogue historique absent/invalide ou Audit structurellement inexploitable), la fiabilité des métriques `componentVersion.*` devient `unknown` plutôt que de produire une précision artificielle.

@@ -59,6 +59,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   const metricIds = [
     'portfolio.repositories', 'portfolio.libraries', 'portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage',
     'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
+    'componentVersion.total', 'componentVersion.covered', 'componentVersion.auditCoverage', 'componentVersion.conform', 'componentVersion.nonConform', 'componentVersion.conformityRate',
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
     'anomaly.criticalityCoverage', 'anomaly.byCategory.*', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
     'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
@@ -88,6 +89,16 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   m['audit.nonConform'] = metric('audit.nonConform', completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length, completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
   m['audit.critical'] = metric('audit.critical', completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length, completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
   m['audit.conformityRate'] = metric('audit.conformityRate', completedAudits.length ? Number(((conform.length / completedAudits.length) * 100).toFixed(1)) : 'unknown', conform.length, completedAudits.length, completedAudits.map((x) => x.auditId), issues);
+  const componentVersions = data.componentVersions ?? [];
+  const coveredComponentVersions = componentVersions.filter((relation) => relation.verdict === 'CONFORME' || relation.verdict === 'NON_CONFORME');
+  const conformComponentVersions = coveredComponentVersions.filter((relation) => relation.verdict === 'CONFORME');
+  const nonConformComponentVersions = coveredComponentVersions.filter((relation) => relation.verdict === 'NON_CONFORME');
+  m['componentVersion.total'] = metric('componentVersion.total', componentVersions.length, componentVersions.length, componentVersions.length, componentVersions.map((x) => x.componentVersionId), issues);
+  m['componentVersion.covered'] = metric('componentVersion.covered', coveredComponentVersions.length, coveredComponentVersions.length, componentVersions.length, coveredComponentVersions.map((x) => x.componentVersionId), issues);
+  m['componentVersion.auditCoverage'] = metric('componentVersion.auditCoverage', componentVersions.length ? Number(((coveredComponentVersions.length / componentVersions.length) * 100).toFixed(1)) : 'unknown', coveredComponentVersions.length, componentVersions.length, coveredComponentVersions.map((x) => x.componentVersionId), issues);
+  m['componentVersion.conform'] = metric('componentVersion.conform', conformComponentVersions.length, conformComponentVersions.length, coveredComponentVersions.length, conformComponentVersions.map((x) => x.componentVersionId), issues);
+  m['componentVersion.nonConform'] = metric('componentVersion.nonConform', nonConformComponentVersions.length, nonConformComponentVersions.length, coveredComponentVersions.length, nonConformComponentVersions.map((x) => x.componentVersionId), issues);
+  m['componentVersion.conformityRate'] = metric('componentVersion.conformityRate', coveredComponentVersions.length ? Number(((conformComponentVersions.length / coveredComponentVersions.length) * 100).toFixed(1)) : 'unknown', conformComponentVersions.length, coveredComponentVersions.length, conformComponentVersions.map((x) => x.componentVersionId), issues);
   const totalIds = anomalyIds('anomaly.total');
   m['anomaly.total'] = metric('anomaly.total', totalIds.length, totalIds.length, validAnomalies.length, totalIds, issues);
   const openIds = validAnomalies.filter((x) => ['open', 'reopened'].includes(x.status) && !excluded('anomaly.open').has(x.anomalyId)).map((x) => x.anomalyId);

@@ -26,6 +26,13 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
   { id: 'audit.critical', unit: 'count', scope: 'audit', kind: 'stock', definition: 'Nombre d’audits dont le résultat objectif est critique.' },
   { id: 'audit.conformityRate', unit: 'percentage', scope: 'audit', kind: 'ratio', definition: 'Audits conformes / audits terminés.', numeratorLabel: 'Audits conformes', denominatorLabel: 'Audits terminés' },
 
+  { id: 'componentVersion.total', unit: 'count', scope: 'component', kind: 'stock', definition: 'Nombre de couples Component × Version matérialisés par le Catalogue historique.' },
+  { id: 'componentVersion.covered', unit: 'count', scope: 'component', kind: 'stock', definition: 'Nombre de couples Component × Version disposant d’au moins un Audit terminé applicable.' },
+  { id: 'componentVersion.auditCoverage', unit: 'percentage', scope: 'component', kind: 'ratio', definition: 'Component × Version couverts / Component × Version matérialisés.', numeratorLabel: 'Component × Version couverts', denominatorLabel: 'Component × Version matérialisés' },
+  { id: 'componentVersion.conform', unit: 'count', scope: 'component', kind: 'stock', definition: 'Nombre de couples Component × Version couverts dont le verdict applicable est conforme.' },
+  { id: 'componentVersion.nonConform', unit: 'count', scope: 'component', kind: 'stock', definition: 'Nombre de couples Component × Version couverts dont le verdict applicable est non conforme.' },
+  { id: 'componentVersion.conformityRate', unit: 'percentage', scope: 'component', kind: 'ratio', definition: 'Component × Version conformes / Component × Version couverts.', numeratorLabel: 'Component × Version conformes', denominatorLabel: 'Component × Version couverts' },
+
   { id: 'anomaly.total', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides dans le périmètre analytique, hors anomalies annulées.' },
   { id: 'anomaly.open', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies actuellement ouvertes ou rouvertes.' },
   { id: 'anomaly.inProgress', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies actuellement en cours de traitement.' },

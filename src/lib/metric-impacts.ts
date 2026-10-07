@@ -61,6 +61,24 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
   'DQ-014': [
     { pattern: 'audit.completed', action: 'exclude', reason: 'Un Audit n’est pas réalisé tant que son Issue GitHub reste ouverte.' }
   ],
+  'DQ-015': [
+    { pattern: 'componentVersion.*', action: 'unknown', reason: 'Le Catalogue historique absent empêche de connaître exhaustivement les Component × Version.' }
+  ],
+  'DQ-016': [
+    { pattern: 'componentVersion.*', action: 'unknown', reason: 'Le Catalogue historique invalide empêche de connaître exhaustivement les Component × Version.' }
+  ],
+  'DQ-023': [
+    { pattern: 'componentVersion.*', action: 'unknown', reason: 'Un Audit sans Component reconnu peut rendre la couverture historique incomplète.' }
+  ],
+  'DQ-024': [
+    { pattern: 'componentVersion.*', action: 'unknown', reason: 'Un Audit multi-Component ambigu peut rendre la couverture historique incomplète.' }
+  ],
+  'DQ-025': [
+    { pattern: 'componentVersion.*', action: 'unknown', reason: 'Un Audit sans Version PROD cible déterminable ne peut contribuer de façon fiable à la couverture historique.' }
+  ],
+  'DQ-029': [
+    { pattern: 'componentVersion.*', action: 'unknown', reason: 'Une référence normalisée orpheline compromet la fiabilité de la couverture historique.' }
+  ],
   'DQ-010': [
     { pattern: 'anomaly.total', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
     { pattern: 'anomaly.open', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },

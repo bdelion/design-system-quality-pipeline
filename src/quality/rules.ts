@@ -186,6 +186,7 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
   return applyMetricImpacts(issues, [
     'portfolio.repositories', 'portfolio.libraries', 'portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage',
     'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
+    'componentVersion.total', 'componentVersion.covered', 'componentVersion.auditCoverage', 'componentVersion.conform', 'componentVersion.nonConform', 'componentVersion.conformityRate',
     'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
     'anomaly.criticalityCoverage', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
     'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge',

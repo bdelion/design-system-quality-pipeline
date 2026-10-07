@@ -13,3 +13,12 @@
 - conserve les données sources et évite toute valeur/relation inventée ;
 - déduplique les alertes DQ par règle et entité ;
 - ajoute les tests de contrat Data Quality V2 et la documentation détaillée.
+
+### I6 — Analytics V2 Component × Version
+
+- matérialisation du verdict `NON_COUVERT` / `CONFORME` / `NON_CONFORME` sur `ComponentVersion` ;
+- héritage des Audits terminés applicables et agrégation du dernier groupe d’Audits terminés par Version auditée ;
+- conservation du verdict acquis lorsqu’un Audit plus récent reste incomplet ;
+- absence de restauration automatique de conformité après simple correction d’une anomalie ;
+- métriques historiques `componentVersion.*` avec séparation couverture / conformité ;
+- propagation de la fiabilité Data Quality vers ces métriques.
