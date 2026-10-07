@@ -65,7 +65,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   ];
   assertMetricContract(metricIds);
   const issues = applyMetricImpacts(dqIssues, metricIds);
-  const excluded = (metricId: string) => new Set(issues.flatMap((issue) => issue.impacts.filter((impact) => matchesMetricPattern(impact.metricId, metricId) && impact.action === 'exclude').map((impact) => issue.entityId)));
+  const excluded = (metricId: string) => new Set(issues.flatMap((issue) => issue.impacts.filter((impact) => matchesMetricPattern(impact.metricId, metricId) && impact.action === 'exclude').map(() => issue.entityId)));
   const activeComponents = data.components.filter((component) => component.status === 'active');
   const completedAudits = data.audits.filter((audit) => !['in_progress', 'not_evaluated'].includes(audit.status));
   const activeComponentIds = new Set(activeComponents.map((component) => component.componentId));

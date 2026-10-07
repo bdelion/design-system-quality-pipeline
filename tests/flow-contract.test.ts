@@ -16,7 +16,7 @@ function snapshot(id: string, capturedAt: string, status: 'open' | 'done', first
     rawData: { collectedAt: capturedAt, repositories: [], catalogueComponents: [], nexusAvailable: true },
     normalizedData: { libraries: [], components: [], audits: [], anomalies: [anomaly], pullRequests: [] },
     dataQuality: { issues: [], summary: { INFO: 0, WARNING: 0, ERROR: 0 } },
-    analytics: { metrics: {} }, ruleVersion: 'test', modelVersion: 'test', reliability: 'reliable'
+    analytics: { metrics: {} } as Snapshot['analytics'], ruleVersion: 'test', modelVersion: 'test', reliability: 'reliable'
   } as Snapshot;
 }
 

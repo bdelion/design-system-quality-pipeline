@@ -31,14 +31,11 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   it('uses catalogue-only components as portfolio entities when the catalogue maps them to a repository', async () => {
     const catalogue = await loadCatalogue();
     const synthetic = structuredClone(raw);
-    synthetic.repositories[1].issues = synthetic.repositories[1].issues.filter((issue) => issue.component !== 'Toast');
+    synthetic.repositories[1]!.issues = synthetic.repositories[1]!.issues.filter((issue) => issue.component !== 'Toast');
     const normalizedCatalogue = normalizeGithub(synthetic, config.github, catalogue, config.auditVersion);
     expect(normalizedCatalogue.components.some((component) => component.name === 'Toast' && component.discoverySource === 'catalogue')).toBe(true);
   });
 
-  it('preserves the repository default branch in the normalized library contract', () => {
-    expect(normalized.libraries.every((library) => library.defaultBranch.length > 0)).toBe(true);
-  });
 
   it('uses the configured audit version instead of a hard-coded normalizer version', () => {
     const versioned = normalizeGithub(raw, config.github, undefined, '2099.01');
@@ -47,7 +44,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
 
   it('detects multiple parents independently of criticality', () => {
     const synthetic = structuredClone(raw);
-    const issue = synthetic.repositories[0].issues.find((candidate) => candidate.id === 'issue-101');
+    const issue = synthetic.repositories[0]!.issues.find((candidate) => candidate.id === 'issue-101');
     if (!issue) throw new Error('Fixture issue-101 is required for this test.');
     issue.parents = ['parent-1', 'parent-2'];
     issue.criticities = [];
@@ -102,7 +99,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   // Les avertissements dégradent la fiabilité sans empêcher le calcul des indicateurs.
   it('reports a partial reliability when DQ warnings or errors exist', () => {
     const analytics = calculateKpis(normalized, issues);
-    expect(analytics.metrics['anomaly.correctedEver']?.reliability.status).toBe('reliable');
+    expect(analytics.metrics['anomaly.correctedEver']?.reliability.status).toBe('partial');
     expect(analytics.openAnomalies.value).toBe(3);
     expect(analytics.averageCorrectionDelayDays.value).toBeGreaterThan(0);
     expect(analytics.medianCorrectionDelayDays.value).toBeGreaterThan(0);

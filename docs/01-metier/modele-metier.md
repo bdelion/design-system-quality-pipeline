@@ -2,476 +2,309 @@
 
 ## 1. Objectif
 
-Ce document décrit le modèle métier porté par le projet **Design System Quality Pipeline**.
+Le **Design System Quality Pipeline** construit une représentation
+métier du Design System afin de mesurer sa qualité, piloter son activité
+et, à terme, analyser son utilisation par les Applications
+consommatrices.
 
-L'objectif est de disposer d'un vocabulaire et d'un modèle communs permettant de représenter :
-
-- le Design System ;
-- ses librairies ;
-- les packages distribués ;
-- leurs versions ;
-- les composants ;
-- les travaux réalisés sur ces composants ;
-- les anomalies ;
-- les audits ;
-- les versions et releases ;
-- les applications consommatrices ;
-- les données nécessaires au pilotage de la qualité et de l'activité.
-
-Ce modèle constitue la référence métier du pipeline.
+Le modèle métier constitue la référence conceptuelle du pipeline.
 
 Il doit rester indépendant :
 
-- de la représentation GitHub des données ;
-- de l'implémentation technique du pipeline ;
-- de la structure actuelle des repositories ;
-- des choix de visualisation du dashboard.
+- de la représentation GitHub ;
+- de l'implémentation TypeScript ;
+- de la structure actuelle des Repositories ;
+- du moteur de métriques ;
+- de la présentation du dashboard.
+
+Les objets sont détaillés dans `objets-metier.md` et leurs cardinalités
+dans `relations.md`.
 
 ---
 
-## 2. Finalité du système
+## 2. Statuts de consolidation
 
-Le système doit progressivement couvrir trois domaines complémentaires.
+Les éléments du modèle utilisent quatre statuts :
 
-### 2.1. Mesure de la qualité du Design System
+- **ÉTABLI** : validé et utilisable comme base de spécification ;
+- **ACTUEL** : fonctionnement observé aujourd'hui ;
+- **À CONFIRMER** : décision encore nécessaire ;
+- **FUTUR** : volontairement hors V1.
 
-Le premier objectif est de mesurer la qualité du Design System.
-
-Cela comprend notamment :
-
-- la couverture des audits ;
-- la conformité des composants ;
-- les anomalies détectées ;
-- leur criticité ;
-- leur catégorie ;
-- leur état de traitement ;
-- les délais de correction ;
-- la qualité des composants ;
-- l'évolution de cette qualité dans le temps.
-
-Ce domaine constitue le besoin prioritaire.
-
-### 2.2. Pilotage opérationnel du Design System
-
-Le système doit également permettre de suivre l'activité des équipes qui maintiennent le Design System.
-
-Cela comprend notamment :
-
-- les travaux en cours ;
-- les anomalies ;
-- les audits ;
-- les sprints ou itérations ;
-- les délais ;
-- les versions ;
-- les releases ;
-- les travaux terminés, annulés ou reportés.
-
-### 2.3. Pilotage des consommateurs
-
-À terme, le système devra également permettre d'analyser l'utilisation du Design System dans les applications consommatrices.
-
-Les besoins envisagés comprennent notamment :
-
-- identifier les librairies utilisées par une application ;
-- identifier les packages utilisés ;
-- identifier les versions utilisées ;
-- identifier les composants utilisés ;
-- mesurer le nombre d'utilisations de chaque composant ;
-- identifier les composants les plus utilisés ;
-- détecter les applications utilisant des versions de production anciennes ;
-- suivre la dette liée aux montées de version ;
-- alerter les Squads responsables ;
-- croiser la qualité d'une version du Design System avec son utilisation dans les applications ;
-- fournir à terme une information synthétique sur la qualité RGAA / WAI-ARIA associée au Design System utilisé par une application.
-
-Ce domaine est une cible future et nécessite des sources de données complémentaires à GitHub.
+Une contrainte technique actuelle ne devient pas automatiquement une
+règle métier cible.
 
 ---
 
-## 3. Point d'entrée du système
+## 3. Domaines couverts
 
-Le dashboard doit constituer un **point d'entrée unique** vers les informations de qualité et de pilotage du Design System.
+### 3.1 Qualité du Design System
 
-Il doit proposer :
+Domaine prioritaire :
 
-- une page d'accueil synthétique à l'échelle de l'entreprise ;
-- des sections clairement identifiées ;
-- des possibilités de navigation vers des niveaux de détail croissants.
+- Catalogue des Composants ;
+- Audits ;
+- conformité ;
+- Anomalies ;
+- Improvements ;
+- criticités ;
+- catégories d'accessibilité ;
+- traitement des Anomalies ;
+- qualité par Composant et Version ;
+- historique.
 
-Les niveaux de lecture envisagés sont notamment :
+### 3.2 Pilotage opérationnel
 
-1. Portfolio / entreprise ;
-2. Librairie ;
-3. Composant ;
-4. Audit / version ;
-5. Issue / élément de traçabilité ;
-6. Application consommatrice à terme.
+Le système doit également exploiter :
+
+- Issues ;
+- workflow ;
+- Pull Requests ;
+- Iterations ;
+- Milestones ;
+- Versions ;
+- Releases ;
+- Velocity ;
+- délais et flux.
+
+### 3.3 Consommateurs
+
+À terme :
+
+- Applications ;
+- Packages utilisés ;
+- Versions utilisées ;
+- Composants utilisés ;
+- fréquence d'utilisation ;
+- dette de montée de Version ;
+- qualité du Design System effectivement consommé.
+
+Ce domaine est **FUTUR** et nécessite des sources complémentaires.
 
 ---
 
-## 4. Structure métier générale
-
-Le modèle métier cible peut être représenté de manière simplifiée ainsi :
+## 4. Carte consolidée
 
 ```text
 Design System
     │
-    ├── Librairie
-    │     │
-    │     ├── Package
-    │     │     │
-    │     │     └── Versions
-    │     │
-    │     └── Composants
-    │
-    ├── Audits
-    │     │
-    │     └── Anomalies / améliorations
-    │
-    └── Activité
+    └── Librairie
           │
-          ├── Issues
-          ├── Pull Requests
-          ├── Iterations
-          ├── Milestones
-          └── Releases
+          ├── Repository
+          │     ACTUEL : 1 Repository = 1 Librairie
+          │     CIBLE  : 1 Repository = 1..n Librairies
+          │
+          ├── Package
+          │     ACTUEL : 1 Librairie = 1 Package
+          │     CIBLE  : 1 Librairie = 1..n Packages
+          │       │
+          │       └── Version
+          │
+          └── Composant
+                │
+                ├── Issues
+                │
+                └── Audits
+                      │
+                      ├── 0..n Anomalies
+                      │      └── chaque Anomalie → exactement 1 Audit
+                      │
+                      └── 0..n Improvements
+                             └── chaque Improvement → exactement 1 Audit
 ```
 
-À terme, le domaine des consommateurs complète ce modèle :
+À terme :
 
 ```text
 Application
-    │
-    └── utilise
-          │
-          └── Package dans une Version donnée
-                    │
-                    └── correspond à une Librairie
+    └── consomme
+        └── Package @ Version
+              └── fournit / expose des Composants
 ```
+
+La relation future exacte `Composant ↔ Package` n'est pas encore
+décidée.
 
 ---
 
-## 5. Design System
+## 5. Axe structurel : Repository, Librairie, Package
 
-Le **Design System** est l'ensemble cohérent de ressources mises à disposition des produits de l'entreprise.
+### Actuel
 
-Dans le périmètre actuel du projet, le système s'intéresse principalement aux librairies techniques contenant des composants réutilisables.
+```text
+Repository 1 ── 1 Librairie
+Librairie  1 ── 1 Package
+```
 
-Le Design System peut contenir plusieurs Librairies.
+### Cible
+
+```text
+Repository 1 ── 1..n Librairies
+Librairie  1 ── 1..n Packages
+```
+
+Ces orientations sont établies.
+
+Restent ouverts :
+
+- les propriétés définitives du Package ;
+- l'identification des Librairies dans un monorepo ;
+- les cas justifiant plusieurs Packages ;
+- le rattachement des Composants dans une Librairie multi-Packages.
+
+Ces sujets ne doivent pas être résolus implicitement par le modèle
+technique.
 
 ---
 
-## 6. Librairie
+## 6. Axe Version
 
-Une **Librairie** est une unité métier du Design System mise à disposition des applications consommatrices.
+Le Package possède des Versions.
 
-### Situation actuelle observée
-
-Aujourd'hui :
-
-- un Repository correspond à une Librairie ;
-- une Librairie est distribuée sous la forme d'un Package ;
-- ce Package possède un nom ;
-- ce Package possède plusieurs Versions au cours de son cycle de vie ;
-- les Applications utilisent le Package dans une Version donnée.
-
-Dans la situation actuelle :
+Les catégories établies sont :
 
 ```text
-1 Repository = 1 Librairie
-1 Librairie = 1 Package
+SNAPSHOT : M.m.r-SNAPSHOT
+RC       : M.m.r-rc.n
+HC       : M.m.r-hc.n
+PROD     : M.m.r
 ```
 
-### Exemples réels observés
-
-| Librairie | Package | Dernière Version PROD déclarée |
-|---|---|---|
-| Design System React | `@my-enterprise/design-system-react` | `1.7.1` |
-| Enterprise Assets | `@my-enterprise/enterprise-assets` | `2.1.0` |
-| Design System Metier React | `@my-enterprise/design-system-metier-react` | `0.14.0` |
-
-### Cible future
-
-Le modèle doit pouvoir évoluer vers :
+Le modèle distingue :
 
 ```text
-Repository
-    │
-    ├── Librairie A
-    │     ├── Package A1
-    │     └── Package A2
-    │
-    └── Librairie B
-          └── Package B1
+Version déclarée dans package.json
+        ≠
+Version d'artefact Jenkins
 ```
 
-Le modèle doit donc permettre à terme :
+Une Version PROD nominale est caractérisée par plusieurs signaux
+concordants :
 
-```text
-1 Repository = 1..n Librairies
-1 Librairie = 1..n Packages
-```
+- forme `M.m.r` ;
+- publication Nexus PROD ;
+- Tag Git `M.m.r` ;
+- Milestone `M.m.r` ;
+- Release GitHub normalement présente, mais obligation à confirmer.
+
+La présence dans Nexus seule ne suffit pas à qualifier une Version de
+PROD.
 
 ---
 
-## 7. Repository
+## 7. Axe Composant
 
-Le **Repository** est un objet technique provenant du système de gestion de sources, actuellement GitHub.
+Le Composant est une unité fonctionnelle de la Librairie.
 
-Il contient ou expose notamment :
+Le Catalogue est la référence des Composants connus.
 
-- les Issues ;
-- les Pull Requests ;
-- les Milestones ;
-- les branches ;
-- les tags ;
-- les Releases ;
-- les informations de projets nécessaires au pipeline.
+Les analyses doivent pouvoir rattacher les Issues aux Composants.
 
-Le Repository ne doit pas devenir l'unité métier fondamentale du modèle.
+Pour une Issue classique :
+
+```text
+Issue ── 0..n Composants
+```
+
+`0` peut être légitime pour une Issue transverse.
+
+Pour une Issue d'Audit :
+
+```text
+Issue d'Audit ── exactement 1 Composant
+```
+
+Cette différence de cardinalité est établie et doit être conservée.
 
 ---
 
-## 8. Package
+## 8. Axe Audit
 
-Le **Package** est l'unité technique distribuable correspondant actuellement à une Librairie et pouvant être référencée comme dépendance par une Application.
+L'Audit évalue un Composant dans un contexte de Version.
 
-Le Package :
+Deux temporalités doivent être distinguées.
 
-- possède un nom ;
-- possède une Version de base ;
-- peut donner lieu à plusieurs types de Versions produites par la CI ;
-- est publié dans Nexus ;
-- peut être utilisé par une Application dans une Version donnée.
-
-Pour Design System React :
+### Pré-PROD
 
 ```text
-Design System React
-    │
-    └── @my-enterprise/design-system-react
-          │
-          ├── PROD
-          │     └── 1.7.1
-          │
-          └── develop
-                └── 1.8.0-SNAPSHOT
+Release Candidate M.m.r-rc.n
+        ↓
+Audit du Composant
+        ↓
+Version PROD cible M.m.r
 ```
+
+### Rattrapage
+
+```text
+Version PROD M.m.r
+        ↓
+Audit du Composant
+```
+
+La Milestone `M.m.r-Audit` sert au rattrapage et ne représente pas une
+nouvelle Version.
+
+Une Issue d'Audit est considérée comme réalisée lorsque :
+
+```text
+Project Status = Done
+ET
+GitHub Issue State = Closed
+```
+
+La date métier exacte de fin reste à consolider.
 
 ---
 
-## 9. Version
+## 9. Résultats d'Audit
 
-Une **Version** identifie un état versionné d'un Package.
-
-Le cycle actuel utilise une Version de base de forme :
-
-```text
-M.m.r
-```
-
-À partir de cette Version de base et du type de branche, Jenkins produit différentes Versions.
-
-### 9.1. Version SNAPSHOT
-
-Depuis :
-
-- `develop` ;
-- `project/***` ;
-
-Jenkins produit :
+Les deux résultats métier actuellement connus sous forme de sous-Issues
+sont :
 
 ```text
-M.m.r-SNAPSHOT
+Audit
+├── Anomalies
+└── Improvements
 ```
 
-Ces Versions sont disponibles dans Nexus et destinées notamment aux tests d'intégration.
+La liste reste extensible.
 
-Elles n'ont pas vocation à être déployées en production.
-
-### 9.2. Release Candidate
-
-Depuis une branche :
+### Anomalie
 
 ```text
-release/***
+Audit 1 ── 0..n Anomalies
+Anomalie d'Audit ── exactement 1 Audit
 ```
 
-Jenkins produit :
+Une Anomalie d'Audit :
+
+- est une sous-Issue ;
+- est un `🐛 Bug` ;
+- porte exactement le même Composant que l'Audit ;
+- participe au verdict de conformité.
+
+### Improvement
 
 ```text
-M.m.r-rc.[numéro de build Jenkins]
+Audit 1 ── 0..n Improvements
+Improvement d'Audit ── exactement 1 Audit
 ```
 
-### 9.3. Hotfix Candidate
+Une Improvement :
 
-Depuis une branche :
-
-```text
-hotfix/***
-```
-
-Jenkins produit :
-
-```text
-M.m.r-hc.[numéro de build Jenkins]
-```
-
-### 9.4. Version PROD
-
-Une Version PROD :
-
-- possède la forme `M.m.r` sans suffixe ;
-- est disponible dans un Repository / espace Nexus spécifique à la production ;
-- possède un tag Git correspondant ;
-- doit disposer d'une Milestone portant exactement son numéro ;
-- possède normalement une Release correspondante.
-
-Deux chemins de mise en production sont désormais établis :
-
-```text
-release/M.m.r ──merge──> master
-                         │
-                         ▼
-                      Jenkins
-                         │
-                         └── succès
-                              ├── tag Git M.m.r
-                              └── Nexus PROD M.m.r
-```
-
-et :
-
-```text
-hotfix/xxx ─────merge──> master
-                         │
-                         ▼
-                      Jenkins
-                         │
-                         └── succès
-                              ├── tag Git M.m.r
-                              └── Nexus PROD M.m.r
-```
-
-Dans les deux cas, le merge vers `master` déclenche le job Jenkins responsable de la production des éléments de la Version PROD.
+- est une sous-Issue ;
+- est une `✨ Feature` ;
+- porte exactement le même Composant que l'Audit ;
+- ne participe pas au verdict de conformité.
 
 ---
 
-## 10. Cycle de production des Versions
+## 10. Conformité
 
-Le fonctionnement actuellement établi est :
+Un Composant non audité n'est pas non conforme.
 
-```text
-Version de base M.m.r
-        │
-        ├── develop
-        │     └── Jenkins
-        │           └── M.m.r-SNAPSHOT
-        │
-        ├── project/***
-        │     └── Jenkins
-        │           └── M.m.r-SNAPSHOT
-        │
-        ├── release/***
-        │     ├── Jenkins
-        │     │     └── M.m.r-rc.[build Jenkins]
-        │     │
-        │     └── merge vers master
-        │           └── Jenkins automatique
-        │                 └── si succès
-        │                       ├── tag Git M.m.r
-        │                       └── Nexus PROD M.m.r
-        │
-        └── hotfix/***
-              ├── Jenkins
-              │     └── M.m.r-hc.[build Jenkins]
-              │
-              └── merge vers master
-                    └── Jenkins automatique
-                          └── si succès
-                                ├── tag Git M.m.r
-                                └── Nexus PROD M.m.r
-```
-
----
-
-## 11. Composant
-
-Le **Composant** est une unité fonctionnelle du Design System.
-
-Il appartient à une Librairie.
-
-Le catalogue des Composants constitue la référence permettant d'identifier les Composants connus.
-
-Les Composants peuvent être associés à :
-
-- des Issues ;
-- des Anomalies ;
-- des Audits ;
-- des Versions ;
-- des informations de qualité.
-
----
-
-## 12. Issue
-
-Une **Issue** représente un élément de travail suivi dans GitHub.
-
-Son sens métier dépend notamment :
-
-- de son Issue Type ;
-- de ses labels ;
-- de son statut dans le projet ;
-- de ses relations ;
-- du workflow auquel elle appartient.
-
-Une Issue ne doit pas être assimilée directement à une Anomalie.
-
----
-
-## 13. Anomalie
-
-Une **Anomalie** représente un problème identifié sur le Design System.
-
-La définition permettant de déterminer qu'une Issue est une Anomalie doit être configurable.
-
-Une Anomalie peut être caractérisée par :
-
-- le Composant concerné ;
-- sa criticité ;
-- son domaine de criticité ;
-- sa catégorie ;
-- son statut ;
-- ses dates ;
-- ses relations avec un Audit ;
-- ses relations avec des Pull Requests ;
-- sa Version ou son contexte de détection.
-
-Une Anomalie doit être distinguée d'une proposition d'amélioration.
-
----
-
-## 14. Audit
-
-Un **Audit** représente une opération structurée d'évaluation d'un ou plusieurs Composants.
-
-Le premier domaine actuellement identifié est l'accessibilité.
-
-Un Audit peut notamment être associé à :
-
-- une campagne ;
-- un ou plusieurs Composants ;
-- une Version ;
-- un statut ;
-- un résultat ;
-- des Anomalies ;
-- des propositions d'amélioration.
-
----
-
-## 15. Conformité
-
-Pour un domaine d'Audit donné, il faut distinguer au minimum :
+Il faut distinguer :
 
 ```text
 NON AUDITÉ
@@ -479,104 +312,298 @@ AUDITÉ & CONFORME
 AUDITÉ & NON CONFORME
 ```
 
-Il faut distinguer :
+Pour un Audit Accessibilité terminé :
 
 ```text
-Couverture d'audit
-= composants audités / composants du périmètre
+0 Anomalie
+→ AUDITÉ & CONFORME
+
+>= 1 Anomalie
+→ AUDITÉ & NON CONFORME
 ```
 
-de :
+La correction ultérieure des Anomalies ne transforme pas automatiquement
+le verdict de l'Audit historique.
+
+Une nouvelle conformité nécessite une revalidation par un nouvel Audit.
+
+La conformité doit être interprétée pour un **Composant × Version** et
+dans sa temporalité réelle.
+
+---
+
+## 11. Revalidation
+
+Lorsqu'un Composant précédemment non conforme est corrigé :
 
 ```text
-Taux de conformité
-= composants conformes / composants audités
+Anomalies corrigées
+        ↓
+traitement terminé
+        ↓
+revalidation nécessaire
+        ↓
+nouvel Audit
+```
+
+Le nouvel Audit possède ses propres sous-Issues.
+
+Si le même problème est de nouveau constaté, une nouvelle Issue Anomalie
+est créée ; l'ancienne Issue n'est pas réutilisée comme enfant du nouvel
+Audit.
+
+Il n'existe pas de relation directe obligatoire entre les Anomalies
+successives.
+
+---
+
+## 12. Accessibilité
+
+Pour une Anomalie d'Audit Accessibilité :
+
+```text
+exactement 1 criticité RGAA
++
+exactement 1 catégorie ♿ a11y:xxx
+```
+
+Les criticités RGAA :
+
+```text
+bloquante
+majeure
+mineure
+```
+
+sont réservées à ce contexte.
+
+Les catégories `a11y` sont au contraire transverses et peuvent également
+qualifier des Improvements ou des Issues hors Audit.
+
+Pour une Improvement d'Audit Accessibilité :
+
+```text
+criticité RGAA = 0
+catégorie a11y = facultative
+```
+
+La cardinalité maximale a11y d'une Improvement reste ouverte.
+
+---
+
+## 13. Unité de comptage des Anomalies
+
+Pour les indicateurs :
+
+```text
+1 Issue GitHub qualifiée comme Anomalie
+=
+1 Anomalie comptabilisée
+```
+
+Une Issue peut regrouper plusieurs occurrences techniques d'un même
+problème.
+
+Le pipeline ne doit pas :
+
+- extraire un nombre d'occurrences du texte ;
+- estimer ces occurrences ;
+- fusionner automatiquement des Issues qui semblent similaires.
+
+Le nombre d'Issues Anomalie n'est donc pas le nombre exact d'occurrences
+techniques.
+
+---
+
+## 14. Historique de conformité
+
+Une nouvelle Version ne signifie pas que tous les Composants sont
+automatiquement ré-audités.
+
+Le modèle doit pouvoir distinguer :
+
+- Composant non audité ;
+- Audit direct sur la Version ;
+- verdict éventuellement applicable par héritage ;
+- Composant nouveau ;
+- Composant évolué ;
+- Composant inchangé ;
+- Composant décommissionné.
+
+Le Catalogue historique d'une Version ne doit pas être recalculé
+rétroactivement à partir du Catalogue actuel.
+
+Les règles exactes de construction de ce Catalogue historique restent à
+consolider.
+
+---
+
+## 15. Traitement des Anomalies
+
+La conformité d'un Audit et le traitement opérationnel de ses Anomalies
+sont deux dimensions différentes.
+
+Une Anomalie est considérée traitée lorsque :
+
+```text
+Project Status = Done
+ET
+GitHub Issue State = Closed
+```
+
+Le suivi peut donc distinguer :
+
+- Anomalies détectées ;
+- Anomalies restant à traiter ;
+- Anomalies traitées ;
+- attente de revalidation.
+
+Une conformité historique ne doit pas être modifiée simplement parce que
+toutes les Anomalies ont été corrigées.
+
+---
+
+## 16. Issues hors Audit
+
+Toutes les Issues `🐛 Bug` ne sont pas des Anomalies d'Audit.
+
+Les Issues hors Audit peuvent notamment représenter :
+
+- défauts du Design System ;
+- incidents remontés par des consommateurs ;
+- erreurs d'intégration côté Application ;
+- autres travaux.
+
+La définition générale configurable d'une Anomalie hors Audit reste à
+consolider.
+
+Une erreur d'intégration strictement côté client peut être annulée sans
+devenir une Anomalie intrinsèque du Design System.
+
+---
+
+## 17. Workflow
+
+Les objets métier sont soumis à des workflows différents.
+
+Les profils candidats sont :
+
+```text
+STANDARD
+EPIC
+AUDIT
+RELEASE
+CONCEPTION
+```
+
+Leur formalisation complète n'est pas encore terminée.
+
+Il est déjà établi qu'une règle telle que :
+
+```text
+Done → Pull Request obligatoire
+```
+
+ne peut pas être appliquée indistinctement à tous les profils.
+
+La prochaine étape M3 doit produire la matrice :
+
+```text
+Profil × Status
+→ Velocity
+→ Grooming
+→ Iteration
+→ Milestone
+→ branche
+→ Pull Request
+→ Issue State
 ```
 
 ---
 
-## 16. Application consommatrice
+## 18. Applications consommatrices
 
-Une **Application consommatrice** utilise une ou plusieurs Librairies du Design System.
+Le futur modèle doit pouvoir représenter :
 
-Une Application utilise un Package dans une Version donnée.
+```text
+Application
+    ↓
+Package @ Version
+    ↓
+Composants utilisés
+```
 
-Une Version publiée dans Nexus peut notamment être :
+Les sources permettant d'établir ces relations ne sont pas encore
+définies.
 
-- une Version PROD ;
-- une Version SNAPSHOT ;
-- une Release Candidate ;
-- une Hotfix Candidate.
-
-À terme, le système devra pouvoir déterminer :
-
-- quelle Librairie est utilisée ;
-- quel Package est utilisé ;
-- quelle Version est utilisée ;
-- le type ou contexte de cette Version ;
-- quels Composants sont utilisés ;
-- combien de fois ils sont utilisés ;
-- quelle dette de mise à niveau existe ;
-- quelles Applications nécessitent une action.
+Ce domaine est volontairement **FUTUR** et ne bloque pas le modèle V1 de
+qualité du Design System.
 
 ---
 
-## 17. Principes structurants
+## 19. Sources externes
 
-### 17.1. Séparer métier et représentation technique
+Les principales sources identifiées sont :
 
-GitHub, Jenkins et Nexus sont des systèmes techniques.
+- GitHub ;
+- Jenkins ;
+- Nexus ;
+- Catalogue versionné ;
+- futures sources d'Applications consommatrices.
 
-Leurs objets doivent alimenter le modèle métier sans le définir implicitement.
+Le modèle métier ne doit pas être confondu avec ces sources.
 
-### 17.2. Ne pas déduire PROD du seul numéro de Version
-
-L'absence de suffixe est une caractéristique d'une Version PROD, mais sa qualification repose également sur le processus de livraison.
-
-### 17.3. Publication Nexus et qualification PROD sont distinctes
-
-Plusieurs types de Versions peuvent être publiés dans Nexus.
-
-### 17.4. La production PROD est un processus traçable
-
-Les deux chemins établis sont :
-
-```text
-release/*** → master → Jenkins → tag + Nexus PROD
-hotfix/***  → master → Jenkins → tag + Nexus PROD
-```
-
-### 17.5. Conserver la traçabilité
-
-Tout indicateur doit pouvoir être expliqué depuis les données sources jusqu'à sa valeur calculée.
+Un même fait métier peut nécessiter plusieurs signaux pour être établi.
 
 ---
 
-## 18. Évolution attendue du modèle
+## 20. Points structurels encore ouverts
 
-Le modèle doit pouvoir évoluer vers :
+Après consolidation des relations, les principaux points ouverts sont :
+
+### Potentiellement structurants V1
+
+- identité exacte `Audit métier` versus `Issue d'Audit GitHub` ;
+- définition générale d'une Anomalie hors Audit ;
+- profils de workflow et leurs exceptions ;
+- dates métier de détection et de correction ;
+- construction du Catalogue historique par Version.
+
+### À confirmer sans bloquer le noyau
+
+- représentation de la famille d'Audit ;
+- objet Campagne d'Audit ;
+- cardinalité maximale a11y des Improvements ;
+- caractère obligatoire de la Release GitHub.
+
+### Futur
+
+- multi-Package détaillé ;
+- identification des Librairies dans un monorepo ;
+- consommation par les Applications ;
+- détection de l'usage des Composants.
+
+---
+
+## 21. Règle de conception
+
+Le modèle doit suivre l'ordre :
 
 ```text
-Entreprise
-    │
-    ├── Design System
-    │     │
-    │     ├── Librairies
-    │     │     │
-    │     │     ├── Packages
-    │     │     │     └── Versions
-    │     │     │
-    │     │     └── Composants
-    │     │
-    │     ├── Audits
-    │     └── Activité
-    │
-    └── Applications consommatrices
-          │
-          ├── Packages utilisés
-          ├── Versions utilisées
-          ├── Composants utilisés
-          └── Dette / qualité associée
+fait métier établi
+        ↓
+objet / relation
+        ↓
+règle
+        ↓
+contrôle Data Quality
+        ↓
+métrique
+        ↓
+implémentation
+        ↓
+dashboard
 ```
 
-Les éléments qui ne sont pas encore établis doivent rester explicitement à confirmer.
+Une règle ne doit pas être créée pour faire correspondre
+artificiellement le métier à l'état actuel du code.

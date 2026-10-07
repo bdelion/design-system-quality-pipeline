@@ -1,6 +1,7 @@
 import type { AnonymizationOptions } from './types.js';
 import type { PipelineConfig } from '../config.js';
 import type { Catalogue } from '../catalogue.js';
+import type { RawDataset } from '../domain/types.js';
 
 type StableMapper = (namespace: string, source: string, prefix: string) => string;
 
@@ -35,19 +36,32 @@ export function anonymizePipelineConfig(config: PipelineConfig, source: RawDatas
  */
 export function anonymizeCatalogue(
   config: Catalogue,
+  source: RawDataset,
   options: AnonymizationOptions,
   map: StableMapper
 ): Catalogue {
+  const sourceComponents = new Set(source.catalogueComponents);
+  const missingComponents = [...sourceComponents].filter(
+    (name) => !config.components.some((component) => component.name === name)
+  );
+  if (missingComponents.length > 0) {
+    throw new Error(
+      `Cannot create fixture catalogue: RAW component(s) ${missingComponents.join(', ')} are missing from catalogue.yaml.`
+    );
+  }
+
   return {
     ...config,
-    components: config.components.map((component) => ({
-      ...component,
-      ...(component.repository
-        ? { repository: map('repository', component.repository, 'repo') }
-        : {}),
-      ...(options.preserveComponentNames
-        ? {}
-        : { name: map('component', component.name, 'component') })
-    }))
+    components: config.components
+      .filter((component) => sourceComponents.has(component.name))
+      .map((component) => ({
+        ...component,
+        ...(component.repository
+          ? { repository: map('repository', component.repository, 'repo') }
+          : {}),
+        ...(options.preserveComponentNames
+          ? {}
+          : { name: map('component', component.name, 'component') })
+      }))
   };
 }

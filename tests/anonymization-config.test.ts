@@ -13,7 +13,7 @@ const config: PipelineConfig = {
   githubGraphqlUrl: 'https://github.enterprise.io/graphql',
   githubUrl: 'https://github.enterprise.io',
   github: {
-    labels: { componentPrefix: 'Component:', criticalityPrefix: 'rgaa:', categoryPrefix: 'a11y:', unknown: 'label:unknown', criticalityValues: { bloquante: 'blocking', majeure: 'major', mineure: 'minor' } },
+    labels: { componentPrefix: 'Component:', accessibilityCriticalityPrefix: 'rgaa:', accessibilityCategoryPrefix: 'a11y:', unknown: 'label:unknown', criticalityValues: { bloquante: 'blocking', majeure: 'major', mineure: 'minor' } },
     issueTypes: { anomaly: 'BUG', keywords: { AUDIT: ['audit'] } },
     closingKeywords: ['close'], cancelledProjectStatuses: ['Cancelled']
   }

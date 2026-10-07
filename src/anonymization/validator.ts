@@ -47,15 +47,12 @@ export function inspectRelationalIntegrity(dataset: RawDataset): IntegrityFindin
   const globalIssueIds = new Set(dataset.repositories.flatMap(repo => repo.issues.map(issue => issue.id)));
   const globalPrIds = new Set(dataset.repositories.flatMap(repo => repo.pullRequests.map(pr => pr.id)));
 
-  for (let repoIndex = 0; repoIndex < dataset.repositories.length; repoIndex += 1) {
-    const repo = dataset.repositories[repoIndex];
+  for (const [repoIndex, repo] of dataset.repositories.entries()) {
     const issueIds = new Set(repo.issues.map(i => i.id));
     const prIds = new Set(repo.pullRequests.map(p => p.id));
 
-    for (let issueIndex = 0; issueIndex < repo.issues.length; issueIndex += 1) {
-      const issue = repo.issues[issueIndex];
-      for (let refIndex = 0; refIndex < issue.linkedPullRequestIds.length; refIndex += 1) {
-        const id = issue.linkedPullRequestIds[refIndex];
+    for (const [issueIndex, issue] of repo.issues.entries()) {
+      for (const [refIndex, id] of issue.linkedPullRequestIds.entries()) {
         if (!prIds.has(id)) {
           errors.push({
             type: 'missing-pull-request',
@@ -70,10 +67,8 @@ export function inspectRelationalIntegrity(dataset: RawDataset): IntegrityFindin
       }
     }
 
-    for (let prIndex = 0; prIndex < repo.pullRequests.length; prIndex += 1) {
-      const pr = repo.pullRequests[prIndex];
-      for (let refIndex = 0; refIndex < pr.relatedIssueIds.length; refIndex += 1) {
-        const id = pr.relatedIssueIds[refIndex];
+    for (const [prIndex, pr] of repo.pullRequests.entries()) {
+      for (const [refIndex, id] of pr.relatedIssueIds.entries()) {
         if (!issueIds.has(id)) {
           errors.push({
             type: 'missing-issue',

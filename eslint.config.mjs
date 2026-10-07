@@ -6,5 +6,16 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     ignores: ['dist/**', 'data/**', 'node_modules/**']
+  },
+  {
+    files: ['src/dashboard/assets/**/*.js'],
+    languageOptions: {
+      globals: {
+        document: 'readonly',
+        navigator: 'readonly',
+        URLSearchParams: 'readonly',
+        window: 'readonly'
+      }
+    }
   }
 );
