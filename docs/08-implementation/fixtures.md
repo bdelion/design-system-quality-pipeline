@@ -140,3 +140,11 @@ Fixture anonymisée validée
 Ne jamais utiliser un RAW réel comme fixture versionnée.
 
 Voir [Anonymisation](anonymisation.md).
+
+## Fixture de référence V1 (I9)
+
+`fixtures/v1-reference.json` est le scénario de non-régression transversal de la V1. Sa configuration est isolée dans `config/system.v1-reference.yaml` et `config/catalogue.v1-reference.yaml` afin qu'elle ne dépende ni des repositories réels ni de leurs noms anonymisés.
+
+Elle couvre notamment plusieurs repositories, un Component de Catalogue sans Issue, une Issue transverse, une Issue multi-Component, un Bug hors Audit, un Audit pré-PROD conforme, un Audit de rattrapage post-PROD non conforme, un Audit plus récent mais incomplet, une Anomalie corrigée avec transition `Done`, une Anomalie ouverte sans criticité, une PR mergée, deux Catalogues historiques différents et des preuves de Catalogue historique manquante/invalide.
+
+Le contrat exécutable associé est `tests/v1-reference-scenario.test.ts`. Il asserte des cardinalités et KPI attendus, la distinction état à la Release / connaissance actuelle et la génération du dashboard. Cette fixture est synthétique : aucun nom de repository, Component, personne ou URL provenant des données GitHub réelles ne doit y être introduit.

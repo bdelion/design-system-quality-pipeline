@@ -85,6 +85,9 @@ function anonymizeIssue(
     // These are analytical business fields and are deliberately preserved.
     state: issue.state,
     issueType: issue.issueType,
+    // rawIssueType is a business classification fact. Preserve it so the
+    // anonymized fixture follows the same V1 specialization path as GitHub data.
+    ...(issue.rawIssueType ? { rawIssueType: issue.rawIssueType } : {}),
     labels: preserveLabels(issue.labels),
     ...(issue.component ? { component: mapComponent(issue.component, options, map) } : {}),
     criticities: [...issue.criticities],

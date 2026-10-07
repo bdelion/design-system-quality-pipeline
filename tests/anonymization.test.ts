@@ -178,3 +178,19 @@ it('preserves historical catalogue evidence and anonymizes its component names c
   expect(result.repositories[0]?.historicalCatalogues?.[0]?.componentNames[0]).not.toBe('Button');
   expect(result.repositories[0]?.gitTags?.[0]?.createdAt).toBe('2026-06-12T10:00:00.000Z');
 });
+
+it('preserves raw Issue Type so V1 specialization semantics survive anonymization', () => {
+  const source: RawDataset = {
+    collectedAt: '2026-09-28T10:00:00Z', nexusAvailable: false, catalogueComponents: ['Button'],
+    repositories: [{
+      id: 'repo-1', name: 'ds-react', owner: 'myorga', defaultBranch: 'main', pullRequests: [],
+      issues: [{
+        id: 'issue-1', number: 1, title: 'Audit Button', state: 'CLOSED', issueType: 'AUDIT', rawIssueType: 'Audit',
+        labels: ['Component:Button'], component: 'Button', criticities: [], parents: [], createdAt: '2026-09-20T10:00:00Z',
+        linkedPullRequestIds: [], projectStatuses: []
+      }]
+    }]
+  };
+  const result = anonymizeDataset(source, options).dataset;
+  expect(result.repositories[0]?.issues[0]?.rawIssueType).toBe('Audit');
+});

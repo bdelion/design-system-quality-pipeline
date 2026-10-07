@@ -1,0 +1,363 @@
+{
+  "collectedAt": "2026-10-01T12:00:00Z",
+  "nexusAvailable": false,
+  "catalogueComponents": [
+    "Button",
+    "Modal",
+    "Tabs",
+    "DocsCard"
+  ],
+  "repositories": [
+    {
+      "id": "repo-core",
+      "name": "lib-core",
+      "owner": "fixture-org",
+      "defaultBranch": "main",
+      "gitTags": [
+        {
+          "name": "1.0.0",
+          "createdAt": "2026-09-10T10:00:00Z"
+        },
+        {
+          "name": "1.1.0",
+          "createdAt": "2026-09-20T10:00:00Z"
+        }
+      ],
+      "historicalCatalogues": [
+        {
+          "tagName": "1.0.0",
+          "status": "available",
+          "componentNames": [
+            "Button"
+          ]
+        },
+        {
+          "tagName": "1.1.0",
+          "status": "available",
+          "componentNames": [
+            "Button",
+            "Modal"
+          ]
+        }
+      ],
+      "issues": [
+        {
+          "id": "audit-button-v1",
+          "number": 1,
+          "title": "Audit Button 1.0.0",
+          "state": "CLOSED",
+          "issueType": "AUDIT",
+          "rawIssueType": "audit",
+          "url": "https://github.invalid/fixture/audit-button-v1",
+          "labels": [
+            "Component:Button"
+          ],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-01T09:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Done",
+              "statusHistory": [
+                {
+                  "previousStatus": "In review",
+                  "status": "Done",
+                  "transitionedAt": "2026-09-08T10:00:00Z"
+                }
+              ]
+            }
+          ],
+          "milestone": {
+            "id": 10,
+            "number": 10,
+            "title": "1.0.0",
+            "state": "closed"
+          },
+          "closedAt": "2026-09-08T10:00:00Z",
+          "auditStatus": "conform",
+          "auditResult": "conform"
+        },
+        {
+          "id": "audit-button-v11-incomplete",
+          "number": 2,
+          "title": "Audit Button 1.1.0 en cours",
+          "state": "OPEN",
+          "issueType": "AUDIT",
+          "rawIssueType": "audit",
+          "url": "https://github.invalid/fixture/audit-button-v11-incomplete",
+          "labels": [
+            "Component:Button"
+          ],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-18T09:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Backlog"
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          },
+          "auditStatus": "in_progress",
+          "auditResult": "in_progress"
+        },
+        {
+          "id": "audit-modal-v11",
+          "number": 3,
+          "title": "Audit rattrapage Modal 1.1.0",
+          "state": "CLOSED",
+          "issueType": "AUDIT",
+          "rawIssueType": "audit",
+          "url": "https://github.invalid/fixture/audit-modal-v11",
+          "labels": [
+            "Component:Modal"
+          ],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-21T09:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Done",
+              "statusHistory": [
+                {
+                  "previousStatus": "In review",
+                  "status": "Done",
+                  "transitionedAt": "2026-09-22T10:00:00Z"
+                }
+              ]
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          },
+          "closedAt": "2026-09-22T10:00:00Z",
+          "auditStatus": "non_conform",
+          "auditResult": "non_conform"
+        },
+        {
+          "id": "bug-modal-a11y",
+          "number": 4,
+          "title": "Modal accessible name",
+          "state": "OPEN",
+          "issueType": "BUG",
+          "rawIssueType": "bug",
+          "url": "https://github.invalid/fixture/bug-modal-a11y",
+          "labels": [
+            "Component:Modal",
+            "a11y:name"
+          ],
+          "criticities": [],
+          "parents": [
+            "audit-modal-v11"
+          ],
+          "createdAt": "2026-09-21T11:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Backlog"
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          }
+        },
+        {
+          "id": "bug-button-focus",
+          "number": 5,
+          "title": "Modal focus corrected",
+          "state": "CLOSED",
+          "issueType": "BUG",
+          "rawIssueType": "bug",
+          "url": "https://github.invalid/fixture/bug-button-focus",
+          "labels": [
+            "Component:Modal",
+            "criticite:majeure",
+            "a11y:focus"
+          ],
+          "criticities": [
+            "majeure"
+          ],
+          "parents": [
+            "audit-modal-v11"
+          ],
+          "createdAt": "2026-09-02T11:00:00Z",
+          "linkedPullRequestIds": [
+            "pr-button"
+          ],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Done",
+              "statusHistory": [
+                {
+                  "previousStatus": "In review",
+                  "status": "Done",
+                  "transitionedAt": "2026-09-06T11:00:00Z"
+                }
+              ]
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          },
+          "closedAt": "2026-09-07T11:00:00Z",
+          "component": "Modal"
+        },
+        {
+          "id": "bug-outside",
+          "number": 6,
+          "title": "Button regression hors audit",
+          "state": "OPEN",
+          "issueType": "BUG",
+          "rawIssueType": "bug",
+          "url": "https://github.invalid/fixture/bug-outside",
+          "labels": [
+            "Component:Button",
+            "criticite:mineure"
+          ],
+          "criticities": [
+            "mineure"
+          ],
+          "parents": [],
+          "createdAt": "2026-09-25T11:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Backlog"
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          }
+        },
+        {
+          "id": "feature-multi",
+          "number": 7,
+          "title": "Shared behavior",
+          "state": "OPEN",
+          "issueType": "FEATURE",
+          "rawIssueType": "feature",
+          "url": "https://github.invalid/fixture/feature-multi",
+          "labels": [
+            "Component:Button",
+            "Component:Modal"
+          ],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-26T11:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Backlog"
+            }
+          ]
+        },
+        {
+          "id": "epic-transverse",
+          "number": 8,
+          "title": "Cross library quality work",
+          "state": "OPEN",
+          "issueType": "EPIC",
+          "rawIssueType": "epic",
+          "url": "https://github.invalid/fixture/epic-transverse",
+          "labels": [],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-27T11:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Backlog"
+            }
+          ]
+        }
+      ],
+      "pullRequests": [
+        {
+          "id": "pr-button",
+          "number": 101,
+          "state": "MERGED",
+          "mergedAt": "2026-09-06T10:00:00Z",
+          "relatedIssueIds": [
+            "bug-button-focus"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repo-react",
+      "name": "lib-react",
+      "owner": "fixture-org",
+      "defaultBranch": "main",
+      "gitTags": [
+        {
+          "name": "2.0.0",
+          "createdAt": "2026-09-15T10:00:00Z"
+        }
+      ],
+      "historicalCatalogues": [
+        {
+          "tagName": "2.0.0",
+          "status": "missing",
+          "componentNames": []
+        }
+      ],
+      "issues": [],
+      "pullRequests": []
+    },
+    {
+      "id": "repo-docs",
+      "name": "lib-docs",
+      "owner": "fixture-org",
+      "defaultBranch": "main",
+      "gitTags": [
+        {
+          "name": "3.0.0"
+        }
+      ],
+      "historicalCatalogues": [
+        {
+          "tagName": "3.0.0",
+          "status": "invalid",
+          "componentNames": []
+        }
+      ],
+      "issues": [],
+      "pullRequests": []
+    }
+  ]
+}

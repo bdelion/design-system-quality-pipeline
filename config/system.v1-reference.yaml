@@ -1,0 +1,32 @@
+modelVersion: "2.1"
+ruleVersion: "dq-2026.09"
+auditVersion: "2026.09"
+scope: "v1-reference-fixture"
+githubOwner: "fixture-org"
+repositories: ["lib-core", "lib-react", "lib-docs"]
+github:
+  labels:
+    componentPrefix: "Component:"
+    accessibilityCriticalityPrefix: "criticite:"
+    accessibilityCategoryPrefix: "a11y:"
+    unknown: "label:unknown"
+    criticalityValues: { bloquante: blocking, majeure: major, mineure: minor }
+  issueTypes:
+    anomaly: "BUG"
+    keywords:
+      AUDIT: ["audit"]
+      EPIC: ["epic"]
+      NEW_COMPONENT: ["new component"]
+      FEATURE: ["feature"]
+      BUG: ["bug"]
+  projectStatuses:
+    keywords:
+      BACKLOG: ["Backlog"]
+      READY: ["Ready"]
+      IN_PROGRESS: ["In progress"]
+      IN_REVIEW: ["In review"]
+      DONE: ["Done"]
+      BLOCKED: ["Blocked"]
+      CANCELLED: ["Cancelled"]
+  closingKeywords: ["close", "closed", "closes", "fix", "fixed", "fixes", "resolve", "resolved", "resolves"]
+  cancelledProjectStatuses: ["Cancelled"]
