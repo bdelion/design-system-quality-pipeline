@@ -69,7 +69,7 @@ describe('collecteur GitHub', () => {
                   { iterationId: 'iteration-7', title: 'Sprint 7', startDate: '2026-09-28', duration: 14, field: { name: 'Iteration' } },
                   { number: 5, field: { name: 'Velocity' } },
                   { name: '2', field: { name: 'Scheduling' } }
-                ] } }] } } } } }), { status: 200 });
+                ] } }] }, timelineItems: { nodes: [{ createdAt: '2026-09-30T08:00:00Z', previousStatus: 'In progress', status: 'Cancelled', project: { id: 'project-1', title: 'Quality' } }], pageInfo: { hasNextPage: false, endCursor: null } } } } } }), { status: 200 });
       }
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
@@ -97,7 +97,16 @@ describe('collecteur GitHub', () => {
       status: 'Cancelled',
       iteration: { iterationId: 'iteration-7', title: 'Sprint 7', startDate: '2026-09-28', durationDays: 14 },
       rawVelocity: 5,
-      rawScheduling: '2'
+      rawScheduling: '2',
+      statusHistory: [
+        {
+          projectId: 'project-1',
+          projectName: 'Quality',
+          previousStatus: 'In progress',
+          status: 'Cancelled',
+          transitionedAt: '2026-09-30T08:00:00Z',
+        },
+      ],
     }]);
   });
 });

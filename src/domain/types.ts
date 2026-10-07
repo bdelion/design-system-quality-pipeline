@@ -64,6 +64,13 @@ export interface RawIssue {
   milestone?: RawMilestone;
 }
 
+/** Transition historique du statut d'une issue dans un GitHub Project. */
+export interface RawProjectStatusTransition {
+  previousStatus?: string;
+  status: string;
+  transitionedAt: string;
+}
+
 /** Statut d'une issue dans un GitHub Project. */
 export interface RawProjectStatus {
   projectId: string;
@@ -72,6 +79,7 @@ export interface RawProjectStatus {
   iteration?: ProjectIteration;
   rawVelocity?: string | number;
   rawScheduling?: string | number;
+  statusHistory?: RawProjectStatusTransition[];
 }
 
 /** Milestone GitHub rattachée à une issue. */

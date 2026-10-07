@@ -33,7 +33,7 @@ function preserveLabels(labels: string[]): string[] {
   return [...labels];
 }
 
-function anonymizeProjectStatus(status: RawProjectStatus, map: StableMapper, options: AnonymizationOptions): RawProjectStatus {
+function anonymizeProjectStatus(status: RawProjectStatus, map: StableMapper, options: AnonymizationOptions, report: AnonymizationReport): RawProjectStatus {
   return {
     projectId: map('project', status.projectId, 'project'),
     projectName: options.strictText
@@ -43,7 +43,14 @@ function anonymizeProjectStatus(status: RawProjectStatus, map: StableMapper, opt
     status: status.status,
     ...(status.iteration ? { iteration: { ...status.iteration } } : {}),
     ...(status.rawVelocity !== undefined ? { rawVelocity: status.rawVelocity } : {}),
-    ...(status.rawScheduling !== undefined ? { rawScheduling: status.rawScheduling } : {})
+    ...(status.rawScheduling !== undefined ? { rawScheduling: status.rawScheduling } : {}),
+    ...(status.statusHistory ? {
+      statusHistory: status.statusHistory.map((transition) => ({
+        ...(transition.previousStatus !== undefined ? { previousStatus: transition.previousStatus } : {}),
+        status: transition.status,
+        transitionedAt: shiftDate(transition.transitionedAt, options.dateOffsetDays, report)!
+      }))
+    } : {})
   };
 }
 
@@ -88,7 +95,7 @@ function anonymizeIssue(
     ...(issue.auditStatus ? { auditStatus: issue.auditStatus } : {}),
     ...(issue.auditResult ? { auditResult: issue.auditResult } : {}),
     linkedPullRequestIds: issue.linkedPullRequestIds.map((id) => map('pr', `${repo}:${id}`, 'pr')),
-    projectStatuses: issue.projectStatuses.map((status) => anonymizeProjectStatus(status, map, options)),
+    projectStatuses: issue.projectStatuses.map((status) => anonymizeProjectStatus(status, map, options, report)),
     ...(issue.milestone ? { milestone: anonymizeMilestone(issue.milestone, repo, map) } : {})
   };
 }

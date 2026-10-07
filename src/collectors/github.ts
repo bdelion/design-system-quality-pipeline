@@ -36,6 +36,14 @@ interface GithubGraphqlPullRequest {
   number: number;
 }
 
+interface GithubProjectStatusTransition {
+  projectId: string;
+  projectName: string;
+  previousStatus?: string;
+  status: string;
+  transitionedAt: string;
+}
+
 interface GithubProjectStatus {
   projectId: string;
   projectName: string;
@@ -43,6 +51,7 @@ interface GithubProjectStatus {
   iteration?: { iterationId: string; title: string; startDate?: string; durationDays?: number; endDate?: string };
   rawVelocity?: string | number;
   rawScheduling?: string | number;
+  statusHistory?: GithubProjectStatusTransition[];
 }
 
 interface GithubProjectCard {
@@ -307,6 +316,24 @@ async function issueDataFromGraphql(
                   }
                 }
               }
+
+              timelineItems(first: 100, itemTypes: [PROJECT_V2_ITEM_STATUS_CHANGED_EVENT]) {
+                nodes {
+                  ... on ProjectV2ItemStatusChangedEvent {
+                    createdAt
+                    previousStatus
+                    status
+                    project {
+                      id
+                      title
+                    }
+                  }
+                }
+                pageInfo {
+                  hasNextPage
+                  endCursor
+                }
+              }
             }
           }
         }
@@ -359,6 +386,15 @@ async function issueDataFromGraphql(
               };
             } | null>;
           };
+          timelineItems?: {
+            nodes?: Array<{
+              createdAt?: string;
+              previousStatus?: string;
+              status?: string;
+              project?: { id?: string; title?: string } | null;
+            } | null>;
+            pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+          };
         } | null;
       } | null;
     };
@@ -400,6 +436,13 @@ async function issueDataFromGraphql(
           Boolean(pr)
       ) ?? [];
 
+  const initialStatusHistory = statusHistoryFromTimelineNodes(issue?.timelineItems?.nodes ?? []);
+  const additionalStatusHistory = issue?.timelineItems?.pageInfo?.hasNextPage && issue.timelineItems.pageInfo.endCursor
+    ? await collectRemainingProjectStatusHistory(graphqlUrl, options, owner, repository, issueNumber, issue.timelineItems.pageInfo.endCursor)
+    : [];
+  const statusHistory = [...initialStatusHistory, ...additionalStatusHistory]
+    .sort((left, right) => left.transitionedAt.localeCompare(right.transitionedAt));
+
   const projectStatuses =
     issue?.projectItems?.nodes?.flatMap(item => {
 
@@ -429,7 +472,16 @@ async function issueDataFromGraphql(
             }
           } : {}),
           ...(velocity?.number !== undefined ? { rawVelocity: velocity.number } : velocity?.text !== undefined ? { rawVelocity: velocity.text } : {}),
-          ...(scheduling?.name !== undefined ? { rawScheduling: scheduling.name } : scheduling?.number !== undefined ? { rawScheduling: scheduling.number } : scheduling?.text !== undefined ? { rawScheduling: scheduling.text } : {})
+          ...(scheduling?.name !== undefined ? { rawScheduling: scheduling.name } : scheduling?.number !== undefined ? { rawScheduling: scheduling.number } : scheduling?.text !== undefined ? { rawScheduling: scheduling.text } : {}),
+          statusHistory: statusHistory
+            .filter((transition) => transition.projectId === project.id)
+            .map(({ projectId, projectName, previousStatus, status, transitionedAt }) => ({
+              projectId,
+              projectName,
+              ...(previousStatus !== undefined ? { previousStatus } : {}),
+              status,
+              transitionedAt
+            }))
         }]
         : [];
 
@@ -443,6 +495,84 @@ async function issueDataFromGraphql(
     pullRequests,
     projectStatuses
   };
+}
+
+function statusHistoryFromTimelineNodes(nodes: Array<{
+  createdAt?: string;
+  previousStatus?: string;
+  status?: string;
+  project?: { id?: string; title?: string } | null;
+} | null>): GithubProjectStatusTransition[] {
+  return nodes.flatMap((event) => event?.createdAt && event.status && event.project?.id && event.project.title
+    ? [{
+      projectId: event.project.id,
+      projectName: event.project.title,
+      ...(event.previousStatus !== undefined ? { previousStatus: event.previousStatus } : {}),
+      status: event.status,
+      transitionedAt: event.createdAt
+    }]
+    : []);
+}
+
+/** Pagine la timeline Project V2 afin de ne perdre aucune transition de statut. */
+async function collectRemainingProjectStatusHistory(
+  graphqlUrl: string,
+  options: GithubCollectorOptions,
+  owner: string,
+  repository: string,
+  issueNumber: number,
+  initialCursor: string
+): Promise<GithubProjectStatusTransition[]> {
+  const history: GithubProjectStatusTransition[] = [];
+  let cursor: string | null = initialCursor;
+
+  while (cursor) {
+    const response = await fetch(graphqlUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${options.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `
+          query($owner: String!, $repository: String!, $issueNumber: Int!, $after: String!) {
+            repository(owner: $owner, name: $repository) {
+              issue(number: $issueNumber) {
+                timelineItems(first: 100, after: $after, itemTypes: [PROJECT_V2_ITEM_STATUS_CHANGED_EVENT]) {
+                  nodes {
+                    ... on ProjectV2ItemStatusChangedEvent {
+                      createdAt
+                      previousStatus
+                      status
+                      project { id title }
+                    }
+                  }
+                  pageInfo { hasNextPage endCursor }
+                }
+              }
+            }
+          }
+        `,
+        variables: { owner, repository, issueNumber, after: cursor }
+      })
+    });
+    if (!response.ok) throw new Error(`GitHub GraphQL request failed (${response.status}).`);
+    const payload = await response.json() as {
+      data?: { repository?: { issue?: { timelineItems?: {
+        nodes?: Array<{ createdAt?: string; previousStatus?: string; status?: string; project?: { id?: string; title?: string } | null } | null>;
+        pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+      } } | null } | null };
+      errors?: Array<{ message?: string }>;
+    };
+    if (payload.errors?.length) {
+      throw new Error(`GitHub GraphQL query failed: ${payload.errors.map((error) => error.message ?? 'unknown error').join('; ')}`);
+    }
+    const timeline = payload.data?.repository?.issue?.timelineItems;
+    history.push(...statusHistoryFromTimelineNodes(timeline?.nodes ?? []));
+    cursor = timeline?.pageInfo?.hasNextPage ? timeline.pageInfo.endCursor ?? null : null;
+  }
+  return history;
 }
 
 /** Récupère les statuts des Projects classiques exposés par l'API REST. */

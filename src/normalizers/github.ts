@@ -167,7 +167,11 @@ export function normalizeGithub(
             ...(projectStatus.rawVelocity !== undefined ? { rawVelocity: projectStatus.rawVelocity } : {}),
             ...(velocity !== undefined ? { velocity } : {}),
             ...(projectStatus.rawScheduling !== undefined ? { rawScheduling: projectStatus.rawScheduling } : {}),
-            statusHistory: []
+            statusHistory: (projectStatus.statusHistory ?? []).map((transition) => ({
+              ...(transition.previousStatus !== undefined ? { previousRawStatus: transition.previousStatus } : {}),
+              rawStatus: transition.status,
+              transitionedAt: transition.transitionedAt
+            }))
           };
         }),
         provenance: { source: 'github', sourceId: issue.id, collectedAt: raw.collectedAt },

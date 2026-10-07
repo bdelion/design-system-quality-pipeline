@@ -26,7 +26,7 @@ function dataset(): RawDataset {
         url: 'https://github.example/acme/ds-react/issues/42', state: 'OPEN', issueType: 'BUG', rawIssueType: '  Bug  ',
         labels: ['Component:Button', 'Component:Input', 'rgaa:Majeure', 'a11y:Keyboard'], criticities: ['majeure'],
         parents: ['audit-1'], createdAt: '2026-10-01T10:00:00Z', linkedPullRequestIds: ['pr-1'],
-        projectStatuses: [{ projectId: 'project-1', projectName: 'Quality', status: 'In progress', iteration: { iterationId: 'it-1', title: 'Sprint 1', startDate: '2026-09-01', durationDays: 14 }, rawVelocity: '3', rawScheduling: '2' }],
+        projectStatuses: [{ projectId: 'project-1', projectName: 'Quality', status: 'In progress', iteration: { iterationId: 'it-1', title: 'Sprint 1', startDate: '2026-09-01', durationDays: 14 }, rawVelocity: '3', rawScheduling: '2', statusHistory: [{ previousStatus: 'Backlog', status: 'In progress', transitionedAt: '2026-09-29T09:00:00Z' }] }],
         milestone: { id: 12, number: 12, title: '4.2.1' }
       }]
     }]
@@ -48,7 +48,7 @@ describe('I1 Issue normalization', () => {
     expect(normalized.issues?.[0]?.projectContexts).toEqual([{
       projectId: 'project-1', projectName: 'Quality', rawStatus: 'In progress',
       iteration: { iterationId: 'it-1', title: 'Sprint 1', startDate: '2026-09-01', durationDays: 14 },
-      rawVelocity: '3', velocity: 3, rawScheduling: '2', statusHistory: []
+      rawVelocity: '3', velocity: 3, rawScheduling: '2', statusHistory: [{ previousRawStatus: 'Backlog', rawStatus: 'In progress', transitionedAt: '2026-09-29T09:00:00Z' }]
     }]);
   });
 
