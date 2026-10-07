@@ -1,5 +1,6 @@
 import type { Analytics, DataQualityIssue, NormalizedData } from '../domain/types.js';
 import { calculateMetrics } from './metrics.js';
+import { projectVersionStates } from './version-state.js';
 
 /**
  * Adaptateur de compatibilité temporaire.
@@ -11,8 +12,8 @@ import { calculateMetrics } from './metrics.js';
  * pour les consommateurs legacy et pourront être supprimées dans une version
  * majeure après migration de ces consommateurs.
  */
-export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]): Analytics {
-  const metrics = calculateMetrics(data, dqIssues);
+export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[], observedAt?: string): Analytics {
+  const metrics = calculateMetrics(data, dqIssues, observedAt);
   const metric = (id: string) => metrics[id];
   const asLegacy = (id: string) => {
     const value = metric(id);
@@ -39,6 +40,7 @@ export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]
         .filter(([id]) => id.startsWith('anomaly.byCategory.'))
         .map(([id, value]) => [id.replace('anomaly.byCategory.', ''), value.value])
     ),
+    versionStates: projectVersionStates(data),
     auditsCoverage: asLegacy('portfolio.auditCoverage'),
     conformityRate: asLegacy('audit.conformityRate'),
     averageCorrectionDelayDays: asLegacy('anomaly.correctionDelay.average'),

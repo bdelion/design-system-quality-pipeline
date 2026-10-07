@@ -1,11 +1,13 @@
 import pLimit from 'p-limit';
-import type { RawDataset, RawIssue, RawPullRequest, RawRepository } from '../domain/types.js';
+import type { RawDataset, RawIssue, RawPullRequest, RawRepository, RawTag } from '../domain/types.js';
 import type { GithubProcessingConfig } from '../config.js';
+import { componentNamesFromLabels } from '../lib/components.js';
 
 interface GithubIssue {
   id: number;
   number: number;
   title: string;
+  html_url?: string;
   state: 'open' | 'closed';
   labels: Array<{ name?: string }>;
   body?: string | null;
@@ -19,6 +21,13 @@ interface GithubIssue {
 interface GithubGraphqlIssueData {
   pullRequests: GithubGraphqlPullRequest[];
   projectStatuses: GithubProjectStatus[];
+  projectFields: NonNullable<RawIssue['projectFields']>;
+  projectTransitions: Array<{
+    projectId: string;
+    previousStatus?: string;
+    newStatus: string;
+    changedAt?: string;
+  }>;
 }
 
 interface GithubPullRequest {
@@ -39,6 +48,20 @@ interface GithubProjectStatus {
   projectId: string;
   projectName: string;
   status: string;
+  iteration?: NonNullable<RawIssue['projectStatuses'][number]['iteration']>;
+  velocity?: string | number | null;
+  scheduling?: string | null;
+}
+
+interface GithubTagReference {
+  ref: string;
+  object: { sha: string; type: RawTag['referenceObjectType'] };
+}
+
+interface GithubTagObject {
+  tag: string;
+  tagger?: { date?: string | null } | null;
+  object: { sha: string; type: RawTag['targetType'] };
 }
 
 interface GithubProjectCard {
@@ -54,6 +77,10 @@ interface GithubRepository {
   full_name: string;
   owner: { login: string };
   default_branch: string;
+}
+
+interface GithubParentIssue {
+  number: number;
 }
 
 interface GithubCollectorOptions {
@@ -81,6 +108,7 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
   const repository = await githubGet<GithubRepository>(apiUrl, `/repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(repositoryName)}`, options);
   const issues = await githubGetAll<GithubIssue>(apiUrl, `/repos/${repository.full_name}/issues?state=all&per_page=100`, options);
   const pullRequests = await githubGetAll<GithubPullRequest>(apiUrl, `/repos/${repository.full_name}/pulls?state=all&per_page=100`, options);
+  const tags = await collectVersionTags(apiUrl, repository.full_name, options);
   const rawPullRequests = pullRequests.map((pullRequest) => toRawPullRequest(pullRequest, repository.full_name, options.rules));
   const pullRequestByNumber = new Map(pullRequests.map((pullRequest) => [pullRequest.number, pullRequest]));
   // Les pull requests apparaissent aussi dans l'endpoint des issues : elles sont écartées ici.
@@ -98,6 +126,12 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
               `/repos/${repository.full_name}/issues/${issue.number}/timeline?per_page=100`,
               options
             );
+          const parentId = await parentIssueFromRest(
+            apiUrl,
+            repository.full_name,
+            issue.number,
+            options
+          );
 
           const graphqlData =
             options.graphqlUrl
@@ -110,7 +144,9 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
               )
               : {
                 pullRequests: [],
-                projectStatuses: []
+                projectStatuses: [],
+                projectFields: [],
+                projectTransitions: []
               };
 
           const restProjectStatuses =
@@ -120,38 +156,62 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
               issue.number,
               options
             );
+          const statusTransitions = projectTransitionsFromTimeline(timeline);
 
+          const projectTransitions = [
+            ...statusTransitions,
+            ...graphqlData.projectTransitions
+          ];
           return toRawIssue(
             issue,
             repository.full_name,
             pullRequestByNumber,
             options.rules,
             timeline,
+            parentId,
             graphqlData.pullRequests,
             [
-              ...restProjectStatuses,
-              ...graphqlData.projectStatuses
-            ]
+              ...restProjectStatuses.map((status) => ({
+                ...status,
+                transitions: projectTransitions
+                  .filter((transition) => transition.projectId === status.projectId)
+                  .map((transition) => ({
+                    ...(transition.previousStatus !== undefined ? { previousStatus: transition.previousStatus } : {}),
+                    newStatus: transition.newStatus,
+                    ...(transition.changedAt !== undefined ? { changedAt: transition.changedAt } : {})
+                  }))
+              })),
+              ...graphqlData.projectStatuses.map((status) => ({
+                ...status,
+                transitions: projectTransitions
+                  .filter((transition) => transition.projectId === status.projectId)
+                  .map((transition) => ({
+                    ...(transition.previousStatus !== undefined ? { previousStatus: transition.previousStatus } : {}),
+                    newStatus: transition.newStatus,
+                    ...(transition.changedAt !== undefined ? { changedAt: transition.changedAt } : {})
+                  }))
+              }))
+            ],
+            graphqlData.projectFields
           );
         })
       )
   );
-  ;
   return {
     id: String(repository.id),
     name: repository.name,
     owner: repository.owner.login,
     defaultBranch: repository.default_branch,
     issues: rawIssues,
-    pullRequests: rawPullRequests
+    pullRequests: rawPullRequests,
+    tags
   };
 }
 
 /** Convertit une issue GitHub en conservant ses labels et relations explicites. */
-function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber: Map<number, GithubPullRequest>, rules: GithubProcessingConfig, timeline: GithubTimelineEvent[], graphqlPullRequests: GithubGraphqlPullRequest[], projectStatuses: GithubProjectStatus[]): RawIssue {
+function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber: Map<number, GithubPullRequest>, rules: GithubProcessingConfig, timeline: GithubTimelineEvent[], parentId: string | undefined, graphqlPullRequests: GithubGraphqlPullRequest[], projectStatuses: GithubProjectStatus[], projectFields: NonNullable<RawIssue['projectFields']>): RawIssue {
   const labels = issue.labels.map((label) => label.name).filter((label): label is string => Boolean(label));
-  const componentLabel = labels.find((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()));
-  const issueType = issue.type?.name?.toUpperCase() ?? inferIssueType(labels, issue.title, rules);
+  const components = componentNamesFromLabels(labels, rules.labels.componentPrefix);
   const linkedPullRequestNumbers = [...new Set([
     ...extractClosingReferences(issue.body, rules.closingKeywords),
     ...extractClosingReferences(issue.title, rules.closingKeywords),
@@ -167,15 +227,18 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
     number: issue.number,
     title: issue.title,
     state: issue.state.toUpperCase() as RawIssue['state'],
-    issueType: issueType as RawIssue['issueType'],
+    ...(issue.type?.name !== undefined ? { issueType: issue.type.name } : {}),
     labels,
-    ...(componentLabel ? { component: componentLabel.slice(rules.labels.componentPrefix.length) } : {}),
+    components,
+    ...(components.length === 1 ? { component: components[0] } : {}),
     criticities: labels.filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())).map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).toLowerCase()),
-    parents: [],
+    parents: parentId ? [parentId] : [],
     createdAt: issue.created_at,
     ...(issue.closed_at ? { closedAt: issue.closed_at } : {}),
+    ...(issue.html_url ? { url: issue.html_url } : {}),
     linkedPullRequestIds,
     projectStatuses,
+    projectFields,
     ...(issue.milestone ? {
       milestone: {
         id: issue.milestone.id,
@@ -185,6 +248,120 @@ function toRawIssue(issue: GithubIssue, repository: string, pullRequestByNumber:
       }
     } : {})
   };
+}
+
+/** Resolves a source Issue's explicit parent relation; a 404 means no parent. */
+async function parentIssueFromRest(
+  apiUrl: string,
+  repository: string,
+  issueNumber: number,
+  options: GithubCollectorOptions
+): Promise<string | undefined> {
+  try {
+    const parent = await githubGet<GithubParentIssue>(
+      apiUrl,
+      `/repos/${repository}/issues/${issueNumber}/parent`,
+      options
+    );
+    return `${repository}:issue:${parent.number}`;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('(404)')) return undefined;
+    throw error;
+  }
+}
+
+/** Collects PROD/RC tag refs; lightweight refs intentionally have no tagger timestamp. */
+async function collectVersionTags(
+  apiUrl: string,
+  repository: string,
+  options: GithubCollectorOptions
+): Promise<RawTag[]> {
+  const references = await githubGetAll<GithubTagReference>(
+    apiUrl,
+    `/repos/${repository}/git/matching-refs/tags/`,
+    options
+  );
+  const relevantReferences = references.filter((reference) => {
+    const name = reference.ref.replace(/^refs\/tags\//, '');
+    return /^\d+\.\d+\.\d+(?:-rc\.\d+)?$/i.test(name);
+  });
+
+  return Promise.all(relevantReferences.map(async (reference) => {
+    const name = reference.ref.replace(/^refs\/tags\//, '');
+    if (reference.object.type !== 'tag') {
+      return {
+        name,
+        ref: reference.ref,
+        referenceSha: reference.object.sha,
+        referenceObjectType: reference.object.type,
+        targetSha: reference.object.sha,
+        targetType: reference.object.type
+      };
+    }
+    const tagObject = await resolveTagObject(apiUrl, repository, reference.object.sha, options);
+    return {
+      name,
+      ref: reference.ref,
+      referenceSha: reference.object.sha,
+      referenceObjectType: reference.object.type,
+      targetSha: tagObject.targetSha,
+      targetType: tagObject.targetType,
+      ...(tagObject.createdAt ? { createdAt: tagObject.createdAt } : {})
+    };
+  }));
+}
+
+async function resolveTagObject(
+  apiUrl: string,
+  repository: string,
+  initialSha: string,
+  options: GithubCollectorOptions
+): Promise<{ targetSha: string; targetType: RawTag['targetType']; createdAt?: string }> {
+  const seen = new Set<string>();
+  let sha = initialSha;
+  let createdAt: string | undefined;
+
+  while (true) {
+    if (seen.has(sha)) throw new Error(`Cyclic annotated Git tag chain detected in ${repository}.`);
+    seen.add(sha);
+    const tagObject = await githubGet<GithubTagObject>(
+      apiUrl,
+      `/repos/${repository}/git/tags/${sha}`,
+      options
+    );
+    createdAt ??= tagObject.tagger?.date ?? undefined;
+    if (tagObject.object.type !== 'tag') {
+      return {
+        targetSha: tagObject.object.sha,
+        targetType: tagObject.object.type,
+        ...(createdAt ? { createdAt } : {})
+      };
+    }
+    sha = tagObject.object.sha;
+  }
+}
+
+/** Extracts all classic Projects column moves without deriving business dates. */
+function projectTransitionsFromTimeline(
+  events: GithubTimelineEvent[]
+): Array<{ projectId: string; previousStatus?: string; newStatus: string; changedAt?: string }> {
+  return events.flatMap((event) => {
+    if (event.event !== 'moved_columns_in_project') return [];
+    const card = event.project_card;
+    if (!card || typeof card !== 'object') return [];
+    const cardRecord = card as Record<string, unknown>;
+    const projectId = cardRecord.project_id;
+    const newStatus = cardRecord.column_name;
+    if ((typeof projectId !== 'string' && typeof projectId !== 'number') || typeof newStatus !== 'string') return [];
+    return [{
+      projectId: String(projectId),
+      ...(typeof cardRecord.previous_column_name === 'string'
+        ? { previousStatus: cardRecord.previous_column_name }
+        : {}),
+      newStatus,
+      ...(typeof event.created_at === 'string' ? { changedAt: event.created_at } : {})
+    }];
+  });
 }
 
 /** Récupère en une seule requête GraphQL les PR liées et les statuts Projects v2. */
@@ -240,12 +417,26 @@ async function issueDataFromGraphql(
                     nodes {
                       ... on ProjectV2ItemFieldSingleSelectValue {
                         name
-
                         field {
                           ... on ProjectV2SingleSelectField {
                             name
                           }
                         }
+                      }
+                      ... on ProjectV2ItemFieldTextValue {
+                        text
+                        field { ... on ProjectV2FieldCommon { name } }
+                      }
+                      ... on ProjectV2ItemFieldNumberValue {
+                        number
+                        field { ... on ProjectV2FieldCommon { name } }
+                      }
+                      ... on ProjectV2ItemFieldIterationValue {
+                        iterationId
+                        title
+                        startDate
+                        duration
+                        field { ... on ProjectV2FieldCommon { name } }
                       }
                     }
                   }
@@ -290,6 +481,12 @@ async function issueDataFromGraphql(
               fieldValues?: {
                 nodes?: Array<{
                   name?: string;
+                  text?: string;
+                  number?: number;
+                  iterationId?: string;
+                  title?: string;
+                  startDate?: string;
+                  duration?: number;
                   field?: {
                     name?: string;
                   };
@@ -312,12 +509,7 @@ async function issueDataFromGraphql(
   );
 
   if (rateLimitExceeded) {
-    console.warn(`GraphQL rate limit exceeded for issue #${issueNumber}`);
-
-    return {
-      pullRequests: [],
-      projectStatuses: []
-    };
+    throw new Error(`GitHub GraphQL rate limit exceeded while collecting issue #${issueNumber}.`);
   }
 
   if (payload.errors?.length) {
@@ -338,31 +530,58 @@ async function issueDataFromGraphql(
           Boolean(pr)
       ) ?? [];
 
-  const projectStatuses =
-    issue?.projectItems?.nodes?.flatMap(item => {
+  const projectItems = issue?.projectItems?.nodes ?? [];
+  const projectStatuses = projectItems.flatMap((item) => {
+    const project = item?.project;
+    if (!project?.id || !project.title) return [];
+    const fields = item?.fieldValues?.nodes ?? [];
+    const status = fields.find((field) =>
+      field.field?.name?.toLowerCase() === 'status' && field.name
+    );
+    if (!status?.name) return [];
+    const iteration = fields.find((field) =>
+      field.iterationId && field.title && field.field?.name?.toLowerCase() === 'iteration'
+    );
+    const velocity = fields.find((field) =>
+      field.field?.name?.toLowerCase() === 'velocity' && (field.number !== undefined || field.text !== undefined)
+    );
+    const scheduling = fields.find((field) =>
+      field.field?.name?.toLowerCase() === 'scheduling' && (field.name !== undefined || field.text !== undefined)
+    );
+    return [{
+      projectId: project.id,
+      projectName: project.title,
+      status: status.name,
+      ...(iteration ? {
+        iteration: {
+          id: iteration.iterationId!,
+          title: iteration.title!,
+          ...(iteration.startDate ? { startDate: iteration.startDate } : {}),
+          ...(iteration.duration !== undefined ? { duration: iteration.duration } : {})
+        }
+      } : {}),
+      ...(velocity ? { velocity: velocity.number ?? velocity.text ?? null } : {}),
+      ...(scheduling ? { scheduling: scheduling.name ?? scheduling.text ?? null } : {})
+    }];
+  });
+  const projectFields = projectItems.flatMap((item) => {
+    const project = item?.project;
+    if (!project?.id || !project.title) return [];
+    return (item?.fieldValues?.nodes ?? []).flatMap((field) => {
+      const name = field.field?.name;
+      if (!name || name !== options.rules.projects.auditedReleaseCandidateField) return [];
+      const value = field.text ?? field.number ?? field.name ?? field.title ?? null;
+      return [{ projectId: project.id!, projectName: project.title!, fieldName: name, value }];
+    });
+  });
 
-      const project = item?.project;
-
-      const status =
-        item?.fieldValues?.nodes?.find(
-          field =>
-            field.field?.name?.toLowerCase() === 'status'
-            && field.name
-        );
-
-      return (
-        project?.id &&
-        project.title &&
-        status?.name
-      )
-        ? [{
-          projectId: project.id,
-          projectName: project.title,
-          status: status.name
-        }]
-        : [];
-
-    }) ?? [];
+  const projectTransitions = await projectV2StatusTransitionsFromGraphql(
+    graphqlUrl,
+    options,
+    owner,
+    repository,
+    issueNumber
+  );
 
   if (payload.data?.rateLimit) {
     console.debug(`GraphQL rate limit: remaining=${payload.data.rateLimit.remaining}, cost=${payload.data.rateLimit.cost}`);
@@ -370,8 +589,109 @@ async function issueDataFromGraphql(
 
   return {
     pullRequests,
-    projectStatuses
+    projectStatuses,
+    projectFields,
+    projectTransitions
   };
+}
+
+async function projectV2StatusTransitionsFromGraphql(
+  graphqlUrl: string,
+  options: GithubCollectorOptions,
+  owner: string,
+  repository: string,
+  issueNumber: number
+): Promise<GithubGraphqlIssueData['projectTransitions']> {
+  const transitions: GithubGraphqlIssueData['projectTransitions'] = [];
+  let after: string | null = null;
+  let hasNextPage = true;
+
+  while (hasNextPage) {
+    const response = await fetch(graphqlUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${options.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `
+          query($owner: String!, $repository: String!, $issueNumber: Int!, $after: String) {
+            repository(owner: $owner, name: $repository) {
+              issue(number: $issueNumber) {
+                timelineItems(
+                  first: 100,
+                  after: $after,
+                  itemTypes: [PROJECT_V2_ITEM_STATUS_CHANGED_EVENT]
+                ) {
+                  nodes {
+                    ... on ProjectV2ItemStatusChangedEvent {
+                      createdAt
+                      previousStatus
+                      status
+                      project { id }
+                    }
+                  }
+                  pageInfo { hasNextPage endCursor }
+                }
+              }
+            }
+          }
+        `,
+        variables: { owner, repository, issueNumber, after }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub GraphQL Project timeline request failed (${response.status}).`);
+    }
+
+    const payload = await response.json() as {
+      data?: {
+        repository?: {
+          issue?: {
+            timelineItems?: {
+              nodes?: Array<{
+                createdAt?: string;
+                previousStatus?: string | null;
+                status?: string;
+                project?: { id?: string } | null;
+              } | null>;
+              pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+            };
+          } | null;
+        } | null;
+      };
+      errors?: Array<{ message?: string }>;
+    };
+
+    if (payload.errors?.length) {
+      throw new Error(
+        `GitHub GraphQL Project timeline query failed: ${payload.errors
+          .map((error) => error.message ?? 'unknown error')
+          .join('; ')}`
+      );
+    }
+
+    const timeline = payload.data?.repository?.issue?.timelineItems;
+    for (const event of timeline?.nodes ?? []) {
+      if (!event?.project?.id || typeof event.status !== 'string') continue;
+      transitions.push({
+        projectId: event.project.id,
+        ...(typeof event.previousStatus === 'string' ? { previousStatus: event.previousStatus } : {}),
+        newStatus: event.status,
+        ...(event.createdAt ? { changedAt: event.createdAt } : {})
+      });
+    }
+
+    hasNextPage = timeline?.pageInfo?.hasNextPage ?? false;
+    after = timeline?.pageInfo?.endCursor ?? null;
+    if (hasNextPage && !after) {
+      throw new Error(`GitHub GraphQL Project timeline is missing a cursor for issue #${issueNumber}.`);
+    }
+  }
+
+  return transitions;
 }
 
 /** Récupère les statuts des Projects classiques exposés par l'API REST. */
@@ -416,15 +736,6 @@ function toRawPullRequest(pullRequest: GithubPullRequest, repository: string, ru
     ...(pullRequest.merged_at ? { mergedAt: pullRequest.merged_at } : {}),
     relatedIssueIds: [...new Set([...extractClosingReferences(pullRequest.body, rules.closingKeywords), ...extractClosingReferences(pullRequest.title, rules.closingKeywords)])].map((number) => `${repository}:issue:${number}`)
   };
-}
-
-/** Déduit le type métier lorsque l'API GitHub ne le fournit pas. */
-function inferIssueType(labels: string[], title: string, rules: GithubProcessingConfig): RawIssue['issueType'] {
-  const normalized = `${labels.join(' ')} ${title}`.toLowerCase();
-  for (const [issueType, keywords] of Object.entries(rules.issueTypes.keywords)) {
-    if (keywords.some((keyword) => normalized.includes(keyword.toLowerCase()))) return issueType as RawIssue['issueType'];
-  }
-  return 'UNKNOWN';
 }
 
 /** Extrait les références `Closes`, `Fixes` et `Resolves` d'un texte GitHub. */

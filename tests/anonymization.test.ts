@@ -128,6 +128,156 @@ describe('fixture anonymizer', () => {
     expect(result.milestone?.id).not.toBe(7);
   });
 
+  it('anonymizes Issue URLs and preserves Project history and planning fields', () => {
+    const source: RawDataset = {
+      collectedAt: '2026-09-28T10:00:00Z',
+      nexusAvailable: false,
+      catalogueComponents: [],
+      repositories: [{
+        id: 'repo-1', name: 'ds-react', owner: 'myorga', defaultBranch: 'main',
+        tags: [{
+          name: '1.8.0',
+          ref: 'refs/tags/1.8.0',
+          referenceSha: 'tag-object',
+          referenceObjectType: 'tag',
+          targetSha: 'commit-1',
+          targetType: 'commit',
+          createdAt: '2026-09-28T10:00:00Z'
+        }],
+        issues: [{
+          id: 'repo-1:issue:42',
+          number: 42,
+          title: 'Private issue title',
+          state: 'CLOSED',
+          issueType: 'Bug',
+          labels: ['Component:Button', 'Component:Modal'],
+          components: ['Button', 'Modal'],
+          criticities: [],
+          parents: [],
+          createdAt: '2026-09-28T10:00:00Z',
+          url: 'https://github.enterprise.io/myorga/ds-react/issues/42',
+          linkedPullRequestIds: [],
+          projectStatuses: [{
+            projectId: 'project-1',
+            projectName: 'Private project',
+            status: 'Done',
+            iteration: {
+              id: 'iteration-1',
+              title: 'Private planning cycle',
+              startDate: '2026-09-01',
+              endDate: '2026-09-14',
+              duration: 14
+            },
+            velocity: 5,
+            scheduling: 'Must',
+            transitions: [{
+              previousStatus: 'In progress',
+              newStatus: 'Done',
+              changedAt: '2026-09-28T09:00:00Z'
+            }]
+          }]
+        }],
+        pullRequests: []
+      }]
+    };
+    const result = anonymizeDataset(source, options).dataset.repositories[0]!.issues[0]!;
+    const project = result.projectStatuses[0]!;
+
+    expect(result.url).toMatch(/^https:\/\/github\.invalid\/owner-[^/]+\/repo-[^/]+\/issues\/\d+$/);
+    expect(result.url).not.toContain('github.enterprise.io');
+    expect(result.components).toEqual(['Button', 'Modal']);
+    expect(project.iteration?.title).not.toBe('Private planning cycle');
+    expect(project.iteration?.startDate).toBe('2026-05-24');
+    expect(project.iteration?.endDate).toBe('2026-06-06');
+    expect(project.velocity).toBe(5);
+    expect(project.scheduling).toBe('Must');
+    expect(project.transitions?.[0]?.changedAt).toBe('2026-06-20T09:00:00.000Z');
+    expect(anonymizeDataset(source, options).dataset.repositories[0]?.tags?.[0]?.createdAt)
+      .toBe('2026-06-20T10:00:00.000Z');
+  });
+
+  it('keeps parent relations and configured Project fields consistent after anonymization', () => {
+    const source: RawDataset = {
+      collectedAt: '2026-09-28T10:00:00Z',
+      nexusAvailable: false,
+      catalogueComponents: [],
+      repositories: [{
+        id: 'repo-1',
+        name: 'ds-react',
+        owner: 'myorga',
+        defaultBranch: 'main',
+        issues: [
+          {
+            id: 'repo-1:issue:10',
+            number: 10,
+            title: 'Private audit',
+            state: 'OPEN',
+            issueType: 'Audit',
+            labels: [],
+            criticities: [],
+            parents: [],
+            createdAt: '2026-09-28T10:00:00Z',
+            linkedPullRequestIds: [],
+            projectStatuses: [{
+              projectId: 'project-1',
+              projectName: 'Private project',
+              status: 'In progress'
+            }],
+            projectFields: [{
+              projectId: 'project-1',
+              projectName: 'Private project',
+              fieldName: 'Audited RC',
+              value: '1.8.0-rc.3'
+            }]
+          },
+          {
+            id: 'repo-1:issue:11',
+            number: 11,
+            title: 'Private sub-issue',
+            state: 'OPEN',
+            issueType: 'Bug',
+            labels: [],
+            criticities: [],
+            parents: ['repo-1:issue:10'],
+            createdAt: '2026-09-28T11:00:00Z',
+            linkedPullRequestIds: [],
+            projectStatuses: []
+          }
+        ],
+        pullRequests: [],
+        tags: [{
+          name: '1.8.0',
+          ref: 'refs/tags/1.8.0',
+          referenceSha: 'annotated-tag-sha',
+          referenceObjectType: 'tag',
+          targetSha: 'release-commit-sha',
+          targetType: 'commit',
+          createdAt: '2026-09-28T12:00:00Z'
+        }]
+      }]
+    };
+    const anonymized = anonymizeDataset(source, options).dataset;
+    const result = anonymized.repositories[0]!;
+    const child = result.issues.find((issue) => issue.parents.length > 0);
+    const parent = result.issues.find((issue) => issue.id === child?.parents[0]);
+
+    expect(parent).toBeDefined();
+    expect(child?.parents).toEqual([parent?.id]);
+    expect(parent?.projectFields?.[0]).toMatchObject({
+      fieldName: 'Audited RC',
+      value: '1.8.0-rc.3'
+    });
+    expect(parent?.projectFields?.[0]?.projectId).toBe(parent?.projectStatuses[0]?.projectId);
+    expect(result.tags?.[0]).toMatchObject({
+      name: '1.8.0',
+      ref: 'refs/tags/1.8.0',
+      referenceSha: 'annotated-tag-sha',
+      targetSha: 'release-commit-sha'
+    });
+    expect(result.tags?.[0]?.createdAt).toBe('2026-06-20T12:00:00.000Z');
+    expect(assertRelationalIntegrity(anonymized)).toEqual([]);
+  });
+
   it('does not leak rich milestone API fields into the RAW/anonymized model', () => {
     const source = {
       collectedAt: '2026-09-28T10:00:00Z', nexusAvailable: false, catalogueComponents: [],

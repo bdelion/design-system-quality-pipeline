@@ -39,3 +39,47 @@ rules:
     severity: WARNING
     action: include
     message: "Nexus is unavailable; release evidence is unknown."
+  - id: DQ-011
+    severity: WARNING
+    action: include
+    message: "Issue Type à déclarer : valeur brute non reconnue par la configuration."
+  - id: DQ-012
+    severity: WARNING
+    action: include
+    message: "Issue Type GitHub absent."
+  - id: DQ-013
+    severity: WARNING
+    action: exclude
+    message: "Audit avec cardinalité Component invalide."
+  - id: DQ-014
+    severity: WARNING
+    action: exclude
+    message: "Version cible de l’Audit indéterminable."
+  - id: DQ-015
+    severity: WARNING
+    action: include
+    message: "Incohérence entre le statut Done du Project et l’état GitHub Closed."
+  - id: DQ-016
+    severity: WARNING
+    action: include
+    message: "Release Candidate auditée absente pour un Audit pré-PROD."
+  - id: DQ-017
+    severity: WARNING
+    action: include
+    message: "Tag PROD absent pour une Version."
+  - id: DQ-018
+    severity: WARNING
+    action: include
+    message: "Catalogue historique de Version indisponible."
+  - id: DQ-019
+    severity: WARNING
+    action: include
+    message: "Origine de l’Anomalie indéterminée."
+  - id: DQ-020
+    severity: WARNING
+    action: exclude
+    message: "Component de l’Anomalie incompatible avec le Component de l’Audit parent."
+  - id: DQ-021
+    severity: WARNING
+    action: include
+    message: "Statut Project courant de l’Anomalie absent ou inexploitable."

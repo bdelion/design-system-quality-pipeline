@@ -106,7 +106,7 @@ program.command('validate').description('Validate configuration and source scope
 
 program.command('analyze').description('Run normalization, Data Quality and KPI calculations').option('--source <source>', 'fixture or github', 'fixture').option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath).action(async (options: { source: CollectionSource; fixture: string }) => {
   const snapshot = await runPipeline(options.source, options.fixture);
-  console.log(`ANALYZED ${snapshot.normalizedData.anomalies.length} anomalies; ${snapshot.dataQuality.issues.length} DQ issues`);
+  console.log(`ANALYZED ${snapshot.normalizedData.legacyAnomalies.length} anomalies; ${snapshot.dataQuality.issues.length} DQ issues`);
 });
 
 program.command('snapshot').description('Build and persist an immutable snapshot and dashboard').option('--source <source>', 'fixture or github', 'fixture').option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath).action(async (options: { source: CollectionSource; fixture: string }) => {

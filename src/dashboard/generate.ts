@@ -2,11 +2,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stringify } from 'yaml';
-import type { AnomalyStatus, AuditStatus, Component, DataQualityStatus, Metric, Severity, Snapshot } from '../domain/types.js';
+import type { AnomalyStatus, Component, DataQualityStatus, Metric, Severity, Snapshot } from '../domain/types.js';
 
 const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.meta.url)));
 
-/** Génère les cinq pages statiques et leurs assets depuis un snapshot. */
+/** Génère les pages statiques et leurs assets depuis un snapshot. */
 export async function generateDashboard(snapshot: Snapshot, outputRoot: string, githubUrl?: string): Promise<void> {
   const dashboardPath = resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });
@@ -20,6 +20,8 @@ export async function generateDashboard(snapshot: Snapshot, outputRoot: string, 
     writeFile(resolve(dashboardPath, 'index.html'), page(snapshot, 'Vue d’ensemble', overviewContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'anomalies.html'), page(snapshot, 'Anomalies', anomaliesContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'audits.html'), page(snapshot, 'Audits et composants', auditsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'components.html'), page(snapshot, 'Patrimoine composants', componentsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'squad.html'), page(snapshot, 'Activité Squad', squadContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'graph.html'), page(snapshot, 'Cartographie', graphContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'history.html'), page(snapshot, 'Historique', historyContent(snapshot), serializedSnapshot), 'utf8'),
     copyDashboardAsset(dashboardPath, 'style.css'),
@@ -37,6 +39,18 @@ async function copyDashboardAsset(dashboardPath: string, assetName: string): Pro
 
 /** Assemble une page HTML complète à partir d'un contenu et d'un snapshot. */
 function page(snapshot: Snapshot, title: string, content: string, serializedSnapshot: string): string {
+  const navigation = [
+    ['Vue d’ensemble', 'index.html', '◈', 'Direction / synthèse'],
+    ['Audits et composants', 'audits.html', '◇', 'Audits & versions'],
+    ['Activité Squad', 'squad.html', '▤', 'Activité Squad'],
+    ['Patrimoine composants', 'components.html', '◉', 'Patrimoine composants'],
+    ['Anomalies', 'anomalies.html', '!', 'Anomalies & qualité'],
+    ['Historique', 'history.html', '↗', 'Historique']
+  ] as const;
+  const navHtml = navigation.map(([pageTitle, href, icon, label]) =>
+    `<a class="${title === pageTitle || (pageTitle === 'Patrimoine composants' && title === 'Cartographie') ? 'active' : ''}" href="${href}"><span aria-hidden="true">${icon}</span>${escapeHtml(label)}${pageTitle === 'Anomalies' ? `<span class="nav-count">${snapshot.dataQuality.issues.length}</span>` : ''}</a>`
+  ).join('');
+  const sectionStatus = qualityLabel(snapshot.reliability);
   // Le snapshot est sérialisé dans une balise script ; les chevrons sont échappés pour éviter une injection HTML.
   return `<!doctype html>
 <html lang="fr">
@@ -47,17 +61,13 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${title === 'Vue d’ensemble' ? 'À SURVEILLER' : 'V2.1'}</span><span class="avatar">CP</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
+  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${snapshot.reliability}">Snapshot ${sectionStatus}</span></div></header>
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p><nav class="side-nav" aria-label="Navigation principale">${navHtml}<a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span aria-hidden="true">⌘</span>Cartographie</a><a href="anomalies.html#quality"><span aria-hidden="true">◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
   <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}
 </body></html>`;
 }
 
 /** Retourne le nombre d'éléments affiché dans la navigation latérale. */
-function snapshotCountForPage(snapshot: Snapshot, title: string): number | string {
-  return title === 'Anomalies' ? snapshot.dataQuality.issues.length : '';
-}
-
 /** Construit le contenu de la page de synthèse des KPI et alertes. */
 function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   const { analytics, dataQuality } = snapshot;
@@ -165,6 +175,54 @@ function categoryMetricBars(metrics: Record<string, Metric>): string {
   }).join('') || '<p class="muted">Aucune catégorie détectée.</p>';
 }
 
+function auditCriticalityMetricBars(metrics: Record<string, Metric>): string {
+  const entries: Array<[string, string]> = [
+    ['blocking', 'Bloquante'],
+    ['major', 'Majeure'],
+    ['minor', 'Mineure']
+  ];
+  return entries.map(([criticality, label]) =>
+    bar(label, metricOrUnknown(metrics, `anomaly.audit.byCriticality.${criticality}`).value)
+  ).join('');
+}
+
+function auditCategoryMetricBars(metrics: Record<string, Metric>): string {
+  const entries = Object.values(metrics)
+    .filter((metric) => metric.id.startsWith('anomaly.audit.byCategory.'))
+    .sort((left, right) => Number(right.value === 'unknown' ? -1 : right.value) - Number(left.value === 'unknown' ? -1 : left.value));
+  return entries.map((metric) => bar(metric.id.slice('anomaly.audit.byCategory.'.length), metric.value)).join('')
+    || '<p class="muted">Aucune catégorie d’Audit identifiée.</p>';
+}
+
+function auditAnomalyRows(snapshot: Snapshot, githubUrl?: string): string {
+  const issueById = new Map(snapshot.normalizedData.issues.map((issue) => [issue.issueId, issue]));
+  const componentById = new Map(snapshot.normalizedData.components.map((component) => [component.componentId, component.name]));
+  const auditById = new Map(snapshot.normalizedData.audits.map((audit) => [audit.auditId, audit]));
+  const rows = snapshot.normalizedData.anomalies
+    .filter((anomaly) => anomaly.origin === 'AUDIT')
+    .map((anomaly) => {
+      const issue = issueById.get(anomaly.issueId);
+      const auditId = anomaly.origin === 'AUDIT' ? anomaly.auditId : undefined;
+      const audit = auditId ? auditById.get(auditId) : undefined;
+      const version = snapshot.normalizedData.versions.find((item) => item.versionId === audit?.versionId);
+      const status = anomalyStatusForIssue(issue);
+      const statusValue = status ?? 'unknown';
+      const categoryValues = anomaly.categories.join('|');
+      const search = `${anomaly.anomalyId} ${issue?.title ?? ''} ${anomaly.componentIds.map((id) => componentById.get(id) ?? id).join(' ')} ${version?.number ?? ''}`.toLowerCase();
+      return `<tr data-audit-anomaly-row data-criticality="${anomaly.criticality ?? 'unknown'}" data-categories="${escapeHtml(categoryValues)}" data-status="${statusValue}" data-search="${escapeHtml(search)}">
+        <td><strong>${escapeHtml(issue?.title ?? anomaly.anomalyId)}</strong><small>${githubReference(snapshot, issue?.provenance.sourceId ?? issue?.issueId ?? anomaly.issueId, githubUrl)}</small></td>
+        <td>${escapeHtml(anomaly.componentIds.map((id) => componentById.get(id) ?? id).join(', ') || 'Inconnu')}</td>
+        <td>${escapeHtml(version?.number ?? 'Inconnue')}</td>
+        <td><span class="tag tag-${anomaly.criticality ?? 'unknown'}">${criticalityLabel(anomaly.criticality)}</span></td>
+        <td>${escapeHtml(anomaly.categories.join(', ') || '—')}</td>
+        <td><span class="state state-${statusValue}">${status ? anomalyStatusLabel(status) : 'Inconnu'}</span></td>
+        <td>${formatDateShort(anomaly.detectedAt)}</td>
+        <td>${anomaly.correctedAt ? formatDateShort(anomaly.correctedAt) : '—'}</td>
+      </tr>`;
+    });
+  return rows.join('') || '<tr><td colspan="8">Aucune anomalie rattachée à un Audit.</td></tr>';
+}
+
 function reliabilityRows(metrics: Record<string, Metric>): string {
   const selected = ['portfolio.repositories', 'portfolio.components', 'portfolio.auditCoverage', 'audit.conformityRate', 'anomaly.total', 'anomaly.open', 'anomaly.criticalityCoverage', 'anomaly.correctionDelay.median'];
   return selected.map((id) => {
@@ -203,7 +261,23 @@ function historyContent(snapshot: Snapshot): string {
     const label = labels[id] ?? id;
     return metric ? metricCard(label, metric, `${formatDateShort(metric.period?.from ?? '')} → ${formatDateShort(metric.period?.to ?? '')}`, 'anomalies.html') : `<article class="kpi-card"><span class="kpi-label">${label}</span><strong>—</strong><span class="kpi-definition">Disponible après comparaison avec un snapshot précédent.</span></article>`;
   }).join('');
-  return `<section class="hero-band"><div><p class="eyebrow">Évolution</p><h2>Ce qui a changé depuis le snapshot précédent</h2><p>${period ? `Période : ${formatDateShort(period.from ?? '')} → ${formatDateShort(period.to ?? '')}` : 'Aucun snapshot précédent comparable dans les données courantes.'}</p></div><div class="hero-ring"><strong>${first ? ids.reduce((sum, id) => sum + Number(flows[id]?.value ?? 0), 0) : '—'}</strong><span>événements détectés</span></div></section><section class="kpi-grid">${cards}</section><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Interprétation</p><h2>Stock vs flux</h2></div><span class="badge">snapshot courant</span></div><p class="muted">Les indicateurs de cette page sont des flux observés entre deux snapshots. Ils ne remplacent pas les stocks affichés dans <a class="text-link" href="anomalies.html">Anomalies</a>.</p></article>`;
+  const stateByVersion = new Map((snapshot.analytics.versionStates ?? []).map((state) => [state.versionId, state]));
+  const versions = snapshot.normalizedData.versions.map((version) => {
+    const state = stateByVersion.get(version.versionId);
+    const coverage = snapshot.analytics.metrics[`version.auditCoverage.${version.versionId}`];
+    const atRelease = state?.atRelease;
+    const current = state?.current;
+    const atReleaseLabel = !atRelease
+      ? 'Non disponible'
+      : atRelease.catalogueStatus === 'unknown'
+        ? 'Inconnu'
+        : `${atRelease.auditedComponentIds.length} couverts · ${atRelease.nonConformComponentIds.length} non conformes · ${atRelease.unknownComponentIds.length} indéterminés`;
+    const currentLabel = !current || current.catalogueStatus === 'unknown'
+      ? 'Inconnu'
+      : `${current.auditedComponentIds.length} couverts · ${current.conformComponentIds.length} conformes · ${current.nonConformComponentIds.length} non conformes · ${current.unknownComponentIds.length} indéterminés`;
+    return `<tr><th scope="row">${escapeHtml(version.number)}</th><td>${escapeHtml(snapshot.normalizedData.libraries.find((library) => library.libraryId === version.libraryId)?.name ?? version.libraryId)}</td><td>${version.releasedAt ? formatDateShort(version.releasedAt) : 'Non publiée'}</td><td>${version.catalogueStatus === 'known' ? String(version.catalogueComponents?.length ?? 0) : 'Inconnu'}</td><td>${coverage ? formatMetricValue(coverage) : 'Inconnu'}</td><td>${atReleaseLabel}</td><td>${currentLabel}</td></tr>`;
+  }).join('');
+  return `<section class="hero-band"><div><p class="eyebrow">Évolution</p><h2>Ce qui a changé depuis le snapshot précédent</h2><p>${period ? `Période : ${formatDateShort(period.from ?? '')} → ${formatDateShort(period.to ?? '')}` : 'Aucun snapshot précédent comparable dans les données courantes.'}</p></div><div class="hero-ring"><strong>${first ? ids.reduce((sum, id) => sum + Number(flows[id]?.value ?? 0), 0) : '—'}</strong><span>événements détectés</span></div></section><section class="kpi-grid">${cards}</section><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">État temporel des Versions</p><h2>À la Release vs connaissance actuelle</h2></div><span class="badge">${versions.length} Versions</span></div><div class="table-wrap"><table><thead><tr><th scope="col">Version</th><th scope="col">Bibliothèque</th><th scope="col">Release</th><th scope="col">Taille du Catalogue</th><th scope="col">Couverture actuelle</th><th scope="col">État à la Release</th><th scope="col">Connaissance actuelle</th></tr></thead><tbody>${versions || '<tr><td colspan="7">Aucune Version disponible.</td></tr>'}</tbody></table></div><p class="panel-note">Les projections sont calculées dans le pipeline à partir des dates métier. L’instant de capture d’un snapshot ne remplace jamais la date de Release.</p></article><article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Interprétation</p><h2>Stock vs flux</h2></div><span class="badge">snapshot courant</span></div><p class="muted">Les indicateurs de cette page sont des flux observés entre deux snapshots. Ils ne remplacent pas les stocks affichés dans <a class="text-link" href="anomalies.html">Anomalies</a>.</p></article>`;
 }
 
 /** Construit la vue V2 des anomalies : stock, flux, délais, criticité et qualité des données. */
@@ -225,22 +299,26 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const criticalityCoverage = metricOrUnknown(metrics, 'anomaly.criticalityCoverage');
 
   const rows = snapshot.normalizedData.anomalies.map((anomaly) => {
-    const component = snapshot.normalizedData.components.find((item) => item.componentId === anomaly.componentId);
-    const repositoryName = libraryById.get(component?.libraryId ?? '') ?? 'repository inconnu';
-    const status = anomaly.cancelled ? 'cancelled' : anomaly.status;
-    const statusLabel = anomaly.cancelled ? 'Annulée' : anomalyStatusLabel(anomaly.status);
+    const sourceIssue = snapshot.normalizedData.issues.find((item) => item.issueId === anomaly.issueId);
+    const components = snapshot.normalizedData.components.filter((item) => anomaly.componentIds.includes(item.componentId));
+    const repositoryName = libraryById.get(sourceIssue?.libraryId ?? '') ?? 'repository inconnu';
+    const statusValue = anomalyStatusForIssue(sourceIssue);
+    const status = statusValue ?? 'unknown';
+    const statusLabel = statusValue ? anomalyStatusLabel(statusValue) : 'inconnu';
     const criticality = anomaly.criticality ?? 'unknown';
     const categoriesText = anomaly.categories.join(', ') || '—';
-    const linkedPullRequests = anomaly.pullRequestRefs.map((reference) => githubReference(snapshot, reference, githubUrl)).join(' ') || '—';
-    const created = formatDateShort(anomaly.createdAt);
-    const correctedAt = anomaly.firstDoneAt ? formatDateShort(anomaly.firstDoneAt) : '—';
-    const delay = anomaly.firstDoneAt ? `${delayDays(anomaly.createdAt, anomaly.firstDoneAt).toFixed(1)} j` : '—';
+    const linkedPullRequests = (sourceIssue?.linkedPullRequestIds ?? []).map((reference) => githubReference(snapshot, reference, githubUrl)).join(' ') || '—';
+    const created = formatDateShort(anomaly.detectedAt);
+    const correctedAt = anomaly.correctedAt ? formatDateShort(anomaly.correctedAt) : '—';
+    const delay = anomaly.correctedAt ? `${delayDays(anomaly.detectedAt, anomaly.correctedAt).toFixed(1)} j` : '—';
+    const origin = anomaly.origin === 'AUDIT' ? 'Audit' : anomaly.origin === 'HORS_AUDIT' ? 'Hors Audit' : 'Indéterminée';
     return `<tr data-table-row data-repository="${escapeHtml(repositoryName)}" data-status="${status}" data-criticality="${escapeHtml(criticality)}" data-categories="${escapeHtml(anomaly.categories.join('|'))}">
-      <td><strong>${escapeHtml(anomaly.anomalyId)}</strong><small>${githubReference(snapshot, anomaly.provenance.sourceId ?? 'source inconnue', githubUrl)}</small></td>
-      <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name ?? anomaly.componentId)}</small></td>
+      <td><strong>${escapeHtml(anomaly.anomalyId)}</strong><small>${githubReference(snapshot, sourceIssue?.provenance.sourceId ?? 'source inconnue', githubUrl)}</small></td>
+      <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(components.map((component) => component.name).join(', ') || 'Component inconnu')}</small></td>
+      <td><span class="tag">${origin}</span></td>
       <td><span class="tag tag-${criticality}">${criticalityLabel(anomaly.criticality)}</span></td>
       <td>${escapeHtml(categoriesText)}</td>
-      <td><span class="state state-${status}">${statusLabel}</span></td>
+      <td><span class="state state-${status}">${escapeHtml(statusLabel)}</span></td>
       <td>${created}</td><td>${correctedAt}</td><td>${delay}</td><td>${linkedPullRequests}</td>
     </tr>`;
   }).join('');
@@ -283,7 +361,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel table-panel">
     <div class="panel-heading"><div><p class="eyebrow">Détail des objets</p><h2>Anomalies suivies</h2></div><span class="badge">${snapshot.normalizedData.anomalies.length} lignes</span></div>
     <div class="filter-bar"><input class="search" data-filter placeholder="Rechercher une anomalie, un composant, une catégorie..."><select data-filter-repository><option value="">Tous les repositories</option>${repositories.map((repository) => `<option value="${escapeHtml(repository)}">${escapeHtml(repository)}</option>`).join('')}</select><select data-filter-criticality><option value="">Toutes les criticités</option><option value="blocking">Bloquante</option><option value="major">Majeure</option><option value="minor">Mineure</option><option value="unknown">Inconnue</option></select><select data-filter-category><option value="">Toutes les catégories</option>${categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}</select><select data-filter-status><option value="">Tous les états</option><option value="open">Ouverte</option><option value="in_progress">En cours</option><option value="done">Terminée</option><option value="reopened">Rouverte</option><option value="cancelled">Annulée</option></select><button type="button" class="reset-button" data-reset-filters>Réinitialiser</button></div>
-    <div class="table-wrap"><table><thead><tr><th>Anomalie</th><th>Repository / composant</th><th>Criticité</th><th>Catégorie</th><th>État</th><th>Créée</th><th>1re correction</th><th>Délai</th><th>PR</th></tr></thead><tbody data-table>${rows}</tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Anomalie</th><th>Repository / composant</th><th>Origine</th><th>Criticité</th><th>Catégorie</th><th>État</th><th>Détectée</th><th>Correction</th><th>Délai</th><th>PR</th></tr></thead><tbody data-table>${rows}</tbody></table></div>
   </article>
 
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Alertes et décisions de calcul</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${issues || '<li><div><strong>Aucune alerte</strong><p>Les métriques ne présentent aucune réserve DQ dans ce snapshot.</p></div></li>'}</ul></article>`;
@@ -325,7 +403,7 @@ function repositoryReference(snapshot: Snapshot, repositoryName: string, githubU
 /** Ajoute à une alerte qualité la cible et sa source consultable. */
 function qualityIssueTarget(snapshot: Snapshot, issue: Snapshot['dataQuality']['issues'][number], githubUrl?: string): string {
   if (issue.entityType === 'anomaly') {
-    const anomaly = snapshot.normalizedData.anomalies.find((candidate) => candidate.anomalyId === issue.entityId);
+    const anomaly = snapshot.normalizedData.legacyAnomalies.find((candidate) => candidate.anomalyId === issue.entityId);
     const source = anomaly?.provenance.sourceId;
     return `<div class="quality-target"><span class="quality-target-label">Cible : anomalie ${escapeHtml(issue.entityId)}</span>${source ? `<span>Source : ${githubReference(snapshot, source, githubUrl)}</span>` : '<span>Aucune source GitHub disponible</span>'}</div>`;
   }
@@ -339,6 +417,17 @@ function qualityIssueTarget(snapshot: Snapshot, issue: Snapshot['dataQuality']['
   }
   if (issue.entityType === 'pull_request') {
     return `<div class="quality-target"><span class="quality-target-label">Cible : pull request</span><span>Ouvrir la source : ${githubReference(snapshot, issue.entityId, githubUrl)}</span></div>`;
+  }
+  if (issue.entityType === 'issue') {
+    const sourceIssue = snapshot.normalizedData.issues.find((candidate) => candidate.provenance.sourceId === issue.entityId);
+    const label = issue.ruleId === 'DQ-011'
+      ? `Issue Type à déclarer : ${sourceIssue?.rawIssueType ?? 'valeur inconnue'}`
+      : `Issue ${sourceIssue ? `#${sourceIssue.number} — ${sourceIssue.title}` : issue.entityId}`;
+    return `<div class="quality-target"><span class="quality-target-label">${escapeHtml(label)}</span><span>Ouvrir l’Issue GitHub : ${githubReference(snapshot, issue.entityId, githubUrl)}</span></div>`;
+  }
+  if (issue.entityType === 'version') {
+    const version = snapshot.normalizedData.versions.find((candidate) => candidate.versionId === issue.entityId);
+    return `<div class="quality-target"><span class="quality-target-label">Version ${escapeHtml(version?.number ?? issue.entityId)}</span><span>${escapeHtml(version?.catalogueIssue ?? 'Référentiel historique indisponible.')}</span></div>`;
   }
   return `<div class="quality-target"><span class="quality-target-label">Cible : ${escapeHtml(issue.entityType)}</span><span>Aucune source GitHub disponible (${escapeHtml(issue.entityId)})</span></div>`;
 }
@@ -364,8 +453,8 @@ function catalogueYaml(component: Component): string {
 /** Traduit un identifiant DQ en message lisible dans le dashboard. */
 function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): string {
   return ({
-    'DQ-001': 'L’anomalie n’a pas de criticité.',
-    'DQ-002': 'L’anomalie possède plusieurs criticités incompatibles.',
+    'DQ-001': 'L’Anomalie d’Audit Accessibilité ne possède pas de criticité RGAA reconnue.',
+    'DQ-002': 'L’Anomalie d’Audit Accessibilité possède plusieurs criticités RGAA incompatibles.',
     'DQ-003': 'L’anomalie possède plusieurs parents incompatibles.',
     'DQ-004': 'L’issue est terminée mais aucune pull request identifiable ne lui est associée.',
     'DQ-005': 'La pull request est fusionnée alors que l’issue associée est encore ouverte.',
@@ -373,7 +462,17 @@ function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): strin
     'DQ-007': 'L’issue contient un label inconnu.',
     'DQ-008': 'L’issue annulée est référencée par une pull request.',
     'DQ-009': 'Nexus est indisponible : les preuves de release sont inconnues.'
-    , 'DQ-010': 'L’issue annulée est rattachée à une milestone.'
+    , 'DQ-010': 'L’issue annulée est rattachée à une milestone.',
+    'DQ-012': 'L’Issue GitHub ne possède pas de type.',
+    'DQ-013': 'Un Audit doit référencer exactement un Component.',
+    'DQ-014': 'La Version cible de l’Audit ne peut pas être déterminée.',
+    'DQ-015': 'Les états Done et Closed ne concordent pas.',
+    'DQ-016': 'La Release Candidate auditée manque pour cet Audit pré-PROD.',
+    'DQ-017': 'Le tag PROD de cette Version est absent.',
+    'DQ-018': 'Le Catalogue historique de cette Version est indisponible.',
+    'DQ-019': 'La relation parent ne permet pas de déterminer l’origine de l’Anomalie.',
+    'DQ-020': 'Le Component de l’Anomalie ne correspond pas à celui de l’Audit.'
+    , 'DQ-021': 'Le statut actuel de l’Anomalie dans GitHub Projects est absent ou inexploitable.'
   }[issue.ruleId] ?? issue.message);
 }
 
@@ -395,9 +494,11 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   }
   const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
   for (const anomaly of snapshot.normalizedData.anomalies) {
-    const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
-    list.push(anomaly);
-    anomaliesByComponent.set(anomaly.componentId, list);
+    for (const componentId of anomaly.componentIds) {
+      const list = anomaliesByComponent.get(componentId) ?? [];
+      list.push(anomaly);
+      anomaliesByComponent.set(componentId, list);
+    }
   }
 
   const repositoriesMetric = metricOrUnknown(metrics, 'portfolio.repositories');
@@ -408,17 +509,25 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   const repositorySections = libraries.map((library) => {
     const components = (componentsByLibrary.get(library.libraryId) ?? []).sort((a, b) => a.name.localeCompare(b.name));
     const componentSections = components.map((component) => {
-      const audits = (auditsByComponent.get(component.componentId) ?? []).sort((a, b) => Date.parse(b.provenance.collectedAt) - Date.parse(a.provenance.collectedAt));
-      const audit = audits.find((item) => !['in_progress', 'not_evaluated'].includes(item.status)) ?? audits[0];
+      const audits = (auditsByComponent.get(component.componentId) ?? []).sort((a, b) => Date.parse(b.completedAt ?? '') - Date.parse(a.completedAt ?? ''));
       const anomalies = anomaliesByComponent.get(component.componentId) ?? [];
-      const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;
-      const auditNode = audit
-        ? `<div class="map-node audit-node" data-map-node data-map-kind="audit"><span class="node-dot"></span><div><strong>Audit ${escapeHtml(audit.version)}</strong><small>${auditStatusLabel(audit.objectiveAuditResult)} · ${escapeHtml(audit.status)}</small></div><span class="state state-${audit.objectiveAuditResult}">${auditStatusLabel(audit.objectiveAuditResult)}</span></div>`
-        : `<div class="map-node audit-node muted-node" data-map-node data-map-kind="audit"><span class="node-dot"></span><div><strong>Audit</strong><small>Aucun audit disponible</small></div><span class="state state-unknown">non audité</span></div>`;
+      const issueById = new Map(snapshot.normalizedData.issues.map((issue) => [issue.issueId, issue]));
+      const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(anomalyStatusForIssue(issueById.get(item.issueId)) ?? '')).length;
+      const auditNodes = audits.map((audit) => {
+        const sourceIssue = issueById.get(audit.issueId);
+        const version = snapshot.normalizedData.versions.find((item) => item.versionId === audit.versionId);
+        const verdict = audit.verdict === 'CONFORM' ? 'conforme' : audit.verdict === 'NON_CONFORM' ? 'non conforme' : 'indéterminé';
+        return `<div class="map-node audit-node" data-map-node data-map-kind="audit"><span class="node-dot"></span><div><strong>Audit ${escapeHtml(version?.number ?? audit.versionId)}</strong><small>${audit.completedAt ? formatDateShort(audit.completedAt) : 'Incomplet'} · ${githubReference(snapshot, sourceIssue?.provenance.sourceId ?? audit.issueId, githubUrl)}</small></div><span class="state state-${audit.verdict.toLowerCase()}">${verdict}</span></div>`;
+      }).join('');
+      const auditNode = auditNodes || `<div class="map-node audit-node muted-node" data-map-node data-map-kind="audit"><span class="node-dot"></span><div><strong>Audit</strong><small>Aucun Audit applicable</small></div><span class="state state-unknown">non audité</span></div>`;
       const anomalyNodes = anomalies.map((anomaly) => {
-        const issueLabel = anomaly.provenance.sourceId ?? anomaly.anomalyId;
-        const prs = anomaly.pullRequestRefs.map((reference) => `<a class="map-node pr-node" data-map-node data-map-kind="pr" href="${githubReferenceHref(snapshot, reference, githubUrl)}"><span class="node-dot"></span><div><strong>${githubReference(snapshot, reference, githubUrl)}</strong><small>PR liée à ${escapeHtml(issueLabel)}</small></div><span class="state state-merged">PR</span></a>`).join('');
-        return `<div class="map-branch"><a class="map-node anomaly-node" data-map-node data-map-kind="anomaly" href="anomalies.html?status=${encodeURIComponent(anomaly.cancelled ? 'cancelled' : anomaly.status)}"><span class="node-dot"></span><div><strong>${escapeHtml(issueLabel)}</strong><small>Anomalie · ${anomaly.cancelled ? 'annulée' : anomalyStatusLabel(anomaly.status)} · ${criticalityLabel(anomaly.criticality)}</small></div><span class="state state-${anomaly.cancelled ? 'cancelled' : anomaly.status}">${anomaly.cancelled ? 'annulée' : anomalyStatusLabel(anomaly.status)}</span></a>${prs ? `<div class="map-edge">PR</div>${prs}` : '<div class="map-edge muted">aucune PR liée</div>'}</div>`;
+        const sourceIssue = issueById.get(anomaly.issueId);
+        const issueLabel = sourceIssue?.provenance.sourceId ?? anomaly.anomalyId;
+        const status = anomalyStatusForIssue(sourceIssue);
+        const statusLabel = status ? anomalyStatusLabel(status) : 'inconnue';
+        const origin = anomaly.origin === 'AUDIT' ? 'Audit' : anomaly.origin === 'HORS_AUDIT' ? 'Hors Audit' : 'Origine indéterminée';
+        const prs = (sourceIssue?.linkedPullRequestIds ?? []).map((reference) => `<a class="map-node pr-node" data-map-node data-map-kind="pr" href="${githubReferenceHref(snapshot, reference, githubUrl)}"><span class="node-dot"></span><div><strong>${githubReference(snapshot, reference, githubUrl)}</strong><small>PR liée à ${escapeHtml(issueLabel)}</small></div><span class="state state-merged">PR</span></a>`).join('');
+        return `<div class="map-branch"><a class="map-node anomaly-node" data-map-node data-map-kind="anomaly" href="anomalies.html?status=${encodeURIComponent(status ?? 'unknown')}"><span class="node-dot"></span><div><strong>${escapeHtml(issueLabel)}</strong><small>Anomalie · ${origin} · ${statusLabel} · ${criticalityLabel(anomaly.criticality)}</small></div><span class="state state-${status ?? 'unknown'}">${statusLabel}</span></a>${prs ? `<div class="map-edge">PR</div>${prs}` : '<div class="map-edge muted">aucune PR liée</div>'}</div>`;
       }).join('');
       return `<div class="map-component" data-map-component data-search="${escapeHtml(`${library.name} ${component.name} ${component.componentId}`.toLowerCase())}">
         <div class="map-node component-node" data-map-node data-map-kind="component"><span class="node-dot"></span><div><strong>${escapeHtml(component.name)}</strong><small>Composant · ${escapeHtml(component.componentId)}</small></div><span class="tag tag-${component.dataQualityStatus}">${qualityLabel(component.dataQualityStatus)}</span></div>
@@ -459,63 +568,85 @@ function githubReferenceHref(snapshot: Snapshot, reference: string, githubUrl?: 
 function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   const { metrics } = snapshot.analytics;
   const libraries = snapshot.normalizedData.libraries;
-  const activeComponents = snapshot.normalizedData.components.filter((component) => component.status === 'active');
-  const completedAudits = snapshot.normalizedData.audits.filter((audit) => !['in_progress', 'not_evaluated'].includes(audit.status));
-  const completedByComponent = new Map<string, typeof completedAudits[number]>();
-  for (const audit of completedAudits) completedByComponent.set(audit.componentId, audit);
-  const anomaliesByComponent = new Map<string, typeof snapshot.normalizedData.anomalies>();
-  for (const anomaly of snapshot.normalizedData.anomalies) {
-    const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
-    list.push(anomaly);
-    anomaliesByComponent.set(anomaly.componentId, list);
-  }
-  const repositoriesWithComponents = libraries.map((library) => {
-    const components = activeComponents.filter((component) => component.libraryId === library.libraryId);
-    const audited = components.filter((component) => completedByComponent.has(component.componentId)).length;
-    const conform = components.filter((component) => completedByComponent.get(component.componentId)?.objectiveAuditResult === 'conform').length;
-    const anomalies = components.flatMap((component) => anomaliesByComponent.get(component.componentId) ?? []);
-    const open = anomalies.filter((anomaly) => ['open', 'reopened', 'in_progress'].includes(anomaly.status)).length;
-    return { library, components, audited, conform, anomalies: anomalies.length, open };
-  });
-
+  const stateByVersion = new Map((snapshot.analytics.versionStates ?? []).map((state) => [state.versionId, state]));
+  const componentById = new Map(snapshot.normalizedData.components.map((component) => [component.componentId, component]));
   const coverage = metricOrUnknown(metrics, 'portfolio.auditCoverage');
   const componentsMetric = metricOrUnknown(metrics, 'portfolio.components');
   const auditedMetric = metricOrUnknown(metrics, 'portfolio.componentsAudited');
   const completedMetric = metricOrUnknown(metrics, 'audit.completed');
   const conformity = metricOrUnknown(metrics, 'audit.conformityRate');
   const conform = metricOrUnknown(metrics, 'audit.conform');
-  const conditional = metricOrUnknown(metrics, 'audit.conditional');
   const nonConform = metricOrUnknown(metrics, 'audit.nonConform');
-  const critical = metricOrUnknown(metrics, 'audit.critical');
+  const auditAnomalyTotal = metricOrUnknown(metrics, 'anomaly.audit.total');
+  const auditAnomalyOpen = metricOrUnknown(metrics, 'anomaly.audit.open');
+  const auditAnomalyInProgress = metricOrUnknown(metrics, 'anomaly.audit.inProgress');
+  const auditAnomalyDone = metricOrUnknown(metrics, 'anomaly.audit.done');
+  const auditAnomalyCorrected = metricOrUnknown(metrics, 'anomaly.audit.correctedEver');
+  const auditCriticalityCoverage = metricOrUnknown(metrics, 'anomaly.audit.criticalityCoverage');
+  const auditDelayAverage = metricOrUnknown(metrics, 'anomaly.audit.correctionDelay.average');
+  const auditDelayMedian = metricOrUnknown(metrics, 'anomaly.audit.correctionDelay.median');
+  const auditDelayP90 = metricOrUnknown(metrics, 'anomaly.audit.correctionDelay.p90');
+  const librariesInScope = [...new Set(libraries.map((library) => library.name))].sort();
+  const versionsInScope = [...new Set(snapshot.normalizedData.versions.map((version) => version.number))].sort();
 
-  const componentRows = activeComponents.map((component) => {
-    const library = libraries.find((item) => item.libraryId === component.libraryId);
-    const audit = completedByComponent.get(component.componentId) ?? snapshot.normalizedData.audits.find((item) => item.componentId === component.componentId);
-    const anomalies = anomaliesByComponent.get(component.componentId) ?? [];
-    return componentAuditRow(snapshot, component, library?.name ?? 'repository inconnu', audit, anomalies, githubUrl);
+  const componentVersionRows = snapshot.normalizedData.componentVersions.map((membership) => {
+    const version = snapshot.normalizedData.versions.find((item) => item.versionId === membership.versionId);
+    const component = componentById.get(membership.componentId);
+    if (!version || !component) return '';
+    const library = libraries.find((item) => item.libraryId === version.libraryId);
+    const state = stateByVersion.get(version.versionId)?.current;
+    const covered = state?.auditedComponentIds.includes(component.componentId) ?? false;
+    const verdict = state?.conformComponentIds.includes(component.componentId)
+      ? 'CONFORM'
+      : state?.nonConformComponentIds.includes(component.componentId)
+        ? 'NON_CONFORM'
+        : state?.unknownComponentIds.includes(component.componentId)
+          ? 'UNKNOWN'
+          : undefined;
+    const auditIds = new Set(snapshot.normalizedData.audits
+      .filter((audit) => audit.componentId === component.componentId && audit.versionId === version.versionId)
+      .map((audit) => audit.auditId));
+    const relatedAnomalies = snapshot.normalizedData.anomalies.filter((anomaly) =>
+      anomaly.origin === 'AUDIT' && auditIds.has(anomaly.auditId)
+    );
+    const openCount = relatedAnomalies.filter((anomaly) => {
+      const issue = snapshot.normalizedData.issues.find((item) => item.issueId === anomaly.issueId);
+      return ['open', 'reopened', 'in_progress'].includes(anomalyStatusForIssue(issue) ?? '');
+    }).length;
+    const verdictLabel = verdict === 'CONFORM' ? 'Conforme' : verdict === 'NON_CONFORM' ? 'Non conforme' : verdict === 'UNKNOWN' ? 'Indéterminé' : 'Non audité';
+    return `<tr data-audit-scope-row data-library="${escapeHtml(library?.name ?? version.libraryId)}" data-version="${escapeHtml(version.number)}" data-verdict="${verdict ?? 'NOT_AUDITED'}" data-search="${escapeHtml(`${component.name} ${version.number} ${library?.name ?? version.libraryId}`.toLowerCase())}"><td>${repositoryReference(snapshot, library?.name ?? version.libraryId, githubUrl)}</td><td>${escapeHtml(component.name)}</td><td>${escapeHtml(version.number)}</td><td>${covered ? 'Oui' : state?.catalogueStatus === 'unknown' ? 'Inconnu' : 'Non'}</td><td><span class="state state-${verdict?.toLowerCase() ?? 'unknown'}">${verdictLabel}</span></td><td>${relatedAnomalies.length}</td><td>${openCount}</td></tr>`;
   }).join('');
 
   const auditRows = snapshot.normalizedData.audits.map((audit) => {
-    const component = snapshot.normalizedData.components.find((item) => item.componentId === audit.componentId);
-    const library = libraries.find((item) => item.libraryId === audit.libraryId);
-    const anomalies = anomaliesByComponent.get(audit.componentId) ?? [];
-    return `<tr><td>${repositoryReference(snapshot, library?.name ?? 'repository inconnu', githubUrl)}</td><td><strong>${escapeHtml(component?.name ?? audit.componentId)}</strong><small>${escapeHtml(audit.sourceIssueId)}</small></td><td><span class="state state-${audit.objectiveAuditResult}">${auditStatusLabel(audit.objectiveAuditResult)}</span></td><td>${escapeHtml(audit.version)}</td><td>${anomalies.length}</td><td>${anomalies.filter((item) => ['open','reopened','in_progress'].includes(item.status)).length}</td><td>${qualityLabel(audit.dataQualityStatus)}</td></tr>`;
+    const issue = snapshot.normalizedData.issues.find((item) => item.issueId === audit.issueId);
+    const version = snapshot.normalizedData.versions.find((item) => item.versionId === audit.versionId);
+    const component = componentById.get(audit.componentId);
+    const library = libraries.find((item) => item.libraryId === version?.libraryId);
+    const linkedAnomalies = snapshot.normalizedData.anomalies.filter((item) => item.origin === 'AUDIT' && item.auditId === audit.auditId).length;
+    const linkedImprovements = snapshot.normalizedData.auditImprovements.filter((item) => item.auditId === audit.auditId).length;
+    return `<tr data-audit-row data-library="${escapeHtml(library?.name ?? issue?.libraryId ?? '')}" data-version="${escapeHtml(version?.number ?? '')}" data-verdict="${audit.verdict}"><td>${repositoryReference(snapshot, library?.name ?? issue?.libraryId ?? 'repository inconnu', githubUrl)}</td><td>${escapeHtml(component?.name ?? audit.componentId)}<small>${githubReference(snapshot, issue?.provenance.sourceId ?? issue?.issueId ?? audit.issueId, githubUrl)}</small></td><td><span class="state state-${audit.verdict.toLowerCase()}">${audit.verdict === 'CONFORM' ? 'Conforme' : audit.verdict === 'NON_CONFORM' ? 'Non conforme' : 'Indéterminé'}</span></td><td>${escapeHtml(version?.number ?? audit.versionId)}</td><td>${audit.timing === 'PRE_PROD' ? 'Pré-PROD' : audit.timing === 'CATCH_UP' ? 'Rattrapage' : 'Inconnu'}</td><td>${audit.completedAt ? formatDateShort(audit.completedAt) : '—'}</td><td>${linkedAnomalies}</td><td>${linkedImprovements}</td></tr>`;
   }).join('');
 
-  const repositoryRowsV2 = repositoriesWithComponents.map(({ library, components, audited, conform, anomalies, open }) => {
-    const repositoryCoverage = components.length ? `${audited}/${components.length}` : '0/0';
-    return `<tr><td>${repositoryReference(snapshot, library.name, githubUrl)}<small>${escapeHtml(library.repository)}</small></td><td>${components.length}</td><td>${repositoryCoverage}</td><td>${conform}/${audited || 0}</td><td>${anomalies}</td><td>${open}</td><td><span class="tag tag-${library.dataQualityStatus}">${qualityLabel(library.dataQualityStatus)}</span></td></tr>`;
+  const versions = snapshot.normalizedData.versions.map((version) => {
+    const state = stateByVersion.get(version.versionId);
+    const versionCoverage = metricOrUnknown(metrics, `version.auditCoverage.${version.versionId}`);
+    const versionConformity = metricOrUnknown(metrics, `version.conformityRate.${version.versionId}`);
+    const libraryName = libraries.find((item) => item.libraryId === version.libraryId)?.name ?? version.libraryId;
+    const auditCount = snapshot.normalizedData.audits.filter((audit) => audit.versionId === version.versionId).length;
+    const completeAuditCount = snapshot.normalizedData.audits.filter((audit) => audit.versionId === version.versionId && audit.realized).length;
+    const release = state?.atRelease;
+    return `<tr data-version-summary-row data-library="${escapeHtml(libraryName)}" data-version="${escapeHtml(version.number)}"><td>${repositoryReference(snapshot, libraryName, githubUrl)}</td><td>${escapeHtml(version.number)}</td><td>${version.releasedAt ? formatDateShort(version.releasedAt) : 'Non publiée'}</td><td>${version.catalogueStatus === 'known' ? String(version.catalogueComponents?.length ?? 0) : 'Inconnu'}</td><td>${auditCount} (${completeAuditCount} terminés)</td><td>${formatMetricValue(versionCoverage)}%</td><td>${formatMetricValue(versionConformity)}%</td><td>${state?.current.conformComponentIds.length ?? '—'}</td><td>${state?.current.nonConformComponentIds.length ?? '—'}</td><td>${state?.current.unknownComponentIds.length ?? '—'}</td><td>${state?.current.uncoveredComponentIds.length ?? '—'}</td><td>${release ? `${release.conformComponentIds.length} conformes · ${release.nonConformComponentIds.length} non conformes` : 'Non disponible'}</td></tr>`;
   }).join('');
 
   return `<section class="hero-band synthesis-hero">
-    <div><p class="eyebrow">Périmètre auditable</p><h2>${formatMetricValue(componentsMetric)} composants actifs à couvrir</h2><p>La couverture est calculée sur les composants actifs disposant d’un audit terminé. Un composant non audité n’est jamais assimilé à un composant non conforme.</p></div>
-    <div class="hero-facts"><div><strong>${formatMetricValue(auditedMetric)}</strong><span>composants audités</span></div><div><strong>${formatMetricValue(coverage)}%</strong><span>couverture</span></div><div><strong>${formatMetricValue(conformity)}%</strong><span>conformité des audits terminés</span></div></div>
+    <div><p class="eyebrow">Périmètre auditable</p><h2>${formatMetricValue(coverage)} de couverture Component × Version</h2><p>Le dénominateur provient des Catalogues historiques exacts. Un Component non audité reste non évalué, jamais non conforme.</p></div>
+    <div class="hero-facts"><div><strong>${formatMetricValue(auditedMetric)}</strong><span>Components historiques couverts</span></div><div><strong>${formatMetricValue(coverage)}%</strong><span>couverture</span></div><div><strong>${formatMetricValue(conformity)}%</strong><span>conformité connue</span></div></div>
   </section>
 
   <section class="section-heading"><div><p class="eyebrow">Indicateurs</p><h2>Couverture et résultats</h2></div><span class="badge">${qualityLabel(coverage.reliability.status)}</span></section>
   <section class="kpi-grid synthesis-grid">
     ${metricCard('Composants actifs', componentsMetric, denominatorLabel(componentsMetric), 'audits.html')}
-    ${metricCard('Composants audités', auditedMetric, ratioLabel(auditedMetric), 'audits.html?scope=audited')}
+    ${metricCard('Component historiques couverts', auditedMetric, ratioLabel(auditedMetric), 'audits.html?scope=audited')}
     ${metricCard('Couverture', coverage, ratioLabel(coverage), 'audits.html')}
     ${metricCard('Audits terminés', completedMetric, denominatorLabel(completedMetric), 'audits.html?scope=audited')}
     ${metricCard('Conformes', conform, ratioLabel(conform), 'audits.html?result=conform')}
@@ -523,28 +654,113 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   </section>
 
   <section class="content-grid synthesis-two">
-    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Résultats</p><h2>État des audits terminés</h2></div><span class="badge">${formatMetricValue(completedMetric)} terminés</span></div><div class="bars">${linkedBar('conformes', conform.value, 'audits.html?result=conform')}${linkedBar('conditionnels', conditional.value, 'audits.html?result=conditional')}${linkedBar('non conformes', nonConform.value, 'audits.html?result=non_conform')}${linkedBar('critiques', critical.value, 'audits.html?result=critical')}</div><p class="panel-note">Les résultats portent uniquement sur les audits terminés ; la couverture du patrimoine est présentée séparément.</p></article>
-    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Lecture d’un composant</p><h2>Composant → audit → anomalies</h2></div><span class="badge">traçabilité</span></div><p class="panel-note">Chaque ligne ci-dessous relie le composant à son audit et aux anomalies qui lui sont rattachées. Les anomalies restent visibles même lorsqu’elles ont une réserve de qualité.</p><div class="chain-legend"><span>Composant</span><span>Audit</span><span>Anomalies</span></div></article>
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Résultats d’Audit</p><h2>Verdicts des composants couverts</h2></div><span class="badge">${formatMetricValue(completedMetric)} audits terminés</span></div><div class="bars">${linkedBar('conformes', conform.value, 'audits.html?result=conform')}${linkedBar('non conformes', nonConform.value, 'audits.html?result=non_conform')}</div><p class="panel-note">La conformité porte uniquement sur les paires Component × Version couvertes. Les verdicts indéterminés ne sont pas assimilés à des non-conformités.</p></article>
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Lecture d’un composant</p><h2>Composant → audit → anomalies</h2></div><span class="badge">traçabilité</span></div><p class="panel-note">Chaque ligne relie le composant et sa Version au verdict applicable et aux seules anomalies rattachées à l’Audit de cette paire.</p><div class="chain-legend"><span>Composant × Version</span><span>Audit applicable</span><span>Anomalies d’Audit</span></div></article>
   </section>
 
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Patrimoine actif</p><h2>Composant → audit → anomalies</h2></div><span class="badge">${activeComponents.length} composants actifs</span></div><div class="filter-bar"><input class="search" data-component-filter placeholder="Rechercher un composant, repository ou anomalie..."><select data-component-result><option value="">Tous les résultats</option><option value="audited">Audité</option><option value="not_audited">Non audité</option><option value="conform">Conforme</option><option value="conditional">Conditionnel</option><option value="non_conform">Non conforme</option><option value="critical">Critique</option></select><button type="button" class="reset-button" data-reset-component-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Audit</th><th>Résultat</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody data-component-table>${componentRows}</tbody></table></div></article>
+  <section class="section-heading"><div><p class="eyebrow">Anomalies d’Audit Accessibilité</p><h2>Volume, criticité et catégories</h2></div><span class="badge">${qualityLabel(auditAnomalyTotal.reliability.status)}</span></section>
+  <section class="kpi-grid audit-kpi-grid">
+    ${metricCard('Anomalies d’Audit', auditAnomalyTotal, 'Issues distinctes', 'audits.html#audit-anomalies')}
+    ${metricCard('Ouvertes', auditAnomalyOpen, ratioLabel(auditAnomalyOpen), 'audits.html#audit-anomalies')}
+    ${metricCard('En cours', auditAnomalyInProgress, ratioLabel(auditAnomalyInProgress), 'audits.html#audit-anomalies')}
+    ${metricCard('Statut courant Done', auditAnomalyDone, ratioLabel(auditAnomalyDone), 'audits.html#audit-anomalies')}
+    ${metricCard('Avec première date Done', auditAnomalyCorrected, `${ratioLabel(auditAnomalyCorrected)} · observation`, 'audits.html#audit-anomalies')}
+    ${metricCard('Criticité renseignée', auditCriticalityCoverage, ratioLabel(auditCriticalityCoverage), 'audits.html#audit-anomalies')}
+  </section>
+  <section class="content-grid synthesis-two">
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Répartition d’Audit</p><h2>Par criticité RGAA</h2></div></div><div class="bars">${auditCriticalityMetricBars(metrics)}</div><p class="panel-note">Les anomalies sans criticité exploitable restent hors des répartitions et sont reflétées dans la couverture de criticité.</p></article>
+    <article class="panel"><div class="panel-heading"><div><p class="eyebrow">Répartition d’Audit</p><h2>Par catégorie d’accessibilité</h2></div><span class="badge">une anomalie peut avoir plusieurs catégories</span></div><div class="bars">${auditCategoryMetricBars(metrics)}</div><p class="panel-note">Le total des catégories peut dépasser le nombre d’Issues Anomalie distinctes.</p></article>
+  </section>
+  <section class="kpi-grid audit-delay-grid">
+    ${metricCard('Délai moyen observé', auditDelayAverage, 'jours calendaires · provisoire', 'audits.html#audit-anomalies')}
+    ${metricCard('Délai médian observé', auditDelayMedian, 'jours calendaires · provisoire', 'audits.html#audit-anomalies')}
+    ${metricCard('Délai P90 observé', auditDelayP90, 'jours calendaires · provisoire', 'audits.html#audit-anomalies')}
+  </section>
+  <p class="panel-note">Les délais utilisent les dates de détection et de première transition vers Done disponibles. Leur définition métier reste à confirmer ; ils ne constituent pas encore un taux officiel de traitement Done + Closed.</p>
 
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits réalisés</p><h2>Traçabilité de chaque audit</h2></div><span class="badge">${snapshot.normalizedData.audits.length} audits</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant / source</th><th>Résultat</th><th>Version</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${auditRows || '<tr><td colspan="7">Aucun audit terminé dans ce snapshot.</td></tr>'}</tbody></table></div></article>
+  <article class="panel table-panel" id="audit-anomalies"><div class="panel-heading"><div><p class="eyebrow">Détail exploitable</p><h2>Anomalies rattachées à un Audit</h2></div><span class="badge">${auditAnomalyTotal.value === 'unknown' ? 'Inconnu' : auditAnomalyTotal.value} Issues</span></div><div class="filter-bar"><input class="search" data-audit-anomaly-search placeholder="Rechercher une anomalie ou un composant..." aria-label="Rechercher une anomalie ou un composant"><select data-audit-anomaly-criticality aria-label="Filtrer par criticité"><option value="">Toutes les criticités</option><option value="blocking">Bloquante</option><option value="major">Majeure</option><option value="minor">Mineure</option><option value="unknown">Inconnue</option></select><select data-audit-anomaly-category aria-label="Filtrer par catégorie"><option value="">Toutes les catégories</option><option value="__none__">Sans catégorie</option>${Object.keys(metrics).filter((id) => id.startsWith('anomaly.audit.byCategory.')).map((id) => id.slice('anomaly.audit.byCategory.'.length)).sort().map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}</select><select data-audit-anomaly-status aria-label="Filtrer par statut"><option value="">Tous les statuts</option><option value="open">Ouverte</option><option value="in_progress">En cours</option><option value="done">Terminée</option><option value="reopened">Rouvert</option><option value="unknown">Inconnu</option></select><button type="button" class="reset-button" data-reset-audit-anomaly-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Anomalie / Issue</th><th>Composant</th><th>Version</th><th>Criticité</th><th>Catégories</th><th>Statut</th><th>Détectée le</th><th>Première date Done</th></tr></thead><tbody>${auditAnomalyRows(snapshot, githubUrl)}</tbody></table></div></article>
 
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison</p><h2>Couverture par repository</h2></div><span class="badge">${repositoriesWithComponents.length} repositories</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composants actifs</th><th>Audités</th><th>Conformes</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${repositoryRowsV2}</tbody></table></div></article>
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Périmètre historique</p><h2>Component × Version → Audit → Anomalies</h2></div><span class="badge">${snapshot.normalizedData.componentVersions.length} appartenances historiques</span></div><div class="filter-bar"><input class="search" data-audit-scope-search placeholder="Rechercher un composant..." aria-label="Rechercher un composant"><select data-audit-scope-library aria-label="Filtrer par librairie"><option value="">Toutes les librairies</option>${librariesInScope.map((library) => `<option value="${escapeHtml(library)}">${escapeHtml(library)}</option>`).join('')}</select><select data-audit-scope-version aria-label="Filtrer par Version"><option value="">Toutes les Versions</option>${versionsInScope.map((version) => `<option value="${escapeHtml(version)}">${escapeHtml(version)}</option>`).join('')}</select><select data-audit-scope-verdict aria-label="Filtrer par verdict"><option value="">Tous les états</option><option value="CONFORM">Conforme</option><option value="NON_CONFORM">Non conforme</option><option value="UNKNOWN">Indéterminé</option><option value="NOT_AUDITED">Non audité</option></select><button type="button" class="reset-button" data-reset-audit-scope-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Librairie</th><th>Component</th><th>Version</th><th>Couvert</th><th>Verdict applicable</th><th>Anomalies</th><th>Ouvertes</th></tr></thead><tbody>${componentVersionRows || '<tr><td colspan="7">Aucune appartenance historique connue.</td></tr>'}</tbody></table></div></article>
+
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits enregistrés</p><h2>Traçabilité et Improvements</h2></div><span class="badge">${snapshot.normalizedData.audits.length} audits</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Component / source</th><th>Verdict</th><th>Version</th><th>Timing</th><th>Terminé le</th><th>Anomalies liées</th><th>Improvements</th></tr></thead><tbody>${auditRows || '<tr><td colspan="8">Aucun Audit normalisé dans ce snapshot.</td></tr>'}</tbody></table></div></article>
+
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison par librairie et Version</p><h2>Couverture et conformité historiques</h2></div><span class="badge">${snapshot.normalizedData.versions.length} Versions</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Version</th><th>Release</th><th>Catalogue</th><th>Audits (terminés)</th><th>Couverture</th><th>Conformité des couverts</th><th>Conformes actuels</th><th>Non conformes actuels</th><th>Indéterminés</th><th>Non audités</th><th>État à la Release</th></tr></thead><tbody>${versions || '<tr><td colspan="12">Aucune Version disponible.</td></tr>'}</tbody></table></div><p class="panel-note">Les libellés « actuel » et « à la Release » sont distincts : un résultat de rattrapage ne réécrit pas l’état historiquement connu à la sortie.</p></article>
 
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves qui affectent les audits ou leur périmètre</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)} · ${severityLabel(issue.severity)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${qualityLabel(issue.action === 'exclude' ? 'partial' : 'reliable')}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>Les audits et leur périmètre ne présentent aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }
 
-function componentAuditRow(snapshot: Snapshot, component: Component, repositoryName: string, audit: Snapshot['normalizedData']['audits'][number] | undefined, anomalies: Snapshot['normalizedData']['anomalies'], githubUrl?: string): string {
-  const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;
-  const result = audit ? auditStatusLabel(audit.objectiveAuditResult) : 'non audité';
-  const resultClass = audit ? audit.objectiveAuditResult : 'unknown';
-  const anomalyLinks = anomalies.length
-    ? anomalies.slice(0, 4).map((item) => `<a class="tag tag-${item.criticality ?? 'warning'}" href="anomalies.html?status=${encodeURIComponent(item.status)}">${escapeHtml(item.provenance.sourceId ?? item.anomalyId)}</a>`).join(' ')
-    : '<span class="muted">Aucune</span>';
-  const extra = anomalies.length > 4 ? ` <span class="muted">+${anomalies.length - 4}</span>` : '';
-  return `<tr data-component-row data-component-result="${audit ? audit.objectiveAuditResult : 'not_audited'}" data-component-audited="${audit ? 'audited' : 'not_audited'}"><td>${repositoryReference(snapshot, repositoryName, githubUrl)}</td><td><strong>${escapeHtml(component.name)}</strong><small>${escapeHtml(component.componentId)}</small></td><td>${audit ? `<span class="state state-${audit.status}">${auditStatusLabel(audit.status)}</span><small>${escapeHtml(audit.version)}</small>` : '<span class="state state-unknown">non audité</span>'}</td><td><span class="state state-${resultClass}">${result}</span></td><td>${anomalyLinks}${extra}</td><td><strong>${open}</strong></td><td><span class="tag tag-${component.dataQualityStatus}">${qualityLabel(component.dataQualityStatus)}</span></td></tr>`;
+function componentsContent(snapshot: Snapshot, githubUrl?: string): string {
+  const components = snapshot.normalizedData.components;
+  const states = new Map((snapshot.analytics.versionStates ?? []).map((state) => [state.versionId, state.current]));
+  const libraries = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library]));
+  const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
+  for (const anomaly of snapshot.normalizedData.anomalies) {
+    for (const componentId of anomaly.componentIds) {
+      const current = anomaliesByComponent.get(componentId) ?? [];
+      current.push(anomaly);
+      anomaliesByComponent.set(componentId, current);
+    }
+  }
+  const issuesById = new Map(snapshot.normalizedData.issues.map((issue) => [issue.issueId, issue]));
+  const rows = components.map((component) => {
+    const memberships = snapshot.normalizedData.componentVersions.filter((membership) => membership.componentId === component.componentId);
+    const versions = [...new Set(memberships.map((membership) => membership.versionId))];
+    const covered = memberships.filter((membership) => states.get(membership.versionId)?.auditedComponentIds.includes(component.componentId));
+    const nonConform = memberships.filter((membership) => states.get(membership.versionId)?.nonConformComponentIds.includes(component.componentId));
+    const open = (anomaliesByComponent.get(component.componentId) ?? []).filter((anomaly) =>
+      ['open', 'reopened', 'in_progress'].includes(anomalyStatusForIssue(issuesById.get(anomaly.issueId)) ?? '')
+    ).length;
+    const library = libraries.get(component.libraryId);
+    const status = component.status;
+    return `<tr data-component-row data-component-status="${escapeHtml(status)}">
+      <td>${repositoryReference(snapshot, library?.name ?? component.libraryId, githubUrl)}</td>
+      <td><strong>${escapeHtml(component.name)}</strong>${component.historicalOnly ? '<small>Présent uniquement dans un Catalogue historique</small>' : ''}</td>
+      <td><span class="state state-${escapeHtml(status)}">${escapeHtml(componentStatusLabel(status))}</span></td>
+      <td>${versions.length}</td><td>${covered.length} / ${memberships.length}</td><td>${nonConform.length}</td><td>${open}</td>
+    </tr>`;
+  }).join('');
+  const active = components.filter((component) => component.status === 'active' && !component.historicalOnly).length;
+  const catalogued = snapshot.normalizedData.componentVersions.length;
+  const unknownCatalogues = snapshot.normalizedData.versions.filter((version) => version.catalogueStatus === 'unknown').length;
+  const statuses = [...new Set(components.map((component) => component.status))].sort();
+  return `<section class="hero-band"><div><p class="eyebrow">Patrimoine</p><h2>Les composants du Design System, suivis par version.</h2><p>Parcourez le périmètre actif, les appartenances historiques et les résultats connus des audits.</p></div><div class="hero-facts"><div><strong>${active}</strong><span>actifs</span></div><div><strong>${catalogued}</strong><span>appartenances Component × Version</span></div><div><strong>${unknownCatalogues}</strong><span>Catalogues inconnus</span></div></div></section>
+    <div class="section-heading"><div><p class="eyebrow">Exploration</p><h2>Référentiel des composants</h2></div><a class="text-link" href="graph.html">Voir la cartographie →</a></div>
+    <article class="panel table-panel"><div class="filter-bar"><input class="search" data-component-filter placeholder="Rechercher un composant ou repository..." aria-label="Rechercher un composant ou repository"><select data-component-status-filter aria-label="Filtrer par statut"><option value="">Tous les statuts</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(componentStatusLabel(status))}</option>`).join('')}</select><button type="button" class="reset-button" data-reset-component-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Statut</th><th>Versions connues</th><th>Audités</th><th>Non conformes</th><th>Anomalies ouvertes</th></tr></thead><tbody data-component-table>${rows || '<tr><td colspan="7">Aucun composant dans le snapshot.</td></tr>'}</tbody></table></div><p class="panel-note">${components.length} composants visibles dans le snapshot. Un Catalogue historique inconnu ne signifie pas que le composant est absent.</p></article>`;
+}
+
+function squadContent(snapshot: Snapshot, githubUrl?: string): string {
+  const issues = snapshot.normalizedData.issues;
+  const repositories = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
+  const components = new Map(snapshot.normalizedData.components.map((component) => [component.componentId, component.name]));
+  const statuses = [...new Set(issues.flatMap((issue) => issue.projectStatuses.map((project) =>
+    project.status.canonicalValue ?? project.status.rawValue
+  )))].sort((left, right) => left.localeCompare(right));
+  const rows = issues.map((issue) => {
+    const projects = issue.projectStatuses;
+    const statusNames = [...new Set(projects.map((project) => project.status.canonicalValue ?? project.status.rawValue))];
+    const statusKeys = statusNames.map((status) => status.toLowerCase());
+    const iterations = [...new Set(projects.flatMap((project) => project.iteration ? [project.iteration.title] : []))];
+    const velocity = projects.flatMap((project) => project.velocity ? [project.velocity.numericValue ?? project.velocity.rawValue] : []);
+    const componentNames = issue.componentIds.map((id) => components.get(id) ?? id);
+    const statusHtml = statusNames.map((status) => `<span class="tag">${escapeHtml(status)}</span>`).join(' ') || '<span class="muted">Non renseigné</span>';
+    return `<tr data-activity-row data-repository="${escapeHtml(repositories.get(issue.libraryId) ?? '')}" data-status="${escapeHtml(statusKeys.join('|'))}">
+      <td><strong>${escapeHtml(issue.title)}</strong><small>${githubReference(snapshot, issue.provenance.sourceId ?? issue.issueId, githubUrl)}</small></td>
+      <td>${escapeHtml(repositories.get(issue.libraryId) ?? 'Repository inconnu')}</td>
+      <td>${escapeHtml(issue.issueType ?? issue.rawIssueType ?? 'Non renseigné')}</td>
+      <td>${escapeHtml(componentNames.join(', ') || 'Non renseigné')}</td>
+      <td>${statusHtml}</td><td>${escapeHtml(iterations.join(', ') || 'Non renseignée')}</td>
+      <td>${escapeHtml(velocity.map((value) => value === null ? 'Non renseignée' : String(value)).join(', ') || 'Non renseignée')}</td>
+    </tr>`;
+  }).join('');
+  const withProject = issues.filter((issue) => issue.projectStatuses.length > 0).length;
+  const withIteration = issues.filter((issue) => issue.projectStatuses.some((project) => project.iteration)).length;
+  const transitionEvidence = issues.filter((issue) => issue.projectStatuses.some((project) =>
+    project.transitions.some((transition) => transition.changedAt)
+  )).length;
+  const repositoryNames = [...new Set(issues.map((issue) => repositories.get(issue.libraryId) ?? ''))].filter(Boolean).sort();
+  return `<section class="hero-band"><div><p class="eyebrow">Activité Squad</p><h2>Le travail suivi dans les Projects et les Issues.</h2><p>Cette vue restitue les statuts et données de planification collectés, sans interpréter Velocity ni déduire une performance de Sprint.</p></div><div class="hero-facts"><div><strong>${issues.length}</strong><span>Issues du snapshot</span></div><div><strong>${withProject}</strong><span>avec contexte Project</span></div><div><strong>${withIteration}</strong><span>avec itération</span></div></div></section>
+    <section class="content-grid synthesis-two"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Données d’activité</p><h2>Ce qui est observable</h2></div></div><p>Les statuts courants sont affichés tels que collectés. Les transitions datées sont disponibles pour ${transitionEvidence} Issue${transitionEvidence === 1 ? '' : 's'} ; l’absence de date n’est pas remplacée par une date estimée.</p><p class="panel-note">Les agrégats Velocity, la capacité et les reports de Sprint attendent une définition de population et de calcul stabilisée.</p></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Qualité de la collecte</p><h2>Réserves Data Quality</h2></div><span class="badge">${snapshot.dataQuality.issues.length}</span></div><p>Les réserves peuvent affecter la lecture des statuts, des relations et des indicateurs. Consultez leur détail avant toute comparaison.</p><a class="text-link" href="anomalies.html#quality">Voir les alertes →</a></article></section>
+    <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Issues et delivery</p><h2>Statuts et planification observés</h2></div><span class="badge">${issues.length} Issues</span></div><div class="filter-bar"><input class="search" data-activity-filter placeholder="Rechercher une Issue, un composant..." aria-label="Rechercher une Issue ou un composant"><select data-activity-repository aria-label="Filtrer par repository"><option value="">Tous les repositories</option>${repositoryNames.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('')}</select><select data-activity-status aria-label="Filtrer par statut"><option value="">Tous les statuts</option>${statuses.map((status) => `<option value="${escapeHtml(status.toLowerCase())}">${escapeHtml(status)}</option>`).join('')}</select><button type="button" class="reset-button" data-reset-activity-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Issue</th><th>Repository</th><th>Type</th><th>Composants</th><th>Statut Project</th><th>Itération</th><th>Velocity source</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Aucune Issue disponible.</td></tr>'}</tbody></table></div></article>`;
 }
 
 /** Rend une carte KPI avec sa valeur, son ratio et sa définition. */
@@ -554,11 +770,13 @@ function componentAuditRow(snapshot: Snapshot, component: Component, repositoryN
 /** Construit la comparaison des repositories dans la page d'accueil. */
 function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
   return snapshot.normalizedData.libraries.map((library) => {
-    const components = snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId);
-    const componentIds = new Set(components.map((component) => component.componentId));
-    const anomalies = snapshot.normalizedData.anomalies.filter((anomaly) => componentIds.has(anomaly.componentId));
+    const components = snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId && component.status === 'active' && !component.historicalOnly);
+    const issuesById = new Map(snapshot.normalizedData.issues.map((issue) => [issue.issueId, issue]));
+    const anomalies = snapshot.normalizedData.anomalies.filter((anomaly) =>
+      issuesById.get(anomaly.issueId)?.libraryId === library.libraryId
+    );
     const pullRequests = snapshot.normalizedData.pullRequests.filter((pullRequest) => pullRequest.repository === library.name);
-    const open = anomalies.filter((anomaly) => anomaly.status === 'open' || anomaly.status === 'reopened').length;
+    const open = anomalies.filter((anomaly) => ['open', 'reopened'].includes(anomalyStatusForIssue(issuesById.get(anomaly.issueId)) ?? '')).length;
     const reliability = components.some((component) => component.dataQualityStatus !== 'reliable') ? 'partielle' : 'fiable';
     return `<tr><td>${repositoryReference(snapshot, library.name, githubUrl)}<small>${escapeHtml(library.repository)}</small></td><td>${components.length}</td><td>${anomalies.length}</td><td>${open}</td><td>${pullRequests.filter((pullRequest) => pullRequest.state === 'merged').length}</td><td><span class="tag tag-${reliability === 'fiable' ? 'reliable' : 'warning'}">${reliability}</span></td></tr>`;
   }).join('');
@@ -566,9 +784,15 @@ function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
 /** Calcule les délais moyen, médian et maximal par repository. */
 function delayRows(snapshot: Snapshot): string {
   const libraryById = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
+  const issueById = new Map(snapshot.normalizedData.issues.map((issue) => [issue.issueId, issue]));
   return snapshot.normalizedData.libraries.map((library) => {
-    const componentIds = new Set(snapshot.normalizedData.components.filter((component) => component.libraryId === library.libraryId).map((component) => component.componentId));
-    const delays = snapshot.normalizedData.anomalies.filter((anomaly) => componentIds.has(anomaly.componentId) && anomaly.firstDoneAt).map((anomaly) => (Date.parse(anomaly.firstDoneAt!) - Date.parse(anomaly.createdAt)) / 86_400_000).sort((left, right) => left - right);
+    const delays = snapshot.normalizedData.anomalies
+      .filter((anomaly) => issueById.get(anomaly.issueId)?.libraryId === library.libraryId && anomaly.correctedAt)
+      .flatMap((anomaly) => anomaly.correctedAt
+        ? [(Date.parse(anomaly.correctedAt) - Date.parse(anomaly.detectedAt)) / 86_400_000]
+        : [])
+      .filter((delay) => Number.isFinite(delay) && delay >= 0)
+      .sort((left, right) => left - right);
     const average = delays.length === 0 ? 'inconnu' : `${(delays.reduce((total, delay) => total + delay, 0) / delays.length).toFixed(1)} j`;
     const median = delays.length === 0 ? 'inconnu' : `${(delays.length % 2 === 1 ? (delays[Math.floor(delays.length / 2)] ?? 0) : ((delays[delays.length / 2 - 1] ?? 0) + (delays[delays.length / 2] ?? 0)) / 2).toFixed(1)} j`;
     const longest = delays.length === 0 ? 'inconnu' : `${(delays[delays.length - 1] ?? 0).toFixed(1)} j`;
@@ -576,17 +800,25 @@ function delayRows(snapshot: Snapshot): string {
   }).join('');
 }
 /** Rend une barre proportionnelle à une valeur numérique. */
-function bar(label: string, value: number | 'unknown'): string { const width = typeof value === 'number' ? Math.min(value * 25, 100) : 0; return `<div class="bar-row"><span>${label}</span><div class="bar-track"><i style="width:${width}%"></i></div><strong>${value}</strong></div>`; }
+function bar(label: string, value: number | 'unknown'): string { const width = typeof value === 'number' ? Math.min(value * 25, 100) : 0; return `<div class="bar-row"><span>${escapeHtml(label)}</span><div class="bar-track"><i style="width:${width}%"></i></div><strong>${value}</strong></div>`; }
 /** Rend une barre cliquable vers le filtre correspondant. */
 function linkedBar(label: string, value: number | 'unknown', href: string): string { return `<a class="bar-link" href="${href}">${bar(label, value)}</a>`; }
 /** Traduit un statut de fiabilité pour l'interface française. */
 function qualityLabel(value: DataQualityStatus): string { return ({ reliable: 'fiable', partial: 'partielle', unknown: 'inconnue', invalid: 'invalide' })[value]; }
+function componentStatusLabel(value: string): string { return ({ active: 'Actif', deprecated: 'Déprécié', experimental: 'Expérimental', removed: 'Retiré' })[value] ?? value; }
 /** Traduit une criticité technique en libellé métier. */
 function criticalityLabel(value: 'blocking' | 'major' | 'minor' | undefined): string { return value ? ({ blocking: 'bloquante', major: 'majeure', minor: 'mineure' })[value] : 'inconnue'; }
 /** Traduit l'état d'une anomalie pour le dashboard. */
 function anomalyStatusLabel(value: AnomalyStatus): string { return ({ open: 'ouverte', in_progress: 'en cours', done: 'terminée', reopened: 'réouverte', cancelled: 'annulée' })[value]; }
-/** Traduit l'état d'un audit pour le dashboard. */
-function auditStatusLabel(value: AuditStatus): string { return ({ not_evaluated: 'non évalué', in_progress: 'en cours', conform: 'conforme', conditional: 'conditionnel', non_conform: 'non conforme', critical: 'critique' })[value]; }
+function anomalyStatusForIssue(issue: Snapshot['normalizedData']['issues'][number] | undefined): AnomalyStatus | undefined {
+  if (!issue) return undefined;
+  const values = [...new Set(issue.projectStatuses.flatMap((project) => {
+    const raw = (project.status.canonicalValue ?? project.status.rawValue).trim().toLowerCase();
+    const value = ({ 'in progress': 'in_progress', 'in-progress': 'in_progress' } as Record<string, string>)[raw] ?? raw;
+    return ['open', 'in_progress', 'done', 'reopened'].includes(value) ? [value as AnomalyStatus] : [];
+  }))];
+  return values.length === 1 ? values[0] : undefined;
+}
 /** Traduit le niveau de sévérité d'une alerte qualité. */
 function severityLabel(value: Severity): string { return ({ INFO: 'information', WARNING: 'avertissement', ERROR: 'erreur' })[value]; }
 /** Traduit l'origine de découverte d'un composant. */

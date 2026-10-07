@@ -1,0 +1,144 @@
+{
+  "collectedAt": "2026-09-10T12:00:00.000Z",
+  "repositories": [
+    {
+      "id": "repository-ui",
+      "name": "ui",
+      "owner": "design-system",
+      "defaultBranch": "main",
+      "tags": [
+        {
+          "name": "1.0.0",
+          "ref": "refs/tags/1.0.0",
+          "referenceSha": "sha-100",
+          "referenceObjectType": "commit",
+          "targetSha": "sha-100",
+          "targetType": "commit",
+          "createdAt": "2026-09-05T00:00:00.000Z"
+        },
+        {
+          "name": "1.1.0",
+          "ref": "refs/tags/1.1.0",
+          "referenceSha": "sha-110",
+          "referenceObjectType": "commit",
+          "targetSha": "sha-110",
+          "targetType": "commit",
+          "createdAt": "2026-09-09T00:00:00.000Z"
+        }
+      ],
+      "pullRequests": [
+        {
+          "id": "pull-1",
+          "number": 201,
+          "state": "MERGED",
+          "mergedAt": "2026-09-06T10:00:00.000Z",
+          "relatedIssueIds": ["issue-bug-audit"]
+        }
+      ],
+      "issues": [
+        {
+          "id": "issue-audit-100",
+          "number": 100,
+          "title": "Audit 1.0.0",
+          "state": "CLOSED",
+          "issueType": "Audit",
+          "labels": ["Component: Button"],
+          "components": ["Button"],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-01T09:00:00.000Z",
+          "closedAt": "2026-09-04T10:00:00.000Z",
+          "url": "https://github.test/design-system/ui/issues/100",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [{
+            "projectId": "project-quality",
+            "projectName": "Quality",
+            "status": "Done",
+            "transitions": [{ "previousStatus": "In progress", "newStatus": "Done", "changedAt": "2026-09-04T10:00:00.000Z" }]
+          }],
+          "milestone": { "id": 1, "number": 1, "title": "1.0.0-Audit" }
+        },
+        {
+          "id": "issue-audit-101",
+          "number": 101,
+          "title": "Audit 1.1.0",
+          "state": "CLOSED",
+          "issueType": "Audit",
+          "labels": ["Component: Button"],
+          "components": ["Button"],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-06T09:00:00.000Z",
+          "closedAt": "2026-09-08T10:00:00.000Z",
+          "url": "https://github.test/design-system/ui/issues/101",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [{
+            "projectId": "project-quality",
+            "projectName": "Quality",
+            "status": "Done",
+            "transitions": [{ "previousStatus": "In progress", "newStatus": "Done", "changedAt": "2026-09-08T10:00:00.000Z" }]
+          }],
+          "milestone": { "id": 2, "number": 2, "title": "1.1.0" }
+        },
+        {
+          "id": "issue-bug-audit",
+          "number": 110,
+          "title": "Focus indicator gap",
+          "state": "CLOSED",
+          "issueType": "Bug",
+          "labels": ["Component: Button", "rgaa: majeure", "a11y: focus"],
+          "components": ["Button"],
+          "criticities": ["majeure"],
+          "parents": ["issue-audit-100"],
+          "createdAt": "2026-09-02T08:00:00.000Z",
+          "closedAt": "2026-09-05T12:00:00.000Z",
+          "url": "https://github.test/design-system/ui/issues/110",
+          "firstDoneAt": "2026-09-05T12:00:00.000Z",
+          "linkedPullRequestIds": ["pull-1"],
+          "projectStatuses": [{
+            "projectId": "project-quality",
+            "projectName": "Quality",
+            "status": "Done",
+            "transitions": [{ "previousStatus": "In progress", "newStatus": "Done", "changedAt": "2026-09-05T12:00:00.000Z" }]
+          }]
+        },
+        {
+          "id": "issue-bug-outside",
+          "number": 111,
+          "title": "Dialog label pending",
+          "state": "OPEN",
+          "issueType": "Bug",
+          "labels": ["Component: Dialog", "a11y: name"],
+          "components": ["Dialog"],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-07T08:00:00.000Z",
+          "url": "https://github.test/design-system/ui/issues/111",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [{
+            "projectId": "project-quality",
+            "projectName": "Quality",
+            "status": "Open"
+          }]
+        },
+        {
+          "id": "issue-transversal",
+          "number": 120,
+          "title": "Cross-library tracking",
+          "state": "OPEN",
+          "issueType": "Task",
+          "labels": [],
+          "components": [],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-08T08:00:00.000Z",
+          "url": "https://github.test/design-system/ui/issues/120",
+          "linkedPullRequestIds": [],
+          "projectStatuses": []
+        }
+      ]
+    }
+  ],
+  "catalogueComponents": ["Button", "Dialog", "Toast"],
+  "nexusAvailable": true
+}

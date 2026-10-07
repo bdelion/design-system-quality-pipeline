@@ -94,7 +94,7 @@ exactement l'ordre d'exécution du code actuel.
 
 ## Data Quality actuelle
 
-Le code dispose actuellement des règles `DQ-001` à `DQ-010`.
+Le code dispose actuellement des règles `DQ-001` à `DQ-011`.
 
 Elles constituent un **état implémenté à préserver et analyser**, pas
 automatiquement le référentiel métier cible.

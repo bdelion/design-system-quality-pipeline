@@ -9,7 +9,7 @@ import { normalizeGithub } from './normalizers/github.js';
 import { evaluateDataQuality, summarizeQuality } from './quality/rules.js';
 import { buildSnapshot } from './snapshots/snapshot.js';
 import type { RawDataset, Snapshot } from './domain/types.js';
-import { loadCatalogue } from './catalogue.js';
+import { attachHistoricalCatalogues, loadCatalogue } from './catalogue.js';
 import { calculateFlowMetrics } from './analytics/flows.js';
 import { diffSnapshots } from './snapshots/diff.js';
 import { readdir } from 'node:fs/promises';
@@ -35,8 +35,15 @@ export async function runPipeline(source: CollectionSource = 'fixture', selected
   raw.catalogueComponents = catalogue.components.map((component) => component.name);
   validateRepositories(config.repositories, raw, source === 'fixture' ? selectedFixturePath : undefined);
   const normalized = normalizeGithub(raw, config.github, catalogue, config.auditVersion);
+  await attachHistoricalCatalogues(raw, normalized, {
+    source,
+    ...(source === 'github' ? {
+      token: githubTokenFromEnvironment(),
+      ...(config.githubApiUrl ? { apiUrl: config.githubApiUrl } : {})
+    } : {})
+  });
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);
-  const analytics = calculateKpis(normalized, qualityIssues);
+  const analytics = calculateKpis(normalized, qualityIssues, raw.collectedAt);
   const previousSnapshot = await loadLatestSnapshot();
   if (previousSnapshot && previousSnapshot.capturedAt < raw.collectedAt) {
     const diff = diffSnapshots(previousSnapshot, {
