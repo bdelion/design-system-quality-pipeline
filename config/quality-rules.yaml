@@ -64,3 +64,55 @@ rules:
     severity: WARNING
     action: include
     message: "Historical catalogue is invalid at the exact PROD tag."
+  - id: DQ-017
+    severity: WARNING
+    action: include
+    message: "GitHub Issue Type is missing."
+  - id: DQ-018
+    severity: WARNING
+    action: include
+    message: "GitHub Issue Type is not recognized by the current configuration."
+  - id: DQ-019
+    severity: WARNING
+    action: include
+    message: "GitHub Issue Type matches several canonical types."
+  - id: DQ-020
+    severity: WARNING
+    action: include
+    message: "Project status is not recognized by the current configuration."
+  - id: DQ-021
+    severity: WARNING
+    action: include
+    message: "Project status matches several canonical statuses."
+  - id: DQ-022
+    severity: WARNING
+    action: include
+    message: "Project Velocity is not numeric."
+  - id: DQ-023
+    severity: WARNING
+    action: include
+    message: "Audit Issue has no recognized Component."
+  - id: DQ-024
+    severity: WARNING
+    action: include
+    message: "Audit Issue has several recognized Components."
+  - id: DQ-025
+    severity: WARNING
+    action: include
+    message: "Audit Issue has no determinable target PROD Version."
+  - id: DQ-026
+    severity: WARNING
+    action: include
+    message: "Audit relation is expected but cannot be validated unambiguously."
+  - id: DQ-027
+    severity: WARNING
+    action: include
+    message: "Anomaly Component differs from its Audit Component."
+  - id: DQ-028
+    severity: WARNING
+    action: include
+    message: "Feature expects one valid Audit parent but the relation is absent, invalid or ambiguous."
+  - id: DQ-029
+    severity: ERROR
+    action: exclude
+    message: "Normalized entity contains an unresolved reference."

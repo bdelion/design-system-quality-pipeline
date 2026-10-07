@@ -6,9 +6,13 @@ import type { GithubProcessingConfig } from '../config.js';
 export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules: GithubProcessingConfig): DataQualityIssue[] {
   const detectedAt = raw.collectedAt;
   const issues: DataQualityIssue[] = [];
+  const emittedIssueIds = new Set<string>();
   /** Centralise la création des alertes afin de garantir un identifiant traçable. */
   const add = (ruleId: string, severity: DataQualityIssue['severity'], action: DataQualityIssue['action'], entityType: string, entityId: string, message: string) => {
-    issues.push({ id: `${ruleId}:${entityId}`, ruleId, severity, action, entityType, entityId, message, detectedAt, impacts: [] });
+    const id = `${ruleId}:${entityId}`;
+    if (emittedIssueIds.has(id)) return;
+    emittedIssueIds.add(id);
+    issues.push({ id, ruleId, severity, action, entityType, entityId, message, detectedAt, impacts: [] });
   };
 
   const normalizedIssueById = new Map((data.issues ?? []).map((issue) => [issue.issueId, issue]));
@@ -16,6 +20,97 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
     normalizedIssueById.get(issueId ?? provenanceSourceId ?? '');
   const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
     issue.projectContexts.some((context) => context.status === 'DONE');
+  const rawIssueById = new Map(raw.repositories.flatMap((repository) => repository.issues).map((issue) => [issue.id, issue]));
+  const auditById = new Map(data.audits.map((audit) => [audit.auditId, audit]));
+  const auditByIssueId = new Map(data.audits.map((audit) => [audit.issueId, audit]));
+  const versionIds = new Set((data.versions ?? []).map((version) => version.versionId));
+  const repositoryHasNativeIssueTypes = new Map(
+    raw.repositories.map((repository) => [repository.id, repository.issues.some((issue) => issue.rawIssueType !== undefined)])
+  );
+
+  // I5 Data Quality V2: surface ambiguities already preserved by normalization.
+  // Legacy fixtures that predate native Issue Type collection are not retroactively
+  // classified as missing; once a repository contains native Issue Types, absence on
+  // one of its Issues is meaningful and must be reported (D-155).
+  for (const issue of data.issues ?? []) {
+    const rawIssue = rawIssueById.get(issue.issueId);
+    const nativeIssueTypesAvailable = repositoryHasNativeIssueTypes.get(issue.repositoryId) ?? false;
+    if (nativeIssueTypesAvailable && !issue.rawIssueType) {
+      add('DQ-017', 'WARNING', 'include', 'issue', issue.issueId, 'GitHub Issue Type is missing.');
+    } else if (issue.rawIssueType && !issue.issueType && (issue.candidateIssueTypes?.length ?? 0) === 0) {
+      add('DQ-018', 'WARNING', 'include', 'issue', issue.issueId, `GitHub Issue Type '${issue.rawIssueType}' is not recognized by the current configuration.`);
+    } else if ((issue.candidateIssueTypes?.length ?? 0) > 1) {
+      add('DQ-019', 'WARNING', 'include', 'issue', issue.issueId, 'GitHub Issue Type matches several canonical types.');
+    }
+
+    for (const context of issue.projectContexts) {
+      if (context.rawStatus && !context.status && (context.candidateStatuses?.length ?? 0) === 0) {
+        add('DQ-020', 'WARNING', 'include', 'issue', issue.issueId, `Project status '${context.rawStatus}' is not recognized by the current configuration.`);
+      } else if ((context.candidateStatuses?.length ?? 0) > 1) {
+        add('DQ-021', 'WARNING', 'include', 'issue', issue.issueId, `Project status '${context.rawStatus ?? ''}' matches several canonical statuses.`);
+      }
+      if (context.rawVelocity !== undefined && context.velocity === undefined) {
+        add('DQ-022', 'WARNING', 'include', 'issue', issue.issueId, `Project Velocity '${String(context.rawVelocity)}' is not numeric.`);
+      }
+    }
+
+    if (issue.issueType === 'AUDIT') {
+      if (issue.componentIds.length === 0) {
+        add('DQ-023', 'WARNING', 'include', 'issue', issue.issueId, 'Audit Issue has no recognized Component.');
+      } else if (issue.componentIds.length > 1) {
+        add('DQ-024', 'WARNING', 'include', 'issue', issue.issueId, 'Audit Issue has several recognized Components.');
+      }
+      const milestoneTitle = rawIssue?.milestone?.title?.trim();
+      const targetNumber = milestoneTitle && /^\d+\.\d+\.\d+$/.test(milestoneTitle) ? milestoneTitle : undefined;
+      const hasTargetVersion = targetNumber
+        ? (data.versions ?? []).some((version) => version.libraryId === issue.libraryId && version.number === targetNumber)
+        : false;
+      if (!hasTargetVersion) {
+        add('DQ-025', 'WARNING', 'include', 'issue', issue.issueId, 'Audit Issue has no determinable target PROD Version.');
+      }
+    }
+  }
+
+  for (const anomaly of data.anomalies) {
+    const issue = issueFor(anomaly.issueId, anomaly.provenance.sourceId);
+    if (anomaly.origin === 'UNDETERMINED') {
+      add('DQ-026', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Audit relation is expected but cannot be validated unambiguously.');
+    }
+    if (anomaly.origin === 'AUDIT' && anomaly.auditId && issue?.componentIds.length === 1) {
+      const audit = auditById.get(anomaly.auditId);
+      if (audit && issue.componentIds[0] !== audit.componentId) {
+        add('DQ-027', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Anomaly Component differs from its Audit Component.');
+      }
+    }
+  }
+
+  for (const issue of data.issues ?? []) {
+    if (issue.issueType !== 'FEATURE') continue;
+    const rawIssue = rawIssueById.get(issue.issueId);
+    const parentIds = rawIssue?.parents ?? [];
+    if (parentIds.length === 0) continue;
+    const validAuditParents = parentIds.filter((parentId) => auditByIssueId.has(parentId));
+    if (parentIds.length !== 1 || validAuditParents.length !== 1) {
+      add('DQ-028', 'WARNING', 'include', 'issue', issue.issueId, 'Feature expects one valid Audit parent but the relation is absent, invalid or ambiguous.');
+    }
+  }
+
+  // Defensive integrity check: normalized references must never become orphans (D-241).
+  for (const audit of data.audits) {
+    if (!normalizedIssueById.has(audit.issueId) || (audit.versionId !== undefined && !versionIds.has(audit.versionId))) {
+      add('DQ-029', 'ERROR', 'exclude', 'audit', audit.auditId, 'Audit contains an unresolved normalized reference.');
+    }
+  }
+  for (const anomaly of data.anomalies) {
+    if (!normalizedIssueById.has(anomaly.issueId) || (anomaly.auditId !== undefined && !auditById.has(anomaly.auditId))) {
+      add('DQ-029', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly contains an unresolved normalized reference.');
+    }
+  }
+  for (const improvement of data.auditImprovements ?? []) {
+    if (!normalizedIssueById.has(improvement.issueId) || !auditById.has(improvement.auditId)) {
+      add('DQ-029', 'ERROR', 'exclude', 'audit_improvement', improvement.auditImprovementId, 'AuditImprovement contains an unresolved normalized reference.');
+    }
+  }
 
   // Les données invalides restent dans le snapshot ; les règles décrivent seulement leur impact.
   for (const anomaly of data.anomalies) {

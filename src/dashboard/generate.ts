@@ -379,7 +379,20 @@ function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): strin
     'DQ-013': 'L’Anomalie est Done dans le Project alors que son Issue GitHub est encore ouverte.',
     'DQ-014': 'L’Audit est Done dans le Project alors que son Issue GitHub est encore ouverte.',
     'DQ-015': 'Le catalogue historique est absent au tag PROD exact de la Version.',
-    'DQ-016': 'Le catalogue historique est invalide au tag PROD exact de la Version.'
+    'DQ-016': 'Le catalogue historique est invalide au tag PROD exact de la Version.',
+    'DQ-017': 'Le type GitHub de l’Issue est absent.',
+    'DQ-018': 'Le type GitHub de l’Issue n’est pas reconnu par la configuration.',
+    'DQ-019': 'Le type GitHub de l’Issue correspond à plusieurs types canoniques.',
+    'DQ-020': 'Le statut Project n’est pas reconnu par la configuration.',
+    'DQ-021': 'Le statut Project correspond à plusieurs statuts canoniques.',
+    'DQ-022': 'La Velocity Project n’est pas interprétable comme un nombre.',
+    'DQ-023': 'L’Issue Audit ne possède aucun Component reconnu.',
+    'DQ-024': 'L’Issue Audit possède plusieurs Components reconnus.',
+    'DQ-025': 'La Version PROD cible de l’Audit est indéterminable.',
+    'DQ-026': 'La relation attendue vers un Audit est invalide ou ambiguë.',
+    'DQ-027': 'Le Component de l’Anomalie diffère de celui de son Audit.',
+    'DQ-028': 'La Feature ne possède pas exactement un Audit parent valide.',
+    'DQ-029': 'Une relation du modèle normalisé est orpheline.'
   }[issue.ruleId] ?? issue.message);
 }
 

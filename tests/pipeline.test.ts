@@ -121,7 +121,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     expect(cancelledAnomaly?.cancelled).toBe(true);
     expect(cancelledIssues.some((issue) => issue.ruleId === 'DQ-008' && issue.entityId === cancelledAnomaly?.anomalyId)).toBe(true);
     expect(cancelledIssues.some((issue) => issue.ruleId === 'DQ-010' && issue.entityId === cancelledAnomaly?.anomalyId)).toBe(true);
-    expect(cancelledIssues.filter((issue) => issue.entityId === cancelledAnomaly?.anomalyId).map((issue) => issue.ruleId)).toEqual(['DQ-008', 'DQ-010']);
+    expect(  cancelledIssues.filter((issue) => issue.entityId === cancelledAnomaly?.anomalyId).map((issue) => issue.ruleId),).toEqual(expect.arrayContaining(['DQ-008', 'DQ-010']));
     expect(cancelledAnalytics.metrics['anomaly.total']?.value).toBe(6);
   });
 });

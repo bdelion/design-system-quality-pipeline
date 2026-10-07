@@ -300,7 +300,7 @@ Anomaly Accessibilité → exactement 1 catégorie a11y
 
 Cette liste identifie des besoins de contrôle.
 
-Les contrôles temporels établis par D-140, D-141 et D-188 sont matérialisés par `DQ-011` à `DQ-014`. Les contrôles de disponibilité du Catalogue historique établis par D-211 et D-212 sont matérialisés par `DQ-015` et `DQ-016`. Les autres besoins listés ci-dessus restent à spécifier avant attribution d’un identifiant DQ.
+Les contrôles temporels établis par D-140, D-141 et D-188 sont matérialisés par `DQ-011` à `DQ-014`. Les contrôles de disponibilité du Catalogue historique établis par D-211 et D-212 sont matérialisés par `DQ-015` et `DQ-016`. I5 matérialise ensuite par `DQ-017` à `DQ-029` les ambiguïtés et violations dont la conduite à tenir est désormais explicitement décidée. Les besoins qui dépendent encore d’une question ouverte restent volontairement sans identifiant DQ.
 
 ## 5. Points techniques à corriger plus tard
 
@@ -334,9 +334,9 @@ métrique de Version indépendante : non affectée
 Une alerte ne doit donc pas contaminer automatiquement toutes les
 métriques.
 
-## 7. Prochaine étape avant le code
+## 7. Méthode de gouvernance des nouvelles règles
 
-Avant toute refonte des DQ :
+Pour toute nouvelle règle DQ :
 
 1. stabiliser les règles métier nécessaires à la V1 ;
 2. associer chaque règle à un contexte ou profil ;
@@ -347,3 +347,29 @@ Avant toute refonte des DQ :
 
 Les fichiers historiques `docs/quality-rules/DQ-001.md` à `DQ-010.md`
 doivent rester disponibles tant que cette migration n'est pas terminée.
+
+## 8. Data Quality V2 — ambiguïtés et intégrité du modèle normalisé
+
+I5 matérialise les réserves de qualité déjà imposées par les décisions D-148 à D-241 sans transformer les questions encore ouvertes en règles métier.
+
+| Règle | Contrôle | Décisions principales |
+| --- | --- | --- |
+| DQ-017 | Issue Type absent | D-155 |
+| DQ-018 | Issue Type non reconnu | D-148, D-150, D-151 |
+| DQ-019 | Issue Type ambigu | D-152 à D-154 |
+| DQ-020 | statut Project non reconnu | D-173, D-175, D-176 |
+| DQ-021 | statut Project ambigu | D-177, D-178 |
+| DQ-022 | Velocity non numérique | D-181, D-182 |
+| DQ-023 | Audit sans Component reconnu | D-195, D-229 |
+| DQ-024 | Audit avec plusieurs Components | D-195, D-230 |
+| DQ-025 | Version PROD cible indéterminable | D-200 à D-204, D-231 |
+| DQ-026 | relation Anomaly → Audit indéterminée | D-198, D-232, D-234, D-236, D-237 |
+| DQ-027 | Component Anomaly/Audit incohérent | D-196, D-197 |
+| DQ-028 | relation Feature → Audit invalide/ambiguë | D-194, D-233, D-235 |
+| DQ-029 | référence normalisée orpheline | D-241 |
+
+Les règles DQ-017 à DQ-028 sont non bloquantes : la donnée source reste présente et aucune valeur canonique ou relation n'est inventée. DQ-029 est un garde-fou d'intégrité : un pointeur normalisé orphelin est une erreur de modèle et ne doit pas alimenter les métriques concernées.
+
+La détection est dédupliquée par couple `ruleId + entityId`, afin qu'un même défaut observé dans plusieurs contextes Project ne produise pas plusieurs alertes portant le même identifiant.
+
+Les questions Q-070, Q-073 et Q-074 restent ouvertes et ne sont pas converties en règles dans ce lot.
