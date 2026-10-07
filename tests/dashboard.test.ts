@@ -27,7 +27,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
   expect(html).toContain('Les indicateurs sont calculés dans le pipeline puis expliqués ici avec leur périmètre, leur ratio et leur fiabilité.');
-  expect(html).toContain('Couverture des audits');
+  expect(html).toContain('Couverture Component × Version');
   expect(html).toContain('Fiabilité par métrique');
   expect(html).toContain('Pourquoi certains chiffres sont partiels');
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
@@ -43,6 +43,10 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(auditsHtml).toContain('Traçabilité de chaque audit');
   expect(auditsHtml).toContain('data-component-table');
   expect(auditsHtml).toContain('data-component-result');
+  expect(auditsHtml).toContain('Verdict par Component × Version');
+  expect(auditsHtml).toContain('data-component-version-table');
+  expect(auditsHtml).toContain('data-component-version-verdict');
+  expect(auditsHtml).toContain('NON_COUVERT reste distinct de NON_CONFORME');
   expect(auditsHtml).toContain('design-system-react');
   const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
   expect(anomaliesHtml).toContain('Anomalies suivies');

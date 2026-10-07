@@ -72,3 +72,12 @@ const applyComponentFilters = () => {
 [componentText, componentResult].filter(Boolean).forEach((control) => control.addEventListener('input', applyComponentFilters));
 document.querySelector('[data-reset-component-filters]')?.addEventListener('click', () => { if (componentText) componentText.value = ''; if (componentResult) componentResult.value = ''; applyComponentFilters(); });
 applyComponentFilters();
+
+const componentVersionRows = [...document.querySelectorAll('[data-component-version-row]')];
+const componentVersionVerdict = document.querySelector('[data-component-version-verdict]');
+const applyComponentVersionFilter = () => {
+  const verdict = componentVersionVerdict?.value || '';
+  componentVersionRows.forEach((row) => { row.hidden = Boolean(verdict) && row.dataset.verdict !== verdict; });
+};
+componentVersionVerdict?.addEventListener('input', applyComponentVersionFilter);
+applyComponentVersionFilter();

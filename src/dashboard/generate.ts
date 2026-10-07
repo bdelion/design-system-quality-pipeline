@@ -53,6 +53,15 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 </body></html>`;
 }
 
+
+function preferredMetric(metrics: Record<string, Metric>, primaryId: string, legacyId: string): Metric {
+  return metrics[primaryId] ?? metricOrUnknown(metrics, legacyId);
+}
+
+function componentVersionVerdictLabel(value: 'NON_COUVERT' | 'CONFORME' | 'NON_CONFORME'): string {
+  return ({ NON_COUVERT: 'non couvert', CONFORME: 'conforme', NON_CONFORME: 'non conforme' })[value];
+}
+
 /** Retourne le nombre d'éléments affiché dans la navigation latérale. */
 function snapshotCountForPage(snapshot: Snapshot, title: string): number | string {
   return title === 'Anomalies' ? snapshot.dataQuality.issues.length : '';
@@ -64,9 +73,9 @@ function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   const metrics = analytics.metrics;
   const repositories = metricOrUnknown(metrics, 'portfolio.repositories');
   const components = metricOrUnknown(metrics, 'portfolio.components');
-  const audited = metricOrUnknown(metrics, 'portfolio.componentsAudited');
-  const coverage = metricOrUnknown(metrics, 'portfolio.auditCoverage');
-  const conformity = metricOrUnknown(metrics, 'audit.conformityRate');
+  // const audited = metricOrUnknown(metrics, 'portfolio.componentsAudited');
+  const coverage = preferredMetric(metrics, 'componentVersion.auditCoverage', 'portfolio.auditCoverage');
+  const conformity = preferredMetric(metrics, 'componentVersion.conformityRate', 'audit.conformityRate');
   const completedAudits = metricOrUnknown(metrics, 'audit.completed');
   const open = metricOrUnknown(metrics, 'anomaly.open');
   const total = metricOrUnknown(metrics, 'anomaly.total');
@@ -85,14 +94,14 @@ function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   <section class="kpi-grid synthesis-grid">
     ${metricCard('Repositories', repositories, '—', 'audits.html')}
     ${metricCard('Composants actifs', components, '—', 'audits.html')}
-    ${metricCard('Composants audités', audited, denominatorLabel(audited), 'audits.html')}
-    ${metricCard('Couverture des audits', coverage, ratioLabel(coverage), 'audits.html')}
+    ${metricCard('Component × Version couverts', preferredMetric(metrics, 'componentVersion.covered', 'portfolio.componentsAudited'), ratioLabel(preferredMetric(metrics, 'componentVersion.covered', 'portfolio.componentsAudited')), 'audits.html')}
+    ${metricCard('Couverture Component × Version', coverage, ratioLabel(coverage), 'audits.html')}
   </section>
 
   <section class="section-heading"><div><p class="eyebrow">Audits</p><h2>Résultats et périmètre</h2></div><span class="badge">${formatMetricValue(completedAudits)} audit${completedAudits.value === 1 ? '' : 's'} terminé${completedAudits.value === 1 ? '' : 's'}</span></section>
   <section class="content-grid synthesis-two">
-    ${explainMetricPanel('Conformité objective', conformity, `${formatMetricValue(conformity)}% des audits terminés`, 'La conformité est calculée uniquement sur les audits terminés ; elle ne mesure pas la couverture du patrimoine.', 'audits.html')}
-    ${explainMetricPanel('Couverture', coverage, `${formatMetricValue(audited)} / ${formatMetricValue(components)} composants`, 'La couverture mesure les composants actifs disposant d’un audit terminé. Elle est distincte du taux de conformité.', 'audits.html')}
+    ${explainMetricPanel('Conformité Component × Version', conformity, ratioLabel(conformity), 'La conformité porte sur les couples Component × Version couverts. Un couple non couvert n’est jamais assimilé à un couple non conforme.', 'audits.html')}
+    ${explainMetricPanel('Couverture Component × Version', coverage, ratioLabel(coverage), 'La couverture mesure les couples Component × Version disposant d’au moins un Audit terminé applicable.', 'audits.html')}
   </section>
 
   <section class="section-heading"><div><p class="eyebrow">Anomalies</p><h2>Stock actuel et délai de correction</h2></div><span class="badge">${qualityLabel(total.reliability.status)}</span></section>
@@ -166,7 +175,7 @@ function categoryMetricBars(metrics: Record<string, Metric>): string {
 }
 
 function reliabilityRows(metrics: Record<string, Metric>): string {
-  const selected = ['portfolio.repositories', 'portfolio.components', 'portfolio.auditCoverage', 'audit.conformityRate', 'anomaly.total', 'anomaly.open', 'anomaly.criticalityCoverage', 'anomaly.correctionDelay.median'];
+  const selected = ['portfolio.repositories', 'portfolio.components', 'componentVersion.auditCoverage', 'componentVersion.conformityRate', 'anomaly.total', 'anomaly.open', 'anomaly.criticalityCoverage', 'anomaly.correctionDelay.median'];
   return selected.map((id) => {
     const metric = metricOrUnknown(metrics, id);
     return `<div class="reliability-row"><div><strong>${escapeHtml(metricLabel(id))}</strong><small>${metric.reliability.issueIds.length ? `${metric.reliability.issueIds.length} alerte${metric.reliability.issueIds.length > 1 ? 's' : ''} liée${metric.reliability.issueIds.length > 1 ? 's' : ''}` : 'Aucune alerte DQ liée'}</small></div><span class="tag tag-${metric.reliability.status}">${qualityLabel(metric.reliability.status)}</span></div>`;
@@ -179,6 +188,8 @@ function metricLabel(id: string): string {
     'portfolio.components': 'Composants',
     'portfolio.auditCoverage': 'Couverture des audits',
     'audit.conformityRate': 'Conformité objective',
+    'componentVersion.auditCoverage': 'Couverture Component × Version',
+    'componentVersion.conformityRate': 'Conformité Component × Version',
     'anomaly.total': 'Anomalies totales',
     'anomaly.open': 'Anomalies ouvertes',
     'anomaly.criticalityCoverage': 'Couverture criticité',
@@ -499,12 +510,13 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
     return { library, components, audited, conform, anomalies: anomalies.length, open };
   });
 
-  const coverage = metricOrUnknown(metrics, 'portfolio.auditCoverage');
+  const coverage = preferredMetric(metrics, 'componentVersion.auditCoverage', 'portfolio.auditCoverage');
   const componentsMetric = metricOrUnknown(metrics, 'portfolio.components');
-  const auditedMetric = metricOrUnknown(metrics, 'portfolio.componentsAudited');
+  const componentVersionsMetric = metricOrUnknown(metrics, 'componentVersion.total');
+  const auditedMetric = preferredMetric(metrics, 'componentVersion.covered', 'portfolio.componentsAudited');
   const completedMetric = metricOrUnknown(metrics, 'audit.completed');
-  const conformity = metricOrUnknown(metrics, 'audit.conformityRate');
-  const conform = metricOrUnknown(metrics, 'audit.conform');
+  const conformity = preferredMetric(metrics, 'componentVersion.conformityRate', 'audit.conformityRate');
+  const conform = preferredMetric(metrics, 'componentVersion.conform', 'audit.conform');
   const conditional = metricOrUnknown(metrics, 'audit.conditional');
   const nonConform = metricOrUnknown(metrics, 'audit.nonConform');
   const critical = metricOrUnknown(metrics, 'audit.critical');
@@ -528,19 +540,30 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
     return `<tr><td>${repositoryReference(snapshot, library.name, githubUrl)}<small>${escapeHtml(library.repository)}</small></td><td>${components.length}</td><td>${repositoryCoverage}</td><td>${conform}/${audited || 0}</td><td>${anomalies}</td><td>${open}</td><td><span class="tag tag-${library.dataQualityStatus}">${qualityLabel(library.dataQualityStatus)}</span></td></tr>`;
   }).join('');
 
+  const componentVersionRows = [...(snapshot.normalizedData.componentVersions ?? [])]
+    .sort((left, right) => left.versionId.localeCompare(right.versionId) || left.componentId.localeCompare(right.componentId))
+    .map((relation) => {
+      const component = snapshot.normalizedData.components.find((item) => item.componentId === relation.componentId);
+      const version = (snapshot.normalizedData.versions ?? []).find((item) => item.versionId === relation.versionId);
+      const library = libraries.find((item) => item.libraryId === (version?.libraryId ?? component?.libraryId));
+      const verdict = relation.verdict ?? 'NON_COUVERT';
+      const auditIds = relation.applicableAuditIds ?? [];
+      return `<tr data-component-version-row data-verdict="${verdict}"><td>${repositoryReference(snapshot, library?.name ?? 'repository inconnu', githubUrl)}</td><td><strong>${escapeHtml(component?.name ?? relation.componentId)}</strong><small>${escapeHtml(relation.componentId)}</small></td><td>${escapeHtml(version?.number ?? relation.versionId)}</td><td><span class="state state-${verdict.toLowerCase().replace('_', '-')}">${componentVersionVerdictLabel(verdict)}</span></td><td>${auditIds.length ? auditIds.map((id) => `<code>${escapeHtml(id)}</code>`).join('<br>') : '—'}</td><td><span class="tag tag-${relation.dataQualityStatus}">${qualityLabel(relation.dataQualityStatus)}</span></td></tr>`;
+    }).join('');
+
   return `<section class="hero-band synthesis-hero">
-    <div><p class="eyebrow">Périmètre auditable</p><h2>${formatMetricValue(componentsMetric)} composants actifs à couvrir</h2><p>La couverture est calculée sur les composants actifs disposant d’un audit terminé. Un composant non audité n’est jamais assimilé à un composant non conforme.</p></div>
-    <div class="hero-facts"><div><strong>${formatMetricValue(auditedMetric)}</strong><span>composants audités</span></div><div><strong>${formatMetricValue(coverage)}%</strong><span>couverture</span></div><div><strong>${formatMetricValue(conformity)}%</strong><span>conformité des audits terminés</span></div></div>
+    <div><p class="eyebrow">Périmètre auditable</p><h2>${formatMetricValue(componentVersionsMetric)} couples Component × Version historisés</h2><p>Le verdict est celui calculé par Analytics V2 à partir des Audits terminés applicables. NON_COUVERT reste distinct de NON_CONFORME.</p></div>
+    <div class="hero-facts"><div><strong>${formatMetricValue(auditedMetric)}</strong><span>Component × Version couverts</span></div><div><strong>${formatMetricValue(coverage)}%</strong><span>couverture</span></div><div><strong>${formatMetricValue(conformity)}%</strong><span>conformité des couples couverts</span></div></div>
   </section>
 
   <section class="section-heading"><div><p class="eyebrow">Indicateurs</p><h2>Couverture et résultats</h2></div><span class="badge">${qualityLabel(coverage.reliability.status)}</span></section>
   <section class="kpi-grid synthesis-grid">
     ${metricCard('Composants actifs', componentsMetric, denominatorLabel(componentsMetric), 'audits.html')}
-    ${metricCard('Composants audités', auditedMetric, ratioLabel(auditedMetric), 'audits.html?scope=audited')}
-    ${metricCard('Couverture', coverage, ratioLabel(coverage), 'audits.html')}
+    ${metricCard('Component × Version', componentVersionsMetric, denominatorLabel(componentVersionsMetric), 'audits.html#component-versions')}
+    ${metricCard('Couverture Component × Version', coverage, ratioLabel(coverage), 'audits.html#component-versions')}
     ${metricCard('Audits terminés', completedMetric, denominatorLabel(completedMetric), 'audits.html?scope=audited')}
     ${metricCard('Conformes', conform, ratioLabel(conform), 'audits.html?result=conform')}
-    ${metricCard('Conformité', conformity, ratioLabel(conformity), 'audits.html?result=conform')}
+    ${metricCard('Conformité Component × Version', conformity, ratioLabel(conformity), 'audits.html#component-versions')}
   </section>
 
   <section class="content-grid synthesis-two">
@@ -549,6 +572,8 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   </section>
 
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Patrimoine actif</p><h2>Composant → audit → anomalies</h2></div><span class="badge">${activeComponents.length} composants actifs</span></div><div class="filter-bar"><input class="search" data-component-filter placeholder="Rechercher un composant, repository ou anomalie..."><select data-component-result><option value="">Tous les résultats</option><option value="audited">Audité</option><option value="not_audited">Non audité</option><option value="conform">Conforme</option><option value="conditional">Conditionnel</option><option value="non_conform">Non conforme</option><option value="critical">Critique</option></select><button type="button" class="reset-button" data-reset-component-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Audit</th><th>Résultat</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody data-component-table>${componentRows}</tbody></table></div></article>
+
+  <article class="panel table-panel" id="component-versions"><div class="panel-heading"><div><p class="eyebrow">Historique du catalogue</p><h2>Verdict par Component × Version</h2></div><span class="badge">${snapshot.normalizedData.componentVersions?.length ?? 0} relations</span></div><p class="panel-note">Cette vue restitue le verdict Analytics V2 sans le recalculer dans le dashboard. Les Audits applicables sont ceux retenus par D-220 à D-228.</p><div class="filter-bar"><select data-component-version-verdict><option value="">Tous les verdicts</option><option value="CONFORME">Conforme</option><option value="NON_CONFORME">Non conforme</option><option value="NON_COUVERT">Non couvert</option></select></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Version PROD</th><th>Verdict</th><th>Audits applicables</th><th>Qualité</th></tr></thead><tbody data-component-version-table>${componentVersionRows || '<tr><td colspan="6">Aucune relation Component × Version matérialisée.</td></tr>'}</tbody></table></div></article>
 
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits réalisés</p><h2>Traçabilité de chaque audit</h2></div><span class="badge">${snapshot.normalizedData.audits.length} audits</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant / source</th><th>Résultat</th><th>Version</th><th>Anomalies</th><th>Ouvertes</th><th>Qualité</th></tr></thead><tbody>${auditRows || '<tr><td colspan="7">Aucun audit terminé dans ce snapshot.</td></tr>'}</tbody></table></div></article>
 
