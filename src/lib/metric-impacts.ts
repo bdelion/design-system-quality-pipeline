@@ -46,6 +46,21 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
   'DQ-009': [
     { pattern: 'portfolio.release.*', action: 'unknown', reason: 'La preuve de release Nexus est indisponible.' }
   ],
+  'DQ-011': [
+    { pattern: 'anomaly.correctedEver', action: 'include', reason: 'L’état Done + Closed est observable mais correctedAt reste indéterminable.' },
+    { pattern: 'anomaly.correctionDelay.*', action: 'unknown', reason: 'Le délai de correction nécessite une date correctedAt fiable.' },
+    { pattern: 'anomaly.flow.corrected', action: 'unknown', reason: 'Le flux de correction nécessite une date correctedAt fiable.' }
+  ],
+  'DQ-012': [
+    { pattern: 'audit.completed', action: 'include', reason: 'L’état Done + Closed est observable mais completedAt reste indéterminable.' }
+  ],
+  'DQ-013': [
+    { pattern: 'anomaly.correctedEver', action: 'include', reason: 'Le statut Project Done est incohérent avec une Issue encore ouverte.' },
+    { pattern: 'anomaly.correctionDelay.*', action: 'include', reason: 'La transition Done reste observable mais la preuve de traitement est incohérente.' }
+  ],
+  'DQ-014': [
+    { pattern: 'audit.completed', action: 'exclude', reason: 'Un Audit n’est pas réalisé tant que son Issue GitHub reste ouverte.' }
+  ],
   'DQ-010': [
     { pattern: 'anomaly.total', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
     { pattern: 'anomaly.open', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },

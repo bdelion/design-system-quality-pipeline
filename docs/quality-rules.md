@@ -22,6 +22,10 @@ Les Quality Rules contrôlent la fiabilité des données après la normalisation
 | [DQ-008](quality-rules/DQ-008.md) | Issue annulée référencée par une PR | ERROR | exclude |
 | [DQ-009](quality-rules/DQ-009.md) | Nexus indisponible | WARNING | include |
 | [DQ-010](quality-rules/DQ-010.md) | Issue annulée rattachée à une milestone | ERROR | exclude |
+| [DQ-011](quality-rules/DQ-011.md) | Anomalie Done + Closed sans correctedAt fiable | WARNING | include |
+| [DQ-012](quality-rules/DQ-012.md) | Audit Done + Closed sans completedAt fiable | WARNING | include |
+| [DQ-013](quality-rules/DQ-013.md) | Anomalie Project Done avec Issue ouverte | WARNING | include |
+| [DQ-014](quality-rules/DQ-014.md) | Audit Project Done avec Issue ouverte | WARNING | include |
 
 Les issues dont un Project porte le statut `Cancelled` ne sont pas évaluées par les règles générales `DQ-001` à `DQ-007` et `DQ-009`. Seules les relations interdites couvertes par `DQ-008` et `DQ-010` sont contrôlées.
 

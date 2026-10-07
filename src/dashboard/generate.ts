@@ -372,8 +372,12 @@ function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): strin
     'DQ-006': 'Le composant détecté n’est pas présent dans le catalogue.',
     'DQ-007': 'L’issue contient un label inconnu.',
     'DQ-008': 'L’issue annulée est référencée par une pull request.',
-    'DQ-009': 'Nexus est indisponible : les preuves de release sont inconnues.'
-    , 'DQ-010': 'L’issue annulée est rattachée à une milestone.'
+    'DQ-009': 'Nexus est indisponible : les preuves de release sont inconnues.',
+    'DQ-010': 'L’issue annulée est rattachée à une milestone.',
+    'DQ-011': 'L’Anomalie Done + Closed n’a pas de correctedAt déterminable à partir de l’historique Project.',
+    'DQ-012': 'L’Audit Done + Closed n’a pas de completedAt déterminable à partir de l’historique Project.',
+    'DQ-013': 'L’Anomalie est Done dans le Project alors que son Issue GitHub est encore ouverte.',
+    'DQ-014': 'L’Audit est Done dans le Project alors que son Issue GitHub est encore ouverte.'
   }[issue.ruleId] ?? issue.message);
 }
 

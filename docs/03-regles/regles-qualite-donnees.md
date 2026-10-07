@@ -300,7 +300,7 @@ Anomaly Accessibilité → exactement 1 catégorie a11y
 
 Cette liste identifie des besoins de contrôle.
 
-Elle ne crée pas encore de nouveaux identifiants `DQ-011+`.
+Les contrôles temporels établis par D-140, D-141 et D-188 sont désormais matérialisés par `DQ-011` à `DQ-014`. Les autres besoins listés ci-dessus restent à spécifier avant attribution d’un identifiant DQ.
 
 ## 5. Points techniques à corriger plus tard
 

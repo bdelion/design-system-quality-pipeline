@@ -39,3 +39,19 @@ rules:
     severity: WARNING
     action: include
     message: "Nexus is unavailable; release evidence is unknown."
+  - id: DQ-011
+    severity: WARNING
+    action: include
+    message: "Done and closed anomaly has no determinable correctedAt from Project status history."
+  - id: DQ-012
+    severity: WARNING
+    action: include
+    message: "Done and closed audit has no determinable completedAt from Project status history."
+  - id: DQ-013
+    severity: WARNING
+    action: include
+    message: "Anomaly Project status is Done while the GitHub issue is still open."
+  - id: DQ-014
+    severity: WARNING
+    action: include
+    message: "Audit Project status is Done while the GitHub issue is still open."

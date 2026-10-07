@@ -11,6 +11,12 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
     issues.push({ id: `${ruleId}:${entityId}`, ruleId, severity, action, entityType, entityId, message, detectedAt, impacts: [] });
   };
 
+  const normalizedIssueById = new Map((data.issues ?? []).map((issue) => [issue.issueId, issue]));
+  const issueFor = (issueId: string | undefined, provenanceSourceId: string | undefined) =>
+    normalizedIssueById.get(issueId ?? provenanceSourceId ?? '');
+  const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
+    issue.projectContexts.some((context) => context.status === 'DONE');
+
   // Les données invalides restent dans le snapshot ; les règles décrivent seulement leur impact.
   for (const anomaly of data.anomalies) {
     const sourceIssue = raw.repositories
@@ -21,11 +27,29 @@ export function evaluateDataQuality(raw: RawDataset, data: NormalizedData, rules
       if (sourceIssue?.milestone) add('DQ-010', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Cancelled issue is attached to a milestone.');
       continue;
     }
+    const normalizedIssue = issueFor(anomaly.issueId, anomaly.provenance.sourceId);
+    if (normalizedIssue && isCurrentlyDone(normalizedIssue) && normalizedIssue.state === 'CLOSED' && !anomaly.correctedAt) {
+      add('DQ-011', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Done and closed anomaly has no determinable correction date from Project status history.');
+    }
+    if (normalizedIssue && isCurrentlyDone(normalizedIssue) && normalizedIssue.state === 'OPEN') {
+      add('DQ-013', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Project status is Done while the GitHub issue is still open.');
+    }
     if (!anomaly.criticality) add('DQ-001', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has no criticality.');
     if (anomaly.parentRefs.length > 1) add('DQ-003', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple parents.');
     if (anomaly.status === 'done' && anomaly.pullRequestRefs.length === 0) add('DQ-004', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Done issue has no identifiable pull request.');
     if (sourceIssue?.labels.some((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())) && sourceIssue.criticities.length > 1) add('DQ-002', 'ERROR', 'exclude', 'anomaly', anomaly.anomalyId, 'Anomaly has incompatible multiple criticalities.');
     if (sourceIssue?.labels.some((label) => label.toLowerCase() === rules.labels.unknown.toLowerCase())) add('DQ-007', 'WARNING', 'include', 'anomaly', anomaly.anomalyId, 'Issue contains an unknown label.');
+  }
+
+  for (const audit of data.audits) {
+    const normalizedIssue = issueFor(audit.issueId, audit.provenance.sourceId);
+    if (!normalizedIssue) continue;
+    if (isCurrentlyDone(normalizedIssue) && normalizedIssue.state === 'CLOSED' && !audit.completedAt) {
+      add('DQ-012', 'WARNING', 'include', 'audit', audit.auditId, 'Done and closed audit has no determinable completion date from Project status history.');
+    }
+    if (isCurrentlyDone(normalizedIssue) && normalizedIssue.state === 'OPEN') {
+      add('DQ-014', 'WARNING', 'include', 'audit', audit.auditId, 'Project status is Done while the GitHub issue is still open.');
+    }
   }
 
   for (const pullRequest of data.pullRequests) {

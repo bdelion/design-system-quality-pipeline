@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeGithub } from '../src/normalizers/github.js';
+import { evaluateDataQuality } from '../src/quality/rules.js';
 import type { GithubProcessingConfig } from '../src/config.js';
 import type { RawDataset, RawIssue, RawProjectStatusTransition } from '../src/domain/types.js';
 
@@ -88,6 +89,29 @@ describe('I3 business dates', () => {
     const normalized = normalizeGithub(dataset(repeatedDone, repeatedDone), rules, undefined, '4.2.1');
     expect(normalized.audits[0]?.completedAt).toBeUndefined();
     expect(normalized.anomalies[0]?.correctedAt).toBeUndefined();
+  });
+
+  it('reports DQ-011 when Done + Closed requires a business date but history is insufficient', () => {
+    const raw = dataset([], []);
+    const normalized = normalizeGithub(raw, rules, undefined, '4.2.1');
+    const quality = evaluateDataQuality(raw, normalized, rules);
+
+    expect(quality.some((item) => item.ruleId === 'DQ-012' && item.entityType === 'audit')).toBe(true);
+    expect(quality.some((item) => item.ruleId === 'DQ-011' && item.entityType === 'anomaly')).toBe(true);
+  });
+
+  it('reports DQ-014 when an Audit Project is Done while the GitHub Issue remains open', () => {
+    const raw = dataset(doneOnce, doneOnce);
+    const audit = raw.repositories[0]!.issues[0]!;
+    audit.state = 'OPEN';
+    delete audit.closedAt;
+    audit.projectStatuses[0]!.status = 'Done';
+
+    const normalized = normalizeGithub(raw, rules, undefined, '4.2.1');
+    const quality = evaluateDataQuality(raw, normalized, rules);
+
+    expect(normalized.audits[0]?.completedAt).toBeUndefined();
+    expect(quality.some((item) => item.ruleId === 'DQ-014' && item.entityType === 'audit')).toBe(true);
   });
 
   it('does not complete an Audit that is not currently DONE', () => {
