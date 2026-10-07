@@ -163,3 +163,18 @@ describe('fixture validation report', () => {
     }
   });
 });
+
+it('preserves historical catalogue evidence and anonymizes its component names consistently', () => {
+  const source: RawDataset = {
+    collectedAt: '2026-09-28T10:00:00Z', nexusAvailable: false, catalogueComponents: ['Button'],
+    repositories: [{
+      id: 'repo-1', name: 'ds-react', owner: 'myorga', defaultBranch: 'main', issues: [], pullRequests: [],
+      gitTags: [{ name: '1.0.0', createdAt: '2026-09-20T10:00:00Z' }],
+      historicalCatalogues: [{ tagName: '1.0.0', status: 'available', componentNames: ['Button'] }]
+    }]
+  };
+  const result = anonymizeDataset(source, { ...options, preserveComponentNames: false }).dataset;
+  expect(result.repositories[0]?.historicalCatalogues?.[0]?.status).toBe('available');
+  expect(result.repositories[0]?.historicalCatalogues?.[0]?.componentNames[0]).not.toBe('Button');
+  expect(result.repositories[0]?.gitTags?.[0]?.createdAt).toBe('2026-06-12T10:00:00.000Z');
+});

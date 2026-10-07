@@ -1,5 +1,7 @@
 import pLimit from 'p-limit';
-import type { RawDataset, RawGitTag, RawIssue, RawPullRequest, RawRepository } from '../domain/types.js';
+import type { RawDataset, RawGitTag, RawHistoricalCatalogue, RawIssue, RawPullRequest, RawRepository } from '../domain/types.js';
+import { parse } from 'yaml';
+import { validateCatalogue } from '../catalogue.js';
 import type { GithubProcessingConfig } from '../config.js';
 
 interface GithubIssue {
@@ -105,6 +107,7 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
   const issues = await githubGetAll<GithubIssue>(apiUrl, `/repos/${repository.full_name}/issues?state=all&per_page=100`, options);
   const pullRequests = await githubGetAll<GithubPullRequest>(apiUrl, `/repos/${repository.full_name}/pulls?state=all&per_page=100`, options);
   const gitTags = await collectGitTags(apiUrl, repository.full_name, options);
+  const historicalCatalogues = await collectHistoricalCatalogues(apiUrl, repository.full_name, gitTags, options);
   const rawPullRequests = pullRequests.map((pullRequest) => toRawPullRequest(pullRequest, repository.full_name, options.rules));
   const pullRequestByNumber = new Map(pullRequests.map((pullRequest) => [pullRequest.number, pullRequest]));
   // Les pull requests apparaissent aussi dans l'endpoint des issues : elles sont écartées ici.
@@ -168,7 +171,8 @@ async function collectRepository(repositoryName: string, options: GithubCollecto
     defaultBranch: repository.default_branch,
     issues: rawIssues,
     pullRequests: rawPullRequests,
-    gitTags
+    gitTags,
+    historicalCatalogues
   };
 }
 
@@ -181,6 +185,35 @@ async function collectGitTags(apiUrl: string, repository: string, options: Githu
     if (ref.object.type !== 'tag') return { name };
     const tag = await githubGet<GithubAnnotatedTag>(apiUrl, `/repos/${repository}/git/tags/${ref.object.sha}`, options);
     return tag.tagger?.date ? { name, createdAt: tag.tagger.date } : { name };
+  }));
+}
+
+/** Collecte le catalogue versionné depuis l'arbre Git du tag PROD exact (D-143/D-210). */
+async function collectHistoricalCatalogues(
+  apiUrl: string,
+  repository: string,
+  gitTags: RawGitTag[],
+  options: GithubCollectorOptions
+): Promise<RawHistoricalCatalogue[]> {
+  const prodTags = gitTags.map((tag) => tag.name).filter((name) => /^\d+\.\d+\.\d+$/.test(name)).sort();
+  return Promise.all(prodTags.map(async (tagName) => {
+    const url = `${apiUrl}/repos/${repository}/contents/config/catalogue.yaml?ref=${encodeURIComponent(tagName)}`;
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/vnd.github.raw+json',
+        Authorization: `Bearer ${options.token}`,
+        'X-GitHub-Api-Version': apiVersion,
+        'User-Agent': 'eventail-ds-quality-board'
+      }
+    });
+    if (response.status === 404) return { tagName, status: 'missing', componentNames: [] };
+    if (!response.ok) throw new Error(`GitHub API request failed (${response.status})`);
+    try {
+      const catalogue = validateCatalogue(parse(await response.text()));
+      return { tagName, status: 'available', componentNames: catalogue.components.map((component) => component.name) };
+    } catch {
+      return { tagName, status: 'invalid', componentNames: [] };
+    }
   }));
 }
 

@@ -29,7 +29,17 @@ export interface RawRepository {
   pullRequests: RawPullRequest[];
   /** Git tags collected from the repository. Legacy fixtures may omit them. */
   gitTags?: RawGitTag[];
+  /** Historical catalogue evidence read from exact PROD tags. */
+  historicalCatalogues?: RawHistoricalCatalogue[];
 }
+
+/** Catalogue component presence captured at one exact PROD Git tag. */
+export interface RawHistoricalCatalogue {
+  tagName: string;
+  status: 'available' | 'missing' | 'invalid';
+  componentNames: string[];
+}
+
 
 /** Git tag evidence used to establish PROD publication dates. */
 export interface RawGitTag {

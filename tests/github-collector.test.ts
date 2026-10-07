@@ -110,3 +110,34 @@ describe('collecteur GitHub', () => {
     }]);
   });
 });
+
+describe('catalogue historique GitHub', () => {
+  it('lit le catalogue au tag PROD exact et conserve les indisponibilités sans fallback', async () => {
+    globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/repos/acme/design-system')) {
+        return new Response(JSON.stringify({ id: 1, name: 'design-system', full_name: 'acme/design-system', owner: { login: 'acme' }, default_branch: 'main' }), { status: 200 });
+      }
+      if (url.includes('/git/matching-refs/tags/')) {
+        return new Response(JSON.stringify([
+          { ref: 'refs/tags/1.0.0', object: { type: 'commit', sha: 'a' } },
+          { ref: 'refs/tags/1.1.0', object: { type: 'commit', sha: 'b' } },
+          { ref: 'refs/tags/1.2.0-rc.1', object: { type: 'commit', sha: 'c' } }
+        ]), { status: 200 });
+      }
+      if (url.includes('/contents/config/catalogue.yaml?ref=1.0.0')) {
+        return new Response('version: "1.0"\ncomponents:\n  - name: Button\n    stream: React\n    owner: Front\n    squad: DS\n    status: stable\n    rgaaLevel: AA\n    tags: [form]\n', { status: 200 });
+      }
+      if (url.includes('/contents/config/catalogue.yaml?ref=1.1.0')) return new Response('', { status: 404 });
+      if (url.includes('/issues?') || url.includes('/pulls?')) return new Response(JSON.stringify([]), { status: 200 });
+      throw new Error(`Unexpected GitHub request: ${url}`);
+    }) as typeof fetch;
+
+    const config = await loadConfig();
+    const dataset = await collectGithub({ token: 'test-token', owner: 'acme', repositories: ['design-system'], apiUrl: 'https://api.github.com', rules: config.github });
+    expect(dataset.repositories[0]?.historicalCatalogues).toEqual([
+      { tagName: '1.0.0', status: 'available', componentNames: ['Button'] },
+      { tagName: '1.1.0', status: 'missing', componentNames: [] }
+    ]);
+  });
+});

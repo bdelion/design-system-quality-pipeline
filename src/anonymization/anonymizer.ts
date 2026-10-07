@@ -138,7 +138,13 @@ export function anonymizeDataset(input: RawDataset, options: AnonymizationOption
     owner: map('owner', repository.owner, 'owner'),
     defaultBranch: repository.defaultBranch,
     issues: repository.issues.map((issue) => anonymizeIssue(issue, repository.name, options, map, report)),
-    pullRequests: repository.pullRequests.map((pr) => anonymizePullRequest(pr, repository.name, options, map, report))
+    pullRequests: repository.pullRequests.map((pr) => anonymizePullRequest(pr, repository.name, options, map, report)),
+    ...(repository.gitTags ? { gitTags: repository.gitTags.map((tag) => ({ name: tag.name, ...(tag.createdAt ? { createdAt: shiftDate(tag.createdAt, options.dateOffsetDays, report)! } : {}) })) } : {}),
+    ...(repository.historicalCatalogues ? { historicalCatalogues: repository.historicalCatalogues.map((catalogue) => ({
+      tagName: catalogue.tagName,
+      status: catalogue.status,
+      componentNames: catalogue.componentNames.map((component) => mapComponent(component, options, map))
+    })) } : {})
   }));
 
   const dataset: RawDataset = {
