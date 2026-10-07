@@ -62,10 +62,17 @@ Les lots avancent progressivement :
 |---|---|---|
 | I1 — Contrats de domaine | Terminé | Contrats V1, préservation des Issues génériques, intégrité des relations et déterminisme. |
 | I2 — Collecte GitHub | Partiel | Collecte des Components, parents, champs et historique Projects, tags PROD/RC. La validation avec l'organisation cible et le nom du champ RC auditée restent à établir. |
-| I3 — Normalisation métier | En cours | Première normalisation des Versions à partir des Milestones et tags ; les spécialisations Audit et Anomaly restent à implémenter. |
-| I4 à I9 | À venir | Catalogue historique, Data Quality V1, analytics, snapshots, dashboard V1 et non-régression complète. |
+| I3 — Normalisation métier | Implémenté | Les entités V1 et leurs relations sont normalisées ; les cardinalités invalides, relations ambiguës et incohérences sont conservées et signalées par Data Quality. |
+| I4 — Catalogue historique | Implémenté, validation réelle en attente | Le pipeline lit le Catalogue au tag PROD exact, conserve sa provenance et matérialise `Component × Version` ; aucun fallback au Catalogue courant. La validation reste à faire contre les droits et repositories de l’organisation cible. |
+| I5 — Data Quality V1 | Implémenté, décision métier en attente | Les règles DQ V1 couvrent les spécialisations, relations, statuts, tags et Catalogues historiques. La sémantique de `Cancelled` reste inconnue tant que Q-022 n’est pas tranchée. |
+| I6 — Analytics V1 | Implémenté | Les métriques consomment les objets V1, les appartenances historiques et les dates métier ; les valeurs non établies restent `unknown`. La validation sur la collecte réelle reste à faire. |
+| I7 — Snapshots et historique | Implémenté | Les diffs consomment les Anomalies V1 ; les projections « à la Release » et « connaissance actuelle » sont matérialisées séparément. |
+| I8 — Dashboard V1 | Implémenté | Les vues Anomalies, Audits, Cartographie et Historique consomment les contrats V1, y compris les verdicts inconnus et les états temporels. |
+| I9 — Fixtures et non-régression | Implémenté | Une fixture synthétique de référence couvre le pipeline V1 de bout en bout ; les scénarios ciblent aussi les Catalogues historiques, métriques, spécialisations et projections temporelles. |
 
-La fixture `fixtures/my-real-dataset-anonymized.json` est une capture antérieure à l'enrichissement I2. Elle contient 1 716 Issues, mais pas les relations parent, les transitions Projects, les champs Project ni les tags. Elle est utile pour tester la compatibilité avec les données historiques, mais ne valide pas la collecte enrichie et ne permet pas de déduire les relations ou les dates absentes. Son catalogue associé ne fournit pas non plus un rattachement vérifié aux repositories anonymisés.
+La fixture `fixtures/my-real-dataset-anonymized.json` est une capture antérieure à l'enrichissement I2. Elle contient 1 716 Issues, mais pas les relations parent, les transitions Projects, les champs Project ni les tags. Elle est utile pour tester la compatibilité avec les données historiques, mais ne valide pas la collecte enrichie et ne permet pas de déduire les relations ou les dates absentes. Son catalogue associé ne fournit pas non plus un rattachement vérifié aux repositories anonymisés. La fixture synthétique `fixtures/v1-reference.json` et ses Catalogues historiques sont la référence des tests de bout en bout V1.
+
+Le Catalogue historique d’une Version publiée est lu dans `config/catalogue.yaml` au tag PROD exact, via l’API GitHub. Une Version sans tag, un Catalogue absent ou un Catalogue invalide restent présents mais portent un état historique `unknown` et une alerte Data Quality ; le Catalogue courant n’est jamais substitué. Les métriques de couverture reposent sur les relations `Component × Version`, et les vues historiques distinguent l’état à la Release de la connaissance actuelle.
 
 La définition normative et le plan de migration sont documentés dans :
 

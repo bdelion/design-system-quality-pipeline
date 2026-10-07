@@ -4,7 +4,7 @@
 
 Cette page distingue :
 
-1. les règles `DQ-001` à `DQ-010` réellement implémentées ;
+1. les règles `DQ-001` à `DQ-011` réellement implémentées ;
 2. leur intention ;
 3. les divergences observées avec le modèle métier consolidé ;
 4. les points qui devront être arbitrés avant modification du code.
@@ -281,10 +281,24 @@ Milestone.
 Comme DQ-008, cette règle est un comportement implémenté à réévaluer
 avant d'en faire un invariant cible.
 
-## 4. Règles manquantes révélées par le modèle consolidé
+## 4. Règles complémentaires et besoins révélés par le modèle consolidé
 
-Le modèle métier fait apparaître des contrôles qui ne sont pas
-représentés explicitement par les dix DQ actuelles.
+### DQ-011 --- Issue Type non déclaré
+
+**Actuel**
+
+```text
+Severity : WARNING
+Action   : include
+```
+
+Détecte une valeur brute d'Issue Type qui n'est pas reconnue par
+`github.issueTypes.keywords`. L'Issue reste conservée ; le signalement
+contient la valeur brute et renvoie vers l'Issue GitHub source. Aucun KPI
+n'est directement affecté.
+
+Le modèle métier fait également apparaître des contrôles qui ne sont pas
+encore représentés explicitement par une règle DQ.
 
 Exemples établis :
 
@@ -298,9 +312,7 @@ Anomaly Accessibilité → exactement 1 criticité RGAA
 Anomaly Accessibilité → exactement 1 catégorie a11y
 ```
 
-Cette liste identifie des besoins de contrôle.
-
-Elle ne crée pas encore de nouveaux identifiants `DQ-011+`.
+Cette liste identifie des besoins de contrôle complémentaires.
 
 ## 5. Points techniques à corriger plus tard
 

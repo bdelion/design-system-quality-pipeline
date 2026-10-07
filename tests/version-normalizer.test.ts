@@ -103,7 +103,8 @@ describe('Version normalization', () => {
         number: '1.2.3',
         milestoneId: 'milestone-1',
         published: false,
-        catalogueStatus: 'unknown'
+        catalogueStatus: 'unknown',
+        catalogueIssue: 'Exact PROD tag 1.2.3 is unavailable; no current-catalogue fallback was used.'
       },
       {
         versionId: expect.any(String),

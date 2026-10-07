@@ -58,6 +58,7 @@ export function normalizeVersions(
       const milestoneId = candidate.milestoneIds.size === 1
         ? [...candidate.milestoneIds][0]
         : undefined;
+      const catalogueTag = tag && tag.name === candidate.number ? tag.name : undefined;
       return {
         versionId: stableId('version', `${candidate.libraryId}:${candidate.number}`),
         libraryId: candidate.libraryId,
@@ -66,7 +67,12 @@ export function normalizeVersions(
         ...(tag?.createdAt ? { releasedAt: tag.createdAt } : {}),
         ...(milestoneId ? { milestoneId } : {}),
         published: candidate.tags.length > 0,
-        catalogueStatus: 'unknown'
+        catalogueStatus: 'unknown',
+        ...(!catalogueTag ? {
+          catalogueIssue: tag
+            ? `Version tag ${tag.name} is not the exact PROD tag ${candidate.number}.`
+            : `Exact PROD tag ${candidate.number} is unavailable; no current-catalogue fallback was used.`
+        } : {})
       };
     })
     .sort((left, right) =>

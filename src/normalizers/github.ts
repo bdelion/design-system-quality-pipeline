@@ -15,6 +15,7 @@ import type {
 } from '../domain/types.js';
 import { rawComponentNames } from '../lib/components.js';
 import { normalizeVersions } from './versions.js';
+import { normalizeSpecializations } from './specializations.js';
 
 const collectedStatus: DataQualityStatus = 'reliable';
 
@@ -263,16 +264,23 @@ export function normalizeGithub(
     }
   }
 
+  const versions = normalizeVersions(raw, libraries, [...milestonesById.values()]);
+  const specializations = normalizeSpecializations(
+    raw,
+    issues,
+    [...milestonesById.values()],
+    versions,
+    rules
+  );
+
   return {
     libraries: [...libraries].sort((left, right) => left.libraryId.localeCompare(right.libraryId)),
     components: [...componentsByName.values()].sort((left, right) => left.componentId.localeCompare(right.componentId)),
     issues: issues.sort((left, right) => left.issueId.localeCompare(right.issueId)),
     milestones: [...milestonesById.values()].sort((left, right) => left.milestoneId.localeCompare(right.milestoneId)),
-    versions: normalizeVersions(raw, libraries, [...milestonesById.values()]),
+    versions,
     componentVersions: [],
-    audits: [],
-    anomalies: [],
-    auditImprovements: [],
+    ...specializations,
     legacyAudits: legacyAudits.sort((left, right) => left.auditId.localeCompare(right.auditId)),
     legacyAnomalies: legacyAnomalies.sort((left, right) => left.anomalyId.localeCompare(right.anomalyId)),
     pullRequests: pullRequests.sort((left, right) => left.pullRequestId.localeCompare(right.pullRequestId))

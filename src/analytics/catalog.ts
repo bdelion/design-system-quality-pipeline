@@ -16,15 +16,17 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
   { id: 'portfolio.repositories', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de repositories distincts effectivement analysés.' },
   { id: 'portfolio.libraries', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de bibliothèques analysées.' },
   { id: 'portfolio.components', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de composants actifs dans le périmètre du patrimoine.' },
-  { id: 'portfolio.componentsAudited', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de composants actifs disposant d’au moins un audit terminé.' },
-  { id: 'portfolio.auditCoverage', unit: 'percentage', scope: 'portfolio', kind: 'ratio', definition: 'Composants actifs disposant d’un audit terminé / composants actifs du périmètre.', numeratorLabel: 'Composants audités', denominatorLabel: 'Composants actifs' },
+  { id: 'portfolio.componentsAudited', unit: 'count', scope: 'portfolio', kind: 'stock', definition: 'Nombre de Components actifs couverts dans au moins une Version historique.' },
+  { id: 'portfolio.auditCoverage', unit: 'percentage', scope: 'portfolio', kind: 'ratio', definition: 'Paires Component × Version couvertes par un Audit terminé / paires du Catalogue historique connu.', numeratorLabel: 'Paires couvertes', denominatorLabel: 'Paires historiques connues' },
+  { id: 'version.auditCoverage.*', unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components du Catalogue historique de la Version disposant d’un Audit terminé / Components du Catalogue historique.' },
+  { id: 'version.conformityRate.*', unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components couverts dont le dernier Audit applicable est conforme / Components couverts.' },
 
   { id: 'audit.completed', unit: 'count', scope: 'audit', kind: 'stock', definition: 'Nombre d’audits ayant atteint un résultat exploitable.' },
   { id: 'audit.conform', unit: 'count', scope: 'audit', kind: 'stock', definition: 'Nombre d’audits dont le résultat objectif est conforme.' },
   { id: 'audit.conditional', unit: 'count', scope: 'audit', kind: 'stock', definition: 'Nombre d’audits dont le résultat objectif est conditionnel.' },
   { id: 'audit.nonConform', unit: 'count', scope: 'audit', kind: 'stock', definition: 'Nombre d’audits dont le résultat objectif est non conforme.' },
   { id: 'audit.critical', unit: 'count', scope: 'audit', kind: 'stock', definition: 'Nombre d’audits dont le résultat objectif est critique.' },
-  { id: 'audit.conformityRate', unit: 'percentage', scope: 'audit', kind: 'ratio', definition: 'Audits conformes / audits terminés.', numeratorLabel: 'Audits conformes', denominatorLabel: 'Audits terminés' },
+  { id: 'audit.conformityRate', unit: 'percentage', scope: 'audit', kind: 'ratio', definition: 'Paires Component × Version couvertes et conformes selon le dernier Audit applicable / paires Component × Version couvertes.', numeratorLabel: 'Paires conformes', denominatorLabel: 'Paires couvertes' },
 
   { id: 'anomaly.total', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides dans le périmètre analytique, hors anomalies annulées.' },
   { id: 'anomaly.open', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies actuellement ouvertes ou rouvertes.' },
@@ -35,9 +37,10 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
   { id: 'anomaly.byCriticality.minor', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides de criticité mineure.' },
   { id: 'anomaly.criticalityCoverage', unit: 'percentage', scope: 'anomaly', kind: 'ratio', definition: 'Anomalies valides disposant d’une criticité exploitable / anomalies valides.', numeratorLabel: 'Anomalies avec criticité', denominatorLabel: 'Anomalies valides' },
   { id: 'anomaly.byCategory.*', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides portant la catégorie considérée.' },
+  { id: 'anomaly.byOrigin.*', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies par origine métier déterminée.' },
   { id: 'anomaly.correctedEver', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies valides ayant déjà atteint une première correction métier.' },
   { id: 'anomaly.reopened', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies actuellement dans l’état rouvert.', notes: 'Ce n’est pas un flux de réouvertures sur une période.' },
-  { id: 'anomaly.cancelled', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Nombre d’anomalies annulées dans les données sources.', notes: 'Les anomalies annulées sont exclues des métriques de stock valides.' },
+  { id: 'anomaly.cancelled', unit: 'count', scope: 'anomaly', kind: 'stock', definition: 'Indéterminé tant que la sémantique du statut Cancelled n’est pas établie (Q-022).' },
   { id: 'anomaly.flow.created', unit: 'count', scope: 'anomaly', kind: 'flow', definition: 'Nombre d’anomalies apparues entre le snapshot précédent et le snapshot courant.' },
   { id: 'anomaly.flow.corrected', unit: 'count', scope: 'anomaly', kind: 'flow', definition: 'Nombre d’anomalies ayant acquis leur première correction entre les deux snapshots.' },
   { id: 'anomaly.flow.reopened', unit: 'count', scope: 'anomaly', kind: 'flow', definition: 'Nombre d’anomalies passées dans l’état rouvert entre les deux snapshots.' },
@@ -51,7 +54,15 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
 const contractById = new Map(METRIC_CONTRACTS.map((contract) => [contract.id, contract]));
 
 export function getMetricContract(id: string): MetricContract | undefined {
-  return contractById.get(id) ?? contractById.get(id.startsWith('anomaly.byCategory.') ? 'anomaly.byCategory.*' : id);
+  return contractById.get(id)
+    ?? contractById.get(id.startsWith('anomaly.byCategory.') ? 'anomaly.byCategory.*' : id)
+    ?? (id.startsWith('version.auditCoverage.')
+      ? { id, unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components du Catalogue historique de la Version disposant d’un Audit terminé / Components du Catalogue historique.' }
+      : undefined)
+    ?? (id.startsWith('version.conformityRate.')
+      ? { id, unit: 'percentage', scope: 'version', kind: 'ratio', definition: 'Components couverts dont le dernier Audit applicable est conforme / Components couverts.' }
+      : undefined)
+    ?? (id.startsWith('anomaly.byOrigin.') ? contractById.get('anomaly.byOrigin.*') : undefined);
 }
 
 export function assertMetricContract(metricIds: Iterable<string>): void {

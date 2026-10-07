@@ -59,6 +59,47 @@ const RULE_METRIC_IMPACTS: Record<string, { pattern: string; action: 'include' |
     { pattern: 'anomaly.correctionDelay.*', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
     { pattern: 'anomaly.backlog.oldestAge', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' },
     { pattern: 'anomaly.flow.cancelled', action: 'exclude', reason: 'L’issue annulée possède une relation interdite avec une milestone.' }
+  ],
+  'DQ-013': [
+    { pattern: 'audit.*', action: 'exclude', reason: 'L’Audit ne possède pas exactement un Component.' },
+    { pattern: 'portfolio.auditCoverage', action: 'exclude', reason: 'L’Audit ne possède pas exactement un Component.' }
+  ],
+  'DQ-014': [
+    { pattern: 'audit.*', action: 'exclude', reason: 'La Version cible de l’Audit est inconnue.' },
+    { pattern: 'portfolio.auditCoverage', action: 'exclude', reason: 'La Version cible de l’Audit est inconnue.' }
+  ],
+  'DQ-015': [
+    { pattern: 'audit.*', action: 'unknown', reason: 'L’état de réalisation de l’Audit est incohérent.' },
+    { pattern: 'portfolio.auditCoverage', action: 'unknown', reason: 'L’état de réalisation de l’Audit est incohérent.' }
+  ],
+  'DQ-016': [
+    { pattern: 'audit.*', action: 'unknown', reason: 'La Release Candidate auditée ne peut pas être établie.' }
+  ],
+  'DQ-017': [
+    { pattern: 'portfolio.auditCoverage', action: 'unknown', reason: 'Le tag PROD exact manque pour déterminer le périmètre historique.' },
+    { pattern: 'version.auditCoverage.*', action: 'unknown', reason: 'Le tag PROD exact manque pour déterminer le périmètre historique.' },
+    { pattern: 'version.conformityRate.*', action: 'unknown', reason: 'Le tag PROD exact manque pour déterminer le périmètre historique.' }
+  ],
+  'DQ-018': [
+    { pattern: 'portfolio.auditCoverage', action: 'unknown', reason: 'Le Catalogue historique exact de la Version est indisponible.' },
+    { pattern: 'version.auditCoverage.*', action: 'unknown', reason: 'Le Catalogue historique exact de la Version est indisponible.' },
+    { pattern: 'version.conformityRate.*', action: 'unknown', reason: 'Le Catalogue historique exact de la Version est indisponible.' }
+  ],
+  'DQ-019': [
+    { pattern: 'anomaly.byOrigin.*', action: 'unknown', reason: 'L’origine Audit / hors Audit n’est pas déterminable.' }
+  ],
+  'DQ-020': [
+    { pattern: 'audit.*', action: 'exclude', reason: 'Le Component de l’Anomalie ne correspond pas à celui de l’Audit.' },
+    { pattern: 'anomaly.byComponent.*', action: 'exclude', reason: 'Le rattachement Component de cette Anomalie est invalide.' }
+  ],
+  'DQ-021': [
+    { pattern: 'anomaly.open', action: 'unknown', reason: 'Le statut courant du Project manque.' },
+    { pattern: 'anomaly.inProgress', action: 'unknown', reason: 'Le statut courant du Project manque.' },
+    { pattern: 'anomaly.done', action: 'unknown', reason: 'Le statut courant du Project manque.' },
+    { pattern: 'anomaly.reopened', action: 'unknown', reason: 'Le statut courant du Project manque.' },
+    { pattern: 'anomaly.cancelled', action: 'unknown', reason: 'La sémantique de Cancelled reste à décider (Q-022).' },
+    { pattern: 'anomaly.flow.cancelled', action: 'unknown', reason: 'La sémantique de Cancelled reste à décider (Q-022).' },
+    { pattern: 'anomaly.backlog.oldestAge', action: 'unknown', reason: 'Le statut courant du Project manque.' }
   ]
 };
 
@@ -80,4 +121,3 @@ export function applyMetricImpacts(issues: DataQualityIssue[], metricIds: string
         })))
   }));
 }
-

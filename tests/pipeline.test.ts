@@ -54,6 +54,29 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     expect(quality.some((item) => item.ruleId === 'DQ-003' && item.entityId === anomaly?.anomalyId)).toBe(true);
   });
 
+  it('retains and reports issue types that are not declared in the configuration', () => {
+    const synthetic = structuredClone(raw);
+    const sourceIssue = synthetic.repositories[0]!.issues.find((candidate) => candidate.id === 'issue-101');
+    if (!sourceIssue) throw new Error('Fixture issue-101 is required for this test.');
+    sourceIssue.issueType = 'FEATURE REQUEST';
+
+    const normalizedSynthetic = normalizeGithub(synthetic, config.github, undefined, config.auditVersion);
+    const quality = evaluateDataQuality(synthetic, normalizedSynthetic, config.github);
+    const normalizedIssue = normalizedSynthetic.issues.find((candidate) => candidate.provenance.sourceId === sourceIssue.id);
+    const finding = quality.find((item) => item.ruleId === 'DQ-011');
+
+    expect(normalizedIssue).toMatchObject({ rawIssueType: 'FEATURE REQUEST' });
+    expect(normalizedIssue?.issueType).toBeUndefined();
+    expect(finding).toMatchObject({
+      severity: 'WARNING',
+      action: 'include',
+      entityType: 'issue',
+      entityId: sourceIssue.id,
+      message: expect.stringContaining('FEATURE REQUEST'),
+      impacts: []
+    });
+  });
+
   it('loads the catalogue as the reference list of known components', async () => {
     const catalogue = await loadCatalogue();
     const catalogueRaw = { ...raw, catalogueComponents: catalogue.components.map((component) => component.name) };
@@ -92,7 +115,7 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   // Les données invalides restent visibles, mais ne doivent pas gonfler les KPI.
   it('keeps invalid source data and excludes only the affected KPI object', () => {
     expect(normalized.legacyAnomalies).toHaveLength(7);
-    expect(issues.some((issue) => issue.ruleId === 'DQ-001')).toBe(true);
+    expect(issues.some((issue) => issue.ruleId === 'DQ-001')).toBe(false);
     expect(calculateKpis(normalized, issues).metrics['anomaly.total']?.value).toBe(7);
   });
 
@@ -100,13 +123,13 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
   it('reports a partial reliability when DQ warnings or errors exist', () => {
     const analytics = calculateKpis(normalized, issues);
     expect(analytics.metrics['anomaly.correctedEver']?.reliability.status).toBe('partial');
-    expect(analytics.openAnomalies.value).toBe(3);
+    expect(analytics.openAnomalies.value).toBe('unknown');
     expect(analytics.averageCorrectionDelayDays.value).toBeGreaterThan(0);
     expect(analytics.medianCorrectionDelayDays.value).toBeGreaterThan(0);
-    expect(analytics.metrics['audit.conformityRate']?.value).toBe(100);
+    expect(analytics.metrics['audit.conformityRate']?.value).toBe('unknown');
   });
 
-  it('excludes cancelled anomalies from KPI and reports forbidden relations', () => {
+  it('does not freeze Cancelled semantics while the business decision remains open', () => {
     const cancelledRaw = structuredClone(raw);
     const cancelledIssue = cancelledRaw.repositories[0]?.issues.find((issue) => issue.id === 'issue-101');
     if (!cancelledIssue) throw new Error('Fixture issue-101 is required for this test.');
@@ -119,10 +142,9 @@ const issues = evaluateDataQuality(raw, normalized, config.github);
     const cancelledAnalytics = calculateKpis(cancelledNormalized, cancelledIssues);
 
     expect(cancelledAnomaly?.cancelled).toBe(true);
-    expect(cancelledIssues.some((issue) => issue.ruleId === 'DQ-008' && issue.entityId === cancelledAnomaly?.anomalyId)).toBe(true);
-    expect(cancelledIssues.some((issue) => issue.ruleId === 'DQ-010' && issue.entityId === cancelledAnomaly?.anomalyId)).toBe(true);
-    expect(cancelledIssues.filter((issue) => issue.entityId === cancelledAnomaly?.anomalyId).map((issue) => issue.ruleId)).toEqual(['DQ-008', 'DQ-010']);
-    expect(cancelledAnalytics.metrics['anomaly.total']?.value).toBe(6);
+    expect(cancelledAnomaly?.cancelled).toBe(true);
+    expect(cancelledIssues.some((issue) => ['DQ-008', 'DQ-010'].includes(issue.ruleId))).toBe(false);
+    expect(cancelledAnalytics.metrics['anomaly.total']?.value).toBe(7);
   });
 });
 
@@ -133,14 +155,14 @@ it('builds self-explaining V2 metrics with metric-scoped DQ impacts', () => {
   expect(metrics['portfolio.auditCoverage']).toMatchObject({
     unit: 'percentage',
     numerator: expect.any(Number),
-    denominator: expect.any(Number)
+    denominator: 'unknown'
   });
-  expect(metrics['portfolio.auditCoverage']?.definition).toContain('Composants actifs');
+  expect(metrics['portfolio.auditCoverage']?.definition).toContain('paires du Catalogue historique connu');
   expect(metrics['anomaly.byCriticality.major']?.unit).toBe('count');
   expect(metrics['anomaly.correctionDelay.p90']?.unit).toBe('days');
 
   const missingCriticality = issues.find((issue) => issue.ruleId === 'DQ-001');
-  expect(missingCriticality?.impacts.some((impact) => impact.metricId === 'anomaly.byCriticality.major')).toBe(true);
-  expect(metrics['anomaly.byCriticality.major']?.reliability.status).toBe('partial');
+  expect(missingCriticality).toBeUndefined();
+  expect(metrics['anomaly.byCriticality.major']?.reliability.status).toBe('reliable');
   expect(metrics['anomaly.correctionDelay.average']?.reliability.status).not.toBe('invalid');
 });

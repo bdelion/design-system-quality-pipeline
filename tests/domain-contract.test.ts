@@ -127,7 +127,7 @@ describe('V1 domain contracts', () => {
     expect(result?.issueType).toBeUndefined();
   });
 
-  it('preserves multiple Components without inventing a legacy specialization', () => {
+  it('preserves multiple Components and keeps a Bug with an unresolved parent undetermined', () => {
     const raw = structuredClone(rawFixture);
     const source = raw.repositories[0]?.issues.find((issue) => issue.id === 'issue-101');
     if (!source) throw new Error('Fixture issue-101 is required for this test.');
@@ -141,7 +141,17 @@ describe('V1 domain contracts', () => {
     expect(issue?.componentIds.every((componentId) =>
       normalized.components.some((component) => component.componentId === componentId)
     )).toBe(true);
-    expect(normalized.anomalies).toEqual([]);
+    expect(normalized.anomalies).toHaveLength(
+      raw.repositories.flatMap((repository) => repository.issues)
+        .filter((candidate) => candidate.issueType === fixtureConfig.github.issueTypes.anomaly).length
+    );
+    const anomaly = normalized.anomalies.find((candidate) => candidate.issueId === issue?.issueId);
+    expect(anomaly).toMatchObject({
+      issueId: issue?.issueId,
+      componentIds: issue?.componentIds,
+      origin: 'UNDETERMINED'
+    });
+    expect(anomaly).not.toHaveProperty('auditId');
     expect(normalized.legacyAnomalies.some((anomaly) => anomaly.provenance.sourceId === source.id)).toBe(false);
   });
 

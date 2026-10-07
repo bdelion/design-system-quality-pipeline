@@ -1,0 +1,18 @@
+version: "1"
+components:
+  - name: Button
+    repository: ui
+    stream: foundations
+    owner: design-system
+    squad: components
+    status: stable
+    rgaaLevel: AA
+    tags: [interactive]
+  - name: Dialog
+    repository: ui
+    stream: foundations
+    owner: design-system
+    squad: components
+    status: stable
+    rgaaLevel: AA
+    tags: [overlay]

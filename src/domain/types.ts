@@ -4,7 +4,7 @@ export type DataQualityStatus = 'reliable' | 'partial' | 'unknown' | 'invalid';
 export type Severity = 'INFO' | 'WARNING' | 'ERROR';
 export type DqAction = 'include' | 'exclude' | 'block';
 export type MetricUnit = 'count' | 'percentage' | 'days';
-export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
+export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly' | 'version';
 export type MetricReliabilityStatus = DataQualityStatus;
 export type AuditStatus = 'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
@@ -192,6 +192,14 @@ export interface Version {
   milestoneId?: string;
   published: boolean;
   catalogueStatus: 'known' | 'unknown';
+  catalogueComponents?: string[];
+  catalogueSource?: {
+    repository: string;
+    ref: string;
+    path: string;
+    collectedAt: string;
+  };
+  catalogueIssue?: string;
 }
 
 /** Explicit membership in a historical Component x Version catalogue. */
@@ -280,6 +288,7 @@ export interface Component {
   name: string;
   libraryId: string;
   status: 'active' | 'deprecated' | 'experimental' | 'removed';
+  historicalOnly?: boolean;
   aliases: string[];
   discoverySource: 'catalogue' | 'github' | 'suggested';
   stream?: string;
@@ -403,6 +412,8 @@ export interface KpiValue {
 export interface Analytics {
   /** V2 contract: all dashboard analytics must consume this map. */
   metrics: Record<string, Metric>;
+  /** Materialized release-time and current projections; presentation must not recalculate them. */
+  versionStates?: VersionStateProjection[];
   /** Flux temporels présents lorsque deux snapshots sont comparables. */
   flows?: Record<string, Metric>;
   /** @deprecated Compatibility projection of anomaly.total. */
@@ -421,6 +432,24 @@ export interface Analytics {
   averageCorrectionDelayDays: KpiValue;
   /** @deprecated Compatibility projection of anomaly.correctionDelay.median. */
   medianCorrectionDelayDays: KpiValue;
+}
+
+export interface VersionStateView {
+  catalogueStatus: 'known' | 'unknown';
+  auditedComponentIds: string[];
+  conformComponentIds: string[];
+  nonConformComponentIds: string[];
+  unknownComponentIds: string[];
+  uncoveredComponentIds: string[];
+  anomalyIds: string[];
+  undeterminedOriginAnomalyIds: string[];
+}
+
+export interface VersionStateProjection {
+  versionId: string;
+  releasedAt?: string;
+  atRelease?: VersionStateView;
+  current: VersionStateView;
 }
 
 /** Données métier après collecte et normalisation. */
