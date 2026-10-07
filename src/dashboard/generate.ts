@@ -6,7 +6,7 @@ import type { AnomalyStatus, Component, DataQualityStatus, Metric, Severity, Sna
 
 const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.meta.url)));
 
-/** Génère les cinq pages statiques et leurs assets depuis un snapshot. */
+/** Génère les pages statiques et leurs assets depuis un snapshot. */
 export async function generateDashboard(snapshot: Snapshot, outputRoot: string, githubUrl?: string): Promise<void> {
   const dashboardPath = resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });
@@ -20,6 +20,8 @@ export async function generateDashboard(snapshot: Snapshot, outputRoot: string, 
     writeFile(resolve(dashboardPath, 'index.html'), page(snapshot, 'Vue d’ensemble', overviewContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'anomalies.html'), page(snapshot, 'Anomalies', anomaliesContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'audits.html'), page(snapshot, 'Audits et composants', auditsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'components.html'), page(snapshot, 'Patrimoine composants', componentsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'squad.html'), page(snapshot, 'Activité Squad', squadContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'graph.html'), page(snapshot, 'Cartographie', graphContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'history.html'), page(snapshot, 'Historique', historyContent(snapshot), serializedSnapshot), 'utf8'),
     copyDashboardAsset(dashboardPath, 'style.css'),
@@ -37,6 +39,18 @@ async function copyDashboardAsset(dashboardPath: string, assetName: string): Pro
 
 /** Assemble une page HTML complète à partir d'un contenu et d'un snapshot. */
 function page(snapshot: Snapshot, title: string, content: string, serializedSnapshot: string): string {
+  const navigation = [
+    ['Vue d’ensemble', 'index.html', '◈', 'Direction / synthèse'],
+    ['Audits et composants', 'audits.html', '◇', 'Audits & versions'],
+    ['Activité Squad', 'squad.html', '▤', 'Activité Squad'],
+    ['Patrimoine composants', 'components.html', '◉', 'Patrimoine composants'],
+    ['Anomalies', 'anomalies.html', '!', 'Anomalies & qualité'],
+    ['Historique', 'history.html', '↗', 'Historique']
+  ] as const;
+  const navHtml = navigation.map(([pageTitle, href, icon, label]) =>
+    `<a class="${title === pageTitle || (pageTitle === 'Patrimoine composants' && title === 'Cartographie') ? 'active' : ''}" href="${href}"><span aria-hidden="true">${icon}</span>${escapeHtml(label)}${pageTitle === 'Anomalies' ? `<span class="nav-count">${snapshot.dataQuality.issues.length}</span>` : ''}</a>`
+  ).join('');
+  const sectionStatus = qualityLabel(snapshot.reliability);
   // Le snapshot est sérialisé dans une balise script ; les chevrons sont échappés pour éviter une injection HTML.
   return `<!doctype html>
 <html lang="fr">
@@ -47,17 +61,13 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${title === 'Vue d’ensemble' ? 'À SURVEILLER' : 'V2.1'}</span><span class="avatar">CP</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
+  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${snapshot.reliability}">Snapshot ${sectionStatus}</span></div></header>
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p><nav class="side-nav" aria-label="Navigation principale">${navHtml}<a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span aria-hidden="true">⌘</span>Cartographie</a><a href="anomalies.html#quality"><span aria-hidden="true">◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
   <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}
 </body></html>`;
 }
 
 /** Retourne le nombre d'éléments affiché dans la navigation latérale. */
-function snapshotCountForPage(snapshot: Snapshot, title: string): number | string {
-  return title === 'Anomalies' ? snapshot.dataQuality.issues.length : '';
-}
-
 /** Construit le contenu de la page de synthèse des KPI et alertes. */
 function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   const { analytics, dataQuality } = snapshot;
@@ -592,6 +602,80 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves qui affectent les audits ou leur périmètre</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)} · ${severityLabel(issue.severity)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${qualityLabel(issue.action === 'exclude' ? 'partial' : 'reliable')}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>Les audits et leur périmètre ne présentent aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }
 
+function componentsContent(snapshot: Snapshot, githubUrl?: string): string {
+  const components = snapshot.normalizedData.components;
+  const states = new Map((snapshot.analytics.versionStates ?? []).map((state) => [state.versionId, state.current]));
+  const libraries = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library]));
+  const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
+  for (const anomaly of snapshot.normalizedData.anomalies) {
+    for (const componentId of anomaly.componentIds) {
+      const current = anomaliesByComponent.get(componentId) ?? [];
+      current.push(anomaly);
+      anomaliesByComponent.set(componentId, current);
+    }
+  }
+  const issuesById = new Map(snapshot.normalizedData.issues.map((issue) => [issue.issueId, issue]));
+  const rows = components.map((component) => {
+    const memberships = snapshot.normalizedData.componentVersions.filter((membership) => membership.componentId === component.componentId);
+    const versions = [...new Set(memberships.map((membership) => membership.versionId))];
+    const covered = memberships.filter((membership) => states.get(membership.versionId)?.auditedComponentIds.includes(component.componentId));
+    const nonConform = memberships.filter((membership) => states.get(membership.versionId)?.nonConformComponentIds.includes(component.componentId));
+    const open = (anomaliesByComponent.get(component.componentId) ?? []).filter((anomaly) =>
+      ['open', 'reopened', 'in_progress'].includes(anomalyStatusForIssue(issuesById.get(anomaly.issueId)) ?? '')
+    ).length;
+    const library = libraries.get(component.libraryId);
+    const status = component.status;
+    return `<tr data-component-row data-component-status="${escapeHtml(status)}">
+      <td>${repositoryReference(snapshot, library?.name ?? component.libraryId, githubUrl)}</td>
+      <td><strong>${escapeHtml(component.name)}</strong>${component.historicalOnly ? '<small>Présent uniquement dans un Catalogue historique</small>' : ''}</td>
+      <td><span class="state state-${escapeHtml(status)}">${escapeHtml(componentStatusLabel(status))}</span></td>
+      <td>${versions.length}</td><td>${covered.length} / ${memberships.length}</td><td>${nonConform.length}</td><td>${open}</td>
+    </tr>`;
+  }).join('');
+  const active = components.filter((component) => component.status === 'active' && !component.historicalOnly).length;
+  const catalogued = snapshot.normalizedData.componentVersions.length;
+  const unknownCatalogues = snapshot.normalizedData.versions.filter((version) => version.catalogueStatus === 'unknown').length;
+  const statuses = [...new Set(components.map((component) => component.status))].sort();
+  return `<section class="hero-band"><div><p class="eyebrow">Patrimoine</p><h2>Les composants du Design System, suivis par version.</h2><p>Parcourez le périmètre actif, les appartenances historiques et les résultats connus des audits.</p></div><div class="hero-facts"><div><strong>${active}</strong><span>actifs</span></div><div><strong>${catalogued}</strong><span>appartenances Component × Version</span></div><div><strong>${unknownCatalogues}</strong><span>Catalogues inconnus</span></div></div></section>
+    <div class="section-heading"><div><p class="eyebrow">Exploration</p><h2>Référentiel des composants</h2></div><a class="text-link" href="graph.html">Voir la cartographie →</a></div>
+    <article class="panel table-panel"><div class="filter-bar"><input class="search" data-component-filter placeholder="Rechercher un composant ou repository..." aria-label="Rechercher un composant ou repository"><select data-component-status-filter aria-label="Filtrer par statut"><option value="">Tous les statuts</option>${statuses.map((status) => `<option value="${escapeHtml(status)}">${escapeHtml(componentStatusLabel(status))}</option>`).join('')}</select><button type="button" class="reset-button" data-reset-component-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant</th><th>Statut</th><th>Versions connues</th><th>Audités</th><th>Non conformes</th><th>Anomalies ouvertes</th></tr></thead><tbody data-component-table>${rows || '<tr><td colspan="7">Aucun composant dans le snapshot.</td></tr>'}</tbody></table></div><p class="panel-note">${components.length} composants visibles dans le snapshot. Un Catalogue historique inconnu ne signifie pas que le composant est absent.</p></article>`;
+}
+
+function squadContent(snapshot: Snapshot, githubUrl?: string): string {
+  const issues = snapshot.normalizedData.issues;
+  const repositories = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
+  const components = new Map(snapshot.normalizedData.components.map((component) => [component.componentId, component.name]));
+  const statuses = [...new Set(issues.flatMap((issue) => issue.projectStatuses.map((project) =>
+    project.status.canonicalValue ?? project.status.rawValue
+  )))].sort((left, right) => left.localeCompare(right));
+  const rows = issues.map((issue) => {
+    const projects = issue.projectStatuses;
+    const statusNames = [...new Set(projects.map((project) => project.status.canonicalValue ?? project.status.rawValue))];
+    const statusKeys = statusNames.map((status) => status.toLowerCase());
+    const iterations = [...new Set(projects.flatMap((project) => project.iteration ? [project.iteration.title] : []))];
+    const velocity = projects.flatMap((project) => project.velocity ? [project.velocity.numericValue ?? project.velocity.rawValue] : []);
+    const componentNames = issue.componentIds.map((id) => components.get(id) ?? id);
+    const statusHtml = statusNames.map((status) => `<span class="tag">${escapeHtml(status)}</span>`).join(' ') || '<span class="muted">Non renseigné</span>';
+    return `<tr data-activity-row data-repository="${escapeHtml(repositories.get(issue.libraryId) ?? '')}" data-status="${escapeHtml(statusKeys.join('|'))}">
+      <td><strong>${escapeHtml(issue.title)}</strong><small>${githubReference(snapshot, issue.provenance.sourceId ?? issue.issueId, githubUrl)}</small></td>
+      <td>${escapeHtml(repositories.get(issue.libraryId) ?? 'Repository inconnu')}</td>
+      <td>${escapeHtml(issue.issueType ?? issue.rawIssueType ?? 'Non renseigné')}</td>
+      <td>${escapeHtml(componentNames.join(', ') || 'Non renseigné')}</td>
+      <td>${statusHtml}</td><td>${escapeHtml(iterations.join(', ') || 'Non renseignée')}</td>
+      <td>${escapeHtml(velocity.map((value) => value === null ? 'Non renseignée' : String(value)).join(', ') || 'Non renseignée')}</td>
+    </tr>`;
+  }).join('');
+  const withProject = issues.filter((issue) => issue.projectStatuses.length > 0).length;
+  const withIteration = issues.filter((issue) => issue.projectStatuses.some((project) => project.iteration)).length;
+  const transitionEvidence = issues.filter((issue) => issue.projectStatuses.some((project) =>
+    project.transitions.some((transition) => transition.changedAt)
+  )).length;
+  const repositoryNames = [...new Set(issues.map((issue) => repositories.get(issue.libraryId) ?? ''))].filter(Boolean).sort();
+  return `<section class="hero-band"><div><p class="eyebrow">Activité Squad</p><h2>Le travail suivi dans les Projects et les Issues.</h2><p>Cette vue restitue les statuts et données de planification collectés, sans interpréter Velocity ni déduire une performance de Sprint.</p></div><div class="hero-facts"><div><strong>${issues.length}</strong><span>Issues du snapshot</span></div><div><strong>${withProject}</strong><span>avec contexte Project</span></div><div><strong>${withIteration}</strong><span>avec itération</span></div></div></section>
+    <section class="content-grid synthesis-two"><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Données d’activité</p><h2>Ce qui est observable</h2></div></div><p>Les statuts courants sont affichés tels que collectés. Les transitions datées sont disponibles pour ${transitionEvidence} Issue${transitionEvidence === 1 ? '' : 's'} ; l’absence de date n’est pas remplacée par une date estimée.</p><p class="panel-note">Les agrégats Velocity, la capacité et les reports de Sprint attendent une définition de population et de calcul stabilisée.</p></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Qualité de la collecte</p><h2>Réserves Data Quality</h2></div><span class="badge">${snapshot.dataQuality.issues.length}</span></div><p>Les réserves peuvent affecter la lecture des statuts, des relations et des indicateurs. Consultez leur détail avant toute comparaison.</p><a class="text-link" href="anomalies.html#quality">Voir les alertes →</a></article></section>
+    <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Issues et delivery</p><h2>Statuts et planification observés</h2></div><span class="badge">${issues.length} Issues</span></div><div class="filter-bar"><input class="search" data-activity-filter placeholder="Rechercher une Issue, un composant..." aria-label="Rechercher une Issue ou un composant"><select data-activity-repository aria-label="Filtrer par repository"><option value="">Tous les repositories</option>${repositoryNames.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('')}</select><select data-activity-status aria-label="Filtrer par statut"><option value="">Tous les statuts</option>${statuses.map((status) => `<option value="${escapeHtml(status.toLowerCase())}">${escapeHtml(status)}</option>`).join('')}</select><button type="button" class="reset-button" data-reset-activity-filters>Réinitialiser</button></div><div class="table-wrap"><table><thead><tr><th>Issue</th><th>Repository</th><th>Type</th><th>Composants</th><th>Statut Project</th><th>Itération</th><th>Velocity source</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Aucune Issue disponible.</td></tr>'}</tbody></table></div></article>`;
+}
+
 /** Rend une carte KPI avec sa valeur, son ratio et sa définition. */
 /** Rend une carte dédiée aux délais exprimés en jours. */
 /** Rend les barres de répartition par criticité avec leurs filtres. */
@@ -634,6 +718,7 @@ function bar(label: string, value: number | 'unknown'): string { const width = t
 function linkedBar(label: string, value: number | 'unknown', href: string): string { return `<a class="bar-link" href="${href}">${bar(label, value)}</a>`; }
 /** Traduit un statut de fiabilité pour l'interface française. */
 function qualityLabel(value: DataQualityStatus): string { return ({ reliable: 'fiable', partial: 'partielle', unknown: 'inconnue', invalid: 'invalide' })[value]; }
+function componentStatusLabel(value: string): string { return ({ active: 'Actif', deprecated: 'Déprécié', experimental: 'Expérimental', removed: 'Retiré' })[value] ?? value; }
 /** Traduit une criticité technique en libellé métier. */
 function criticalityLabel(value: 'blocking' | 'major' | 'minor' | undefined): string { return value ? ({ blocking: 'bloquante', major: 'majeure', minor: 'mineure' })[value] : 'inconnue'; }
 /** Traduit l'état d'une anomalie pour le dashboard. */

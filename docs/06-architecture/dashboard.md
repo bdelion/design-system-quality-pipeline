@@ -24,19 +24,21 @@ HTML + JavaScript + CSS
 
 ## Pages actuelles
 
-Le générateur produit notamment :
+Le générateur produit les pages suivantes :
 
 ```text
 index.html
 anomalies.html
 audits.html
+components.html
+squad.html
 graph.html
 history.html
 ```
 
 ### `index.html`
 
-Vue de synthèse des KPI et de l'état global observable.
+Vue Direction / synthèse des KPI et de l'état global observable.
 
 ### `anomalies.html`
 
@@ -45,7 +47,20 @@ et alertes DQ associées.
 
 ### `audits.html`
 
-Vue orientée Composants et Audits.
+Vue prioritaire Audit & Versions : couverture, conformité, verdicts et
+traçabilité `Component × Version → Audit → Anomalies`.
+
+### `components.html`
+
+Référentiel du patrimoine : composants, versions historiques, couverture
+des audits, résultats non conformes et anomalies ouvertes. Recherche et
+filtre par statut sont disponibles.
+
+### `squad.html`
+
+Vue opérationnelle des Issues et des faits GitHub Projects collectés :
+statuts, itérations, Velocity source et composants associés. Les valeurs
+sont restituées sans interprétation ni agrégat Sprint non défini.
 
 ### `graph.html`
 
@@ -79,7 +94,7 @@ comportements communs restent dans les assets.
 
 ## Consommation des métriques
 
-Les nouveaux écrans doivent consommer :
+Les écrans doivent consommer :
 
 ```text
 analytics.metrics[metricId]
@@ -173,5 +188,10 @@ Les besoins déjà identifiés prévoient plusieurs niveaux de lecture :
 Chaque KPI devra pouvoir conduire aux entités sources qui expliquent sa
 valeur.
 
-La conception détaillée de cette cible interviendra après M3 afin de ne
-pas figer l'interface avant la consolidation du modèle métier.
+Les pages `components.html` et `squad.html` amorcent les espaces
+Composants et Activité Squad. Les indicateurs Sprint, Velocity et delivery
+restent soumis à leurs définitions métier avant agrégation ou comparaison.
+
+Les tableaux des pages générées proposent un tri interactif accessible ;
+les vues détaillées ajoutent recherche et filtres lorsque le périmètre le
+justifie.
