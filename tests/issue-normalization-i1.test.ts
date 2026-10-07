@@ -12,6 +12,13 @@ const rules: GithubProcessingConfig = {
     anomaly: 'BUG',
     keywords: { AUDIT: ['audit'], BUG: ['bug'], FEATURE: ['feature'], EPIC: ['epic'], NEW_COMPONENT: ['new component'] }
   },
+  projectStatuses: {
+    keywords: {
+      BACKLOG: ['Backlog', '📋 Backlog'], READY: ['Ready', '🔖 Ready'],
+      IN_PROGRESS: ['In progress', '🏗 In progress'], IN_REVIEW: ['In review', '👀 In review'],
+      DONE: ['Done', '✅ Done'], BLOCKED: ['Blocked', '✋ Blocked'], CANCELLED: ['Cancelled', '🛑 Cancelled']
+    }
+  },
   closingKeywords: ['fixes'],
   cancelledProjectStatuses: ['Cancelled']
 };
@@ -46,10 +53,40 @@ describe('I1 Issue normalization', () => {
     });
     expect(normalized.issues?.[0]?.componentIds).toHaveLength(2);
     expect(normalized.issues?.[0]?.projectContexts).toEqual([{
-      projectId: 'project-1', projectName: 'Quality', rawStatus: 'In progress',
+      projectId: 'project-1', projectName: 'Quality', rawStatus: 'In progress', status: 'IN_PROGRESS',
       iteration: { iterationId: 'it-1', title: 'Sprint 1', startDate: '2026-09-01', durationDays: 14 },
-      rawVelocity: '3', velocity: 3, rawScheduling: '2', statusHistory: [{ previousRawStatus: 'Backlog', rawStatus: 'In progress', transitionedAt: '2026-09-29T09:00:00Z' }]
+      rawVelocity: '3', velocity: 3, rawScheduling: '2', statusHistory: [{ previousRawStatus: 'Backlog', previousStatus: 'BACKLOG', rawStatus: 'In progress', status: 'IN_PROGRESS', transitionedAt: '2026-09-29T09:00:00Z' }]
     }]);
+  });
+
+  it('canonicalizes configured Project status variants for current state and history', () => {
+    const raw = dataset();
+    raw.repositories[0]!.issues[0]!.projectStatuses![0]!.status = '  🏗 IN PROGRESS  ';
+    raw.repositories[0]!.issues[0]!.projectStatuses![0]!.statusHistory = [{
+      previousStatus: '📋 Backlog', status: '✅ Done',
+      transitionedAt: '2026-09-30T09:00:00Z'
+    }];
+    const context = normalizeGithub(raw, rules).issues?.[0]?.projectContexts[0];
+    expect(context?.status).toBe('IN_PROGRESS');
+    expect(context?.statusHistory[0]).toMatchObject({ previousStatus: 'BACKLOG', status: 'DONE' });
+  });
+
+  it('preserves unknown Project statuses without inventing a canonical value', () => {
+    const raw = dataset();
+    raw.repositories[0]!.issues[0]!.projectStatuses![0]!.status = 'Todo';
+    const context = normalizeGithub(raw, rules).issues?.[0]?.projectContexts[0];
+    expect(context?.rawStatus).toBe('Todo');
+    expect(context?.status).toBeUndefined();
+    expect(context?.candidateStatuses).toBeUndefined();
+  });
+
+  it('does not choose a canonical Project status when configured variants are ambiguous', () => {
+    const raw = dataset();
+    const ambiguousRules = structuredClone(rules);
+    ambiguousRules.projectStatuses.keywords.READY = ['In progress'];
+    const context = normalizeGithub(raw, ambiguousRules).issues?.[0]?.projectContexts[0];
+    expect(context?.status).toBeUndefined();
+    expect(context?.candidateStatuses).toEqual(['READY', 'IN_PROGRESS']);
   });
 
   it('uses strict whole-value matching after trim and case normalization', () => {

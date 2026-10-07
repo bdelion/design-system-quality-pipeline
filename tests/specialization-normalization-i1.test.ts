@@ -12,6 +12,13 @@ const rules: GithubProcessingConfig = {
     anomaly: 'BUG',
     keywords: { AUDIT: ['audit'], BUG: ['bug'], FEATURE: ['feature'], EPIC: ['epic'], NEW_COMPONENT: ['new component'] }
   },
+  projectStatuses: {
+    keywords: {
+      BACKLOG: ['Backlog', '📋 Backlog'], READY: ['Ready', '🔖 Ready'],
+      IN_PROGRESS: ['In progress', '🏗 In progress'], IN_REVIEW: ['In review', '👀 In review'],
+      DONE: ['Done', '✅ Done'], BLOCKED: ['Blocked', '✋ Blocked'], CANCELLED: ['Cancelled', '🛑 Cancelled']
+    }
+  },
   closingKeywords: ['fixes'],
   cancelledProjectStatuses: ['Cancelled']
 };

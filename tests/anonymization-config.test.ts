@@ -15,6 +15,7 @@ const config: PipelineConfig = {
   github: {
     labels: { componentPrefix: 'Component:', accessibilityCriticalityPrefix: 'rgaa:', accessibilityCategoryPrefix: 'a11y:', unknown: 'label:unknown', criticalityValues: { bloquante: 'blocking', majeure: 'major', mineure: 'minor' } },
     issueTypes: { anomaly: 'BUG', keywords: { AUDIT: ['audit'] } },
+    projectStatuses: { keywords: { DONE: ['Done'], CANCELLED: ['Cancelled'] } },
     closingKeywords: ['close'], cancelledProjectStatuses: ['Cancelled']
   }
 };

@@ -16,6 +16,9 @@ export interface GithubProcessingConfig {
     anomaly: string;
     keywords: Record<string, string[]>;
   };
+  projectStatuses: {
+    keywords: Record<string, string[]>;
+  };
   closingKeywords: string[];
   cancelledProjectStatuses: string[];
 }

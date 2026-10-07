@@ -149,6 +149,8 @@ export interface ProjectIteration {
 /** Transition de statut observée dans un GitHub Project. */
 export interface ProjectStatusTransition {
   previousRawStatus?: string;
+  previousStatus?: CanonicalProjectStatus;
+  previousCandidateStatuses?: CanonicalProjectStatus[];
   rawStatus: string;
   status?: CanonicalProjectStatus;
   candidateStatuses?: CanonicalProjectStatus[];

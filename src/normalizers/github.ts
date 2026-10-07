@@ -9,6 +9,7 @@ import type {
   DataQualityStatus,
   Issue,
   CanonicalIssueType,
+  CanonicalProjectStatus,
   Library,
   NormalizedData,
   PullRequest,
@@ -159,19 +160,36 @@ export function normalizeGithub(
           const velocity = projectStatus.rawVelocity !== undefined
             ? numericProjectValue(projectStatus.rawVelocity)
             : undefined;
+          const statusRecognition = recognizeProjectStatus(projectStatus.status, rules);
           return {
             projectId: projectStatus.projectId,
             projectName: projectStatus.projectName,
             rawStatus: projectStatus.status,
+            ...(statusRecognition.status ? { status: statusRecognition.status } : {}),
+            ...(statusRecognition.candidateStatuses.length > 1
+              ? { candidateStatuses: statusRecognition.candidateStatuses }
+              : {}),
             ...(projectStatus.iteration ? { iteration: { ...projectStatus.iteration } } : {}),
             ...(projectStatus.rawVelocity !== undefined ? { rawVelocity: projectStatus.rawVelocity } : {}),
             ...(velocity !== undefined ? { velocity } : {}),
             ...(projectStatus.rawScheduling !== undefined ? { rawScheduling: projectStatus.rawScheduling } : {}),
-            statusHistory: (projectStatus.statusHistory ?? []).map((transition) => ({
-              ...(transition.previousStatus !== undefined ? { previousRawStatus: transition.previousStatus } : {}),
-              rawStatus: transition.status,
-              transitionedAt: transition.transitionedAt
-            }))
+            statusHistory: (projectStatus.statusHistory ?? []).map((transition) => {
+              const recognition = recognizeProjectStatus(transition.status, rules);
+              const previousRecognition = recognizeProjectStatus(transition.previousStatus, rules);
+              return {
+                ...(transition.previousStatus !== undefined ? { previousRawStatus: transition.previousStatus } : {}),
+                ...(previousRecognition.status ? { previousStatus: previousRecognition.status } : {}),
+                ...(previousRecognition.candidateStatuses.length > 1
+                  ? { previousCandidateStatuses: previousRecognition.candidateStatuses }
+                  : {}),
+                rawStatus: transition.status,
+                ...(recognition.status ? { status: recognition.status } : {}),
+                ...(recognition.candidateStatuses.length > 1
+                  ? { candidateStatuses: recognition.candidateStatuses }
+                  : {}),
+                transitionedAt: transition.transitionedAt
+              };
+            })
           };
         }),
         provenance: { source: 'github', sourceId: issue.id, collectedAt: raw.collectedAt },
@@ -390,6 +408,30 @@ function specializationIssueType(issue: Issue, rawIssue: RawIssue | undefined): 
   return legacy && ['EPIC', 'AUDIT', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(legacy)
     ? legacy as CanonicalIssueType
     : undefined;
+}
+
+
+/** Reconnait strictement un statut Project a partir des variantes configurees. */
+function recognizeProjectStatus(
+  rawValue: string | undefined,
+  rules: GithubProcessingConfig
+): { status?: CanonicalProjectStatus; candidateStatuses: CanonicalProjectStatus[] } {
+  if (!rawValue) return { candidateStatuses: [] };
+  const normalizedRaw = rawValue.trim().toLowerCase();
+  const canonicalStatuses: CanonicalProjectStatus[] = [
+    'BACKLOG', 'READY', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'BLOCKED', 'CANCELLED'
+  ];
+  const candidates = Object.entries(rules.projectStatuses.keywords)
+    .filter(([, variants]) => variants.some((variant) => variant.trim().toLowerCase() === normalizedRaw))
+    .map(([canonical]) => canonical)
+    .filter((canonical): canonical is CanonicalProjectStatus =>
+      canonicalStatuses.includes(canonical as CanonicalProjectStatus)
+    );
+
+  if (candidates.length === 1) {
+    return { status: candidates[0]!, candidateStatuses: candidates };
+  }
+  return { candidateStatuses: candidates };
 }
 
 /** Reconnait strictement une valeur d'Issue Type à partir des variantes configurées. */

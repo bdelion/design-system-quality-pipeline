@@ -85402,7 +85402,7 @@
           "state": "OPEN",
           "issueType": "Enhancement",
           "labels": [
-            "filairesMAIF",
+            "filairesfilairesENTERPRISE",
             "Design issue"
           ],
           "components": [],
@@ -85855,7 +85855,7 @@
           "state": "CLOSED",
           "labels": [
             "documentation",
-            "filairesMAIF",
+            "filairesfilairesENTERPRISE",
             "atom",
             "CI",
             "Release"
@@ -86419,7 +86419,7 @@
           "title": "[anonymized issue]",
           "state": "CLOSED",
           "labels": [
-            "filairesMAIF",
+            "filairesfilairesENTERPRISE",
             "Design issue"
           ],
           "components": [],
