@@ -3,9 +3,22 @@ import type { Analytics, DataQualityIssue, NormalizedData, RawDataset, Snapshot 
 import { buildVersionHistoricalStates } from './history.js';
 
 /** Assemble un snapshot immuable et calcule sa fiabilité globale. */
-export function buildSnapshot(rawData: RawDataset, normalizedData: NormalizedData, dqIssues: DataQualityIssue[], analytics: Analytics, modelVersion: string, ruleVersion: string, scope: string, capturedAt: string = new Date().toISOString()): Snapshot {
+export function buildSnapshot(
+  rawData: RawDataset,
+  normalizedData: NormalizedData,
+  dqIssues: DataQualityIssue[],
+  analytics: Analytics,
+  modelVersion: string,
+  ruleVersion: string,
+  scope: string,
+  capturedAt: string = new Date().toISOString()
+): Snapshot {
   // Une alerte, y compris un simple avertissement, rend le snapshot partiel.
-  const reliability = dqIssues.some((issue) => issue.severity === 'ERROR') ? 'partial' : dqIssues.length > 0 ? 'partial' : 'reliable';
+  const reliability = dqIssues.some((issue) => issue.severity === 'ERROR')
+    ? 'partial'
+    : dqIssues.length > 0
+      ? 'partial'
+      : 'reliable';
   return {
     snapshotId: `snapshot-${capturedAt.replace(/[-:.TZ]/g, '')}-${randomUUID().slice(0, 8)}`,
     capturedAt,

@@ -41,34 +41,37 @@ flowchart LR
 ## Responsabilités actuelles
 
 ---
-  Couche                              Responsabilité
-  ----------------------------------- -----------------------------------
-  `src/cli.ts`                        expose les commandes utilisateur
 
-  `src/pipeline.ts`                   orchestre les étapes du pipeline
+Couche Responsabilité
 
-  `src/config.ts`                     charge la configuration
+---
 
-  `src/collectors/`                   produit un `RawDataset` depuis une
-                                      fixture ou GitHub
+`src/cli.ts` expose les commandes utilisateur
 
-  `src/catalogue.ts`                  charge et valide le catalogue YAML
+`src/pipeline.ts` orchestre les étapes du pipeline
 
-  `src/normalizers/`                  convertit le RAW en modèle
-                                      normalisé
+`src/config.ts` charge la configuration
 
-  `src/quality/`                      détecte les problèmes de qualité
-                                      sans modifier la source
+`src/collectors/` produit un `RawDataset` depuis une
+fixture ou GitHub
 
-  `src/analytics/`                    calcule les métriques et les
-                                      éléments de flow
+`src/catalogue.ts` charge et valide le catalogue YAML
 
-  `src/snapshots/`                    construit et compare les Snapshots
+`src/normalizers/` convertit le RAW en modèle
+normalisé
 
-  `src/dashboard/`                    génère le dashboard HTML statique
+`src/quality/` détecte les problèmes de qualité
+sans modifier la source
 
-  `src/domain/types.ts`               définit les contrats TypeScript
-                                      partagés
+`src/analytics/` calcule les métriques et les
+éléments de flow
+
+`src/snapshots/` construit et compare les Snapshots
+
+`src/dashboard/` génère le dashboard HTML statique
+
+`src/domain/types.ts` définit les contrats TypeScript
+partagés
 ---
 
 ## Orchestration
@@ -158,7 +161,7 @@ Il consomme le Snapshot et ne doit pas devenir un second moteur métier.
 - séparation RAW / normalisation / qualité / métriques / restitution ;
 - conservation de la provenance ;
 - données invalides conservées et accompagnées d'une décision de
-    qualité ;
+  qualité ;
 - distinction entre valeur calculable et valeur inconnue ;
 - versionnement du modèle et des règles dans les sorties ;
 - possibilité de rejouer le pipeline à partir de données contrôlées.

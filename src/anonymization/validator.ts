@@ -44,12 +44,14 @@ export function validateAnonymizedDataset(dataset: RawDataset): ValidationResult
 
 export function inspectRelationalIntegrity(dataset: RawDataset): IntegrityFinding[] {
   const errors: IntegrityFinding[] = [];
-  const globalIssueIds = new Set(dataset.repositories.flatMap(repo => repo.issues.map(issue => issue.id)));
-  const globalPrIds = new Set(dataset.repositories.flatMap(repo => repo.pullRequests.map(pr => pr.id)));
+  const globalIssueIds = new Set(
+    dataset.repositories.flatMap((repo) => repo.issues.map((issue) => issue.id))
+  );
+  const globalPrIds = new Set(dataset.repositories.flatMap((repo) => repo.pullRequests.map((pr) => pr.id)));
 
   for (const [repoIndex, repo] of dataset.repositories.entries()) {
-    const issueIds = new Set(repo.issues.map(i => i.id));
-    const prIds = new Set(repo.pullRequests.map(p => p.id));
+    const issueIds = new Set(repo.issues.map((i) => i.id));
+    const prIds = new Set(repo.pullRequests.map((p) => p.id));
 
     for (const [issueIndex, issue] of repo.issues.entries()) {
       for (const [refIndex, id] of issue.linkedPullRequestIds.entries()) {
@@ -87,7 +89,7 @@ export function inspectRelationalIntegrity(dataset: RawDataset): IntegrityFindin
 }
 
 export function assertRelationalIntegrity(dataset: RawDataset): string[] {
-  return inspectRelationalIntegrity(dataset).map(error =>
+  return inspectRelationalIntegrity(dataset).map((error) =>
     error.type === 'missing-issue'
       ? `${error.repository}:${error.sourceId} references missing issue ${error.referenceId}`
       : `${error.repository}:${error.sourceId} references missing PR ${error.referenceId}`

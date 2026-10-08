@@ -16,12 +16,12 @@ Le premier objectif est de fournir rapidement une vision fiable de la qualité d
 
 Les besoins identifiés sont notamment :
 
-* mesurer la conformité des composants ;
-* mesurer la couverture des audits ;
-* suivre les anomalies ;
-* analyser les anomalies par criticité ;
-* suivre les résultats des audits ;
-* disposer d'informations sur la qualité des composants.
+- mesurer la conformité des composants ;
+- mesurer la couverture des audits ;
+- suivre les anomalies ;
+- analyser les anomalies par criticité ;
+- suivre les résultats des audits ;
+- disposer d'informations sur la qualité des composants.
 
 Les définitions exactes des indicateurs restent à établir.
 
@@ -33,13 +33,13 @@ Le second objectif est de fournir une vision opérationnelle de l'activité.
 
 Les informations attendues comprennent notamment :
 
-* les travaux en cours ;
-* les anomalies à traiter ;
-* les audits ;
-* les sprints ou itérations ;
-* les délais de traitement ;
-* les versions ;
-* l'évolution de ces éléments dans le temps.
+- les travaux en cours ;
+- les anomalies à traiter ;
+- les audits ;
+- les sprints ou itérations ;
+- les délais de traitement ;
+- les versions ;
+- l'évolution de ces éléments dans le temps.
 
 Les indicateurs correspondants sont à définir dans le catalogue des indicateurs.
 
@@ -53,11 +53,11 @@ Le produit doit pouvoir évoluer afin d'analyser les applications qui utilisent 
 
 L'objectif est notamment de connaître :
 
-* quelles applications utilisent quelles librairies ;
-* quelle version de chaque librairie est utilisée ;
-* quels composants sont utilisés ;
-* combien de fois les composants sont utilisés ;
-* quels composants sont les plus utilisés.
+- quelles applications utilisent quelles librairies ;
+- quelle version de chaque librairie est utilisée ;
+- quels composants sont utilisés ;
+- combien de fois les composants sont utilisés ;
+- quels composants sont les plus utilisés.
 
 La source de données et la méthode d'analyse restent à déterminer.
 
@@ -67,9 +67,9 @@ La source de données et la méthode d'analyse restent à déterminer.
 
 À terme, le produit devra pouvoir comparer :
 
-* la version utilisée par une application ;
-* la version attendue ou recommandée, lorsqu'une telle information existe ;
-* l'écart entre ces versions.
+- la version utilisée par une application ;
+- la version attendue ou recommandée, lorsqu'une telle information existe ;
+- l'écart entre ces versions.
 
 Cette comparaison doit permettre d'identifier une éventuelle dette de version.
 
@@ -95,9 +95,9 @@ Un objectif futur consiste à pouvoir fournir une information sur la qualité RG
 
 Cette information pourrait prendre en compte :
 
-* la version de la librairie utilisée ;
-* les composants utilisés par l'application ;
-* l'état de qualité ou de conformité connu pour ces composants.
+- la version de la librairie utilisée ;
+- les composants utilisés par l'application ;
+- l'état de qualité ou de conformité connu pour ces composants.
 
 La forme exacte de cette information — note, badge, niveau ou autre — n'est pas décidée.
 
@@ -113,12 +113,12 @@ L'architecture actuelle doit rester suffisamment simple pour permettre une mise 
 
 Elle doit néanmoins éviter de rendre impossible l'évolution vers :
 
-* plusieurs sources de données ;
-* l'analyse de code des applications ;
-* une base de données ;
-* un backend ;
-* une API ;
-* un frontend applicatif.
+- plusieurs sources de données ;
+- l'analyse de code des applications ;
+- une base de données ;
+- un backend ;
+- une API ;
+- un frontend applicatif.
 
 Les choix techniques précis nécessaires à cette évolution seront définis après stabilisation du modèle métier et des indicateurs.
 
@@ -128,12 +128,12 @@ Les choix techniques précis nécessaires à cette évolution seront définis ap
 
 Les éléments suivants sont évoqués comme possibilités mais ne constituent pas encore des spécifications :
 
-* formule de calcul d'une note de qualité applicative ;
-* définition d'un badge RGAA/WAI-ARIA ;
-* définition de la dette de version ;
-* définition de la version attendue ;
-* mécanisme d'alerte ;
-* méthode exacte d'analyse du code des consommateurs ;
-* architecture finale du produit consommateur.
+- formule de calcul d'une note de qualité applicative ;
+- définition d'un badge RGAA/WAI-ARIA ;
+- définition de la dette de version ;
+- définition de la version attendue ;
+- mécanisme d'alerte ;
+- méthode exacte d'analyse du code des consommateurs ;
+- architecture finale du produit consommateur.
 
 Ces sujets doivent être instruits avant leur implémentation.

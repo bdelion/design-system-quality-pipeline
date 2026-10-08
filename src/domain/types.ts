@@ -6,10 +6,12 @@ export type DqAction = 'include' | 'exclude' | 'block';
 export type MetricUnit = 'count' | 'percentage' | 'days';
 export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
 export type MetricReliabilityStatus = DataQualityStatus;
-export type AuditStatus = 'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
+export type AuditStatus =
+  'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
 export type CanonicalIssueType = 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE';
-export type CanonicalProjectStatus = 'BACKLOG' | 'READY' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'CANCELLED';
+export type CanonicalProjectStatus =
+  'BACKLOG' | 'READY' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'CANCELLED';
 export type AnomalyOrigin = 'AUDIT' | 'HORS_AUDIT' | 'UNDETERMINED';
 export type ComponentVersionVerdict = 'NON_COUVERT' | 'CONFORME' | 'NON_CONFORME';
 
@@ -39,7 +41,6 @@ export interface RawHistoricalCatalogue {
   status: 'available' | 'missing' | 'invalid';
   componentNames: string[];
 }
-
 
 /** Git tag evidence used to establish PROD publication dates. */
 export interface RawGitTag {

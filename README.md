@@ -228,20 +228,20 @@ Le README reste volontairement synthétique. Utiliser [`docs/README.md`](docs/RE
 
 Parcours principaux :
 
-| Besoin | Document |
-|---|---|
-| Vision et périmètre | [`docs/00-cadrage/vision.md`](docs/00-cadrage/vision.md) |
-| Décisions et questions | [`docs/00-cadrage/questions-ouvertes.md`](docs/00-cadrage/questions-ouvertes.md) |
-| Modèle métier | [`docs/01-metier/modele-metier.md`](docs/01-metier/modele-metier.md) |
-| Audits | [`docs/01-metier/audits.md`](docs/01-metier/audits.md) |
-| Workflow GitHub | [`docs/02-workflow/README.md`](docs/02-workflow/README.md) |
-| Règles | [`docs/03-regles/README.md`](docs/03-regles/README.md) |
-| Indicateurs | [`docs/04-indicateurs/catalogue-indicateurs.md`](docs/04-indicateurs/catalogue-indicateurs.md) |
-| Architecture des données | [`docs/05-donnees/architecture-donnees.md`](docs/05-donnees/architecture-donnees.md) |
-| Architecture logicielle | [`docs/06-architecture/architecture.md`](docs/06-architecture/architecture.md) |
-| Développement | [`docs/08-implementation/guide-developpement.md`](docs/08-implementation/guide-developpement.md) |
-| Plan V1 | [`docs/08-implementation/plan-implementation-v1.md`](docs/08-implementation/plan-implementation-v1.md) |
-| Data Quality | [`docs/quality-rules.md`](docs/quality-rules.md) |
+| Besoin                   | Document                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Vision et périmètre      | [`docs/00-cadrage/vision.md`](docs/00-cadrage/vision.md)                                               |
+| Décisions et questions   | [`docs/00-cadrage/questions-ouvertes.md`](docs/00-cadrage/questions-ouvertes.md)                       |
+| Modèle métier            | [`docs/01-metier/modele-metier.md`](docs/01-metier/modele-metier.md)                                   |
+| Audits                   | [`docs/01-metier/audits.md`](docs/01-metier/audits.md)                                                 |
+| Workflow GitHub          | [`docs/02-workflow/README.md`](docs/02-workflow/README.md)                                             |
+| Règles                   | [`docs/03-regles/README.md`](docs/03-regles/README.md)                                                 |
+| Indicateurs              | [`docs/04-indicateurs/catalogue-indicateurs.md`](docs/04-indicateurs/catalogue-indicateurs.md)         |
+| Architecture des données | [`docs/05-donnees/architecture-donnees.md`](docs/05-donnees/architecture-donnees.md)                   |
+| Architecture logicielle  | [`docs/06-architecture/architecture.md`](docs/06-architecture/architecture.md)                         |
+| Développement            | [`docs/08-implementation/guide-developpement.md`](docs/08-implementation/guide-developpement.md)       |
+| Plan V1                  | [`docs/08-implementation/plan-implementation-v1.md`](docs/08-implementation/plan-implementation-v1.md) |
+| Data Quality             | [`docs/quality-rules.md`](docs/quality-rules.md)                                                       |
 
 `specifications/` conserve les sources et demandes ayant alimenté le cadrage ; il ne remplace pas la documentation normative courante.
 

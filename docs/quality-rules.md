@@ -10,37 +10,37 @@ Les Quality Rules contrôlent la fiabilité des données après la normalisation
 
 ## Règles configurées
 
-| Règle | Sujet | Sévérité | Action |
-| --- | --- | --- | --- |
-| [DQ-001](quality-rules/DQ-001.md) | Criticité absente | ERROR | exclude |
-| [DQ-002](quality-rules/DQ-002.md) | Criticités incompatibles | ERROR | exclude |
-| [DQ-003](quality-rules/DQ-003.md) | Parents multiples | ERROR | exclude |
-| [DQ-004](quality-rules/DQ-004.md) | PR de correction absente | WARNING | include |
-| [DQ-005](quality-rules/DQ-005.md) | PR fusionnée et issue ouverte | WARNING | include |
-| [DQ-006](quality-rules/DQ-006.md) | Composant absent du catalogue | WARNING | include |
-| [DQ-007](quality-rules/DQ-007.md) | Label inconnu | WARNING | include |
-| [DQ-008](quality-rules/DQ-008.md) | Issue annulée référencée par une PR | ERROR | exclude |
-| [DQ-009](quality-rules/DQ-009.md) | Nexus indisponible | WARNING | include |
-| [DQ-010](quality-rules/DQ-010.md) | Issue annulée rattachée à une milestone | ERROR | exclude |
-| [DQ-011](quality-rules/DQ-011.md) | Anomalie Done + Closed sans correctedAt fiable | WARNING | include |
-| [DQ-012](quality-rules/DQ-012.md) | Audit Done + Closed sans completedAt fiable | WARNING | include |
-| [DQ-013](quality-rules/DQ-013.md) | Anomalie Project Done avec Issue ouverte | WARNING | include |
-| [DQ-014](quality-rules/DQ-014.md) | Audit Project Done avec Issue ouverte | WARNING | include |
-| [DQ-015](quality-rules/DQ-015.md) | Catalogue historique absent au tag PROD | WARNING | include |
-| [DQ-016](quality-rules/DQ-016.md) | Catalogue historique invalide au tag PROD | WARNING | include |
-| [DQ-017](quality-rules/DQ-017.md) | Issue Type absent | WARNING | include |
-| [DQ-018](quality-rules/DQ-018.md) | Issue Type non reconnu | WARNING | include |
-| [DQ-019](quality-rules/DQ-019.md) | Issue Type ambigu | WARNING | include |
-| [DQ-020](quality-rules/DQ-020.md) | Statut Project non reconnu | WARNING | include |
-| [DQ-021](quality-rules/DQ-021.md) | Statut Project ambigu | WARNING | include |
-| [DQ-022](quality-rules/DQ-022.md) | Velocity non numérique | WARNING | include |
-| [DQ-023](quality-rules/DQ-023.md) | Audit sans Component | WARNING | include |
-| [DQ-024](quality-rules/DQ-024.md) | Audit avec plusieurs Components | WARNING | include |
-| [DQ-025](quality-rules/DQ-025.md) | Version PROD cible indéterminable | WARNING | include |
-| [DQ-026](quality-rules/DQ-026.md) | Relation Anomaly → Audit indéterminée | WARNING | include |
-| [DQ-027](quality-rules/DQ-027.md) | Component Anomaly/Audit incohérent | WARNING | include |
-| [DQ-028](quality-rules/DQ-028.md) | Relation Feature → Audit invalide | WARNING | include |
-| [DQ-029](quality-rules/DQ-029.md) | Référence normalisée orpheline | ERROR | exclude |
+| Règle                             | Sujet                                          | Sévérité | Action  |
+| --------------------------------- | ---------------------------------------------- | -------- | ------- |
+| [DQ-001](quality-rules/DQ-001.md) | Criticité absente                              | ERROR    | exclude |
+| [DQ-002](quality-rules/DQ-002.md) | Criticités incompatibles                       | ERROR    | exclude |
+| [DQ-003](quality-rules/DQ-003.md) | Parents multiples                              | ERROR    | exclude |
+| [DQ-004](quality-rules/DQ-004.md) | PR de correction absente                       | WARNING  | include |
+| [DQ-005](quality-rules/DQ-005.md) | PR fusionnée et issue ouverte                  | WARNING  | include |
+| [DQ-006](quality-rules/DQ-006.md) | Composant absent du catalogue                  | WARNING  | include |
+| [DQ-007](quality-rules/DQ-007.md) | Label inconnu                                  | WARNING  | include |
+| [DQ-008](quality-rules/DQ-008.md) | Issue annulée référencée par une PR            | ERROR    | exclude |
+| [DQ-009](quality-rules/DQ-009.md) | Nexus indisponible                             | WARNING  | include |
+| [DQ-010](quality-rules/DQ-010.md) | Issue annulée rattachée à une milestone        | ERROR    | exclude |
+| [DQ-011](quality-rules/DQ-011.md) | Anomalie Done + Closed sans correctedAt fiable | WARNING  | include |
+| [DQ-012](quality-rules/DQ-012.md) | Audit Done + Closed sans completedAt fiable    | WARNING  | include |
+| [DQ-013](quality-rules/DQ-013.md) | Anomalie Project Done avec Issue ouverte       | WARNING  | include |
+| [DQ-014](quality-rules/DQ-014.md) | Audit Project Done avec Issue ouverte          | WARNING  | include |
+| [DQ-015](quality-rules/DQ-015.md) | Catalogue historique absent au tag PROD        | WARNING  | include |
+| [DQ-016](quality-rules/DQ-016.md) | Catalogue historique invalide au tag PROD      | WARNING  | include |
+| [DQ-017](quality-rules/DQ-017.md) | Issue Type absent                              | WARNING  | include |
+| [DQ-018](quality-rules/DQ-018.md) | Issue Type non reconnu                         | WARNING  | include |
+| [DQ-019](quality-rules/DQ-019.md) | Issue Type ambigu                              | WARNING  | include |
+| [DQ-020](quality-rules/DQ-020.md) | Statut Project non reconnu                     | WARNING  | include |
+| [DQ-021](quality-rules/DQ-021.md) | Statut Project ambigu                          | WARNING  | include |
+| [DQ-022](quality-rules/DQ-022.md) | Velocity non numérique                         | WARNING  | include |
+| [DQ-023](quality-rules/DQ-023.md) | Audit sans Component                           | WARNING  | include |
+| [DQ-024](quality-rules/DQ-024.md) | Audit avec plusieurs Components                | WARNING  | include |
+| [DQ-025](quality-rules/DQ-025.md) | Version PROD cible indéterminable              | WARNING  | include |
+| [DQ-026](quality-rules/DQ-026.md) | Relation Anomaly → Audit indéterminée          | WARNING  | include |
+| [DQ-027](quality-rules/DQ-027.md) | Component Anomaly/Audit incohérent             | WARNING  | include |
+| [DQ-028](quality-rules/DQ-028.md) | Relation Feature → Audit invalide              | WARNING  | include |
+| [DQ-029](quality-rules/DQ-029.md) | Référence normalisée orpheline                 | ERROR    | exclude |
 
 Les issues dont un Project porte le statut `Cancelled` ne sont pas évaluées par les règles générales `DQ-001` à `DQ-007` et `DQ-009`. Seules les relations interdites couvertes par `DQ-008` et `DQ-010` sont contrôlées.
 

@@ -8,11 +8,11 @@ cardinalités du modèle métier du **Design System Quality Pipeline**.
 Il distingue quatre statuts :
 
 - **ÉTABLI** : relation ou cardinalité validée par une décision métier
-    ;
+  ;
 - **ACTUEL** : fonctionnement observé aujourd'hui, sans en faire
-    nécessairement une contrainte cible ;
+  nécessairement une contrainte cible ;
 - **À CONFIRMER** : relation identifiée mais dont une cardinalité ou
-    une sémantique reste ouverte ;
+  une sémantique reste ouverte ;
 - **FUTUR** : relation volontairement hors du périmètre V1.
 
 Aucune cardinalité absente de ce document ne doit être déduite
@@ -218,7 +218,7 @@ Composant lorsque le travail est réellement séparable.
 Une Issue multi-Composants :
 
 - compte une fois pour chaque Composant dans les analyses par
-    Composant ;
+  Composant ;
 - reste une seule Issue dans le total global de la Librairie.
 
 La somme des compteurs par Composant ne doit donc pas servir à
@@ -616,81 +616,84 @@ ou si une Campagne doit devenir un objet métier autonome.
 ## 24. Matrice synthétique
 
 ---
-  Source         Relation       Cible          Cardinalité /   Statut
-                                               règle
-  -------------- -------------- -------------- --------------- ------------------
-  Design System  contient       Librairie      `1 → 1..n`      ÉTABLI
 
-  Repository     héberge        Librairie      actuel `1 → 1`, ÉTABLI
-                                               cible
-                                               `1 → 1..n`
+Source Relation Cible Cardinalité / Statut
+règle
 
-  Librairie      distribue      Package        actuel `1 → 1`, ÉTABLI
-                                               cible
-                                               `1 → 1..n`
+---
 
-  Package        possède        Version        `1 → 0..n`      ÉTABLI
-                                                               conceptuellement
+Design System contient Librairie `1 → 1..n` ÉTABLI
 
-  Librairie      contient       Composant      `1 → 0..n`      ÉTABLI
+Repository héberge Librairie actuel `1 → 1`, ÉTABLI
+cible
+`1 → 1..n`
 
-  Composant      appartient à   Package        non décidé en   À CONFIRMER
-                                               multi-package
+Librairie distribue Package actuel `1 → 1`, ÉTABLI
+cible
+`1 → 1..n`
 
-  Issue          concerne       Composant      `0..n`          ÉTABLI
-  classique
+Package possède Version `1 → 0..n` ÉTABLI
+conceptuellement
 
-  Issue Audit    concerne       Composant      exactement `1`  ÉTABLI
+Librairie contient Composant `1 → 0..n` ÉTABLI
 
-  Audit          produit        Anomalie       `0..n`          ÉTABLI
-                                d'Audit
+Composant appartient à Package non décidé en À CONFIRMER
+multi-package
 
-  Anomalie       appartient à   Audit          exactement `1`  ÉTABLI
-  d'Audit
+Issue concerne Composant `0..n` ÉTABLI
+classique
 
-  Audit          produit        Improvement    `0..n`          ÉTABLI
-                                d'Audit
+Issue Audit concerne Composant exactement `1` ÉTABLI
 
-  Improvement    appartient à   Audit          exactement `1`  ÉTABLI
-  d'Audit
+Audit produit Anomalie `0..n` ÉTABLI
+d'Audit
 
-  Anomalie       concerne       Composant      exactement `1`, ÉTABLI
-  d'Audit                                      même que parent
+Anomalie appartient à Audit exactement `1` ÉTABLI
+d'Audit
 
-  Improvement    concerne       Composant      exactement `1`, ÉTABLI
-  d'Audit                                      même que parent
+Audit produit Improvement `0..n` ÉTABLI
+d'Audit
 
-  Anomalie Audit porte          criticité RGAA exactement `1`  ÉTABLI
-  A11y
+Improvement appartient à Audit exactement `1` ÉTABLI
+d'Audit
 
-  Improvement    porte          criticité RGAA `0`             ÉTABLI
-  Audit A11y
+Anomalie concerne Composant exactement `1`, ÉTABLI
+d'Audit même que parent
 
-  Anomalie Audit porte          catégorie a11y exactement `1`  ÉTABLI
-  A11y
+Improvement concerne Composant exactement `1`, ÉTABLI
+d'Audit même que parent
 
-  Improvement    porte          catégorie a11y minimum `0`,    À CONFIRMER
-  Audit A11y                                   maximum inconnu
+Anomalie Audit porte criticité RGAA exactement `1` ÉTABLI
+A11y
 
-  Issue          liée à         Pull Request   dépend du       À FORMALISER
-                                               profil
+Improvement porte criticité RGAA `0` ÉTABLI
+Audit A11y
 
-  Issue          appartient à   Iteration      dépend du       À FORMALISER
-                                               workflow
+Anomalie Audit porte catégorie a11y exactement `1` ÉTABLI
+A11y
 
-  Issue          appartient à   Milestone      sémantique      ÉTABLI / à
-                                               polymorphe      classifier
+Improvement porte catégorie a11y minimum `0`, À CONFIRMER
+Audit A11y maximum inconnu
 
-  Application    consomme       Package @      relation        FUTUR
-                                Version        conceptuelle
+Issue liée à Pull Request dépend du À FORMALISER
+profil
 
-  Application    utilise        Composant      à détecter      FUTUR
+Issue appartient à Iteration dépend du À FORMALISER
+workflow
 
-  Audit métier   matérialisé    Issue Audit    identité exacte À CONFIRMER
-                 par                           ouverte
+Issue appartient à Milestone sémantique ÉTABLI / à
+polymorphe classifier
 
-  Campagne       regroupée par  Milestone      identité exacte À CONFIRMER
-  d'Audit                                      ouverte
+Application consomme Package @ relation FUTUR
+Version conceptuelle
+
+Application utilise Composant à détecter FUTUR
+
+Audit métier matérialisé Issue Audit identité exacte À CONFIRMER
+par ouverte
+
+Campagne regroupée par Milestone identité exacte À CONFIRMER
+d'Audit ouverte
 ---
 
 ---

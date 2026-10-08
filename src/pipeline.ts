@@ -19,19 +19,23 @@ import { readdir } from 'node:fs/promises';
 export type CollectionSource = 'fixture' | 'github';
 
 /** Exécute la collecte, la normalisation, les contrôles, les KPI et les sorties. */
-export async function runPipeline(source: CollectionSource = 'fixture', selectedFixturePath: string = fixturePath): Promise<Snapshot> {
+export async function runPipeline(
+  source: CollectionSource = 'fixture',
+  selectedFixturePath: string = fixturePath
+): Promise<Snapshot> {
   const config = await loadConfig(source, source === 'fixture' ? selectedFixturePath : undefined);
   const catalogue = await loadCatalogue(source, source === 'fixture' ? selectedFixturePath : undefined);
-  const raw = source === 'github'
-    ? await collectGithub({
-        token: githubTokenFromEnvironment(),
-        owner: config.githubOwner,
-        repositories: config.repositories,
-        apiUrl: config.githubApiUrl,
-        graphqlUrl: config.githubGraphqlUrl,
-        rules: config.github
-      })
-    : await collectFixture(selectedFixturePath);
+  const raw =
+    source === 'github'
+      ? await collectGithub({
+          token: githubTokenFromEnvironment(),
+          owner: config.githubOwner,
+          repositories: config.repositories,
+          apiUrl: config.githubApiUrl,
+          graphqlUrl: config.githubGraphqlUrl,
+          rules: config.github
+        })
+      : await collectFixture(selectedFixturePath);
 
   // Le catalogue est la référence utilisée pour classer les composants découverts.
   raw.catalogueComponents = catalogue.components.map((component) => component.name);
@@ -48,19 +52,34 @@ export async function runPipeline(source: CollectionSource = 'fixture', selected
   });
   if (previousSnapshot && previousSnapshot.capturedAt < capturedAt) {
     const diff = diffSnapshots(previousSnapshot, {
-      snapshotId: 'pending', capturedAt, scope: config.scope, rawData: raw, normalizedData: normalized,
-      dataQuality: { issues: qualityIssues, summary: { INFO: 0, WARNING: 0, ERROR: 0 } }, analytics,
-      ruleVersion: config.ruleVersion, modelVersion: config.modelVersion, reliability: 'partial'
+      snapshotId: 'pending',
+      capturedAt,
+      scope: config.scope,
+      rawData: raw,
+      normalizedData: normalized,
+      dataQuality: { issues: qualityIssues, summary: { INFO: 0, WARNING: 0, ERROR: 0 } },
+      analytics,
+      ruleVersion: config.ruleVersion,
+      modelVersion: config.modelVersion,
+      reliability: 'partial'
     });
     analytics.flows = calculateFlowMetrics(diff, qualityIssues);
   }
-  const snapshot = buildSnapshot(raw, normalized, qualityIssues, analytics, config.modelVersion, config.ruleVersion, config.scope, capturedAt);
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    qualityIssues,
+    analytics,
+    config.modelVersion,
+    config.ruleVersion,
+    config.scope,
+    capturedAt
+  );
   await writeJson(`${runPath}/${snapshot.snapshotId}.json`, snapshot);
   await writeJson(`${currentPath}/snapshot.json`, snapshot);
   await generateDashboard(snapshot, dashboardPath, config.githubUrl);
   return snapshot;
 }
-
 
 async function loadSnapshots(): Promise<Snapshot[]> {
   try {
@@ -79,12 +98,16 @@ function validateRepositories(expected: string[], raw: RawDataset, fixtureFile?:
 
   const sourceHint = fixtureFile ? ` Fixture: ${fixtureFile}.` : '';
   const actualRepositories = [...actual].join(', ') || '(none)';
-  throw new Error(`Missing configured repositories: ${missing.join(', ')}.${sourceHint} Collected repositories: ${actualRepositories}. Generate the fixture and its fixture-specific configuration together with npm run fixture:anonymize, or provide the matching fixture configuration.`);
+  throw new Error(
+    `Missing configured repositories: ${missing.join(', ')}.${sourceHint} Collected repositories: ${actualRepositories}. Generate the fixture and its fixture-specific configuration together with npm run fixture:anonymize, or provide the matching fixture configuration.`
+  );
 }
 
 /** Détermine si le snapshot est complet ou s'il doit être présenté comme partiel. */
 export function pipelineStatus(snapshot: Snapshot): 'COMPLETE' | 'PARTIAL' {
-  return snapshot.dataQuality.summary.ERROR > 0 || snapshot.dataQuality.summary.WARNING > 0 ? 'PARTIAL' : 'COMPLETE';
+  return snapshot.dataQuality.summary.ERROR > 0 || snapshot.dataQuality.summary.WARNING > 0
+    ? 'PARTIAL'
+    : 'COMPLETE';
 }
 
 export { calculateKpis, evaluateDataQuality, normalizeGithub, summarizeQuality };

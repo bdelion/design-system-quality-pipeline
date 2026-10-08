@@ -23,16 +23,16 @@ Les documents distinguent volontairement les statuts suivants :
 
 Il n'existe pas une source unique valable pour toutes les questions.
 
-| Question | Source de référence |
-|---|---|
-| Quelle décision métier a été prise ? | `docs/00-cadrage/questions-ouvertes.md` et documents métier courants |
-| Quel modèle métier voulons-nous construire ? | `docs/01-metier/`, puis les règles et décisions associées |
-| Quel workflow cible est documenté ? | `docs/02-workflow/` et `docs/03-regles/` |
-| Quels indicateurs voulons-nous produire ? | `docs/04-indicateurs/` |
-| Quel comportement est réellement exécuté aujourd'hui ? | code, tests et configuration versionnés |
-| Quelle était la demande ou la matière métier d'origine ? | `specifications/` |
-| Pourquoi une décision d'architecture structurante a-t-elle été prise ? | `docs/07-decisions/` |
-| Que disait une documentation remplacée ? | `docs/_historique/` lorsqu'elle y aura été archivée |
+| Question                                                               | Source de référence                                                  |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Quelle décision métier a été prise ?                                   | `docs/00-cadrage/questions-ouvertes.md` et documents métier courants |
+| Quel modèle métier voulons-nous construire ?                           | `docs/01-metier/`, puis les règles et décisions associées            |
+| Quel workflow cible est documenté ?                                    | `docs/02-workflow/` et `docs/03-regles/`                             |
+| Quels indicateurs voulons-nous produire ?                              | `docs/04-indicateurs/`                                               |
+| Quel comportement est réellement exécuté aujourd'hui ?                 | code, tests et configuration versionnés                              |
+| Quelle était la demande ou la matière métier d'origine ?               | `specifications/`                                                    |
+| Pourquoi une décision d'architecture structurante a-t-elle été prise ? | `docs/07-decisions/`                                                 |
+| Que disait une documentation remplacée ?                               | `docs/_historique/` lorsqu'elle y aura été archivée                  |
 
 Une décision métier établie n'est pas invalidée parce que le code ne l'implémente pas encore. Dans ce cas, l'écart doit être traité comme un **écart entre cible et implémentation**, et non comme une contradiction à résoudre en faveur du code.
 
@@ -54,20 +54,20 @@ Le registre n'a pas vocation à remplacer les documents métier thématiques : i
 
 ## Parcours recommandé
 
-| Besoin | Document |
-|---|---|
-| Comprendre le projet | `00-cadrage/vision.md` |
-| Comprendre le périmètre | `00-cadrage/perimetre.md` |
-| Consulter les décisions et questions | `00-cadrage/questions-ouvertes.md` |
-| Comprendre les objets métier | `01-metier/modele-metier.md` |
-| Comprendre le workflow | `02-workflow/README.md` |
-| Connaître les règles | `03-regles/README.md` |
-| Connaître les indicateurs | `04-indicateurs/catalogue-indicateurs.md` |
-| Comprendre les données | `05-donnees/architecture-donnees.md` |
-| Comprendre l'architecture logicielle | `06-architecture/architecture.md` |
-| Comprendre les décisions d'architecture | `07-decisions/README.md` |
-| Développer | `08-implementation/guide-developpement.md` |
-| Préparer une présentation | `../presentation/README.md` |
+| Besoin                                  | Document                                   |
+| --------------------------------------- | ------------------------------------------ |
+| Comprendre le projet                    | `00-cadrage/vision.md`                     |
+| Comprendre le périmètre                 | `00-cadrage/perimetre.md`                  |
+| Consulter les décisions et questions    | `00-cadrage/questions-ouvertes.md`         |
+| Comprendre les objets métier            | `01-metier/modele-metier.md`               |
+| Comprendre le workflow                  | `02-workflow/README.md`                    |
+| Connaître les règles                    | `03-regles/README.md`                      |
+| Connaître les indicateurs               | `04-indicateurs/catalogue-indicateurs.md`  |
+| Comprendre les données                  | `05-donnees/architecture-donnees.md`       |
+| Comprendre l'architecture logicielle    | `06-architecture/architecture.md`          |
+| Comprendre les décisions d'architecture | `07-decisions/README.md`                   |
+| Développer                              | `08-implementation/guide-developpement.md` |
+| Préparer une présentation               | `../presentation/README.md`                |
 
 ## Rôle de `specifications/`
 

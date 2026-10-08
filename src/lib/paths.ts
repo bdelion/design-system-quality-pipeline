@@ -10,7 +10,6 @@ export const runPath = resolve(rootPath, 'data/runs');
 export const currentPath = resolve(rootPath, 'data/current');
 export const dashboardPath = resolve(rootPath, 'data');
 
-
 /** Retourne les fichiers de configuration associés à une fixture donnée. */
 export function fixtureConfigPaths(fixtureFile: string): { system: string; catalogue: string } {
   const stem = basename(fixtureFile, extname(fixtureFile));

@@ -1,5 +1,7 @@
 *.trace.json
 raw/
+# Documentation HTML générée par TypeDoc
+/docs/api/
 
 # Created by https://www.toptal.com/developers/gitignore/api/git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
@@ -586,3 +588,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
+
+# Documentation TypeDoc générée
+/docs/api/

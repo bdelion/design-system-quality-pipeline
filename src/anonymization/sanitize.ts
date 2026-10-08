@@ -5,9 +5,15 @@ const BEARER = /Bearer\s+[A-Za-z0-9._-]+/gi;
 const PHONE = /(?:\+?\d[\d .-]{7,}\d)/g;
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})$/;
 
-export interface SanitizeOptions { strictText: boolean; preserveComponentNames: boolean; }
+export interface SanitizeOptions {
+  strictText: boolean;
+  preserveComponentNames: boolean;
+}
 
-function reset(re: RegExp): RegExp { re.lastIndex = 0; return re; }
+function reset(re: RegExp): RegExp {
+  re.lastIndex = 0;
+  return re;
+}
 
 /**
  * Phone detection is intentionally disabled for ISO timestamps. The generic

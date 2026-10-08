@@ -1,4 +1,11 @@
-import type { RawDataset, RawIssue, RawMilestone, RawProjectStatus, RawPullRequest, RawRepository } from '../domain/types.js';
+import type {
+  RawDataset,
+  RawIssue,
+  RawMilestone,
+  RawProjectStatus,
+  RawPullRequest,
+  RawRepository
+} from '../domain/types.js';
 import { createStableMapper } from './mapping.js';
 import type { AnonymizationOptions, AnonymizationReport, AnonymizationResult } from './types.js';
 import { sanitizeText } from './sanitize.js';
@@ -7,12 +14,15 @@ const MS_PER_DAY = 86_400_000;
 
 export type StableMapper = ReturnType<typeof createStableMapper>;
 
-
 export function createAnonymizationMapper(seed: string): StableMapper {
   return createStableMapper(seed);
 }
 
-function shiftDate(value: string | undefined, offsetDays: number, report: AnonymizationReport): string | undefined {
+function shiftDate(
+  value: string | undefined,
+  offsetDays: number,
+  report: AnonymizationReport
+): string | undefined {
   if (!value) return undefined;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -20,8 +30,14 @@ function shiftDate(value: string | undefined, offsetDays: number, report: Anonym
   return new Date(date.getTime() + offsetDays * MS_PER_DAY).toISOString();
 }
 
-function mappedNumber(map: StableMapper, namespace: string, repository: string, number: number, prefix: string): number {
-  return Number.parseInt(map(namespace, `${repository}:${number}`, prefix).slice(2), 16) % 900000 + 100000;
+function mappedNumber(
+  map: StableMapper,
+  namespace: string,
+  repository: string,
+  number: number,
+  prefix: string
+): number {
+  return (Number.parseInt(map(namespace, `${repository}:${number}`, prefix).slice(2), 16) % 900000) + 100000;
 }
 
 function mapComponent(name: string, options: AnonymizationOptions, map: StableMapper): string {
@@ -33,7 +49,12 @@ function preserveLabels(labels: string[]): string[] {
   return [...labels];
 }
 
-function anonymizeProjectStatus(status: RawProjectStatus, map: StableMapper, options: AnonymizationOptions, report: AnonymizationReport): RawProjectStatus {
+function anonymizeProjectStatus(
+  status: RawProjectStatus,
+  map: StableMapper,
+  options: AnonymizationOptions,
+  report: AnonymizationReport
+): RawProjectStatus {
   return {
     projectId: map('project', status.projectId, 'project'),
     projectName: options.strictText
@@ -44,21 +65,19 @@ function anonymizeProjectStatus(status: RawProjectStatus, map: StableMapper, opt
     ...(status.iteration ? { iteration: { ...status.iteration } } : {}),
     ...(status.rawVelocity !== undefined ? { rawVelocity: status.rawVelocity } : {}),
     ...(status.rawScheduling !== undefined ? { rawScheduling: status.rawScheduling } : {}),
-    ...(status.statusHistory ? {
-      statusHistory: status.statusHistory.map((transition) => ({
-        ...(transition.previousStatus !== undefined ? { previousStatus: transition.previousStatus } : {}),
-        status: transition.status,
-        transitionedAt: shiftDate(transition.transitionedAt, options.dateOffsetDays, report)!
-      }))
-    } : {})
+    ...(status.statusHistory
+      ? {
+          statusHistory: status.statusHistory.map((transition) => ({
+            ...(transition.previousStatus !== undefined ? { previousStatus: transition.previousStatus } : {}),
+            status: transition.status,
+            transitionedAt: shiftDate(transition.transitionedAt, options.dateOffsetDays, report)!
+          }))
+        }
+      : {})
   };
 }
 
-function anonymizeMilestone(
-  milestone: RawMilestone,
-  repository: string,
-  map: StableMapper
-): RawMilestone {
+function anonymizeMilestone(milestone: RawMilestone, repository: string, map: StableMapper): RawMilestone {
   return {
     id: mappedNumber(map, 'milestone', repository, milestone.id, 'm'),
     number: milestone.number,
@@ -95,11 +114,15 @@ function anonymizeIssue(
     parents: issue.parents.map((parent) => map('issue', `${repo}:${parent}`, 'issue')),
     createdAt: shiftDate(issue.createdAt, options.dateOffsetDays, report)!,
     ...(issue.closedAt ? { closedAt: shiftDate(issue.closedAt, options.dateOffsetDays, report)! } : {}),
-    ...(issue.firstDoneAt ? { firstDoneAt: shiftDate(issue.firstDoneAt, options.dateOffsetDays, report)! } : {}),
+    ...(issue.firstDoneAt
+      ? { firstDoneAt: shiftDate(issue.firstDoneAt, options.dateOffsetDays, report)! }
+      : {}),
     ...(issue.auditStatus ? { auditStatus: issue.auditStatus } : {}),
     ...(issue.auditResult ? { auditResult: issue.auditResult } : {}),
     linkedPullRequestIds: issue.linkedPullRequestIds.map((id) => map('pr', `${repo}:${id}`, 'pr')),
-    projectStatuses: issue.projectStatuses.map((status) => anonymizeProjectStatus(status, map, options, report)),
+    projectStatuses: issue.projectStatuses.map((status) =>
+      anonymizeProjectStatus(status, map, options, report)
+    ),
     ...(issue.milestone ? { milestone: anonymizeMilestone(issue.milestone, repo, map) } : {})
   };
 }
@@ -142,13 +165,26 @@ export function anonymizeDataset(input: RawDataset, options: AnonymizationOption
     owner: map('owner', repository.owner, 'owner'),
     defaultBranch: repository.defaultBranch,
     issues: repository.issues.map((issue) => anonymizeIssue(issue, repository.name, options, map, report)),
-    pullRequests: repository.pullRequests.map((pr) => anonymizePullRequest(pr, repository.name, options, map, report)),
-    ...(repository.gitTags ? { gitTags: repository.gitTags.map((tag) => ({ name: tag.name, ...(tag.createdAt ? { createdAt: shiftDate(tag.createdAt, options.dateOffsetDays, report)! } : {}) })) } : {}),
-    ...(repository.historicalCatalogues ? { historicalCatalogues: repository.historicalCatalogues.map((catalogue) => ({
-      tagName: catalogue.tagName,
-      status: catalogue.status,
-      componentNames: catalogue.componentNames.map((component) => mapComponent(component, options, map))
-    })) } : {})
+    pullRequests: repository.pullRequests.map((pr) =>
+      anonymizePullRequest(pr, repository.name, options, map, report)
+    ),
+    ...(repository.gitTags
+      ? {
+          gitTags: repository.gitTags.map((tag) => ({
+            name: tag.name,
+            ...(tag.createdAt ? { createdAt: shiftDate(tag.createdAt, options.dateOffsetDays, report)! } : {})
+          }))
+        }
+      : {}),
+    ...(repository.historicalCatalogues
+      ? {
+          historicalCatalogues: repository.historicalCatalogues.map((catalogue) => ({
+            tagName: catalogue.tagName,
+            status: catalogue.status,
+            componentNames: catalogue.componentNames.map((component) => mapComponent(component, options, map))
+          }))
+        }
+      : {})
   }));
 
   const dataset: RawDataset = {

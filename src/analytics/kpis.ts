@@ -10,6 +10,10 @@ import { calculateMetrics } from './metrics.js';
  * concurrentes d'un même indicateur. Elles sont conservées temporairement
  * pour les consommateurs legacy et pourront être supprimées dans une version
  * majeure après migration de ces consommateurs.
+ *
+ * @param data - Modèle métier normalisé.
+ * @param dqIssues - Diagnostics de qualité qui influencent la fiabilité.
+ * @returns Métriques de référence et projections de compatibilité legacy.
  */
 export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]): Analytics {
   const metrics = calculateMetrics(data, dqIssues);
@@ -31,9 +35,12 @@ export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]
     anomaliesDeclared: asLegacy('anomaly.total'),
     anomaliesCorrected: asLegacy('anomaly.correctedEver'),
     openAnomalies: asLegacy('anomaly.open'),
-    anomaliesByCriticality: Object.fromEntries(['blocking', 'major', 'minor'].map((criticality) => [
-      criticality, metric(`anomaly.byCriticality.${criticality}`)?.value ?? 'unknown'
-    ])),
+    anomaliesByCriticality: Object.fromEntries(
+      ['blocking', 'major', 'minor'].map((criticality) => [
+        criticality,
+        metric(`anomaly.byCriticality.${criticality}`)?.value ?? 'unknown'
+      ])
+    ),
     anomaliesByCategory: Object.fromEntries(
       Object.entries(metrics)
         .filter(([id]) => id.startsWith('anomaly.byCategory.'))

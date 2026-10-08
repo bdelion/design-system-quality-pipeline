@@ -79,7 +79,7 @@ Pour une évolution affectant le pipeline de bout en bout :
 7. inspecter `data/current/snapshot.json` ;
 8. inspecter le dashboard généré ;
 9. lorsque l'évolution concerne l'historisation, vérifier le
-    comportement avec un Snapshot précédent comparable.
+   comportement avec un Snapshot précédent comparable.
 
 Commandes de référence :
 
@@ -127,7 +127,7 @@ Une évolution métier doit suivre autant que possible cet ordre :
 6. adapter l'implémentation ;
 7. mettre à jour la documentation technique ;
 8. mettre à jour la restitution ou la présentation si le changement est
-    visible pour ses utilisateurs.
+   visible pour ses utilisateurs.
 
 Le code actuel ne doit pas être utilisé pour invalider une décision
 métier déjà établie simplement parce qu'elle n'est pas encore
@@ -167,9 +167,9 @@ Ses principes encore applicables ont été répartis dans la documentation
 structurée :
 
 - `Analytics.metrics` comme contrat analytique courant :
-    `docs/04-indicateurs/catalogue-indicateurs.md` ;
+  `docs/04-indicateurs/catalogue-indicateurs.md` ;
 - impacts DQ métrique-spécifiques :
-    `docs/06-architecture/metric-engine.md` ;
+  `docs/06-architecture/metric-engine.md` ;
 - stocks, flux et historique : `docs/05-donnees/historique.md` ;
 - fiabilité du Snapshot : `docs/05-donnees/snapshots.md` ;
 - checklist technique : la présente page.

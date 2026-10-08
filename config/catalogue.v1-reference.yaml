@@ -1,6 +1,42 @@
 version: "1.1.0"
 components:
-  - { name: Button, repository: lib-core, stream: React, owner: Front, squad: alpha, status: stable, rgaaLevel: AA, tags: [action] }
-  - { name: Modal, repository: lib-core, stream: React, owner: Front, squad: alpha, status: stable, rgaaLevel: AA, tags: [overlay] }
-  - { name: Tabs, repository: lib-react, stream: React, owner: Front, squad: beta, status: stable, rgaaLevel: AA, tags: [navigation] }
-  - { name: DocsCard, repository: lib-docs, stream: Docs, owner: Docs, squad: gamma, status: stable, rgaaLevel: AA, tags: [content] }
+  - {
+      name: Button,
+      repository: lib-core,
+      stream: React,
+      owner: Front,
+      squad: alpha,
+      status: stable,
+      rgaaLevel: AA,
+      tags: [action]
+    }
+  - {
+      name: Modal,
+      repository: lib-core,
+      stream: React,
+      owner: Front,
+      squad: alpha,
+      status: stable,
+      rgaaLevel: AA,
+      tags: [overlay]
+    }
+  - {
+      name: Tabs,
+      repository: lib-react,
+      stream: React,
+      owner: Front,
+      squad: beta,
+      status: stable,
+      rgaaLevel: AA,
+      tags: [navigation]
+    }
+  - {
+      name: DocsCard,
+      repository: lib-docs,
+      stream: Docs,
+      owner: Docs,
+      squad: gamma,
+      status: stable,
+      rgaaLevel: AA,
+      tags: [content]
+    }

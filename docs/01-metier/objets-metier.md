@@ -123,7 +123,7 @@ Une Version PROD :
 - possède un Tag Git correspondant ;
 - doit disposer d'une Milestone `M.m.r` ;
 - possède normalement une Release GitHub, dont le caractère
-    obligatoire reste à confirmer.
+  obligatoire reste à confirmer.
 
 Conformément à D-199, `Version` possède un `versionId` métier stable, distinct des identifiants GitHub associés.
 
@@ -310,7 +310,6 @@ Conformément à D-197, une divergence de Component entre l’Issue enfant et l�
 
 Conformément à D-198, une Issue `Bug` reste matérialisée en `Anomaly` même si son parent Audit attendu est absent ou invalide. Aucun `auditId` artificiel n’est créé et une Data Quality non bloquante signale la relation impossible à établir.
 
-
 ### Décisions I1 sur Catalogue, Component × Version et conformité
 
 - **D-209 — Catalogue historique propre à chaque Version PROD** : Chaque Version PROD possède son propre Catalogue historique, représentant les Components présents dans le repository pour cette Version.
@@ -351,7 +350,7 @@ Une Issue d'Audit :
 - peut produire zéro à plusieurs Anomalies ;
 - peut produire zéro à plusieurs Improvements ;
 - est réalisée lorsqu'elle est à la fois `Project Status = Done` et
-    `GitHub Issue State = Closed`.
+  `GitHub Issue State = Closed`.
 
 Pour un Audit Accessibilité terminé :
 
@@ -418,7 +417,7 @@ Pour les Anomalies provenant d'un Audit, le modèle est désormais strict
 - son Issue Type est `🐛 Bug` ;
 - elle concerne exactement le même Composant que son Audit parent ;
 - pour un Audit Accessibilité, elle possède exactement une criticité
-    RGAA et exactement une catégorie `a11y`.
+  RGAA et exactement une catégorie `a11y`.
 
 Une Issue peut regrouper plusieurs occurrences du même problème : le
 dashboard ne cherche pas à compter ces occurrences internes.
@@ -443,7 +442,7 @@ Elle :
 - concerne exactement le même Composant que l'Audit ;
 - ne porte aucune criticité RGAA ;
 - peut porter une catégorisation `a11y`, mais celle-ci est facultative
-    ;
+  ;
 - n'affecte pas le verdict de conformité.
 
 La cardinalité maximale des catégories `a11y` d'une Improvement reste à
@@ -788,7 +787,6 @@ releasedAt = GitTag(M.m.r).createdAt
 ```
 
 `releasedAt` sert d'instant de coupure pour reconstruire l'état connu à la Release.
-
 
 ## Décisions finales I1 sur validité et intégrité des spécialisations
 

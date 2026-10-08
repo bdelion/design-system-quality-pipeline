@@ -18,7 +18,7 @@ Le repository contient notamment :
 
 - `fixtures/github.json` : fixture de démonstration ;
 - `fixtures/my-real-dataset-anonymized.json` : fixture anonymisée
-    issue d'un jeu réel ;
+  issue d'un jeu réel ;
 - un rapport de validation associé lorsqu'il a été généré.
 
 Les fichiers exacts peuvent évoluer ; le principe important est de
@@ -148,7 +148,6 @@ Voir [Anonymisation](anonymisation.md).
 Elle couvre notamment plusieurs repositories, un Component de Catalogue sans Issue, une Issue transverse, une Issue multi-Component, un Bug hors Audit, un Audit pré-PROD conforme, un Audit de rattrapage post-PROD non conforme, un Audit plus récent mais incomplet, une Anomalie corrigée avec transition `Done`, une Anomalie ouverte sans criticité, une PR mergée, deux Catalogues historiques différents et des preuves de Catalogue historique manquante/invalide.
 
 Le contrat exécutable associé est `tests/v1-reference-scenario.test.ts`. Il asserte des cardinalités et KPI attendus, la distinction état à la Release / connaissance actuelle et la génération du dashboard. Cette fixture est synthétique : aucun nom de repository, Component, personne ou URL provenant des données GitHub réelles ne doit y être introduit.
-
 
 ### Consolidation I9 — scénarios #7, #8 et #13
 

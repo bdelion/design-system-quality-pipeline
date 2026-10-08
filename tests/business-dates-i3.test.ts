@@ -6,17 +6,31 @@ import type { RawDataset, RawIssue, RawProjectStatusTransition } from '../src/do
 
 const rules: GithubProcessingConfig = {
   labels: {
-    componentPrefix: 'Component:', accessibilityCriticalityPrefix: 'rgaa:', accessibilityCategoryPrefix: 'a11y:',
-    unknown: 'label:unknown', criticalityValues: { majeure: 'major' }
+    componentPrefix: 'Component:',
+    accessibilityCriticalityPrefix: 'rgaa:',
+    accessibilityCategoryPrefix: 'a11y:',
+    unknown: 'label:unknown',
+    criticalityValues: { majeure: 'major' }
   },
   issueTypes: {
     anomaly: 'BUG',
-    keywords: { AUDIT: ['audit'], BUG: ['bug'], FEATURE: ['feature'], EPIC: ['epic'], NEW_COMPONENT: ['new component'] }
+    keywords: {
+      AUDIT: ['audit'],
+      BUG: ['bug'],
+      FEATURE: ['feature'],
+      EPIC: ['epic'],
+      NEW_COMPONENT: ['new component']
+    }
   },
   projectStatuses: {
     keywords: {
-      BACKLOG: ['Backlog'], READY: ['Ready'], IN_PROGRESS: ['In progress'], IN_REVIEW: ['In review'],
-      DONE: ['Done', '✅ Done'], BLOCKED: ['Blocked'], CANCELLED: ['Cancelled']
+      BACKLOG: ['Backlog'],
+      READY: ['Ready'],
+      IN_PROGRESS: ['In progress'],
+      IN_REVIEW: ['In review'],
+      DONE: ['Done', '✅ Done'],
+      BLOCKED: ['Blocked'],
+      CANCELLED: ['Cancelled']
     }
   },
   closingKeywords: ['fixes'],
@@ -36,24 +50,46 @@ function issue(
   parents: string[] = []
 ): RawIssue {
   return {
-    id, number, title: id, state, issueType: rawIssueType.toUpperCase() as RawIssue['issueType'], rawIssueType,
-    labels: ['Component:Button'], criticities: [], parents, createdAt: '2026-09-01T08:00:00Z',
+    id,
+    number,
+    title: id,
+    state,
+    issueType: rawIssueType.toUpperCase() as RawIssue['issueType'],
+    rawIssueType,
+    labels: ['Component:Button'],
+    criticities: [],
+    parents,
+    createdAt: '2026-09-01T08:00:00Z',
     ...(state === 'CLOSED' ? { closedAt: '2026-10-02T09:00:00Z' } : {}),
-    linkedPullRequestIds: [], projectStatuses: project(state === 'CLOSED' ? 'Done' : 'In progress', transitions),
-    ...(rawIssueType === 'audit' ? { milestone: { id: 421, number: 421, title: '4.2.1', state: 'closed' as const } } : {})
+    linkedPullRequestIds: [],
+    projectStatuses: project(state === 'CLOSED' ? 'Done' : 'In progress', transitions),
+    ...(rawIssueType === 'audit'
+      ? { milestone: { id: 421, number: 421, title: '4.2.1', state: 'closed' as const } }
+      : {})
   };
 }
 
-function dataset(auditTransitions: RawProjectStatusTransition[], bugTransitions: RawProjectStatusTransition[]): RawDataset {
+function dataset(
+  auditTransitions: RawProjectStatusTransition[],
+  bugTransitions: RawProjectStatusTransition[]
+): RawDataset {
   return {
-    collectedAt: '2026-10-07T20:00:00Z', catalogueComponents: [], nexusAvailable: false,
-    repositories: [{
-      id: 'repo-1', name: 'ds-react', owner: 'acme', defaultBranch: 'main', pullRequests: [],
-      issues: [
-        issue('audit-1', 1, 'audit', 'CLOSED', auditTransitions),
-        issue('bug-1', 2, 'bug', 'CLOSED', bugTransitions, ['audit-1'])
-      ]
-    }]
+    collectedAt: '2026-10-07T20:00:00Z',
+    catalogueComponents: [],
+    nexusAvailable: false,
+    repositories: [
+      {
+        id: 'repo-1',
+        name: 'ds-react',
+        owner: 'acme',
+        defaultBranch: 'main',
+        pullRequests: [],
+        issues: [
+          issue('audit-1', 1, 'audit', 'CLOSED', auditTransitions),
+          issue('bug-1', 2, 'bug', 'CLOSED', bugTransitions, ['audit-1'])
+        ]
+      }
+    ]
   };
 }
 

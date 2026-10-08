@@ -308,14 +308,14 @@ Les constats suivants sont confirmés :
 
 - logique DQ répartie entre YAML, TypeScript et table d'impacts ;
 - `DQ-003` référence `audit.anomalyCount.*`, absent du catalogue V2
-    observé ;
+  observé ;
 - `DQ-006` impacte `portfolio.*`, potentiellement trop largement ;
 - `DQ-009` référence `portfolio.release.*`, absent du catalogue V2
-    observé ;
+  observé ;
 - `DQ-008` et `DQ-010` couvrent deux interdictions liées aux Issues
-    Cancelled dont le statut métier reste à formaliser ;
+  Cancelled dont le statut métier reste à formaliser ;
 - la fiabilité globale du Snapshot devient actuellement `partial` dès
-    qu'une alerte DQ existe, y compris un WARNING.
+  qu'une alerte DQ existe, y compris un WARNING.
 
 ## 6. Fiabilité cible
 
@@ -352,21 +352,21 @@ doivent rester disponibles tant que cette migration n'est pas terminée.
 
 I5 matérialise les réserves de qualité déjà imposées par les décisions D-148 à D-241 sans transformer les questions encore ouvertes en règles métier.
 
-| Règle | Contrôle | Décisions principales |
-| --- | --- | --- |
-| DQ-017 | Issue Type absent | D-155 |
-| DQ-018 | Issue Type non reconnu | D-148, D-150, D-151 |
-| DQ-019 | Issue Type ambigu | D-152 à D-154 |
-| DQ-020 | statut Project non reconnu | D-173, D-175, D-176 |
-| DQ-021 | statut Project ambigu | D-177, D-178 |
-| DQ-022 | Velocity non numérique | D-181, D-182 |
-| DQ-023 | Audit sans Component reconnu | D-195, D-229 |
-| DQ-024 | Audit avec plusieurs Components | D-195, D-230 |
-| DQ-025 | Version PROD cible indéterminable | D-200 à D-204, D-231 |
-| DQ-026 | relation Anomaly → Audit indéterminée | D-198, D-232, D-234, D-236, D-237 |
-| DQ-027 | Component Anomaly/Audit incohérent | D-196, D-197 |
-| DQ-028 | relation Feature → Audit invalide/ambiguë | D-194, D-233, D-235 |
-| DQ-029 | référence normalisée orpheline | D-241 |
+| Règle  | Contrôle                                  | Décisions principales             |
+| ------ | ----------------------------------------- | --------------------------------- |
+| DQ-017 | Issue Type absent                         | D-155                             |
+| DQ-018 | Issue Type non reconnu                    | D-148, D-150, D-151               |
+| DQ-019 | Issue Type ambigu                         | D-152 à D-154                     |
+| DQ-020 | statut Project non reconnu                | D-173, D-175, D-176               |
+| DQ-021 | statut Project ambigu                     | D-177, D-178                      |
+| DQ-022 | Velocity non numérique                    | D-181, D-182                      |
+| DQ-023 | Audit sans Component reconnu              | D-195, D-229                      |
+| DQ-024 | Audit avec plusieurs Components           | D-195, D-230                      |
+| DQ-025 | Version PROD cible indéterminable         | D-200 à D-204, D-231              |
+| DQ-026 | relation Anomaly → Audit indéterminée     | D-198, D-232, D-234, D-236, D-237 |
+| DQ-027 | Component Anomaly/Audit incohérent        | D-196, D-197                      |
+| DQ-028 | relation Feature → Audit invalide/ambiguë | D-194, D-233, D-235               |
+| DQ-029 | référence normalisée orpheline            | D-241                             |
 
 Les règles DQ-017 à DQ-028 sont non bloquantes : la donnée source reste présente et aucune valeur canonique ou relation n'est inventée. DQ-029 est un garde-fou d'intégrité : un pointeur normalisé orphelin est une erreur de modèle et ne doit pas alimenter les métriques concernées.
 

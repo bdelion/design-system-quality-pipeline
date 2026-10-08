@@ -201,20 +201,22 @@ qu'il n'est pas lui-même `Done + Closed`.
 
 ## 12. Matrice AUDIT
 
-  Dimension             Règle
-  --------------------- ---------------------------------------------
-  Composant             exactement 1
-  Milestone             obligatoire pour verdict versionné
-  Velocity              `0` actuellement dans la source
-  Iteration             à formaliser
-  Branche propre        non
-  Pull Request propre   non
-  Done seul             insuffisant
-  Audit réalisé         `Done + Closed`
-  Anomalies             `0..n`, sous-Issues
-  Improvements          `0..n`, sous-Issues
-  Conformité            déduite des Anomalies lorsque Audit réalisé
-  Revalidation          nouvel Audit
+Dimension Règle
+
+---
+
+Composant exactement 1
+Milestone obligatoire pour verdict versionné
+Velocity `0` actuellement dans la source
+Iteration à formaliser
+Branche propre non
+Pull Request propre non
+Done seul insuffisant
+Audit réalisé `Done + Closed`
+Anomalies `0..n`, sous-Issues
+Improvements `0..n`, sous-Issues
+Conformité déduite des Anomalies lorsque Audit réalisé
+Revalidation nouvel Audit
 
 ---
 

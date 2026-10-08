@@ -12,11 +12,18 @@ type StableMapper = (namespace: string, source: string, prefix: string) => strin
  * system.yaml: the generated configuration must describe exactly the fixture
  * that was just produced.
  */
-export function anonymizePipelineConfig(config: PipelineConfig, source: RawDataset, map: StableMapper): PipelineConfig {
+export function anonymizePipelineConfig(
+  config: PipelineConfig,
+  source: RawDataset,
+  map: StableMapper
+): PipelineConfig {
   const owners = [...new Set(source.repositories.map((repository) => repository.owner))];
-  if (owners.length === 0) throw new Error('Cannot create fixture configuration: RAW dataset contains no repositories.');
+  if (owners.length === 0)
+    throw new Error('Cannot create fixture configuration: RAW dataset contains no repositories.');
   if (owners.length > 1) {
-    throw new Error(`Cannot create fixture configuration: RAW dataset contains multiple GitHub owners (${owners.join(', ')}), but PipelineConfig supports a single githubOwner.`);
+    throw new Error(
+      `Cannot create fixture configuration: RAW dataset contains multiple GitHub owners (${owners.join(', ')}), but PipelineConfig supports a single githubOwner.`
+    );
   }
 
   return {
@@ -56,12 +63,8 @@ export function anonymizeCatalogue(
       .filter((component) => sourceComponents.has(component.name))
       .map((component) => ({
         ...component,
-        ...(component.repository
-          ? { repository: map('repository', component.repository, 'repo') }
-          : {}),
-        ...(options.preserveComponentNames
-          ? {}
-          : { name: map('component', component.name, 'component') })
+        ...(component.repository ? { repository: map('repository', component.repository, 'repo') } : {}),
+        ...(options.preserveComponentNames ? {} : { name: map('component', component.name, 'component') })
       }))
   };
 }

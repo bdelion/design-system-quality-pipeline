@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.tmp/
+tmp/
+data/
+dashboard/
+presentation/
+fixtures/*.json
+package-lock.json
+*.min.js
+*.svg
+*.zip
+# Documentation API générée automatiquement par TypeDoc
+docs/api/

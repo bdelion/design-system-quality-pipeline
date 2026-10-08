@@ -12,7 +12,7 @@ Pipeline sans confondre :
 - une règle de qualité de données ;
 - une règle liée à la disponibilité d'une source ;
 - une règle actuellement implémentée mais encore discutable au regard
-    du modèle cible.
+  du modèle cible.
 
 Cette distinction est indispensable avant toute refonte de `DQ-001` à
 `DQ-010`.
@@ -109,7 +109,7 @@ La démarche est :
 3. confronter ce besoin aux décisions consolidées ;
 4. identifier les divergences ;
 5. décider ensuite de conserver, spécialiser, remplacer ou retirer la
-    règle ;
+   règle ;
 6. seulement alors modifier le code et les tests.
 
 ## Fiabilité

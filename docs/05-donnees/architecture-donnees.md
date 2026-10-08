@@ -33,27 +33,30 @@ flowchart LR
 ## Contrats par étape
 
 ---
-  Étape             Entrée            Sortie                 Couche logicielle
-                                                             actuelle
-  ----------------- ----------------- ---------------------- --------------------
-  Collecte          Fixture ou API    `RawDataset`           `src/collectors/`
-                    GitHub
 
-  Référence         YAML catalogue    Catalogue validé       `src/catalogue.ts`
+Étape Entrée Sortie Couche logicielle
+actuelle
 
-  Normalisation     RAW + catalogue + `NormalizedData`       `src/normalizers/`
-                    configuration
+---
 
-  Qualité           RAW + normalisé + `DataQualityIssue[]`   `src/quality/`
-                    règles
+Collecte Fixture ou API `RawDataset` `src/collectors/`
+GitHub
 
-  Analyse           Normalisé +       métriques /            `src/analytics/`
-                    impacts DQ        `Analytics`
+Référence YAML catalogue Catalogue validé `src/catalogue.ts`
 
-  Snapshot          RAW + normalisé + `Snapshot`             `src/snapshots/`
-                    DQ + analytics
+Normalisation RAW + catalogue + `NormalizedData` `src/normalizers/`
+configuration
 
-  Restitution       Snapshot          HTML / JS / CSS        `src/dashboard/`
+Qualité RAW + normalisé + `DataQualityIssue[]` `src/quality/`
+règles
+
+Analyse Normalisé + métriques / `src/analytics/`
+impacts DQ `Analytics`
+
+Snapshot RAW + normalisé + `Snapshot` `src/snapshots/`
+DQ + analytics
+
+Restitution Snapshot HTML / JS / CSS `src/dashboard/`
 ---
 
 ## RawDataset
@@ -120,11 +123,11 @@ L'implémentation actuelle distingue notamment des impacts de métrique de
 type :
 
 - `include` : la donnée peut rester dans le calcul, avec une fiabilité
-    potentiellement dégradée ;
+  potentiellement dégradée ;
 - `exclude` : la donnée est exclue du périmètre d'une métrique
-    concernée ;
+  concernée ;
 - `unknown` : la métrique concernée ne peut pas être considérée comme
-    connue.
+  connue.
 
 Les règles DQ actuellement implémentées décrivent l'état du logiciel ;
 elles ne constituent pas encore la matrice métier cible issue de la

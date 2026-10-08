@@ -6,7 +6,16 @@ import type { AnomalyStatus, AuditStatus, Component, DataQualityStatus, Metric, 
 
 const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.meta.url)));
 
-/** Génère les cinq pages statiques et leurs assets depuis un snapshot. */
+/**
+ * Génère le dashboard HTML statique à partir d'un snapshot déjà calculé.
+ *
+ * Cette couche restitue les indicateurs ; elle ne doit pas recalculer les
+ * règles métier de normalisation ni les formules analytiques.
+ *
+ * @param snapshot - Snapshot immuable à présenter.
+ * @param outputRoot - Répertoire racine de sortie (sous-dossier `dashboard`).
+ * @param githubUrl - URL de référence optionnelle pour les liens GitHub.
+ */
 export async function generateDashboard(snapshot: Snapshot, outputRoot: string, githubUrl?: string): Promise<void> {
   const dashboardPath = resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/domain/types.ts",
+    "src/normalizers/github.ts",
+    "src/quality/rules.ts",
+    "src/analytics/kpis.ts",
+    "src/analytics/metrics.ts",
+    "src/snapshots/snapshot.ts",
+    "src/dashboard/generate.ts"
+  ],
+  "out": "docs/api",
+  "lang": "fr",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "readme": "README.md"
+}

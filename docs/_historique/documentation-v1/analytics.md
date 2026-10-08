@@ -26,7 +26,6 @@ Une règle DQ n'exclut plus implicitement une entité de tous les KPI. Elle déc
 
 Les données sources et les entités exclues restent conservées dans le snapshot pour permettre l'explication et la correction.
 
-
 ## Contrat de référence
 
 `Analytics.metrics` est la seule source de vérité analytique. Les propriétés historiques (`anomaliesDeclared`, `auditsCoverage`, `conformityRate`, etc.) sont des projections de compatibilité et ne doivent plus être utilisées pour implémenter de nouveaux calculs ou écrans.

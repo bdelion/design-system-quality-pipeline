@@ -38,10 +38,16 @@ export interface PipelineConfig {
 }
 
 /** Charge la configuration YAML et complète les URLs avec l'environnement. */
-export async function loadConfig(source: 'fixture' | 'github' = 'github', fixtureFile?: string): Promise<PipelineConfig> {
-  const filename = source === 'fixture'
-    ? (fixtureFile ? fixtureConfigPaths(fixtureFile).system.split(/[/\\]/).pop()! : 'system.fixture.yaml')
-    : 'system.yaml';
+export async function loadConfig(
+  source: 'fixture' | 'github' = 'github',
+  fixtureFile?: string
+): Promise<PipelineConfig> {
+  const filename =
+    source === 'fixture'
+      ? fixtureFile
+        ? fixtureConfigPaths(fixtureFile).system.split(/[/\\]/).pop()!
+        : 'system.fixture.yaml'
+      : 'system.yaml';
   let content: string;
   try {
     content = await readFile(`${configPath}/${filename}`, 'utf8');

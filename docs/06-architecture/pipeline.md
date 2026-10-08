@@ -39,16 +39,18 @@ génération du dashboard
 
 ## Contrats
 
-  Étape           Entrée principale                 Sortie principale
-  --------------- --------------------------------- ----------------------
-  configuration   fichiers de configuration         paramètres actifs
-  catalogue       YAML                              catalogue validé
-  collecte        Fixture ou GitHub                 `RawDataset`
-  normalisation   RAW + catalogue + configuration   `NormalizedData`
-  qualité         RAW + normalisé + règles          `DataQualityIssue[]`
-  analytics       normalisé + impacts DQ            métriques
-  snapshot        résultats précédents              `Snapshot`
-  restitution     Snapshot                          dashboard statique
+Étape Entrée principale Sortie principale
+
+---
+
+configuration fichiers de configuration paramètres actifs
+catalogue YAML catalogue validé
+collecte Fixture ou GitHub `RawDataset`
+normalisation RAW + catalogue + configuration `NormalizedData`
+qualité RAW + normalisé + règles `DataQualityIssue[]`
+analytics normalisé + impacts DQ métriques
+snapshot résultats précédents `Snapshot`
+restitution Snapshot dashboard statique
 
 ## Sélection de la source
 

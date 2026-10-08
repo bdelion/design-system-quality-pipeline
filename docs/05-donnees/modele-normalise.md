@@ -165,13 +165,6 @@ Conformément à D-208, un Audit de rattrapage cible directement la Version PROD
 - **D-227 — Anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit** : Une anomalie d’origine `HORS_AUDIT` ne modifie pas directement le verdict de conformité calculé à partir des Audits applicables au couple `Component × Version`.
 - **D-228 — État NON_COUVERT en absence d’Audit terminé applicable** : Si un Component appartient au Catalogue historique d’une Version mais ne possède aucun Audit terminé applicable, son état est `NON_COUVERT` / non évalué. Il ne doit jamais être assimilé à `NON_CONFORME`.
 
-
-
-
-
-
-
-
 La liste définitive des notions canoniques reste à préciser.
 
 Les décisions métier ont également établi ou introduit des concepts
@@ -286,7 +279,6 @@ L'enrichissement du modèle doit suivre l'ordre suivant :
 
 Le code existant ne doit donc pas être utilisé pour limiter
 artificiellement le modèle métier cible.
-
 
 ## Décisions finales I1 sur cardinalités, origine et intégrité
 

@@ -147,28 +147,31 @@ Les contraintes génériques des Issues Cancelled restent ouvertes dans
 ## 10. Matrice STANDARD
 
 ---
-  Statut      Grooming            Velocity Iteration    Milestone    Branche      PR
-  ----------- --------------- ------------ ------------ ------------ ------------ -------------
-  Backlog     obligatoire           `null` non          non          non          non
 
-  Ready       non                    `> 0` possible     possible     non          non
-                                   nominal
+Statut Grooming Velocity Iteration Milestone Branche PR
 
-  In progress non                    `> 0` attendue     attendue     attendue si  possible
-                                   nominal                           code         Draft
+---
 
-  In review   non                    `> 0` attendue     attendue     attendue si  attendue
-                                   nominal                           code
+Backlog obligatoire `null` non non non non
 
-  Done        non               historique historique   historique   historique   attendue si
-                                                                                  réalisation
-                                                                                  par code
+Ready non `> 0` possible possible non non
+nominal
 
-  Blocked     dépend du point    conservée selon        selon        selon        selon
-              de blocage                   contexte     contexte     contexte     contexte
+In progress non `> 0` attendue attendue attendue si possible
+nominal code Draft
 
-  Cancelled   non défini        non défini non défini   non défini   non défini   non défini
-              génériquement
+In review non `> 0` attendue attendue attendue si attendue
+nominal code
+
+Done non historique historique historique historique attendue si
+réalisation
+par code
+
+Blocked dépend du point conservée selon selon selon selon
+de blocage contexte contexte contexte contexte
+
+Cancelled non défini non défini non défini non défini non défini non défini
+génériquement
 ---
 
 Les cellules non définies ne doivent pas être converties en

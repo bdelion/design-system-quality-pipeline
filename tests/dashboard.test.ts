@@ -15,7 +15,15 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   const config = await loadConfig();
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const issues = evaluateDataQuality(raw, normalized, config.github);
-  const snapshot = buildSnapshot(raw, normalized, issues, calculateKpis(normalized, issues), '2.1', 'dq-test', 'test');
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    issues,
+    calculateKpis(normalized, issues),
+    '2.1',
+    'dq-test',
+    'test'
+  );
   const output = resolve(process.cwd(), 'data/test-dashboard');
   await generateDashboard(snapshot, output, 'https://github.test');
   const html = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
@@ -26,7 +34,9 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('Temps de correction par repository');
   expect(html).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
-  expect(html).toContain('Les indicateurs sont calculés dans le pipeline puis expliqués ici avec leur périmètre, leur ratio et leur fiabilité.');
+  expect(html).toContain(
+    'Les indicateurs sont calculés dans le pipeline puis expliqués ici avec leur périmètre, leur ratio et leur fiabilité.'
+  );
   expect(html).toContain('Couverture Component × Version');
   expect(html).toContain('Fiabilité par métrique');
   expect(html).toContain('Pourquoi certains chiffres sont partiels');

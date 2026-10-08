@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { diffSnapshots } from '../src/snapshots/diff.js';
 import type { Snapshot } from '../src/domain/types.js';
 
-function snapshot(id: string, capturedAt: string, anomalies: Snapshot['normalizedData']['anomalies']): Snapshot {
+function snapshot(
+  id: string,
+  capturedAt: string,
+  anomalies: Snapshot['normalizedData']['anomalies']
+): Snapshot {
   return {
     snapshotId: id,
     capturedAt,
@@ -18,17 +22,37 @@ function snapshot(id: string, capturedAt: string, anomalies: Snapshot['normalize
 }
 
 const base = {
-  anomalyId: 'a1', issueId: 'issue-1', origin: 'AUDIT' as const, auditId: 'au1', componentId: 'c1', criticality: 'major' as const, categories: ['focus'],
-  status: 'open' as const, createdAt: '2026-09-01T00:00:00Z', detectedAt: '2026-09-01T00:00:00Z', firstDoneAt: undefined, everCorrected: false,
-  pullRequestRefs: [], parentRefs: [], provenance: { source: 'github' as const, collectedAt: '2026-09-01T00:00:00Z' },
-  dataQualityStatus: 'reliable' as const, cancelled: false, cancelledProjectStatuses: []
+  anomalyId: 'a1',
+  issueId: 'issue-1',
+  origin: 'AUDIT' as const,
+  auditId: 'au1',
+  componentId: 'c1',
+  criticality: 'major' as const,
+  categories: ['focus'],
+  status: 'open' as const,
+  createdAt: '2026-09-01T00:00:00Z',
+  detectedAt: '2026-09-01T00:00:00Z',
+  firstDoneAt: undefined,
+  everCorrected: false,
+  pullRequestRefs: [],
+  parentRefs: [],
+  provenance: { source: 'github' as const, collectedAt: '2026-09-01T00:00:00Z' },
+  dataQualityStatus: 'reliable' as const,
+  cancelled: false,
+  cancelledProjectStatuses: []
 };
 
 describe('snapshot diff', () => {
   it('detects created, corrected and reopened anomalies', () => {
     const before = snapshot('s1', '2026-09-10T00:00:00Z', [base]);
     const after = snapshot('s2', '2026-09-11T00:00:00Z', [
-      { ...base, status: 'reopened', correctedAt: '2026-09-10T12:00:00Z', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
+      {
+        ...base,
+        status: 'reopened',
+        correctedAt: '2026-09-10T12:00:00Z',
+        firstDoneAt: '2026-09-10T12:00:00Z',
+        everCorrected: true
+      },
       { ...base, anomalyId: 'a2' }
     ]);
     const diff = diffSnapshots(before, after);
@@ -46,7 +70,13 @@ describe('snapshot flow metrics', () => {
   it('exposes period-bound flow metrics', () => {
     const before = snapshot('s1', '2026-09-10T00:00:00Z', [base]);
     const after = snapshot('s2', '2026-09-11T00:00:00Z', [
-      { ...base, status: 'reopened', correctedAt: '2026-09-10T12:00:00Z', firstDoneAt: '2026-09-10T12:00:00Z', everCorrected: true },
+      {
+        ...base,
+        status: 'reopened',
+        correctedAt: '2026-09-10T12:00:00Z',
+        firstDoneAt: '2026-09-10T12:00:00Z',
+        everCorrected: true
+      },
       { ...base, anomalyId: 'a2' }
     ]);
     const flows = calculateFlowMetrics(diffSnapshots(before, after));

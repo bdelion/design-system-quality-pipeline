@@ -21,7 +21,20 @@ import type {
 
 const collectedStatus: DataQualityStatus = 'reliable';
 
-/** Traduit le modèle RAW GitHub vers le modèle métier indépendant de la source. */
+/**
+ * Normalise les faits collectés depuis GitHub en entités métier V1.
+ *
+ * Les données RAW restent la source de vérité des faits observés. La normalisation
+ * construit les relations entre bibliothèques, versions, composants, audits et
+ * anomalies, sans masquer les informations manquantes : elles sont ensuite
+ * évaluées par la couche Data Quality.
+ *
+ * @param raw - Données collectées, incluant les repositories et leurs événements.
+ * @param rules - Règles de correspondance et de spécialisation GitHub.
+ * @param catalogue - Catalogue de composants éventuellement fourni.
+ * @param auditVersion - Version des règles d'audit utilisée pour la provenance.
+ * @returns Données métier normalisées, prêtes pour les contrôles et les KPI.
+ */
 export function normalizeGithub(
   raw: RawDataset,
   rules: GithubProcessingConfig,
@@ -70,7 +83,7 @@ export function normalizeGithub(
     const tagByVersion = new Map(
       (repository.gitTags ?? [])
         .map((tag) => [prodVersionNumber(tag.name), tag] as const)
-        .filter((entry): entry is [string, NonNullable<typeof entry[1]>] => Boolean(entry[0]))
+        .filter((entry): entry is [string, NonNullable<(typeof entry)[1]>] => Boolean(entry[0]))
     );
     const numbers = new Set([...milestoneIdsByVersion.keys(), ...tagByVersion.keys()]);
     for (const number of [...numbers].sort()) {
@@ -83,8 +96,14 @@ export function normalizeGithub(
         number,
         ...(tag?.createdAt ? { releasedAt: tag.createdAt } : {}),
         ...(milestoneId ? { milestoneId } : {}),
-        ...(tag ? { prodTag: { name: tag.name, ...(tag.createdAt ? { createdAt: tag.createdAt } : {}) } } : {}),
-        provenance: { source: 'github', sourceId: tag?.name ?? milestoneId ?? `version:${library.libraryId}:${number}`, collectedAt: raw.collectedAt,},
+        ...(tag
+          ? { prodTag: { name: tag.name, ...(tag.createdAt ? { createdAt: tag.createdAt } : {}) } }
+          : {}),
+        provenance: {
+          source: 'github',
+          sourceId: tag?.name ?? milestoneId ?? `version:${library.libraryId}:${number}`,
+          collectedAt: raw.collectedAt
+        },
         dataQualityStatus: tag?.createdAt ? collectedStatus : 'partial'
       };
       versions.push(version);
@@ -121,7 +140,9 @@ export function normalizeGithub(
         for (const previousName of previousKnownNames) {
           if (!names.has(previousName)) {
             const endedComponentId = activeComponentIdByName.get(previousName);
-            const endedComponent = endedComponentId ? historicalComponentsById.get(endedComponentId) : undefined;
+            const endedComponent = endedComponentId
+              ? historicalComponentsById.get(endedComponentId)
+              : undefined;
             if (endedComponent) endedComponent.status = 'removed';
             activeComponentIdByName.delete(previousName);
             latestHistoricalComponentIdByName.delete(`${library.libraryId}:${previousName}`);
@@ -149,7 +170,11 @@ export function normalizeGithub(
               aliases: [],
               discoverySource: 'catalogue',
               tags: [],
-              provenance: { source: 'catalogue', sourceId: `${snapshot.tagName}:${name}`, collectedAt: raw.collectedAt },
+              provenance: {
+                source: 'catalogue',
+                sourceId: `${snapshot.tagName}:${name}`,
+                collectedAt: raw.collectedAt
+              },
               dataQualityStatus: collectedStatus
             });
           }
@@ -158,7 +183,11 @@ export function normalizeGithub(
           componentVersionId: stableId('component-version', `${componentId}:${version.versionId}`),
           componentId,
           versionId: version.versionId,
-          provenance: { source: 'catalogue', sourceId: `${snapshot.tagName}:${name}`, collectedAt: raw.collectedAt },
+          provenance: {
+            source: 'catalogue',
+            sourceId: `${snapshot.tagName}:${name}`,
+            collectedAt: raw.collectedAt
+          },
           dataQualityStatus: collectedStatus
         });
         latestHistoricalComponentIdByName.set(`${library.libraryId}:${name}`, componentId);
@@ -194,7 +223,11 @@ export function normalizeGithub(
     for (const issue of repository.issues) {
       const componentName = issue.component ?? 'unknown';
       const componentKey = `${library.libraryId}:${componentName}`;
-      const componentId = currentComponentId(componentKey, latestHistoricalComponentIdByName, historicalComponentNames);
+      const componentId = currentComponentId(
+        componentKey,
+        latestHistoricalComponentIdByName,
+        historicalComponentNames
+      );
       const issueTypeRecognition = recognizeIssueType(issue.rawIssueType, rules);
       const recognizedComponentIds = issue.labels
         .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
@@ -208,16 +241,19 @@ export function normalizeGithub(
       // resolved component through RawIssue.component but do not yet carry the
       // native rawIssueType/complete I1 facts. Never use this fallback for new
       // I1 collections.
-      const componentIds = issue.rawIssueType === undefined
-        && recognizedComponentIds.length === 0
-        && issue.component
-        ? [componentId]
-        : recognizedComponentIds;
+      const componentIds =
+        issue.rawIssueType === undefined && recognizedComponentIds.length === 0 && issue.component
+          ? [componentId]
+          : recognizedComponentIds;
       const criticalities = issue.labels
-        .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase()))
+        .filter((label) =>
+          label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())
+        )
         .map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).trim());
       const accessibilityCategories = issue.labels
-        .filter((label) => label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase()))
+        .filter((label) =>
+          label.toLowerCase().startsWith(rules.labels.accessibilityCategoryPrefix.toLowerCase())
+        )
         .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length).trim());
       issues.push({
         issueId: issue.id,
@@ -243,9 +279,10 @@ export function normalizeGithub(
         subIssueIds: [],
         linkedPullRequestIds: [...issue.linkedPullRequestIds],
         projectContexts: (issue.projectStatuses ?? []).map((projectStatus) => {
-          const velocity = projectStatus.rawVelocity !== undefined
-            ? numericProjectValue(projectStatus.rawVelocity)
-            : undefined;
+          const velocity =
+            projectStatus.rawVelocity !== undefined
+              ? numericProjectValue(projectStatus.rawVelocity)
+              : undefined;
           const statusRecognition = recognizeProjectStatus(projectStatus.status, rules);
           return {
             projectId: projectStatus.projectId,
@@ -258,12 +295,16 @@ export function normalizeGithub(
             ...(projectStatus.iteration ? { iteration: { ...projectStatus.iteration } } : {}),
             ...(projectStatus.rawVelocity !== undefined ? { rawVelocity: projectStatus.rawVelocity } : {}),
             ...(velocity !== undefined ? { velocity } : {}),
-            ...(projectStatus.rawScheduling !== undefined ? { rawScheduling: projectStatus.rawScheduling } : {}),
+            ...(projectStatus.rawScheduling !== undefined
+              ? { rawScheduling: projectStatus.rawScheduling }
+              : {}),
             statusHistory: (projectStatus.statusHistory ?? []).map((transition) => {
               const recognition = recognizeProjectStatus(transition.status, rules);
               const previousRecognition = recognizeProjectStatus(transition.previousStatus, rules);
               return {
-                ...(transition.previousStatus !== undefined ? { previousRawStatus: transition.previousStatus } : {}),
+                ...(transition.previousStatus !== undefined
+                  ? { previousRawStatus: transition.previousStatus }
+                  : {}),
                 ...(previousRecognition.status ? { previousStatus: previousRecognition.status } : {}),
                 ...(previousRecognition.candidateStatuses.length > 1
                   ? { previousCandidateStatuses: previousRecognition.candidateStatuses }
@@ -337,9 +378,12 @@ export function normalizeGithub(
   for (const issue of issues) {
     const rawIssue = rawIssueById.get(issue.issueId);
     if (specializationIssueType(issue, rawIssue) !== 'AUDIT' || issue.componentIds.length !== 1) continue;
-    const targetNumber = rawIssue?.rawIssueType !== undefined
-      ? prodVersionNumber(rawIssue.milestone?.title)
-      : (hasKnownAuditVersion ? resolvedAuditVersion : undefined);
+    const targetNumber =
+      rawIssue?.rawIssueType !== undefined
+        ? prodVersionNumber(rawIssue.milestone?.title)
+        : hasKnownAuditVersion
+          ? resolvedAuditVersion
+          : undefined;
     const targetVersion = targetNumber
       ? versionByLibraryAndNumber.get(`${issue.libraryId}:${targetNumber}`)
       : undefined;
@@ -359,7 +403,9 @@ export function normalizeGithub(
       status: rawIssue?.auditStatus ?? 'in_progress',
       sourceIssueId: issue.issueId,
       objectiveAuditResult: rawIssue?.auditResult ?? 'in_progress',
-      ...(rawIssue?.auditedReleaseCandidate ? { auditedReleaseCandidate: rawIssue.auditedReleaseCandidate } : {}),
+      ...(rawIssue?.auditedReleaseCandidate
+        ? { auditedReleaseCandidate: rawIssue.auditedReleaseCandidate }
+        : {}),
       ...(rawIssue?.auditedReleaseCandidate
         ? repositoryReleaseCandidateTag(raw, issue.libraryId, libraries, rawIssue.auditedReleaseCandidate)
         : {}),
@@ -381,18 +427,20 @@ export function normalizeGithub(
     const specializationType = specializationIssueType(issue, rawIssue);
 
     if (specializationType === 'BUG') {
-      const origin: Anomaly['origin'] = parentIds.length === 0
-        ? 'HORS_AUDIT'
-        : validParentAudits.length === 1 && parentIds.length === 1
-          ? 'AUDIT'
-          : 'UNDETERMINED';
+      const origin: Anomaly['origin'] =
+        parentIds.length === 0
+          ? 'HORS_AUDIT'
+          : validParentAudits.length === 1 && parentIds.length === 1
+            ? 'AUDIT'
+            : 'UNDETERMINED';
       const audit = origin === 'AUDIT' ? validParentAudits[0] : undefined;
-      const cancelledProjectStatuses = (rawIssue?.projectStatuses ?? [])
-        .filter((projectStatus) => rules.cancelledProjectStatuses.some(
+      const cancelledProjectStatuses = (rawIssue?.projectStatuses ?? []).filter((projectStatus) =>
+        rules.cancelledProjectStatuses.some(
           (cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()
-        ));
-      const legacyComponentId = audit?.componentId
-        ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
+        )
+      );
+      const legacyComponentId =
+        audit?.componentId ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
       const correctedAt = businessCorrectedAt(issue);
       anomalies.push({
         anomalyId: stableId('anomaly', issue.issueId),
@@ -407,9 +455,8 @@ export function normalizeGithub(
         ...(correctedAt ? { correctedAt } : {}),
         createdAt: issue.createdAt,
         firstDoneAt: rawIssue?.rawIssueType !== undefined ? correctedAt : rawIssue?.firstDoneAt,
-        everCorrected: rawIssue?.rawIssueType !== undefined
-          ? correctedAt !== undefined
-          : Boolean(rawIssue?.firstDoneAt),
+        everCorrected:
+          rawIssue?.rawIssueType !== undefined ? correctedAt !== undefined : Boolean(rawIssue?.firstDoneAt),
         pullRequestRefs: [...issue.linkedPullRequestIds],
         parentRefs: [...parentIds],
         provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
@@ -444,17 +491,16 @@ export function normalizeGithub(
   };
 }
 
-
 /** Resolve the current identity without reusing an identity whose disappearance was proven. */
 function currentComponentId(
   key: string,
   latestHistoricalComponentIdByName: Map<string, string>,
   historicalComponentNames: Set<string>
 ): string {
-  return latestHistoricalComponentIdByName.get(key)
-    ?? (historicalComponentNames.has(key)
-      ? stableId('component', `${key}:current`)
-      : stableId('component', key));
+  return (
+    latestHistoricalComponentIdByName.get(key) ??
+    (historicalComponentNames.has(key) ? stableId('component', `${key}:current`) : stableId('component', key))
+  );
 }
 
 /** Merge historical identities with richer current-catalogue/current-Issue metadata. */
@@ -464,10 +510,11 @@ function mergeComponents(
 ): Component[] {
   const byId = new Map(historical);
   for (const component of currentByName.values()) byId.set(component.componentId, component);
-  return [...byId.values()].sort((left, right) =>
-    left.libraryId.localeCompare(right.libraryId)
-      || left.name.localeCompare(right.name)
-      || left.componentId.localeCompare(right.componentId)
+  return [...byId.values()].sort(
+    (left, right) =>
+      left.libraryId.localeCompare(right.libraryId) ||
+      left.name.localeCompare(right.name) ||
+      left.componentId.localeCompare(right.componentId)
   );
 }
 
@@ -494,27 +541,20 @@ function catalogueMetadata(component: CatalogueComponent | undefined): Partial<C
     status: component.status === 'stable' ? 'active' : component.status,
     rgaaLevel: component.rgaaLevel,
     ...(component.figmaUrl ? { figmaUrl: component.figmaUrl } : {}),
-    ...(component.documentationUrl
-      ? { documentationUrl: component.documentationUrl }
-      : {}),
+    ...(component.documentationUrl ? { documentationUrl: component.documentationUrl } : {}),
     ...(component.audit ? { audit: component.audit } : {})
   };
 }
 
 /** Traduit une criticité GitHub en valeur normalisée. */
-function criticalityValue(
-  value: string | undefined,
-  rules: GithubProcessingConfig
-): Anomaly['criticality'] {
+function criticalityValue(value: string | undefined, rules: GithubProcessingConfig): Anomaly['criticality'] {
   if (!value) return undefined;
   const normalized = value.toLowerCase();
-  return rules.labels.criticalityValues[normalized]
-    ?? (['blocking', 'major', 'minor'].includes(normalized)
-      ? normalized as Anomaly['criticality']
-      : undefined);
+  return (
+    rules.labels.criticalityValues[normalized] ??
+    (['blocking', 'major', 'minor'].includes(normalized) ? (normalized as Anomaly['criticality']) : undefined)
+  );
 }
-
-
 
 /**
  * Transitional specialization bridge for pre-I1 fixtures.
@@ -565,14 +605,16 @@ function prodVersionNumber(value: string | undefined): string | undefined {
   return /^\d+\.\d+\.\d+$/.test(normalized) ? normalized : undefined;
 }
 
-function specializationIssueType(issue: Issue, rawIssue: RawIssue | undefined): CanonicalIssueType | undefined {
+function specializationIssueType(
+  issue: Issue,
+  rawIssue: RawIssue | undefined
+): CanonicalIssueType | undefined {
   if (rawIssue?.rawIssueType !== undefined) return issue.issueType;
   const legacy = rawIssue?.issueType;
   return legacy && ['EPIC', 'AUDIT', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(legacy)
-    ? legacy as CanonicalIssueType
+    ? (legacy as CanonicalIssueType)
     : undefined;
 }
-
 
 /** Reconnait strictement un statut Project a partir des variantes configurees. */
 function recognizeProjectStatus(
@@ -582,7 +624,13 @@ function recognizeProjectStatus(
   if (!rawValue) return { candidateStatuses: [] };
   const normalizedRaw = rawValue.trim().toLowerCase();
   const canonicalStatuses: CanonicalProjectStatus[] = [
-    'BACKLOG', 'READY', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'BLOCKED', 'CANCELLED'
+    'BACKLOG',
+    'READY',
+    'IN_PROGRESS',
+    'IN_REVIEW',
+    'DONE',
+    'BLOCKED',
+    'CANCELLED'
   ];
   const candidates = Object.entries(rules.projectStatuses.keywords)
     .filter(([, variants]) => variants.some((variant) => variant.trim().toLowerCase() === normalizedRaw))
@@ -625,8 +673,12 @@ function repositoryReleaseCandidateTag(
 ): { auditedReleaseCandidateTag: { name: string; createdAt?: string } } | Record<string, never> {
   const library = libraries.find((candidate) => candidate.libraryId === libraryId);
   if (!library) return {};
-  const repository = raw.repositories.find((candidate) => `${candidate.owner}/${candidate.name}` === library.repository);
+  const repository = raw.repositories.find(
+    (candidate) => `${candidate.owner}/${candidate.name}` === library.repository
+  );
   const tag = repository?.gitTags?.find((candidate) => candidate.name === name);
   if (!tag) return {};
-  return { auditedReleaseCandidateTag: { name: tag.name, ...(tag.createdAt ? { createdAt: tag.createdAt } : {}) } };
+  return {
+    auditedReleaseCandidateTag: { name: tag.name, ...(tag.createdAt ? { createdAt: tag.createdAt } : {}) }
+  };
 }

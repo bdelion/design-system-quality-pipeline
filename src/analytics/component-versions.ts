@@ -18,9 +18,12 @@ export function applyComponentVersionVerdicts(data: NormalizedData): void {
     if (!targetVersion) continue;
     const applicable = latestApplicableAuditCohort(relation, targetVersion, completedAudits, versionById);
     relation.applicableAuditIds = applicable.map((audit) => audit.auditId).sort();
-    relation.verdict = applicable.length === 0
-      ? 'NON_COUVERT'
-      : auditCohortIsConform(applicable, data) ? 'CONFORME' : 'NON_CONFORME';
+    relation.verdict =
+      applicable.length === 0
+        ? 'NON_COUVERT'
+        : auditCohortIsConform(applicable, data)
+          ? 'CONFORME'
+          : 'NON_CONFORME';
   }
 }
 
@@ -56,8 +59,8 @@ function latestApplicableAuditCohort(
 
 function auditCohortIsConform(audits: Audit[], data: NormalizedData): boolean {
   const auditIds = new Set(audits.map((audit) => audit.auditId));
-  const hasAuditAnomaly = data.anomalies.some((anomaly) =>
-    anomaly.origin === 'AUDIT' && anomaly.auditId !== undefined && auditIds.has(anomaly.auditId)
+  const hasAuditAnomaly = data.anomalies.some(
+    (anomaly) => anomaly.origin === 'AUDIT' && anomaly.auditId !== undefined && auditIds.has(anomaly.auditId)
   );
   if (hasAuditAnomaly) return false;
   return audits.every((audit) => audit.objectiveAuditResult === 'conform');

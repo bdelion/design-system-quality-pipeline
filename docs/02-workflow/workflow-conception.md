@@ -93,21 +93,23 @@ branche ou une Pull Request propre à toute Issue de Conception.
 
 ## 7. Matrice CONCEPTION
 
-  Dimension      Règle
-  -------------- --------------------------------------------
-  Issue Type     `🧠 Conception` proposé dans la source
-  Component      attendu dans les scénarios décrits
-  Grooming       présent à la création dans la source
-  Epic parent    relation envisagée / décrite, à formaliser
-  Velocity       ouvert
-  Iteration      ouvert
-  Milestone      ouvert
-  Branche        ouvert / non nécessairement applicable
-  Pull Request   ouvert / non nécessairement applicable
-  Ready          conditions ouvertes
-  In progress    conditions ouvertes
-  In review      conditions ouvertes
-  Done           Definition of Done à formaliser
+Dimension Règle
+
+---
+
+Issue Type `🧠 Conception` proposé dans la source
+Component attendu dans les scénarios décrits
+Grooming présent à la création dans la source
+Epic parent relation envisagée / décrite, à formaliser
+Velocity ouvert
+Iteration ouvert
+Milestone ouvert
+Branche ouvert / non nécessairement applicable
+Pull Request ouvert / non nécessairement applicable
+Ready conditions ouvertes
+In progress conditions ouvertes
+In review conditions ouvertes
+Done Definition of Done à formaliser
 
 ---
 
