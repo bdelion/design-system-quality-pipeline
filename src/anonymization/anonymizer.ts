@@ -1,3 +1,9 @@
+/**
+ * @module anonymization.anonymizer
+ * Anonymise un jeu de données RAW en préservant les relations nécessaires aux tests.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type {
   RawDataset,
   RawIssue,
@@ -12,12 +18,26 @@ import { sanitizeText } from './sanitize.js';
 
 const MS_PER_DAY = 86_400_000;
 
+/**
+ * Définit le type « StableMapper » utilisé dans les contrats du pipeline.
+ */
 export type StableMapper = ReturnType<typeof createStableMapper>;
 
+/**
+ * Crée le service de correspondance déterministe utilisé pour l’anonymisation.
+ */
 export function createAnonymizationMapper(seed: string): StableMapper {
   return createStableMapper(seed);
 }
 
+/**
+ * Décale date dans le contexte du pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @param offsetDays - Valeur de « offsetDays » utilisée par ce traitement.
+ * @param report - Valeur de « report » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function shiftDate(
   value: string | undefined,
   offsetDays: number,
@@ -30,6 +50,16 @@ function shiftDate(
   return new Date(date.getTime() + offsetDays * MS_PER_DAY).toISOString();
 }
 
+/**
+ * Réalise le traitement « mapped number » dans le pipeline de qualité.
+ *
+ * @param map - Valeur de « map » utilisée par ce traitement.
+ * @param namespace - Valeur de « namespace » utilisée par ce traitement.
+ * @param repository - Valeur de « repository » utilisée par ce traitement.
+ * @param number - Valeur de « number » utilisée par ce traitement.
+ * @param prefix - Valeur de « prefix » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function mappedNumber(
   map: StableMapper,
   namespace: string,
@@ -40,6 +70,14 @@ function mappedNumber(
   return (Number.parseInt(map(namespace, `${repository}:${number}`, prefix).slice(2), 16) % 900000) + 100000;
 }
 
+/**
+ * Associe component dans le contexte du pipeline de qualité.
+ *
+ * @param name - Valeur de « name » utilisée par ce traitement.
+ * @param options - Valeur de « options » utilisée par ce traitement.
+ * @param map - Valeur de « map » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function mapComponent(name: string, options: AnonymizationOptions, map: StableMapper): string {
   return options.preserveComponentNames ? name : map('component', name, 'component');
 }
@@ -49,6 +87,15 @@ function preserveLabels(labels: string[]): string[] {
   return [...labels];
 }
 
+/**
+ * Anonymise project status dans le contexte du pipeline de qualité.
+ *
+ * @param status - Valeur de « status » utilisée par ce traitement.
+ * @param map - Valeur de « map » utilisée par ce traitement.
+ * @param options - Valeur de « options » utilisée par ce traitement.
+ * @param report - Valeur de « report » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function anonymizeProjectStatus(
   status: RawProjectStatus,
   map: StableMapper,
@@ -77,6 +124,14 @@ function anonymizeProjectStatus(
   };
 }
 
+/**
+ * Anonymise milestone dans le contexte du pipeline de qualité.
+ *
+ * @param milestone - Valeur de « milestone » utilisée par ce traitement.
+ * @param repository - Valeur de « repository » utilisée par ce traitement.
+ * @param map - Valeur de « map » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function anonymizeMilestone(milestone: RawMilestone, repository: string, map: StableMapper): RawMilestone {
   return {
     id: mappedNumber(map, 'milestone', repository, milestone.id, 'm'),
@@ -87,6 +142,16 @@ function anonymizeMilestone(milestone: RawMilestone, repository: string, map: St
   };
 }
 
+/**
+ * Anonymise issue dans le contexte du pipeline de qualité.
+ *
+ * @param issue - Valeur de « issue » utilisée par ce traitement.
+ * @param repo - Valeur de « repo » utilisée par ce traitement.
+ * @param options - Valeur de « options » utilisée par ce traitement.
+ * @param map - Valeur de « map » utilisée par ce traitement.
+ * @param report - Valeur de « report » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function anonymizeIssue(
   issue: RawIssue,
   repo: string,
@@ -127,6 +192,16 @@ function anonymizeIssue(
   };
 }
 
+/**
+ * Anonymise pull request dans le contexte du pipeline de qualité.
+ *
+ * @param pr - Valeur de « pr » utilisée par ce traitement.
+ * @param repo - Valeur de « repo » utilisée par ce traitement.
+ * @param options - Valeur de « options » utilisée par ce traitement.
+ * @param map - Valeur de « map » utilisée par ce traitement.
+ * @param report - Valeur de « report » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function anonymizePullRequest(
   pr: RawPullRequest,
   repo: string,
@@ -143,6 +218,9 @@ function anonymizePullRequest(
   };
 }
 
+/**
+ * Pseudonymise les données RAW tout en conservant leurs relations.
+ */
 export function anonymizeDataset(input: RawDataset, options: AnonymizationOptions): AnonymizationResult {
   const map = createAnonymizationMapper(options.seed);
   const report: AnonymizationReport = {

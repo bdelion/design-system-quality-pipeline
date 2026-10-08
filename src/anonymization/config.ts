@@ -1,9 +1,20 @@
+/**
+ * @module anonymization.config
+ * Produit les configurations anonymisées associées aux fixtures.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { AnonymizationOptions } from './types.js';
 import type { PipelineConfig } from '../config.js';
 import type { Catalogue } from '../catalogue.js';
 import type { RawDataset } from '../domain/types.js';
 
-type StableMapper = (namespace: string, source: string, prefix: string) => string;
+/**
+ * Fonction de correspondance stable entre une valeur source et son identifiant pseudonymisé.
+ *
+ * @inline
+ */
+export type StableMapper = (namespace: string, source: string, prefix: string) => string;
 
 /**
  * Creates the fixture pipeline configuration from the source RAW dataset.

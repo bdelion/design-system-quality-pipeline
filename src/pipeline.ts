@@ -1,3 +1,9 @@
+/**
+ * @module pipeline
+ * Orchestre collecte, normalisation, contrôles qualité, analyses et snapshots.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
 import { loadConfig } from './config.js';
@@ -16,6 +22,9 @@ import { diffSnapshots } from './snapshots/diff.js';
 import { latestComparableSnapshot } from './snapshots/history.js';
 import { readdir } from 'node:fs/promises';
 
+/**
+ * Définit le type « CollectionSource » utilisé dans les contrats du pipeline.
+ */
 export type CollectionSource = 'fixture' | 'github';
 
 /** Exécute la collecte, la normalisation, les contrôles, les KPI et les sorties. */
@@ -81,6 +90,10 @@ export async function runPipeline(
   return snapshot;
 }
 
+/**
+ * Charge snapshots dans le contexte du pipeline de qualité.
+ * @returns Résultat du traitement.
+ */
 async function loadSnapshots(): Promise<Snapshot[]> {
   try {
     const files = (await readdir(runPath)).filter((file: string) => file.endsWith('.json'));

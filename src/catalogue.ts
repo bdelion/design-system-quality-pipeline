@@ -1,3 +1,9 @@
+/**
+ * @module catalogue
+ * Charge et valide le catalogue déclaratif des composants du Design System.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { readFile } from 'node:fs/promises';
 import { parse } from 'yaml';
 import { cataloguePath, fixtureConfigPaths } from './lib/paths.js';

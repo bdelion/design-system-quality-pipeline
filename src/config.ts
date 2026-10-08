@@ -1,3 +1,9 @@
+/**
+ * @module config
+ * Charge la configuration de traitement et les paramètres du pipeline.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { readFile } from 'node:fs/promises';
 import 'dotenv/config';
 import { parse } from 'yaml';

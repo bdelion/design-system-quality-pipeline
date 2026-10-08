@@ -1,3 +1,9 @@
+/**
+ * @module cli
+ * Déclare les commandes de la CLI et délègue leur exécution aux services du pipeline.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { Command } from 'commander';
 import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';

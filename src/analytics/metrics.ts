@@ -1,7 +1,20 @@
+/**
+ * @module analytics.metrics
+ * Calcule les métriques détaillées et leur fiabilité à partir du modèle normalisé.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { DataQualityIssue, Metric, MetricBreakdown, NormalizedData } from '../domain/types.js';
 import { assertMetricContract, getMetricContract } from './catalog.js';
 import { applyMetricImpacts, matchesMetricPattern } from '../lib/metric-impacts.js';
 
+/**
+ * Détermine le niveau de fiabilité associé à une métrique dans le pipeline de qualité.
+ *
+ * @param metricId - Valeur de « metricId » utilisée par ce traitement.
+ * @param issues - Valeur de « issues » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function reliabilityFor(
   metricId: string,
   issues: DataQualityIssue[]
@@ -21,6 +34,18 @@ function reliabilityFor(
   return { status, issueIds: relevant.map((issue) => issue.id).filter(Boolean) };
 }
 
+/**
+ * Réalise le traitement « metric » dans le pipeline de qualité.
+ *
+ * @param metricId - Valeur de « metricId » utilisée par ce traitement.
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @param numerator - Valeur de « numerator » utilisée par ce traitement.
+ * @param denominator - Valeur de « denominator » utilisée par ce traitement.
+ * @param sourceEntityIds - Valeur de « sourceEntityIds » utilisée par ce traitement.
+ * @param issues - Valeur de « issues » utilisée par ce traitement.
+ * @param breakdowns - Valeur de « breakdowns » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function metric(
   metricId: string,
   value: number | 'unknown',
@@ -55,6 +80,12 @@ function metric(
   return result;
 }
 
+/**
+ * Réalise le traitement « median » dans le pipeline de qualité.
+ *
+ * @param values - Valeur de « values » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function median(values: number[]): number | undefined {
   if (values.length === 0) return undefined;
   const sorted = [...values].sort((a, b) => a - b);
@@ -62,6 +93,13 @@ function median(values: number[]): number | undefined {
   return sorted.length % 2 === 1 ? sorted[middle] : ((sorted[middle - 1] ?? 0) + (sorted[middle] ?? 0)) / 2;
 }
 
+/**
+ * Réalise le traitement « percentile » dans le pipeline de qualité.
+ *
+ * @param values - Valeur de « values » utilisée par ce traitement.
+ * @param p - Valeur de « p » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function percentile(values: number[], p: number): number | undefined {
   if (values.length === 0) return undefined;
   const sorted = [...values].sort((a, b) => a - b);
@@ -72,6 +110,13 @@ function percentile(values: number[], p: number): number | undefined {
   return (sorted[lower] ?? 0) + ((sorted[upper] ?? 0) - (sorted[lower] ?? 0)) * (index - lower);
 }
 
+/**
+ * Attend days dans le contexte du pipeline de qualité.
+ *
+ * @param createdAt - Valeur de « createdAt » utilisée par ce traitement.
+ * @param firstDoneAt - Valeur de « firstDoneAt » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function delayDays(createdAt: string, firstDoneAt: string): number {
   return (Date.parse(firstDoneAt) - Date.parse(createdAt)) / 86_400_000;
 }
@@ -115,7 +160,13 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   ];
   assertMetricContract(metricIds);
   const issues = applyMetricImpacts(dqIssues, metricIds);
-  const excluded = (metricId: string) =>
+  /**
+   * Réalise le traitement « excluded » dans le pipeline de qualité.
+   *
+   * @param metricId - Valeur de « metricId » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
+const excluded = (metricId: string) =>
     new Set(
       issues.flatMap((issue) =>
         issue.impacts
@@ -134,7 +185,13 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
       .filter((componentId) => activeComponentIds.has(componentId))
   );
   const validAnomalies = data.anomalies.filter((anomaly) => !anomaly.cancelled);
-  const anomalyIds = (metricId: string) =>
+  /**
+   * Récupère les identifiants des anomalies du périmètre analysé dans le pipeline de qualité.
+   *
+   * @param metricId - Valeur de « metricId » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
+const anomalyIds = (metricId: string) =>
     validAnomalies
       .filter((anomaly) => !excluded(metricId).has(anomaly.anomalyId))
       .map((anomaly) => anomaly.anomalyId);

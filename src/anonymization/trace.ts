@@ -1,5 +1,14 @@
+/**
+ * @module anonymization.trace
+ * Construit une trace des entités et des relations du jeu de données anonymisé.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { RawDataset } from '../domain/types.js';
 
+/**
+ * Définit le contrat de données « TraceEntity » utilisé par le pipeline.
+ */
 export interface TraceEntity {
   type: 'repository' | 'issue' | 'pull-request';
   sourcePath: string;
@@ -9,6 +18,9 @@ export interface TraceEntity {
   repositoryAnonymizedId?: string;
 }
 
+/**
+ * Définit le contrat de données « TraceRelation » utilisé par le pipeline.
+ */
 export interface TraceRelation {
   type: 'issue-linked-pull-request' | 'pull-request-related-issue';
   sourcePath: string;
@@ -21,6 +33,9 @@ export interface TraceRelation {
   targetStatus: 'present-in-source' | 'missing-in-source';
 }
 
+/**
+ * Définit le contrat de données « TraceManifest » utilisé par le pipeline.
+ */
 export interface TraceManifest {
   version: 1;
   source: { file: string };
@@ -28,6 +43,9 @@ export interface TraceManifest {
   relations: TraceRelation[];
 }
 
+/**
+ * Produit le manifeste de traçabilité des entités et relations.
+ */
 export function buildTraceManifest(
   input: RawDataset,
   anonymized: RawDataset,

@@ -1,8 +1,23 @@
+/**
+ * @module analytics.flows
+ * Calcule les métriques de flux des anomalies et de leur correction.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { DataQualityIssue, Metric } from '../domain/types.js';
 import { matchesMetricPattern } from '../lib/metric-impacts.js';
 import { getMetricContract } from './catalog.js';
 import type { SnapshotDiff } from '../snapshots/diff.js';
 
+/**
+ * Construit une métrique de flux avec son périmètre et ses valeurs dans le pipeline de qualité.
+ *
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @param sourceEntityIds - Valeur de « sourceEntityIds » utilisée par ce traitement.
+ * @param period - Valeur de « period » utilisée par ce traitement.
+ * @param issues - Valeur de « issues » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function flowMetric(
   id: string,
   sourceEntityIds: string[],

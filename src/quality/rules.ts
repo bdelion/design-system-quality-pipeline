@@ -1,3 +1,9 @@
+/**
+ * @module quality.rules
+ * Évalue les règles Data Quality et leurs conséquences sur les données.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { DataQualityIssue, NormalizedData, RawDataset } from '../domain/types.js';
 import { applyMetricImpacts } from '../lib/metric-impacts.js';
 import type { GithubProcessingConfig } from '../config.js';
@@ -38,9 +44,22 @@ export function evaluateDataQuality(
   };
 
   const normalizedIssueById = new Map((data.issues ?? []).map((issue) => [issue.issueId, issue]));
-  const issueFor = (issueId: string | undefined, provenanceSourceId: string | undefined) =>
+  /**
+   * Réalise le traitement « issue for » dans le pipeline de qualité.
+   *
+   * @param issueId - Valeur de « issueId » utilisée par ce traitement.
+   * @param provenanceSourceId - Valeur de « provenanceSourceId » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
+const issueFor = (issueId: string | undefined, provenanceSourceId: string | undefined) =>
     normalizedIssueById.get(issueId ?? provenanceSourceId ?? '');
-  const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
+  /**
+   * Vérifie currently done dans le contexte du pipeline de qualité.
+   *
+   * @param issue - Valeur de « issue » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
+const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
     issue.projectContexts.some((context) => context.status === 'DONE');
   const rawIssueById = new Map(
     raw.repositories.flatMap((repository) => repository.issues).map((issue) => [issue.id, issue])

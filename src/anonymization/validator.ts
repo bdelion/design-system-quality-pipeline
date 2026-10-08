@@ -1,17 +1,32 @@
+/**
+ * @module anonymization.validator
+ * Vérifie la confidentialité et l’intégrité relationnelle des fixtures anonymisées.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { RawDataset } from '../domain/types.js';
 import { findSuspiciousStrings } from './sanitize.js';
 
+/**
+ * Définit le contrat de données « ValidationFinding » utilisé par le pipeline.
+ */
 export interface ValidationFinding {
   path: string;
   kind: string;
   value: string;
 }
 
+/**
+ * Définit le contrat de données « ValidationResult » utilisé par le pipeline.
+ */
 export interface ValidationResult {
   valid: boolean;
   findings: ValidationFinding[];
 }
 
+/**
+ * Définit le contrat de données « IntegrityFinding » utilisé par le pipeline.
+ */
 export interface IntegrityFinding {
   type: 'missing-issue' | 'missing-pull-request';
   scope: 'repository' | 'cross-repository';
@@ -22,6 +37,13 @@ export interface IntegrityFinding {
   source: unknown;
 }
 
+/**
+ * Réalise le traitement « walk » dans le pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @param path - Valeur de « path » utilisée par ce traitement.
+ * @param findings - Valeur de « findings » utilisée par ce traitement.
+ */
 function walk(value: unknown, path: string, findings: ValidationResult['findings']): void {
   if (typeof value === 'string') {
     for (const kind of findSuspiciousStrings(value)) findings.push({ path, kind, value });
@@ -36,12 +58,18 @@ function walk(value: unknown, path: string, findings: ValidationResult['findings
   }
 }
 
+/**
+ * Recherche les chaînes suspectes dans un jeu de données anonymisé.
+ */
 export function validateAnonymizedDataset(dataset: RawDataset): ValidationResult {
   const findings: ValidationResult['findings'] = [];
   walk(dataset, '$', findings);
   return { valid: findings.length === 0, findings };
 }
 
+/**
+ * Identifie les références manquantes entre entités anonymisées.
+ */
 export function inspectRelationalIntegrity(dataset: RawDataset): IntegrityFinding[] {
   const errors: IntegrityFinding[] = [];
   const globalIssueIds = new Set(
@@ -88,6 +116,9 @@ export function inspectRelationalIntegrity(dataset: RawDataset): IntegrityFindin
   return errors;
 }
 
+/**
+ * Produit les messages de diagnostic des relations invalides.
+ */
 export function assertRelationalIntegrity(dataset: RawDataset): string[] {
   return inspectRelationalIntegrity(dataset).map((error) =>
     error.type === 'missing-issue'

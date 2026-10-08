@@ -1,3 +1,9 @@
+/**
+ * @module snapshots.history
+ * Reconstruit les états historiques et les séries temporelles des versions et métriques.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type {
   NormalizedData,
   Snapshot,
@@ -26,6 +32,14 @@ export function buildVersionHistoricalStates(data: NormalizedData): VersionHisto
     }));
 }
 
+/**
+ * Construit version view dans le contexte du pipeline de qualité.
+ *
+ * @param data - Valeur de « data » utilisée par ce traitement.
+ * @param version - Valeur de « version » utilisée par ce traitement.
+ * @param cutoff - Valeur de « cutoff » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function buildVersionView(data: NormalizedData, version: Version, cutoff?: string): VersionHistoricalView {
   const versionIds = new Set(
     (data.versions ?? [])
@@ -79,6 +93,9 @@ function buildVersionView(data: NormalizedData, version: Version, cutoff?: strin
   };
 }
 
+/**
+ * Définit le contrat de données « SnapshotCompatibility » utilisé par le pipeline.
+ */
 export interface SnapshotCompatibility {
   scope: string;
   modelVersion: string;
@@ -100,12 +117,27 @@ export function latestComparableSnapshot(
     .sort((left, right) => right.capturedAt.localeCompare(left.capturedAt))[0];
 }
 
+/**
+ * Vérifie at or before target version dans le contexte du pipeline de qualité.
+ *
+ * @param data - Valeur de « data » utilisée par ce traitement.
+ * @param auditVersionId - Valeur de « auditVersionId » utilisée par ce traitement.
+ * @param target - Valeur de « target » utilisée par ce traitement.
+ * @returns Indique si la condition est satisfaite.
+ */
 function isAtOrBeforeTargetVersion(data: NormalizedData, auditVersionId: string, target: Version): boolean {
   const auditVersion = (data.versions ?? []).find((candidate) => candidate.versionId === auditVersionId);
   if (!auditVersion || auditVersion.libraryId !== target.libraryId) return false;
   return compareProdVersions(auditVersion.number, target.number) <= 0;
 }
 
+/**
+ * Compare prod versions dans le contexte du pipeline de qualité.
+ *
+ * @param left - Valeur de « left » utilisée par ce traitement.
+ * @param right - Valeur de « right » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function compareProdVersions(left: string, right: string): number {
   const leftParts = left.split('.').map(Number);
   const rightParts = right.split('.').map(Number);
@@ -116,6 +148,9 @@ function compareProdVersions(left: string, right: string): number {
   return 0;
 }
 
+/**
+ * Définit le contrat de données « MetricHistoryPoint » utilisé par le pipeline.
+ */
 export interface MetricHistoryPoint {
   snapshotId: string;
   capturedAt: string;

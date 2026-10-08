@@ -1,3 +1,9 @@
+/**
+ * @module snapshots.diff
+ * Compare deux snapshots pour identifier les changements d’entités.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type {
   Audit,
   Anomaly,
@@ -9,17 +15,26 @@ import type {
   Version
 } from '../domain/types.js';
 
+/**
+ * Définit le contrat de données « EntityDelta » utilisé par le pipeline.
+ */
 export interface EntityDelta<TId extends string = string> {
   added: TId[];
   removed: TId[];
 }
 
+/**
+ * Définit le contrat de données « AnomalyTransition » utilisé par le pipeline.
+ */
 export interface AnomalyTransition {
   anomalyId: string;
   from: Anomaly['status'];
   to: Anomaly['status'];
 }
 
+/**
+ * Définit le contrat de données « SnapshotDiff » utilisé par le pipeline.
+ */
 export interface SnapshotDiff {
   fromSnapshotId: string;
   toSnapshotId: string;
@@ -40,10 +55,25 @@ export interface SnapshotDiff {
   anomaliesCancelled: string[];
 }
 
+/**
+ * Réalise le traitement « ids » dans le pipeline de qualité.
+ *
+ * @param items - Valeur de « items » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function ids<T>(items: T[], id: (item: T) => string): Set<string> {
   return new Set(items.map(id));
 }
 
+/**
+ * Réalise le traitement « delta » dans le pipeline de qualité.
+ *
+ * @param before - Valeur de « before » utilisée par ce traitement.
+ * @param after - Valeur de « after » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function delta<T>(before: T[], after: T[], id: (item: T) => string): EntityDelta {
   const beforeIds = ids(before, id);
   const afterIds = ids(after, id);
@@ -53,6 +83,13 @@ function delta<T>(before: T[], after: T[], id: (item: T) => string): EntityDelta
   };
 }
 
+/**
+ * Réalise le traitement « by id » dans le pipeline de qualité.
+ *
+ * @param items - Valeur de « items » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function byId<T>(items: T[], id: (item: T) => string): Map<string, T> {
   return new Map(items.map((item) => [id(item), item]));
 }

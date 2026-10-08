@@ -1,3 +1,9 @@
+/**
+ * @module analytics.kpis
+ * Assemble les indicateurs V1 à partir des données normalisées et de Data Quality.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { Analytics, DataQualityIssue, NormalizedData } from '../domain/types.js';
 import { calculateMetrics } from './metrics.js';
 
@@ -17,8 +23,20 @@ import { calculateMetrics } from './metrics.js';
  */
 export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]): Analytics {
   const metrics = calculateMetrics(data, dqIssues);
-  const metric = (id: string) => metrics[id];
-  const asLegacy = (id: string) => {
+  /**
+   * Réalise le traitement « metric » dans le pipeline de qualité.
+   *
+   * @param id - Valeur de « id » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
+const metric = (id: string) => metrics[id];
+  /**
+   * Réalise le traitement « as legacy » dans le pipeline de qualité.
+   *
+   * @param id - Valeur de « id » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
+const asLegacy = (id: string) => {
     const value = metric(id);
     if (!value) throw new Error(`Missing V2 metric: ${id}`);
     return {

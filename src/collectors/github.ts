@@ -1,3 +1,9 @@
+/**
+ * @module collectors.github
+ * Collecte les faits GitHub nécessaires au modèle V1 sans inférer les règles métier.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import pLimit from 'p-limit';
 import type {
   RawDataset,
@@ -94,7 +100,12 @@ interface GithubRepository {
   default_branch: string;
 }
 
-interface GithubCollectorOptions {
+/**
+ * Paramètres de connexion et périmètre de la collecte GitHub.
+ *
+ * @inline
+ */
+export interface GithubCollectorOptions {
   token: string;
   owner: string;
   repositories: string[];
@@ -616,6 +627,12 @@ async function issueDataFromGraphql(
   };
 }
 
+/**
+ * Réalise le traitement « status history from timeline nodes » dans le pipeline de qualité.
+ *
+ * @param nodes - Valeur de « nodes » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function statusHistoryFromTimelineNodes(
   nodes: Array<{
     createdAt?: string;

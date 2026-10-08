@@ -1,3 +1,9 @@
+/**
+ * @module dashboard.generate
+ * Génère les pages et ressources statiques du dashboard à partir d’un snapshot.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -63,10 +69,24 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 }
 
 
+/**
+ * Réalise le traitement « preferred metric » dans le pipeline de qualité.
+ *
+ * @param metrics - Valeur de « metrics » utilisée par ce traitement.
+ * @param primaryId - Valeur de « primaryId » utilisée par ce traitement.
+ * @param legacyId - Valeur de « legacyId » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function preferredMetric(metrics: Record<string, Metric>, primaryId: string, legacyId: string): Metric {
   return metrics[primaryId] ?? metricOrUnknown(metrics, legacyId);
 }
 
+/**
+ * Réalise le traitement « component version verdict label » dans le pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function componentVersionVerdictLabel(value: 'NON_COUVERT' | 'CONFORME' | 'NON_CONFORME'): string {
   return ({ NON_COUVERT: 'non couvert', CONFORME: 'conforme', NON_CONFORME: 'non conforme' })[value];
 }
@@ -135,37 +155,93 @@ function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Délais de traitement</p><h2>Temps de correction par repository</h2></div><span class="badge">Jours calendaires</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Anomalies corrigées</th><th>Délai moyen</th><th>Délai médian</th><th>Plus long délai</th></tr></thead><tbody>${delayRows(snapshot)}</tbody></table></div></article>`;
 }
 
+/**
+ * Réalise le traitement « metric or unknown » dans le pipeline de qualité.
+ *
+ * @param metrics - Valeur de « metrics » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function metricOrUnknown(metrics: Record<string, Metric>, id: string): Metric {
   return metrics[id] ?? { id, value: 'unknown', unit: 'count', scope: 'portfolio', definition: 'Métrique indisponible.', sourceEntityIds: [], reliability: { status: 'unknown', issueIds: [] }, exclusions: [] };
 }
 
+/**
+ * Formate metric value dans le contexte du pipeline de qualité.
+ *
+ * @param metric - Valeur de « metric » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function formatMetricValue(metric: Metric): string {
   if (metric.value === 'unknown') return '—';
   return metric.unit === 'percentage' ? `${metric.value}` : metric.unit === 'days' ? `${metric.value} j` : `${metric.value}`;
 }
 
+/**
+ * Formate raw metric value dans le contexte du pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function formatRawMetricValue(value: number | 'unknown' | undefined): string {
   return typeof value === 'number' ? `${value}` : '—';
 }
 
+/**
+ * Réalise le traitement « ratio label » dans le pipeline de qualité.
+ *
+ * @param metric - Valeur de « metric » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function ratioLabel(metric: Metric): string {
   if (typeof metric.numerator !== 'number' || typeof metric.denominator !== 'number') return 'ratio indisponible';
   return `${metric.numerator}/${metric.denominator}`;
 }
 
+/**
+ * Réalise le traitement « denominator label » dans le pipeline de qualité.
+ *
+ * @param metric - Valeur de « metric » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function denominatorLabel(metric: Metric): string {
   if (typeof metric.denominator !== 'number') return 'périmètre inconnu';
   return `${metric.denominator} au total`;
 }
 
+/**
+ * Réalise le traitement « metric card » dans le pipeline de qualité.
+ *
+ * @param label - Valeur de « label » utilisée par ce traitement.
+ * @param metric - Valeur de « metric » utilisée par ce traitement.
+ * @param context - Valeur de « context » utilisée par ce traitement.
+ * @param href - Valeur de « href » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function metricCard(label: string, metric: Metric, context: string, href: string): string {
   return `<a class="kpi-card metric-card" href="${href}"><span class="kpi-label">${label}</span><strong>${formatMetricValue(metric)}</strong><span class="kpi-ratio">${context} · ${qualityLabel(metric.reliability.status)}</span><span class="kpi-definition">${escapeHtml(metric.definition)}</span></a>`;
 }
 
+/**
+ * Réalise le traitement « explain metric panel » dans le pipeline de qualité.
+ *
+ * @param title - Valeur de « title » utilisée par ce traitement.
+ * @param metric - Valeur de « metric » utilisée par ce traitement.
+ * @param ratio - Valeur de « ratio » utilisée par ce traitement.
+ * @param definition - Valeur de « definition » utilisée par ce traitement.
+ * @param href - Valeur de « href » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function explainMetricPanel(title: string, metric: Metric, ratio: string, definition: string, href: string): string {
   return `<a class="panel metric-explainer" href="${href}"><div class="panel-heading"><div><p class="eyebrow">Métrique</p><h2>${title}</h2></div><span class="badge">${qualityLabel(metric.reliability.status)}</span></div><strong class="metric-big">${formatMetricValue(metric)}${metric.unit === 'percentage' ? '%' : ''}</strong><p class="metric-ratio">${escapeHtml(ratio)}</p><p>${escapeHtml(definition)}</p>${metric.reliability.issueIds.length ? `<p class="metric-warning">Réserve DQ : ${metric.reliability.issueIds.length} alerte${metric.reliability.issueIds.length > 1 ? 's' : ''} affecte cette métrique.</p>` : ''}</a>`;
 }
 
+/**
+ * Réalise le traitement « criticality metric bars » dans le pipeline de qualité.
+ *
+ * @param metrics - Valeur de « metrics » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function criticalityMetricBars(metrics: Record<string, Metric>): string {
   const values: Array<[string, string]> = [['blocking', 'bloquante'], ['major', 'majeure'], ['minor', 'mineure']];
   return values.map(([key, label]) => {
@@ -174,6 +250,12 @@ function criticalityMetricBars(metrics: Record<string, Metric>): string {
   }).join('');
 }
 
+/**
+ * Réalise le traitement « category metric bars » dans le pipeline de qualité.
+ *
+ * @param metrics - Valeur de « metrics » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function categoryMetricBars(metrics: Record<string, Metric>): string {
   const entries = Object.values(metrics).filter((metric) => metric.id.startsWith('anomaly.byCategory.'))
     .sort((a, b) => Number(b.value === 'unknown' ? -1 : b.value) - Number(a.value === 'unknown' ? -1 : a.value));
@@ -183,6 +265,12 @@ function categoryMetricBars(metrics: Record<string, Metric>): string {
   }).join('') || '<p class="muted">Aucune catégorie détectée.</p>';
 }
 
+/**
+ * Réalise le traitement « reliability rows » dans le pipeline de qualité.
+ *
+ * @param metrics - Valeur de « metrics » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function reliabilityRows(metrics: Record<string, Metric>): string {
   const selected = ['portfolio.repositories', 'portfolio.components', 'componentVersion.auditCoverage', 'componentVersion.conformityRate', 'anomaly.total', 'anomaly.open', 'anomaly.criticalityCoverage', 'anomaly.correctionDelay.median'];
   return selected.map((id) => {
@@ -191,6 +279,12 @@ function reliabilityRows(metrics: Record<string, Metric>): string {
   }).join('');
 }
 
+/**
+ * Réalise le traitement « metric label » dans le pipeline de qualité.
+ *
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function metricLabel(id: string): string {
   return ({
     'portfolio.repositories': 'Repositories',
@@ -309,14 +403,36 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Alertes et décisions de calcul</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${issues || '<li><div><strong>Aucune alerte</strong><p>Les métriques ne présentent aucune réserve DQ dans ce snapshot.</p></div></li>'}</ul></article>`;
 }
 
+/**
+ * Réalise le traitement « flow metric panel » dans le pipeline de qualité.
+ *
+ * @param title - Valeur de « title » utilisée par ce traitement.
+ * @param metric - Valeur de « metric » utilisée par ce traitement.
+ * @param href - Valeur de « href » utilisée par ce traitement.
+ * @param definition - Valeur de « definition » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function flowMetricPanel(title: string, metric: Metric, href: string, definition: string): string {
   return `<a class="panel metric-explainer flow-panel" href="${href}"><div class="panel-heading"><div><p class="eyebrow">État</p><h2>${title}</h2></div><span class="badge">${qualityLabel(metric.reliability.status)}</span></div><strong class="metric-big">${formatMetricValue(metric)}</strong><p class="metric-ratio">${ratioLabel(metric)}</p><p>${escapeHtml(definition)}</p></a>`;
 }
 
+/**
+ * Attend days dans le contexte du pipeline de qualité.
+ *
+ * @param from - Valeur de « from » utilisée par ce traitement.
+ * @param to - Valeur de « to » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function delayDays(from: string, to: string): number {
   return (new Date(to).getTime() - new Date(from).getTime()) / 86_400_000;
 }
 
+/**
+ * Formate date short dans le contexte du pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function formatDateShort(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('fr-FR');
@@ -485,6 +601,14 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel table-panel" id="map-quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves susceptibles d’affecter la cartographie</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${severityLabel(issue.severity)}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>La cartographie ne présente aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }
 
+/**
+ * Réalise le traitement « github reference href » dans le pipeline de qualité.
+ *
+ * @param snapshot - Valeur de « snapshot » utilisée par ce traitement.
+ * @param reference - Valeur de « reference » utilisée par ce traitement.
+ * @param githubUrl - Valeur de « githubUrl » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function githubReferenceHref(snapshot: Snapshot, reference: string, githubUrl?: string): string {
   if (!githubUrl) return '#';
   const baseUrl = githubUrl.replace(/\/+$/, '');
@@ -591,6 +715,17 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves qui affectent les audits ou leur périmètre</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)} · ${severityLabel(issue.severity)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${qualityLabel(issue.action === 'exclude' ? 'partial' : 'reliable')}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>Les audits et leur périmètre ne présentent aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }
 
+/**
+ * Réalise le traitement « component audit row » dans le pipeline de qualité.
+ *
+ * @param snapshot - Valeur de « snapshot » utilisée par ce traitement.
+ * @param component - Valeur de « component » utilisée par ce traitement.
+ * @param repositoryName - Valeur de « repositoryName » utilisée par ce traitement.
+ * @param audit - Valeur de « audit » utilisée par ce traitement.
+ * @param anomalies - Valeur de « anomalies » utilisée par ce traitement.
+ * @param githubUrl - Valeur de « githubUrl » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function componentAuditRow(snapshot: Snapshot, component: Component, repositoryName: string, audit: Snapshot['normalizedData']['audits'][number] | undefined, anomalies: Snapshot['normalizedData']['anomalies'], githubUrl?: string): string {
   const open = anomalies.filter((item) => ['open', 'reopened', 'in_progress'].includes(item.status)).length;
   const result = audit ? auditStatusLabel(audit.objectiveAuditResult) : 'non audité';

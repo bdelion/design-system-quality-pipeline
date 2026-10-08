@@ -590,4 +590,3 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
 
 # Documentation TypeDoc générée
-/docs/api/

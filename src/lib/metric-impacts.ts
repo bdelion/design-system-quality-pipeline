@@ -1,3 +1,9 @@
+/**
+ * @module lib.metric-impacts
+ * Associe les constats Data Quality aux métriques affectées.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { DataQualityIssue } from '../domain/types.js';
 
 const RULE_METRIC_IMPACTS: Record<
@@ -291,6 +297,9 @@ const RULE_METRIC_IMPACTS: Record<
   ]
 };
 
+/**
+ * Vérifie si un identifiant de métrique correspond à un motif.
+ */
 export function matchesMetricPattern(pattern: string, metricId: string): boolean {
   return pattern.endsWith('.*') ? metricId.startsWith(pattern.slice(0, -1)) : pattern === metricId;
 }

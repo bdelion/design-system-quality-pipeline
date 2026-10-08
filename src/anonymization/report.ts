@@ -1,4 +1,13 @@
+/**
+ * @module anonymization.report
+ * Présente les résultats et les volumes d’une anonymisation.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { AnonymizationReport } from './types.js';
+/**
+ * Présente un bilan lisible des transformations effectuées.
+ */
 export function formatAnonymizationReport(r: AnonymizationReport): string {
   return [
     'ANONYMIZATION REPORT',

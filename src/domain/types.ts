@@ -1,18 +1,60 @@
+/**
+ * @module domain.types
+ * Centralise les contrats RAW, les entités normalisées, les métriques et les snapshots V1.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 /** Origine d'une donnée et statut de fiabilité associé. */
 export type Source = 'github' | 'catalogue' | 'manual' | 'suggested';
+/**
+ * Définit le type « DataQualityStatus » utilisé dans les contrats du pipeline.
+ */
 export type DataQualityStatus = 'reliable' | 'partial' | 'unknown' | 'invalid';
+/**
+ * Définit le type « Severity » utilisé dans les contrats du pipeline.
+ */
 export type Severity = 'INFO' | 'WARNING' | 'ERROR';
+/**
+ * Définit le type « DqAction » utilisé dans les contrats du pipeline.
+ */
 export type DqAction = 'include' | 'exclude' | 'block';
+/**
+ * Définit le type « MetricUnit » utilisé dans les contrats du pipeline.
+ */
 export type MetricUnit = 'count' | 'percentage' | 'days';
+/**
+ * Définit le type « MetricScope » utilisé dans les contrats du pipeline.
+ */
 export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
+/**
+ * Définit le type « MetricReliabilityStatus » utilisé dans les contrats du pipeline.
+ */
 export type MetricReliabilityStatus = DataQualityStatus;
+/**
+ * Définit le type « AuditStatus » utilisé dans les contrats du pipeline.
+ */
 export type AuditStatus =
   'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
+/**
+ * Définit le type « AnomalyStatus » utilisé dans les contrats du pipeline.
+ */
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
+/**
+ * Définit le type « CanonicalIssueType » utilisé dans les contrats du pipeline.
+ */
 export type CanonicalIssueType = 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE';
+/**
+ * Définit le type « CanonicalProjectStatus » utilisé dans les contrats du pipeline.
+ */
 export type CanonicalProjectStatus =
   'BACKLOG' | 'READY' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'CANCELLED';
+/**
+ * Définit le type « AnomalyOrigin » utilisé dans les contrats du pipeline.
+ */
 export type AnomalyOrigin = 'AUDIT' | 'HORS_AUDIT' | 'UNDETERMINED';
+/**
+ * Définit le type « ComponentVersionVerdict » utilisé dans les contrats du pipeline.
+ */
 export type ComponentVersionVerdict = 'NON_COUVERT' | 'CONFORME' | 'NON_CONFORME';
 
 /** Trace l'origine technique d'une entité normalisée. */
@@ -22,6 +64,9 @@ export interface Provenance {
   collectedAt: string;
 }
 
+/**
+ * Données RAW d’un repository et de ses éléments associés.
+ */
 export interface RawRepository {
   id: string;
   name: string;
@@ -326,16 +371,25 @@ export interface DataQualityImpact {
   reason: string;
 }
 
+/**
+ * Définit le contrat de données « MetricPeriod » utilisé par le pipeline.
+ */
 export interface MetricPeriod {
   from?: string;
   to?: string;
 }
 
+/**
+ * État de fiabilité d’une métrique compte tenu des données disponibles.
+ */
 export interface MetricReliability {
   status: MetricReliabilityStatus;
   issueIds: string[];
 }
 
+/**
+ * Définit le contrat de données « MetricBreakdown » utilisé par le pipeline.
+ */
 export interface MetricBreakdown {
   dimension: string;
   values: Record<string, number>;
@@ -392,6 +446,9 @@ export interface Analytics {
 }
 
 /** Données métier après collecte et normalisation. */
+/**
+ * Agrégat des entités métier normalisées.
+ */
 export interface NormalizedData {
   libraries: Library[];
   components: Component[];
@@ -409,6 +466,9 @@ export interface NormalizedData {
 }
 
 /** Projection historique d'une Version, figée selon les dates métier. */
+/**
+ * Vue d’une version à un instant métier donné.
+ */
 export interface VersionHistoricalView {
   versionId: string;
   releasedAt: string;
@@ -417,6 +477,9 @@ export interface VersionHistoricalView {
   anomalies: Anomaly[];
 }
 
+/**
+ * Comparaison entre état à la publication et connaissances actuelles.
+ */
 export interface VersionHistoricalState {
   versionId: string;
   releasedAt: string;

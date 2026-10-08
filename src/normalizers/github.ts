@@ -1,3 +1,9 @@
+/**
+ * @module normalizers.github
+ * Transforme les faits GitHub en entités métier normalisées et traçables.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { stableId } from '../lib/ids.js';
 import type { GithubProcessingConfig } from '../config.js';
 import type { Catalogue, CatalogueComponent } from '../catalogue.js';
@@ -591,6 +597,12 @@ function auditCompletedAt(issue: Issue): string | undefined {
   return uniqueDoneTransitionAt(issue);
 }
 
+/**
+ * Réalise le traitement « numeric project value » dans le pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function numericProjectValue(value: string | number): number | undefined {
   if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
   const trimmed = value.trim();
@@ -599,12 +611,25 @@ function numericProjectValue(value: string | number): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+/**
+ * Réalise le traitement « prod version number » dans le pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function prodVersionNumber(value: string | undefined): string | undefined {
   if (!value) return undefined;
   const normalized = value.trim();
   return /^\d+\.\d+\.\d+$/.test(normalized) ? normalized : undefined;
 }
 
+/**
+ * Réalise le traitement « specialization issue type » dans le pipeline de qualité.
+ *
+ * @param issue - Valeur de « issue » utilisée par ce traitement.
+ * @param rawIssue - Valeur de « rawIssue » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function specializationIssueType(
   issue: Issue,
   rawIssue: RawIssue | undefined
@@ -665,6 +690,15 @@ function recognizeIssueType(
   return { candidateIssueTypes: candidates };
 }
 
+/**
+ * Réalise le traitement « repository release candidate tag » dans le pipeline de qualité.
+ *
+ * @param raw - Valeur de « raw » utilisée par ce traitement.
+ * @param libraryId - Valeur de « libraryId » utilisée par ce traitement.
+ * @param libraries - Valeur de « libraries » utilisée par ce traitement.
+ * @param name - Valeur de « name » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function repositoryReleaseCandidateTag(
   raw: RawDataset,
   libraryId: string,

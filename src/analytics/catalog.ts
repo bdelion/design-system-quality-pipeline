@@ -1,3 +1,9 @@
+/**
+ * @module analytics.catalog
+ * Définit le catalogue contractuel des métriques, leurs unités et leurs périmètres.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { MetricScope, MetricUnit } from '../domain/types.js';
 
 /** Contrat déclaratif des métriques V2. Une métrique générée doit être décrite ici. */
@@ -12,6 +18,9 @@ export interface MetricContract {
   notes?: string;
 }
 
+/**
+ * Expose la constante « METRIC_CONTRACTS » du module.
+ */
 export const METRIC_CONTRACTS: readonly MetricContract[] = [
   {
     id: 'portfolio.repositories',
@@ -292,6 +301,9 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
 
 const contractById = new Map(METRIC_CONTRACTS.map((contract) => [contract.id, contract]));
 
+/**
+ * Recherche le contrat d’une métrique à partir de son identifiant.
+ */
 export function getMetricContract(id: string): MetricContract | undefined {
   return (
     contractById.get(id) ??
@@ -299,6 +311,9 @@ export function getMetricContract(id: string): MetricContract | undefined {
   );
 }
 
+/**
+ * Vérifie que les métriques demandées disposent d’un contrat déclaré.
+ */
 export function assertMetricContract(metricIds: Iterable<string>): void {
   const unknown = [...new Set(metricIds)].filter((id) => !getMetricContract(id));
   if (unknown.length > 0) throw new Error(`Metrics missing from V2 contract: ${unknown.join(', ')}`);

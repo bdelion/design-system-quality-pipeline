@@ -1,15 +1,36 @@
+/**
+ * @module anonymization.validation-report
+ * Formate les constats de validation d’une fixture anonymisée.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { RawDataset } from '../domain/types.js';
 import type { IntegrityFinding, ValidationResult } from './validator.js';
 import type { TraceManifest } from './trace.js';
 
+/**
+ * Réalise le traitement « md » dans le pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function md(value: unknown): string {
   return String(value).replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
 }
 
+/**
+ * Réalise le traitement « json » dans le pipeline de qualité.
+ *
+ * @param value - Valeur de « value » utilisée par ce traitement.
+ * @returns Valeur textuelle produite.
+ */
 function json(value: unknown): string {
   return JSON.stringify(value, null, 2) ?? 'null';
 }
 
+/**
+ * Construit le rapport de validation de l’anonymisation.
+ */
 export function buildValidationReport(
   dataset: RawDataset,
   validation: ValidationResult,

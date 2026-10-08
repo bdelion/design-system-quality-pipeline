@@ -1,3 +1,9 @@
+/**
+ * @module snapshots.snapshot
+ * Assemble un snapshot daté à partir des données, contrôles et analyses.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { randomUUID } from 'node:crypto';
 import type { Analytics, DataQualityIssue, NormalizedData, RawDataset, Snapshot } from '../domain/types.js';
 import { buildVersionHistoricalStates } from './history.js';

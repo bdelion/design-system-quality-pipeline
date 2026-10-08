@@ -1,3 +1,9 @@
+/**
+ * @module analytics.component-versions
+ * Attribue les verdicts métier aux couples composant–version à partir des audits.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { Audit, ComponentVersion, NormalizedData, Version } from '../domain/types.js';
 
 /**
@@ -27,10 +33,25 @@ export function applyComponentVersionVerdicts(data: NormalizedData): void {
   }
 }
 
+/**
+ * Détermine si un audit est terminé à partir de sa date de clôture dans le contexte du pipeline de qualité.
+ *
+ * @param audit - Valeur de « audit » utilisée par ce traitement.
+ * @returns Indique si la condition est satisfaite.
+ */
 function isCompletedAudit(audit: Audit): boolean {
   return audit.completedAt !== undefined;
 }
 
+/**
+ * Sélectionne la cohorte d’audits terminés applicable à une version de composant dans le pipeline de qualité.
+ *
+ * @param relation - Valeur de « relation » utilisée par ce traitement.
+ * @param targetVersion - Valeur de « targetVersion » utilisée par ce traitement.
+ * @param completedAudits - Valeur de « completedAudits » utilisée par ce traitement.
+ * @param versionById - Valeur de « versionById » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function latestApplicableAuditCohort(
   relation: ComponentVersion,
   targetVersion: Version,
@@ -57,6 +78,13 @@ function latestApplicableAuditCohort(
     .sort((left, right) => left.auditId.localeCompare(right.auditId));
 }
 
+/**
+ * Vérifie que tous les audits de la cohorte satisfont les critères de conformité dans le pipeline de qualité.
+ *
+ * @param audits - Valeur de « audits » utilisée par ce traitement.
+ * @param data - Valeur de « data » utilisée par ce traitement.
+ * @returns Indique si la condition est satisfaite.
+ */
 function auditCohortIsConform(audits: Audit[], data: NormalizedData): boolean {
   const auditIds = new Set(audits.map((audit) => audit.auditId));
   const hasAuditAnomaly = data.anomalies.some(
@@ -66,6 +94,13 @@ function auditCohortIsConform(audits: Audit[], data: NormalizedData): boolean {
   return audits.every((audit) => audit.objectiveAuditResult === 'conform');
 }
 
+/**
+ * Compare prod versions dans le contexte du pipeline de qualité.
+ *
+ * @param left - Valeur de « left » utilisée par ce traitement.
+ * @param right - Valeur de « right » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function compareProdVersions(left: string, right: string): number {
   const leftParts = left.split('.').map(Number);
   const rightParts = right.split('.').map(Number);
