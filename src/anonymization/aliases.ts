@@ -13,14 +13,27 @@ export function anonymizationAliases(
     for (const name of new Set(source.repositories.map((repo) => repo.owner)))
       aliases[`owner:${name}`] = owner;
   }
+  // Refuser les collisions de noms normalisés : .find() choisirait silencieusement
+  // le premier repository, puis les variables suivantes pourraient écraser son alias.
+  const normalizedRepositories = new Map<string, string[]>();
+  for (const repo of source.repositories) {
+    const normalized = repo.name.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+    normalizedRepositories.set(normalized, [...(normalizedRepositories.get(normalized) ?? []), repo.name]);
+  }
+
   for (const [key, value] of Object.entries(env)) {
     if (!key.startsWith('ANON_REPO_') || !value) continue;
     const sourceName = key.slice('ANON_REPO_'.length);
-    const match = source.repositories.find(
-      (repo) => repo.name.toUpperCase().replace(/[^A-Z0-9]/g, '_') === sourceName
-    );
-    if (!match) throw new Error(`Alias ${key}: repository source introuvable dans le RAW`);
-    aliases[`repository:${match.name}`] = value;
+    const matches = normalizedRepositories.get(sourceName) ?? [];
+    if (matches.length === 0) {
+      throw new Error(`Alias ${key}: repository source introuvable dans le RAW`);
+    }
+    if (matches.length > 1) {
+      throw new Error(
+        `Alias ${key}: nom ambigu (${matches.join(', ')}). Renommer les variables ou utiliser une correspondance explicite.`
+      );
+    }
+    aliases[`repository:${matches[0]!}`] = value;
   }
   const mappedNames = source.repositories
     .map((repo) => aliases[`repository:${repo.name}`])
