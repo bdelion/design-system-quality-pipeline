@@ -60,6 +60,8 @@ export interface RawIssue {
   rawIssueType?: string;
   /** Canonical web URL collected from GitHub. Legacy fixtures may omit it. */
   url?: string;
+  /** Release Candidate explicitly audited, distinct from the target PROD Version. */
+  auditedReleaseCandidate?: string;
   labels: string[];
   component?: string;
   criticities: string[];

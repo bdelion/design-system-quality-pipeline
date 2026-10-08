@@ -109,7 +109,8 @@ describe('fixture anonymizer', () => {
         id: 'repo-1', name: 'ds-react', owner: 'myorga', defaultBranch: 'main',
         issues: [{
           id: 'repo-1:issue:42', number: 42, title: 'Private issue title',
-          state: 'OPEN', issueType: 'BUG', labels: ['📚 Documentation', 'Reported by user'],
+          state: 'OPEN', issueType: 'BUG', rawIssueType: 'Bug', auditedReleaseCandidate: '1.8.0-rc.2',
+          labels: ['📚 Documentation', 'Reported by user'],
           criticities: ['majeure'], parents: [], createdAt: '2026-09-28T10:00:00Z',
           linkedPullRequestIds: [],
           projectStatuses: [{ projectId: 'project-1', projectName: 'Private project', status: '🏗 In progress' }],
@@ -123,6 +124,8 @@ describe('fixture anonymizer', () => {
     expect(result.labels).toEqual(source.repositories[0]!.issues[0]!.labels);
     expect(result.state).toBe('OPEN');
     expect(result.issueType).toBe('BUG');
+    expect(result.rawIssueType).toBe('Bug');
+    expect(result.auditedReleaseCandidate).toBe('1.8.0-rc.2');
     expect(result.projectStatuses[0]!.status).toBe('🏗 In progress');
     expect(result.milestone).toMatchObject({ title: '1.8.0', state: 'open' });
     expect(result.milestone?.id).not.toBe(7);

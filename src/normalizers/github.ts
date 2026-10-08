@@ -359,6 +359,10 @@ export function normalizeGithub(
       status: rawIssue?.auditStatus ?? 'in_progress',
       sourceIssueId: issue.issueId,
       objectiveAuditResult: rawIssue?.auditResult ?? 'in_progress',
+      ...(rawIssue?.auditedReleaseCandidate ? { auditedReleaseCandidate: rawIssue.auditedReleaseCandidate } : {}),
+      ...(rawIssue?.auditedReleaseCandidate
+        ? repositoryReleaseCandidateTag(raw, issue.libraryId, libraries, rawIssue.auditedReleaseCandidate)
+        : {}),
       ...(completedAt ? { completedAt } : {}),
       provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
       dataQualityStatus: collectedStatus
@@ -611,4 +615,18 @@ function recognizeIssueType(
     return { issueType: candidates[0]!, candidateIssueTypes: candidates };
   }
   return { candidateIssueTypes: candidates };
+}
+
+function repositoryReleaseCandidateTag(
+  raw: RawDataset,
+  libraryId: string,
+  libraries: Library[],
+  name: string
+): { auditedReleaseCandidateTag: { name: string; createdAt?: string } } | Record<string, never> {
+  const library = libraries.find((candidate) => candidate.libraryId === libraryId);
+  if (!library) return {};
+  const repository = raw.repositories.find((candidate) => `${candidate.owner}/${candidate.name}` === library.repository);
+  const tag = repository?.gitTags?.find((candidate) => candidate.name === name);
+  if (!tag) return {};
+  return { auditedReleaseCandidateTag: { name: tag.name, ...(tag.createdAt ? { createdAt: tag.createdAt } : {}) } };
 }

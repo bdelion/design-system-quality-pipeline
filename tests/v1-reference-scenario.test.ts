@@ -31,11 +31,11 @@ describe('I9 V1 reference scenario', () => {
     const analytics = calculateKpis(normalized, quality);
 
     expect(normalized.libraries).toHaveLength(3);
-    expect(issues).toHaveLength(8);
+    expect(issues).toHaveLength(10);
     expect(versions).toHaveLength(4);
     expect(normalized.componentVersions).toHaveLength(3);
-    expect(normalized.audits).toHaveLength(3);
-    expect(normalized.anomalies).toHaveLength(3);
+    expect(normalized.audits).toHaveLength(4);
+    expect(normalized.anomalies).toHaveLength(4);
     expect(normalized.pullRequests).toHaveLength(1);
 
     const multi = issues.find((issue) => issue.issueId === 'feature-multi');
@@ -50,16 +50,30 @@ describe('I9 V1 reference scenario', () => {
     expect(outside?.origin).toBe('HORS_AUDIT');
     expect(normalized.pullRequests[0]).toMatchObject({ state: 'merged', relatedIssueIds: ['bug-button-focus'] });
 
+    const preProdAudit = normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11-preprod');
+    const preProdVersion = versions.find((version) => version.versionId === preProdAudit?.versionId);
+    expect(preProdAudit).toMatchObject({
+      status: 'non_conform',
+      objectiveAuditResult: 'non_conform',
+      auditedReleaseCandidate: '1.1.0-rc.2',
+      auditedReleaseCandidateTag: { name: '1.1.0-rc.2', createdAt: '2026-09-18T08:00:00Z' }
+    });
+    expect(preProdAudit?.completedAt).toBe('2026-09-19T09:00:00Z');
+    expect(preProdVersion?.releasedAt).toBe('2026-09-20T10:00:00Z');
+    expect(Date.parse(preProdAudit!.completedAt!)).toBeLessThan(Date.parse(preProdVersion!.releasedAt!));
+    expect(normalized.anomalies.some((anomaly) => anomaly.auditId === preProdAudit?.auditId)).toBe(true);
+
     expect(analytics.metrics['componentVersion.auditCoverage']).toMatchObject({ value: 100, numerator: 3, denominator: 3 });
     expect(analytics.metrics['componentVersion.conformityRate']).toMatchObject({ value: 66.7, numerator: 2, denominator: 3 });
     expect(quality.some((item) => item.ruleId === 'DQ-001')).toBe(true);
+    expect(quality.some((item) => item.ruleId === 'DQ-013' && item.entityId === outside?.anomalyId)).toBe(true);
 
     const history = buildVersionHistoricalStates(normalized);
     const v11Version = versions.find((version) => version.number === '1.1.0' && version.libraryId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.libraryId);
     const v11 = history.find((state) => state.versionId === v11Version?.versionId);
     expect(v11?.atRelease.audits.some((audit) => audit.issueId === 'audit-modal-v11')).toBe(false);
     expect(v11?.currentKnowledge.audits.some((audit) => audit.issueId === 'audit-modal-v11')).toBe(true);
-    expect(v11?.atRelease.componentVersions.find((item) => item.componentId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.componentId)?.verdict).toBe('NON_COUVERT');
+    expect(v11?.atRelease.componentVersions.find((item) => item.componentId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.componentId)?.verdict).toBe('NON_CONFORME');
     expect(v11?.currentKnowledge.componentVersions.find((item) => item.componentId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.componentId)?.verdict).toBe('NON_CONFORME');
 
     const snapshot = buildSnapshot(raw, normalized, quality, analytics, config.modelVersion, config.ruleVersion, config.scope, raw.collectedAt);

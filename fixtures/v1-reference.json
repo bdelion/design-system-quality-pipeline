@@ -21,6 +21,10 @@
         {
           "name": "1.1.0",
           "createdAt": "2026-09-20T10:00:00Z"
+        },
+        {
+          "name": "1.1.0-rc.2",
+          "createdAt": "2026-09-18T08:00:00Z"
         }
       ],
       "historicalCatalogues": [
@@ -110,6 +114,81 @@
           },
           "auditStatus": "in_progress",
           "auditResult": "in_progress"
+        },
+        {
+          "id": "audit-modal-v11-preprod",
+          "number": 9,
+          "title": "Audit pré-PROD Modal 1.1.0",
+          "state": "CLOSED",
+          "issueType": "AUDIT",
+          "rawIssueType": "audit",
+          "url": "https://github.invalid/fixture/audit-modal-v11-preprod",
+          "labels": [
+            "Component:Modal"
+          ],
+          "criticities": [],
+          "parents": [],
+          "createdAt": "2026-09-17T09:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Done",
+              "statusHistory": [
+                {
+                  "previousStatus": "In review",
+                  "status": "Done",
+                  "transitionedAt": "2026-09-19T09:00:00Z"
+                }
+              ]
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          },
+          "closedAt": "2026-09-19T09:00:00Z",
+          "auditStatus": "non_conform",
+          "auditResult": "non_conform",
+          "auditedReleaseCandidate": "1.1.0-rc.2"
+        },
+        {
+          "id": "bug-modal-preprod",
+          "number": 10,
+          "title": "Modal pre-PROD keyboard issue",
+          "state": "OPEN",
+          "issueType": "BUG",
+          "rawIssueType": "bug",
+          "url": "https://github.invalid/fixture/bug-modal-preprod",
+          "labels": [
+            "Component:Modal",
+            "criticite:majeure",
+            "a11y:keyboard"
+          ],
+          "criticities": [
+            "majeure"
+          ],
+          "parents": [
+            "audit-modal-v11-preprod"
+          ],
+          "createdAt": "2026-09-18T10:00:00Z",
+          "linkedPullRequestIds": [],
+          "projectStatuses": [
+            {
+              "projectId": "project-quality",
+              "projectName": "Quality",
+              "status": "Backlog"
+            }
+          ],
+          "milestone": {
+            "id": 11,
+            "number": 11,
+            "title": "1.1.0",
+            "state": "closed"
+          }
         },
         {
           "id": "audit-modal-v11",
@@ -250,7 +329,14 @@
             {
               "projectId": "project-quality",
               "projectName": "Quality",
-              "status": "Backlog"
+              "status": "Done",
+              "statusHistory": [
+                {
+                  "previousStatus": "In review",
+                  "status": "Done",
+                  "transitionedAt": "2026-09-26T11:00:00Z"
+                }
+              ]
             }
           ],
           "milestone": {
