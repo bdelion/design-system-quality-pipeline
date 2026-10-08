@@ -22,6 +22,7 @@
     "lint": "eslint . --max-warnings 0",
     "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "fixture:anonymize": "tsx src/cli.ts fixture:anonymize",
+    "fixture:prepare": "tsx src/cli.ts fixture:prepare",
     "fixture:validate": "tsx src/cli.ts fixture:validate",
     "format": "prettier --write \"{src,tests,scripts,config,docs,.github,.vscode}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
     "format:check": "prettier --check \"{src,tests,scripts,config,docs,.github,.vscode}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",

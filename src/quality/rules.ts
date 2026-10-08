@@ -51,7 +51,7 @@ export function evaluateDataQuality(
    * @param provenanceSourceId - Valeur de « provenanceSourceId » utilisée par ce traitement.
    * @returns Résultat du traitement.
    */
-const issueFor = (issueId: string | undefined, provenanceSourceId: string | undefined) =>
+  const issueFor = (issueId: string | undefined, provenanceSourceId: string | undefined) =>
     normalizedIssueById.get(issueId ?? provenanceSourceId ?? '');
   /**
    * Vérifie currently done dans le contexte du pipeline de qualité.
@@ -59,7 +59,7 @@ const issueFor = (issueId: string | undefined, provenanceSourceId: string | unde
    * @param issue - Valeur de « issue » utilisée par ce traitement.
    * @returns Résultat du traitement.
    */
-const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
+  const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
     issue.projectContexts.some((context) => context.status === 'DONE');
   const rawIssueById = new Map(
     raw.repositories.flatMap((repository) => repository.issues).map((issue) => [issue.id, issue])

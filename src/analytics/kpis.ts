@@ -29,14 +29,14 @@ export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]
    * @param id - Valeur de « id » utilisée par ce traitement.
    * @returns Résultat du traitement.
    */
-const metric = (id: string) => metrics[id];
+  const metric = (id: string) => metrics[id];
   /**
    * Réalise le traitement « as legacy » dans le pipeline de qualité.
    *
    * @param id - Valeur de « id » utilisée par ce traitement.
    * @returns Résultat du traitement.
    */
-const asLegacy = (id: string) => {
+  const asLegacy = (id: string) => {
     const value = metric(id);
     if (!value) throw new Error(`Missing V2 metric: ${id}`);
     return {

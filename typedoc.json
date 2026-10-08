@@ -1,20 +1,11 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": [
-    "src"
-  ],
+  "entryPoints": ["src"],
   "out": "docs/api",
   "lang": "fr",
   "excludePrivate": true,
   "excludeInternal": true,
   "readme": "README.md",
   "entryPointStrategy": "expand",
-  "highlightLanguages": [
-    "typescript",
-    "javascript",
-    "json",
-    "bash",
-    "powershell",
-    "text"
-  ]
+  "highlightLanguages": ["typescript", "javascript", "json", "bash", "powershell", "text"]
 }

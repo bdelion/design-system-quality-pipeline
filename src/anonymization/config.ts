@@ -58,13 +58,28 @@ export function anonymizeCatalogue(
   options: AnonymizationOptions,
   map: StableMapper
 ): Catalogue {
+  // Le RAW peut ne pas fournir catalogueComponents : récupérer les composants
+  // observés dans les labels sans fabriquer de métadonnées métier.
+  const prefix = 'Component:';
   const sourceComponents = new Set(source.catalogueComponents);
+  for (const repository of source.repositories) {
+    for (const issue of repository.issues) {
+      if (issue.component) sourceComponents.add(issue.component);
+      for (const label of issue.labels) {
+        const index = label.indexOf(prefix);
+        if (index >= 0) {
+          const component = label.slice(index + prefix.length).trim();
+          if (component) sourceComponents.add(component);
+        }
+      }
+    }
+  }
   const missingComponents = [...sourceComponents].filter(
     (name) => !config.components.some((component) => component.name === name)
   );
   if (missingComponents.length > 0) {
     throw new Error(
-      `Cannot create fixture catalogue: RAW component(s) ${missingComponents.join(', ')} are missing from catalogue.yaml.`
+      `Cannot create fixture catalogue: RAW component(s) ${missingComponents.join(', ')} are missing from catalogue.yaml. Add them to the reference catalogue before preparing the fixture.`
     );
   }
 

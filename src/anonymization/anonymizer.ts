@@ -13,6 +13,7 @@ import type {
   RawRepository
 } from '../domain/types.js';
 import { createStableMapper } from './mapping.js';
+import { withAliases } from './aliases.js';
 import type { AnonymizationOptions, AnonymizationReport, AnonymizationResult } from './types.js';
 import { sanitizeText } from './sanitize.js';
 
@@ -222,7 +223,7 @@ function anonymizePullRequest(
  * Pseudonymise les données RAW tout en conservant leurs relations.
  */
 export function anonymizeDataset(input: RawDataset, options: AnonymizationOptions): AnonymizationResult {
-  const map = createAnonymizationMapper(options.seed);
+  const map = withAliases(createAnonymizationMapper(options.seed), options.aliases ?? {});
   const report: AnonymizationReport = {
     repositories: input.repositories.length,
     issues: input.repositories.reduce((count, repository) => count + repository.issues.length, 0),

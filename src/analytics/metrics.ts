@@ -166,7 +166,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
    * @param metricId - Valeur de « metricId » utilisée par ce traitement.
    * @returns Résultat du traitement.
    */
-const excluded = (metricId: string) =>
+  const excluded = (metricId: string) =>
     new Set(
       issues.flatMap((issue) =>
         issue.impacts
@@ -191,7 +191,7 @@ const excluded = (metricId: string) =>
    * @param metricId - Valeur de « metricId » utilisée par ce traitement.
    * @returns Résultat du traitement.
    */
-const anomalyIds = (metricId: string) =>
+  const anomalyIds = (metricId: string) =>
     validAnomalies
       .filter((anomaly) => !excluded(metricId).has(anomaly.anomalyId))
       .map((anomaly) => anomaly.anomalyId);

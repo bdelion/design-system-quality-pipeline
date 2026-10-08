@@ -13,6 +13,8 @@ export interface AnonymizationOptions {
   dateOffsetDays: number;
   strictText: boolean;
   preserveComponentNames: boolean;
+  /** Alias fixes indexés par namespace:valeur-source. */
+  aliases?: Record<string, string>;
 }
 /**
  * Définit le contrat de données « AnonymizationReport » utilisé par le pipeline.

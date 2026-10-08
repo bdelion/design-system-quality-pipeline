@@ -10,7 +10,10 @@ import { collectGithub, githubTokenFromEnvironment } from './collectors/github.j
 import { loadConfig } from './config.js';
 import { loadCatalogue } from './catalogue.js';
 import { runPipeline, pipelineStatus, type CollectionSource } from './pipeline.js';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
+import { createHash } from 'node:crypto';
+import { anonymizationAliases, withAliases } from './anonymization/aliases.js';
 import { stringify } from 'yaml';
 import { DEFAULT_ANONYMIZATION_OPTIONS, type AnonymizationOptions } from './anonymization/types.js';
 import { anonymizeDataset, createAnonymizationMapper } from './anonymization/anonymizer.js';
@@ -36,16 +39,21 @@ const program = new Command()
 
 program
   .command('fixture:anonymize')
+  .alias('fixture:prepare')
   .description('Create a deterministic anonymized fixture from a RawDataset JSON file')
   .requiredOption('--input <path>', 'input RawDataset JSON file')
   .requiredOption('--output <path>', 'output anonymized fixture JSON file')
   .option('--config-output <path>', 'output anonymized pipeline configuration', '')
   .option('--catalogue-output <path>', 'output anonymized catalogue configuration', '')
-  .option('--seed <seed>', 'stable anonymization seed', DEFAULT_ANONYMIZATION_OPTIONS.seed)
+  .option(
+    '--seed <seed>',
+    'stable anonymization seed',
+    process.env.ANONYMIZATION_SEED || DEFAULT_ANONYMIZATION_OPTIONS.seed
+  )
   .option(
     '--date-offset-days <days>',
     'shift all dates by this number of days',
-    String(DEFAULT_ANONYMIZATION_OPTIONS.dateOffsetDays)
+    process.env.ANON_DATE_OFFSET_DAYS || String(DEFAULT_ANONYMIZATION_OPTIONS.dateOffsetDays)
   )
   .option('--keep-text', 'only redact obvious PII instead of replacing free-form text')
   .option('--anonymize-components', 'replace component names as well as repositories/users/IDs')
@@ -69,19 +77,28 @@ program
       if (!options.configOutput) options.configOutput = generatedConfigPaths.system;
       if (!options.catalogueOutput) options.catalogueOutput = generatedConfigPaths.catalogue;
       const config: AnonymizationOptions = {
+        aliases: anonymizationAliases(input),
         seed: options.seed,
         dateOffsetDays: Number(options.dateOffsetDays),
         strictText: !options.keepText,
         preserveComponentNames: !options.anonymizeComponents
       };
       const result = anonymizeDataset(input, config);
-      const mapper = createAnonymizationMapper(config.seed);
+      const mapper = withAliases(createAnonymizationMapper(config.seed), config.aliases ?? {});
       const pipelineConfig = anonymizePipelineConfig(await loadConfig('github'), input, mapper);
       const catalogueConfig = anonymizeCatalogue(await loadCatalogue('github'), input, config, mapper);
       const validation = validateAnonymizedDataset(result.dataset);
       const integrityErrors = assertRelationalIntegrity(result.dataset);
       result.report.suspiciousStrings = validation.findings.length;
       result.report.warnings.push(...integrityErrors);
+      if (!validation.valid || integrityErrors.length) {
+        throw new Error(
+          `Anonymized fixture validation failed (${validation.findings.length} suspicious strings, ${integrityErrors.length} integrity errors)`
+        );
+      }
+      for (const path of [options.output, options.configOutput, options.catalogueOutput]) {
+        await mkdir(dirname(path), { recursive: true });
+      }
       await writeFile(options.output, `${JSON.stringify(result.dataset, null, 2)}\n`, 'utf8');
       await writeFile(options.configOutput, stringify(pipelineConfig), 'utf8');
       await writeFile(options.catalogueOutput, stringify(catalogueConfig), 'utf8');
@@ -95,6 +112,22 @@ program
       console.log(`OUTPUT ${options.output}`);
       console.log(`CONFIG ${options.configOutput}`);
       console.log(`CATALOGUE ${options.catalogueOutput}`);
+      const manifestPath = `${options.output}.manifest.json`;
+      const digest = (value: string) => createHash('sha256').update(value).digest('hex');
+      const manifest = {
+        schemaVersion: 1,
+        rawSha256: digest(JSON.stringify(input)),
+        fixtureSha256: digest(JSON.stringify(result.dataset)),
+        systemSha256: digest(stringify(pipelineConfig)),
+        catalogueSha256: digest(stringify(catalogueConfig)),
+        dateOffsetDays: config.dateOffsetDays,
+        strictText: config.strictText,
+        preserveComponentNames: config.preserveComponentNames,
+        aliases: Object.values(config.aliases ?? {})
+        // Ne jamais écrire la graine ni les identités source dans le manifeste.
+      };
+      await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+      console.log(`MANIFEST ${manifestPath}`);
       if (!validation.valid || integrityErrors.length)
         throw new Error(
           `Anonymized fixture validation failed (${validation.findings.length} suspicious strings, ${integrityErrors.length} integrity errors)`
