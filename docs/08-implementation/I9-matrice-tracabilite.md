@@ -37,3 +37,8 @@
 5. Exécuter `npm.cmd run check` et les tests d’anonymisation en CI avant de déclarer I9 terminé.
 
 **Décision :** ne pas déclarer I9 terminé sur la seule base du GREEN actuel ; la couverture contractuelle doit être renforcée.
+
+
+## Incrément final — assertions ajoutées (à valider)
+
+Les neuf cas précédemment partiels disposent désormais d'assertions ciblées dans `tests/v1-reference-scenario.test.ts` : absence d'Issue pour Tabs (#2), audit conforme et chronologie (#6), date du catch-up (#9), audit incomplet (#10), anomalie ouverte (#12), DQ-001 liée à l'anomalie (#14), composition historique (#15 et #16), DQ-015 et DQ-016 pour les catalogues manquant/invalide (#17). Ces assertions sont **proposées, non exécutées** : la clôture 19/19 dépend du GREEN complet.
