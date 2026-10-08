@@ -1,5 +1,6 @@
-import { readFile, rm } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { collectFixture } from '../src/collectors/fixture.js';
 import { loadConfig } from '../src/config.js';
@@ -71,17 +72,22 @@ describe('I9 V1 reference scenario', () => {
     const history = buildVersionHistoricalStates(normalized);
     const v11Version = versions.find((version) => version.number === '1.1.0' && version.libraryId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.libraryId);
     const v11 = history.find((state) => state.versionId === v11Version?.versionId);
+    expect(v11?.atRelease.audits.some((audit) => audit.issueId === 'audit-modal-v11-preprod')).toBe(true);
     expect(v11?.atRelease.audits.some((audit) => audit.issueId === 'audit-modal-v11')).toBe(false);
     expect(v11?.currentKnowledge.audits.some((audit) => audit.issueId === 'audit-modal-v11')).toBe(true);
     expect(v11?.atRelease.componentVersions.find((item) => item.componentId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.componentId)?.verdict).toBe('NON_CONFORME');
     expect(v11?.currentKnowledge.componentVersions.find((item) => item.componentId === normalized.audits.find((audit) => audit.issueId === 'audit-modal-v11')?.componentId)?.verdict).toBe('NON_CONFORME');
 
     const snapshot = buildSnapshot(raw, normalized, quality, analytics, config.modelVersion, config.ruleVersion, config.scope, raw.collectedAt);
-    const output = resolve(process.cwd(), 'data/test-dashboard');
-    await generateDashboard(snapshot, output, 'https://github.test');
-    const html = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
-    expect(html).toContain('Couverture Component × Version');
-    expect(html).toContain('Fiabilité par métrique');
-    await rm(output, { recursive: true, force: true });
+    const output = await mkdtemp(join(tmpdir(), 'dsqp-i9-'));
+    try {
+      await generateDashboard(snapshot, output, 'https://github.test');
+      const html = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
+      expect(html).toContain('Couverture Component × Version');
+      expect(html).toContain('Fiabilité par métrique');
+      expect(await readFile(resolve(output, 'dashboard/assets/graph.js'), 'utf8')).toContain('data-map-node');
+    } finally {
+      await rm(output, { recursive: true, force: true });
+    }
   });
 });

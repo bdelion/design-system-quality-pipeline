@@ -148,3 +148,18 @@ Voir [Anonymisation](anonymisation.md).
 Elle couvre notamment plusieurs repositories, un Component de Catalogue sans Issue, une Issue transverse, une Issue multi-Component, un Bug hors Audit, un Audit pré-PROD conforme, un Audit de rattrapage post-PROD non conforme, un Audit plus récent mais incomplet, une Anomalie corrigée avec transition `Done`, une Anomalie ouverte sans criticité, une PR mergée, deux Catalogues historiques différents et des preuves de Catalogue historique manquante/invalide.
 
 Le contrat exécutable associé est `tests/v1-reference-scenario.test.ts`. Il asserte des cardinalités et KPI attendus, la distinction état à la Release / connaissance actuelle et la génération du dashboard. Cette fixture est synthétique : aucun nom de repository, Component, personne ou URL provenant des données GitHub réelles ne doit y être introduit.
+
+
+### Consolidation I9 — scénarios #7, #8 et #13
+
+La fixture contient un audit Modal pré-PROD non conforme (avec anomalie),
+portant la RC explicite `1.1.0-rc.2` et son tag daté. Un audit Modal
+post-PROD distinct permet de vérifier le rattrapage historique.
+
+`bug-outside` représente volontairement l'incohérence `Done + OPEN`
+attendue sous `DQ-013`. La criticité manquante reste testée sous `DQ-001`.
+
+Le test I9 génère le dashboard dans un répertoire temporaire système unique
+et le nettoie dans un bloc `finally` ; il ne partage plus la sortie de
+`tests/dashboard.test.ts`. La présence des 19 scénarios dans la fixture
+ne garantit pas à elle seule 19 assertions indépendantes.
