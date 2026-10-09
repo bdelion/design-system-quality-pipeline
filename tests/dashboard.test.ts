@@ -95,3 +95,75 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(logo).toContain('<svg');
   await rm(output, { recursive: true, force: true });
 });
+
+it('shows source repository and first correction even when anomaly has no component', async () => {
+  const raw = await collectFixture();
+  const config = await loadConfig();
+  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
+  const anomaly = normalized.anomalies[0]!;
+  const issue = (normalized.issues ?? []).find((entry) => entry.issueId === anomaly.issueId)!;
+  const library = normalized.libraries.find((entry) => entry.libraryId === issue.libraryId)!;
+  anomaly.componentId = ' ';
+  anomaly.correctedAt = '2026-10-01T16:09:00Z';
+  anomaly.firstDoneAt = undefined;
+  anomaly.createdAt = '2026-10-01T10:00:00Z';
+  const issues = evaluateDataQuality(raw, normalized, config.github);
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    issues,
+    calculateKpis(normalized, issues),
+    '2.1',
+    'dq-test',
+    'test'
+  );
+  const output = resolve(process.cwd(), 'data/test-dashboard-regression');
+  try {
+    await generateDashboard(snapshot, output);
+    const html = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+    const row = html.match(new RegExp(`<tr[^>]*>[\\s\\S]*?${anomaly.anomalyId}[\\s\\S]*?<\\/tr>`))?.[0];
+    expect(row).toBeDefined();
+    expect(row).toContain(library.name);
+    expect(row).not.toContain('repository inconnu');
+    expect(row).toContain('composant non déterminé');
+    expect(row).toContain('01/10/2026');
+    expect(row).toContain('0.3 j');
+  } finally {
+    await rm(output, { recursive: true, force: true });
+  }
+});
+
+it('renders cancelled status as a separate filter value and excludes it from done', async () => {
+  const raw = await collectFixture();
+  const config = await loadConfig();
+  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
+  const anomaly = normalized.anomalies[0]!;
+  anomaly.status = 'cancelled';
+  anomaly.cancelled = true;
+  delete anomaly.correctedAt;
+  anomaly.firstDoneAt = undefined;
+  const issues = evaluateDataQuality(raw, normalized, config.github);
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    issues,
+    calculateKpis(normalized, issues),
+    '2.1',
+    'dq-test',
+    'test'
+  );
+  const output = resolve(process.cwd(), 'data/test-dashboard-cancelled');
+  try {
+    await generateDashboard(snapshot, output);
+    const html = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+    const row = html
+      .match(/<tr[^>]*>[\s\S]*?<\/tr>/g)
+      ?.find((candidate) => candidate.includes(anomaly.anomalyId));
+    expect(row).toContain('data-status="cancelled"');
+    expect(row).toContain('Annulée');
+    expect(row).not.toContain('data-status="done"');
+    expect(html).toContain('<option value="cancelled">Annulée</option>');
+  } finally {
+    await rm(output, { recursive: true, force: true });
+  }
+});

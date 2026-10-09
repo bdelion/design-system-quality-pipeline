@@ -26,7 +26,8 @@
     "fixture:validate": "tsx src/cli.ts fixture:validate",
     "format": "prettier --write \"{src,tests,scripts,config,docs,.github,.vscode}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
     "format:check": "prettier --check \"{src,tests,scripts,config,docs,.github,.vscode}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
-    "docs:api": "typedoc"
+    "docs:api": "typedoc",
+    "diagnose:history": "node scripts/diagnose-history.mjs"
   },
   "dependencies": {
     "commander": "^14.0.0",

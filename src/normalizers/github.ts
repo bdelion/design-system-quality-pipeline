@@ -440,11 +440,28 @@ export function normalizeGithub(
             ? 'AUDIT'
             : 'UNDETERMINED';
       const audit = origin === 'AUDIT' ? validParentAudits[0] : undefined;
-      const cancelledProjectStatuses = (rawIssue?.projectStatuses ?? []).filter((projectStatus) =>
-        rules.cancelledProjectStatuses.some(
-          (cancelledStatus) => cancelledStatus.toLowerCase() === projectStatus.status.toLowerCase()
-        )
+      // Le statut Project canonique prime sur CLOSED (qui peut signifier une annulation).
+      const cancelledProjectStatuses = (rawIssue?.projectStatuses ?? []).filter(
+        (projectStatus) =>
+          rules.cancelledProjectStatuses.some(
+            (cancelledStatus) =>
+              cancelledStatus.trim().toLowerCase() === projectStatus.status.trim().toLowerCase()
+          ) ||
+          issue.projectContexts.some(
+            (context) => context.projectId === projectStatus.projectId && context.status === 'CANCELLED'
+          )
       );
+      const isCancelled = issue.projectContexts.some((context) => context.status === 'CANCELLED');
+      const currentStatuses = issue.projectContexts.map((context) => context.status);
+      const businessStatus: Anomaly['status'] = isCancelled
+        ? 'cancelled'
+        : currentStatuses.includes('DONE')
+          ? 'done'
+          : currentStatuses.includes('IN_PROGRESS') || currentStatuses.includes('IN_REVIEW')
+            ? 'in_progress'
+            : issue.state === 'OPEN'
+              ? 'open'
+              : 'done';
       const legacyComponentId =
         audit?.componentId ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
       const correctedAt = businessCorrectedAt(issue);
@@ -456,18 +473,20 @@ export function normalizeGithub(
         ...(legacyComponentId ? { componentId: legacyComponentId } : {}),
         criticality: criticalityValue(rawIssue?.criticities[0], rules),
         categories: [...issue.accessibilityCategories],
-        status: issue.state === 'OPEN' ? 'open' : 'done',
+        status: businessStatus,
         detectedAt: issue.createdAt,
         ...(correctedAt ? { correctedAt } : {}),
         createdAt: issue.createdAt,
-        firstDoneAt: rawIssue?.rawIssueType !== undefined ? correctedAt : rawIssue?.firstDoneAt,
+        firstDoneAt:
+          correctedAt ?? (rawIssue?.rawIssueType === undefined ? rawIssue?.firstDoneAt : undefined),
         everCorrected:
-          rawIssue?.rawIssueType !== undefined ? correctedAt !== undefined : Boolean(rawIssue?.firstDoneAt),
+          correctedAt !== undefined ||
+          (rawIssue?.rawIssueType === undefined && Boolean(rawIssue?.firstDoneAt)),
         pullRequestRefs: [...issue.linkedPullRequestIds],
         parentRefs: [...parentIds],
         provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
         dataQualityStatus: collectedStatus,
-        cancelled: cancelledProjectStatuses.length > 0,
+        cancelled: isCancelled || cancelledProjectStatuses.length > 0,
         cancelledProjectStatuses
       });
       continue;
@@ -583,6 +602,7 @@ function uniqueDoneTransitionAt(issue: Issue): string | undefined {
 
 /** Date métier de correction d'une anomalie (D-140). */
 function businessCorrectedAt(issue: Issue): string | undefined {
+  // Contrat I3 : plusieurs transitions DONE rendent la date indéterminée.
   return uniqueDoneTransitionAt(issue);
 }
 

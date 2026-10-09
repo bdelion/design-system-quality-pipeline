@@ -25,9 +25,12 @@ export function anonymizationAliases(
     if (!key.startsWith('ANON_REPO_') || !value) continue;
     const sourceName = key.slice('ANON_REPO_'.length);
     const matches = normalizedRepositories.get(sourceName) ?? [];
+    // Le repository n'est pas dans cette collecte
+    // L'aias reste disponible dans un .env pour d'autres collectes
     if (matches.length === 0) {
-      throw new Error(`Alias ${key}: repository source introuvable dans le RAW`);
+      continue;
     }
+    // Une correspondance ambiguë ne doit jamais être acceptée
     if (matches.length > 1) {
       throw new Error(
         `Alias ${key}: nom ambigu (${matches.join(', ')}). Renommer les variables ou utiliser une correspondance explicite.`

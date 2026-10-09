@@ -200,3 +200,60 @@ describe('I1 Issue normalization', () => {
     expect(reversedIds).toEqual(ids);
   });
 });
+
+describe('regression: legacy BUG with canonical DONE history', () => {
+  it('derives first correction from DONE even without rawIssueType', () => {
+    const raw = dataset();
+    const source = raw.repositories[0]!.issues[0]!;
+    delete source.rawIssueType;
+    source.issueType = 'BUG';
+    source.parents = [];
+    source.labels = [];
+    source.state = 'CLOSED';
+    source.projectStatuses![0]!.status = '✅ Done';
+    source.projectStatuses![0]!.statusHistory = [
+      { previousStatus: 'In review', status: '✅ Done', transitionedAt: '2026-10-01T16:09:00Z' }
+    ];
+    const normalized = normalizeGithub(raw, rules);
+    const anomaly = normalized.anomalies.find((entry) => entry.issueId === source.id);
+    expect(anomaly?.componentId).toBeUndefined();
+    expect(anomaly?.correctedAt).toBe('2026-10-01T16:09:00Z');
+    expect(anomaly?.firstDoneAt).toBe('2026-10-01T16:09:00Z');
+    expect(anomaly?.everCorrected).toBe(true);
+  });
+});
+
+describe('anomaly project status regressions', () => {
+  it('classifies a CLOSED issue with Cancelled project status as cancelled, not done', () => {
+    const raw = dataset();
+    const issue = raw.repositories[0]!.issues[0]!;
+    issue.state = 'CLOSED';
+    issue.parents = [];
+    issue.projectStatuses![0]!.status = '🛑 Cancelled';
+    issue.projectStatuses![0]!.statusHistory = [
+      { previousStatus: 'Backlog', status: '🛑 Cancelled', transitionedAt: '2026-10-02T10:00:00Z' }
+    ];
+    const anomaly = normalizeGithub(raw, rules).anomalies[0]!;
+    expect(anomaly.status).toBe('cancelled');
+    expect(anomaly.cancelled).toBe(true);
+    expect(anomaly.correctedAt).toBeUndefined();
+    expect(anomaly.firstDoneAt).toBeUndefined();
+  });
+
+  it('retains the earliest DONE transition after reopening and correction again', () => {
+    const raw = dataset();
+    const issue = raw.repositories[0]!.issues[0]!;
+    issue.state = 'CLOSED';
+    issue.parents = [];
+    issue.projectStatuses![0]!.status = '✅ Done';
+    issue.projectStatuses![0]!.statusHistory = [
+      { previousStatus: 'In progress', status: '✅ Done', transitionedAt: '2026-10-02T09:00:00Z' },
+      { previousStatus: 'Done', status: 'Backlog', transitionedAt: '2026-10-03T09:00:00Z' },
+      { previousStatus: 'Backlog', status: '✅ Done', transitionedAt: '2026-10-04T09:00:00Z' }
+    ];
+    const anomaly = normalizeGithub(raw, rules).anomalies[0]!;
+    expect(anomaly.status).toBe('done');
+    expect(anomaly.correctedAt).toBeUndefined();
+    expect(anomaly.firstDoneAt).toBeUndefined();
+  });
+});

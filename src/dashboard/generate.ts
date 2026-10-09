@@ -324,6 +324,7 @@ function historyContent(snapshot: Snapshot): string {
 function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const metrics = snapshot.analytics.metrics;
   const libraryById = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library.name]));
+  const issueLibraryById = new Map((snapshot.normalizedData.issues ?? []).map((issue) => [issue.issueId, issue.libraryId]));
   const repositories = [...new Set(snapshot.normalizedData.libraries.map((library) => library.name))].sort();
   const categories = [...new Set(snapshot.normalizedData.anomalies.flatMap((anomaly) => anomaly.categories))].sort();
   const total = metricOrUnknown(metrics, 'anomaly.total');
@@ -340,18 +341,19 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
 
   const rows = snapshot.normalizedData.anomalies.map((anomaly) => {
     const component = anomaly.componentId ? snapshot.normalizedData.components.find((item) => item.componentId === anomaly.componentId) : undefined;
-    const repositoryName = libraryById.get(component?.libraryId ?? '') ?? 'repository inconnu';
+    const repositoryName = libraryById.get(issueLibraryById.get(anomaly.issueId) ?? component?.libraryId ?? '') ?? 'repository inconnu';
     const status = anomaly.cancelled ? 'cancelled' : anomaly.status;
     const statusLabel = anomaly.cancelled ? 'Annulée' : anomalyStatusLabel(anomaly.status);
     const criticality = anomaly.criticality ?? 'unknown';
     const categoriesText = anomaly.categories.join(', ') || '—';
     const linkedPullRequests = anomaly.pullRequestRefs.map((reference) => githubReference(snapshot, reference, githubUrl)).join(' ') || '—';
     const created = formatDateShort(anomaly.createdAt);
-    const correctedAt = anomaly.firstDoneAt ? formatDateShort(anomaly.firstDoneAt) : '—';
-    const delay = anomaly.firstDoneAt ? `${delayDays(anomaly.createdAt, anomaly.firstDoneAt).toFixed(1)} j` : '—';
+    const firstCorrection = anomaly.correctedAt ?? anomaly.firstDoneAt;
+    const correctedAt = firstCorrection ? formatDateShort(firstCorrection) : '—';
+    const delay = firstCorrection ? `${delayDays(anomaly.createdAt, firstCorrection).toFixed(1)} j` : '—';
     return `<tr data-table-row data-repository="${escapeHtml(repositoryName)}" data-status="${status}" data-criticality="${escapeHtml(criticality)}" data-categories="${escapeHtml(anomaly.categories.join('|'))}">
       <td><strong>${escapeHtml(anomaly.anomalyId)}</strong><small>${githubReference(snapshot, anomaly.provenance.sourceId ?? 'source inconnue', githubUrl)}</small></td>
-      <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name ?? anomaly.componentId ?? 'composant non déterminé')}</small></td>
+      <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name?.trim() || anomaly.componentId?.trim() || 'composant non déterminé')}</small></td>
       <td><span class="tag tag-${criticality}">${criticalityLabel(anomaly.criticality)}</span></td>
       <td>${escapeHtml(categoriesText)}</td>
       <td><span class="state state-${status}">${statusLabel}</span></td>

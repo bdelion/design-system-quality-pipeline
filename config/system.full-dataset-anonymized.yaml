@@ -1,0 +1,70 @@
+modelVersion: "2.1"
+ruleVersion: dq-2026.09
+auditVersion: "2026.09"
+scope: configured-github-repositories
+githubOwner: commun
+repositories:
+  - demo-react
+  - demo-react-enterprise
+  - enterprise-assets
+github:
+  labels:
+    componentPrefix: "🧩 Component:"
+    accessibilityCriticalityPrefix: "🚦 rgaa:"
+    accessibilityCategoryPrefix: "♿ a11y:"
+    unknown: label:unknown
+    criticalityValues:
+      bloquante: blocking
+      majeure: major
+      mineure: minor
+  issueTypes:
+    anomaly: BUG
+    keywords:
+      AUDIT:
+        - audit
+      EPIC:
+        - epic
+      NEW_COMPONENT:
+        - new_component
+        - new component
+      FEATURE:
+        - feature
+      BUG:
+        - bug
+        - rgaa
+        - a11y
+  projectStatuses:
+    keywords:
+      BACKLOG:
+        - Backlog
+        - 📋 Backlog
+      READY:
+        - Ready
+        - 🔖 Ready
+      IN_PROGRESS:
+        - In progress
+        - 🏗 In progress
+      IN_REVIEW:
+        - In review
+        - 👀 In review
+      DONE:
+        - Done
+        - ✅ Done
+      BLOCKED:
+        - Blocked
+        - ✋ Blocked
+      CANCELLED:
+        - Cancelled
+        - 🛑 Cancelled
+  closingKeywords:
+    - close
+    - closed
+    - closes
+    - fix
+    - fixed
+    - fixes
+    - resolve
+    - resolved
+    - resolves
+  cancelledProjectStatuses:
+    - Cancelled
