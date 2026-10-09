@@ -34,6 +34,7 @@ export async function generateDashboard(snapshot: Snapshot, outputRoot: string, 
   void dashboardClientScript;
   await Promise.all([
     writeFile(resolve(dashboardPath, 'index.html'), page(snapshot, 'Vue d’ensemble', overviewContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'issues.html'), page(snapshot, 'Analyse des issues', issuesExplorerContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'anomalies.html'), page(snapshot, 'Anomalies', anomaliesContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'audits.html'), page(snapshot, 'Audits et composants', auditsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'graph.html'), page(snapshot, 'Cartographie', graphContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
@@ -41,6 +42,7 @@ export async function generateDashboard(snapshot: Snapshot, outputRoot: string, 
     copyDashboardAsset(dashboardPath, 'style.css'),
     copyDashboardAsset(dashboardPath, 'app.js'),
     copyDashboardAsset(dashboardPath, 'graph.js'),
+    copyDashboardAsset(dashboardPath, 'issues.js'),
     copyDashboardAsset(dashboardPath, 'logo.svg')
   ]);
 }
@@ -64,8 +66,8 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 </head>
 <body>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${title === 'Vue d’ensemble' ? 'À SURVEILLER' : 'V2.1'}</span><span class="avatar">CP</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
-  <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Analyse des issues' ? 'active' : ''}" href="issues.html"><span>▤</span>Analyse des issues</a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
+  <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script src="assets/issues.js"></script>' : ''}
 </body></html>`;
 }
 
@@ -465,6 +467,39 @@ function delayDays(from: string, to: string): number {
 function formatDateShort(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '—' : date.toLocaleDateString('fr-FR');
+}
+
+
+/** Vue exhaustive des issues, indépendamment de leur classification en anomalies. */
+function issuesExplorerContent(snapshot: Snapshot, githubUrl?: string): string {
+  const anomalies = new Map(snapshot.normalizedData.anomalies.map((item) => [item.issueId, item]));
+  const libraries = new Map(snapshot.normalizedData.libraries.map((item) => [item.libraryId, item.repository]));
+  const repositories = new Map(snapshot.rawData.repositories.map((item) => [item.id, item]));
+  const items = (snapshot.normalizedData.issues ?? []).map((issue) => {
+    const repository = repositories.get(issue.repositoryId);
+    const anomaly = anomalies.get(issue.issueId);
+    const status = issue.projectContexts.flatMap((context) => context.status ? [context.status] : []);
+    const cancelled = status.includes('CANCELLED') || anomaly?.cancelled === true;
+    const done = !cancelled && (status.includes('DONE') || anomaly?.status === 'done' || (issue.state === 'CLOSED' && !status.length));
+    const state = cancelled ? 'cancelled' : done ? 'closed' : 'open';
+    const correctionDate = anomaly?.effectiveCorrectedAt ?? anomaly?.correctedAt ?? (done ? issue.closedAt : undefined);
+    const delay = correctionDate ? (Date.parse(correctionDate) - Date.parse(issue.createdAt)) / 86400000 : NaN;
+    const valid = done && Number.isFinite(delay) && delay >= 0;
+    const source = !valid ? 'unavailable' : anomaly?.correctionDateSource === 'issue_closed' || (!anomaly && issue.closedAt === correctionDate) ? 'estimated' : 'done';
+    const repoName = repository ? `${repository.owner}/${repository.name}` : libraries.get(issue.libraryId) ?? issue.repositoryId;
+    const url = issue.url && /^https:\/\/github\.com\//.test(issue.url) ? issue.url : repository && githubUrl && /^https:\/\/github\.com$/.test(githubUrl.replace(/\/+$/, '')) ? `${githubUrl.replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${issue.number}` : '';
+    return { key: `${repoName}#${issue.number}`, repo: repoName, number: issue.number, title: issue.title, url, labels: issue.labels, type: issue.rawIssueType || issue.issueType || 'Non renseigné', status: state, githubState: issue.state, prs: [...new Set(issue.linkedPullRequestIds)], createdAt: issue.createdAt, delay: valid ? delay : null, source };
+  });
+  const payload = JSON.stringify(items).replace(/</g, '\\u003c');
+  return `<section class="issues-explorer" data-issues-explorer>
+    <div class="issue-kpis" aria-live="polite"><article class="issue-kpi"><span>KPI officiel · Délai global</span><strong data-issue-kpi="global">—</strong><small data-issue-count="global">Done + clôtures estimées</small></article><article class="issue-kpi"><span>Sans estimation</span><strong data-issue-kpi="done">—</strong><small data-issue-count="done">Dernière transition Done</small></article><article class="issue-kpi"><span>Estimations seules</span><strong data-issue-kpi="estimated">—</strong><small data-issue-count="estimated">Clôtures GitHub</small></article></div>
+    <section class="panel issue-filters" aria-label="Filtres des issues"><div class="panel-heading"><h2>Filtres et recherche</h2><button class="reset-button" type="button" data-issue-reset>Réinitialiser</button></div>
+    <div class="issue-filter-grid"><label>Recherche globale<input class="search" data-issue-search placeholder="Numéro, titre, label…"></label><label>Repository<select data-issue-filter="repo"><option value="">Tous</option></select></label><label>Label<select data-issue-filter="label"><option value="">Tous</option></select></label><label>Issue type<select data-issue-filter="type"><option value="">Tous</option></select></label><label>Statut<select data-issue-filter="status"><option value="">Tous</option><option value="open">Ouvertes / en cours</option><option value="closed">Done / Closed</option><option value="cancelled">Cancelled</option></select></label><label>État GitHub<select data-issue-filter="githubState"><option value="">Tous</option><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select></label><label>Tri<select data-issue-sort><option value="repo">Repository</option><option value="number">Numéro</option><option value="age">Plus ancienne ouverte</option><option value="total">Nombre d'issues</option><option value="delay">Délai de correction</option></select></label></div>
+    <div class="issue-actions"><label><input type="checkbox" data-issue-components> Labels Component: uniquement</label><button class="reset-button" type="button" data-issue-dedupe aria-pressed="false">Dédoublonner par repo / issue</button><button class="reset-button" type="button" data-issue-clear-selection>Réinitialiser la sélection</button><button class="reset-button" type="button" data-issue-export>Exporter CSV</button></div>
+    <p class="muted" data-issue-summary></p></section>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Issues par repository, label et type</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner les issues affichées"></th>${['Repository','Issue','Label','Issue type','Statut','État GitHub','Nb PR','Total','Ouvertes','Closed','Cancelled','Taux ouvert','Taux closed','Taux cancelled','Plus vieille ouverte','Âge ancienne','Médiane closed','P90 closed','Délai issue'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div></article>
+    <script type="application/json" id="issue-explorer-data">${payload}</script>
+  </section>`;
 }
 
 /** Transforme une référence interne en lien GitHub lorsque l'URL est disponible. */

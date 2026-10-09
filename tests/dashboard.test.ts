@@ -58,6 +58,15 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(auditsHtml).toContain('data-component-version-verdict');
   expect(auditsHtml).toContain('NON_COUVERT reste distinct de NON_CONFORME');
   expect(auditsHtml).toContain('design-system-react');
+  const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
+  expect(issuesHtml).toContain('Analyse des issues');
+  expect(issuesHtml).toContain('data-issue-kpi="global"');
+  expect(issuesHtml).toContain('data-issue-components');
+  expect(issuesHtml).toContain('data-issue-dedupe');
+  expect(issuesHtml).toContain('data-issue-column-sort');
+  expect(issuesHtml).toContain('assets/issues.js');
+  expect(issuesHtml).toContain('issue-explorer-data');
+  expect(html).toContain('href="issues.html"');
   const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
