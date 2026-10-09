@@ -465,6 +465,26 @@ export function normalizeGithub(
       const legacyComponentId =
         audit?.componentId ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
       const correctedAt = businessCorrectedAt(issue);
+      const doneCount = issue.projectContexts.flatMap((context) =>
+        context.statusHistory.filter((transition) => transition.status === 'DONE')
+      ).length;
+      const estimatedAt =
+        !isCancelled &&
+        cancelledProjectStatuses.length === 0 &&
+        issue.state === 'CLOSED' &&
+        !currentStatuses.some((status) => status !== 'DONE')
+          ? issue.closedAt
+          : undefined;
+      const effectiveCorrectedAt =
+        !isCancelled && cancelledProjectStatuses.length === 0 ? (correctedAt ?? estimatedAt) : undefined;
+      const correctionDateSource: Anomaly['correctionDateSource'] =
+        isCancelled || !effectiveCorrectedAt
+          ? 'unavailable'
+          : correctedAt
+            ? doneCount > 1
+              ? 'last_done'
+              : 'done'
+            : 'issue_closed';
       anomalies.push({
         anomalyId: stableId('anomaly', issue.issueId),
         issueId: issue.issueId,
@@ -475,13 +495,12 @@ export function normalizeGithub(
         categories: [...issue.accessibilityCategories],
         status: businessStatus,
         detectedAt: issue.createdAt,
-        ...(correctedAt ? { correctedAt } : {}),
+        ...(correctedAt && !isCancelled ? { correctedAt } : {}),
+        ...(effectiveCorrectedAt ? { effectiveCorrectedAt } : {}),
+        correctionDateSource,
         createdAt: issue.createdAt,
-        firstDoneAt:
-          correctedAt ?? (rawIssue?.rawIssueType === undefined ? rawIssue?.firstDoneAt : undefined),
-        everCorrected:
-          correctedAt !== undefined ||
-          (rawIssue?.rawIssueType === undefined && Boolean(rawIssue?.firstDoneAt)),
+        firstDoneAt: effectiveCorrectedAt,
+        everCorrected: effectiveCorrectedAt !== undefined,
         pullRequestRefs: [...issue.linkedPullRequestIds],
         parentRefs: [...parentIds],
         provenance: { source: 'github', sourceId: issue.issueId, collectedAt: raw.collectedAt },
@@ -600,10 +619,15 @@ function uniqueDoneTransitionAt(issue: Issue): string | undefined {
   return doneTransitions.length === 1 ? doneTransitions[0]!.transitionedAt : undefined;
 }
 
-/** Date métier de correction d'une anomalie (D-140). */
+/** Dernière entrée datée dans DONE, y compris après une réouverture (contrat KPI V3). */
 function businessCorrectedAt(issue: Issue): string | undefined {
-  // Contrat I3 : plusieurs transitions DONE rendent la date indéterminée.
-  return uniqueDoneTransitionAt(issue);
+  const dates = issue.projectContexts
+    .flatMap((context) => context.statusHistory)
+    .filter((transition) => transition.status === 'DONE')
+    .map((transition) => transition.transitionedAt)
+    .filter((date) => Number.isFinite(Date.parse(date)))
+    .sort((a, b) => Date.parse(a) - Date.parse(b));
+  return dates.at(-1);
 }
 
 /**

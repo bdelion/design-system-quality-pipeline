@@ -19,7 +19,7 @@ export interface HistoryCoverage {
 
 /** Détermine pourquoi une anomalie dispose ou non d'une date de correction métier fiable. */
 export function correctionDateReason(anomaly: Anomaly, issue?: Issue): CorrectionDateReason {
-  if (anomaly.correctedAt) return 'available';
+  if (anomaly.effectiveCorrectedAt ?? anomaly.correctedAt) return 'available';
   const doneTransitions = issue?.projectContexts.flatMap((context) => context.statusHistory)
     .filter((transition) => transition.status === 'DONE').length ?? 0;
   if (doneTransitions > 1) return 'multiple_done';

@@ -253,7 +253,8 @@ describe('anomaly project status regressions', () => {
     ];
     const anomaly = normalizeGithub(raw, rules).anomalies[0]!;
     expect(anomaly.status).toBe('done');
-    expect(anomaly.correctedAt).toBeUndefined();
-    expect(anomaly.firstDoneAt).toBeUndefined();
+    expect(anomaly.correctedAt).toBe('2026-10-04T09:00:00Z');
+    expect(anomaly.firstDoneAt).toBe('2026-10-04T09:00:00Z');
+    expect(anomaly.correctionDateSource).toBe('last_done');
   });
 });

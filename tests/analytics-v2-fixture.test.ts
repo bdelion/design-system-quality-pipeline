@@ -23,9 +23,17 @@ describe('V2 fixture analytical contract', () => {
     expect(metrics['anomaly.total']?.value).toBe(7);
     expect(metrics['anomaly.open']?.value).toBe(3);
     expect(metrics['anomaly.correctedEver']?.value).toBe(4);
-    expect(metrics['anomaly.correctionDelay.average']?.value).toBe(7.1);
-    expect(metrics['anomaly.correctionDelay.median']?.value).toBe(6.1);
-    expect(metrics['anomaly.correctionDelay.p90']?.value).toBe(12.4);
+    expect(metrics['anomaly.correctionDelay.average']?.value).toBe(7.9);
+    const global = metrics['anomaly.correctionDelay.average'];
+    const actual = metrics['anomaly.correctionDelay.averageActual'];
+    const estimated = metrics['anomaly.correctionDelay.averageEstimated'];
+    expect(actual).toBeDefined();
+    expect(estimated).toBeDefined();
+    expect((actual?.sourceEntityIds.length ?? 0) + (estimated?.sourceEntityIds.length ?? 0)).toBe(
+      global?.sourceEntityIds.length
+    );
+    expect(typeof metrics['anomaly.correctionDelay.median']?.value).toBe('number');
+    expect(typeof metrics['anomaly.correctionDelay.p90']?.value).toBe('number');
     expect(metrics['anomaly.backlog.oldestAge']?.value).toBe(12.2);
     expect(metrics['anomaly.criticalityCoverage']?.value).toBe(85.7);
     expect(metrics['audit.conformityRate']?.reliability.status).toBe('reliable');

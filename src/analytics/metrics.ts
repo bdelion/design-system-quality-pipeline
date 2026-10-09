@@ -195,13 +195,39 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     validAnomalies
       .filter((anomaly) => !excluded(metricId).has(anomaly.anomalyId))
       .map((anomaly) => anomaly.anomalyId);
-  const corrected = validAnomalies.filter(
-    (anomaly) =>
-      Boolean(anomaly.firstDoneAt) && !excluded('anomaly.correctionDelay.average').has(anomaly.anomalyId)
+  const corrected = validAnomalies.filter((anomaly) => {
+    const date = anomaly.effectiveCorrectedAt ?? anomaly.correctedAt ?? anomaly.firstDoneAt;
+    return (
+      Boolean(date) &&
+      Number.isFinite(delayDays(anomaly.createdAt, date!)) &&
+      delayDays(anomaly.createdAt, date!) >= 0 &&
+      !excluded('anomaly.correctionDelay.average').has(anomaly.anomalyId)
+    );
+  });
+  const delays = corrected.map((anomaly) =>
+    delayDays(
+      anomaly.createdAt,
+      (anomaly.effectiveCorrectedAt ?? anomaly.correctedAt ?? anomaly.firstDoneAt)!
+    )
   );
-  const delays = corrected.flatMap((anomaly) =>
-    anomaly.firstDoneAt ? [delayDays(anomaly.createdAt, anomaly.firstDoneAt)] : []
-  );
+  const actualCorrected = corrected.filter((anomaly) => anomaly.correctionDateSource !== 'issue_closed');
+  const estimatedCorrected = corrected.filter((anomaly) => anomaly.correctionDateSource === 'issue_closed');
+  const averageOf = (items: typeof corrected): number | 'unknown' =>
+    items.length
+      ? Number(
+          (
+            items.reduce(
+              (sum, anomaly) =>
+                sum +
+                delayDays(
+                  anomaly.createdAt,
+                  (anomaly.effectiveCorrectedAt ?? anomaly.correctedAt ?? anomaly.firstDoneAt)!
+                ),
+              0
+            ) / items.length
+          ).toFixed(1)
+        )
+      : 'unknown';
   const conform = completedAudits.filter((audit) => audit.objectiveAuditResult === 'conform');
   const m: Record<string, Metric> = {};
   const repositoryIds = [...new Set(data.libraries.map((library) => library.repository))];
@@ -461,6 +487,19 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     corrected.map((x) => x.anomalyId),
     issues
   );
+  for (const [id, population] of [
+    ['anomaly.correctionDelay.averageActual', actualCorrected],
+    ['anomaly.correctionDelay.averageEstimated', estimatedCorrected]
+  ] as const) {
+    m[id] = metric(
+      id,
+      averageOf(population),
+      population.length,
+      population.length,
+      population.map((anomaly) => anomaly.anomalyId),
+      issues
+    );
+  }
   const med = median(delays);
   m['anomaly.correctionDelay.median'] = metric(
     'anomaly.correctionDelay.median',

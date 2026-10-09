@@ -114,17 +114,20 @@ describe('I3 business dates', () => {
     const normalized = normalizeGithub(dataset([], []), rules, undefined, '4.2.1');
     expect(normalized.audits[0]?.completedAt).toBeUndefined();
     expect(normalized.anomalies[0]?.correctedAt).toBeUndefined();
-    expect(normalized.anomalies[0]?.everCorrected).toBe(false);
+    expect(normalized.anomalies[0]?.everCorrected).toBe(true);
+    expect(normalized.anomalies[0]?.correctionDateSource).toBe('issue_closed');
+    expect(normalized.anomalies[0]?.effectiveCorrectedAt).toBe('2026-10-02T09:00:00Z');
   });
 
-  it('keeps the date indeterminate when several DONE transitions exist', () => {
+  it('uses the latest DONE transition for an anomaly, without changing the Audit rule', () => {
     const repeatedDone = [
       { previousStatus: 'In progress', status: 'Done', transitionedAt: '2026-09-20T10:00:00Z' },
       { previousStatus: 'In review', status: 'Done', transitionedAt: '2026-10-01T10:00:00Z' }
     ];
     const normalized = normalizeGithub(dataset(repeatedDone, repeatedDone), rules, undefined, '4.2.1');
     expect(normalized.audits[0]?.completedAt).toBeUndefined();
-    expect(normalized.anomalies[0]?.correctedAt).toBeUndefined();
+    expect(normalized.anomalies[0]?.correctedAt).toBe('2026-10-01T10:00:00Z');
+    expect(normalized.anomalies[0]?.correctionDateSource).toBe('last_done');
   });
 
   it('reports DQ-011 when Done + Closed requires a business date but history is insufficient', () => {

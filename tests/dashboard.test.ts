@@ -106,6 +106,8 @@ it('shows source repository and first correction even when anomaly has no compon
   anomaly.componentId = ' ';
   anomaly.correctedAt = '2026-10-01T16:09:00Z';
   anomaly.firstDoneAt = undefined;
+  anomaly.effectiveCorrectedAt = '2026-10-01T16:09:00Z';
+  anomaly.correctionDateSource = 'done';
   anomaly.createdAt = '2026-10-01T10:00:00Z';
   const issues = evaluateDataQuality(raw, normalized, config.github);
   const snapshot = buildSnapshot(
@@ -163,6 +165,37 @@ it('renders cancelled status as a separate filter value and excludes it from don
     expect(row).toContain('Annulée');
     expect(row).not.toContain('data-status="done"');
     expect(html).toContain('<option value="cancelled">Annulée</option>');
+  } finally {
+    await rm(output, { recursive: true, force: true });
+  }
+});
+
+it('does not display a negative correction delay for an inconsistent estimated closure', async () => {
+  const raw = await collectFixture();
+  const config = await loadConfig();
+  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
+  const anomaly = normalized.anomalies[0]!;
+  anomaly.createdAt = '2026-10-01T10:00:00Z';
+  delete anomaly.correctedAt;
+  anomaly.effectiveCorrectedAt = '2026-08-06T10:00:00Z';
+  anomaly.correctionDateSource = 'issue_closed';
+  const issues = evaluateDataQuality(raw, normalized, config.github);
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    issues,
+    calculateKpis(normalized, issues),
+    '2.1',
+    'dq-test',
+    'test'
+  );
+  const output = resolve(process.cwd(), 'data/test-dashboard-negative-date');
+  try {
+    await generateDashboard(snapshot, output);
+    const html = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+    const row = html.match(new RegExp(`<tr[^>]*>[\\s\\S]*?${anomaly.anomalyId}[\\s\\S]*?<\\/tr>`))?.[0];
+    expect(row).toContain('Date incohérente');
+    expect(row).not.toContain('-56.0 j');
   } finally {
     await rm(output, { recursive: true, force: true });
   }

@@ -335,6 +335,9 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const corrected = metricOrUnknown(metrics, 'anomaly.correctedEver');
   const reopened = metricOrUnknown(metrics, 'anomaly.reopened');
   const cancelled = metricOrUnknown(metrics, 'anomaly.cancelled');
+  const averageGlobal = metricOrUnknown(metrics, 'anomaly.correctionDelay.average');
+  const averageActual = metricOrUnknown(metrics, 'anomaly.correctionDelay.averageActual');
+  const averageEstimated = metricOrUnknown(metrics, 'anomaly.correctionDelay.averageEstimated');
   const median = metricOrUnknown(metrics, 'anomaly.correctionDelay.median');
   const p90 = metricOrUnknown(metrics, 'anomaly.correctionDelay.p90');
   const oldest = metricOrUnknown(metrics, 'anomaly.backlog.oldestAge');
@@ -354,15 +357,21 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
     const linkedPullRequests = anomaly.pullRequestRefs.map((reference) => githubReference(snapshot, reference, githubUrl)).join(' ') || '—';
     const created = formatDateShort(anomaly.createdAt);
     const reason = correctionDateReason(anomaly, coverageIssueById.get(anomaly.issueId));
-    const correctedAt = anomaly.correctedAt ? formatDateShort(anomaly.correctedAt) : '—';
-    const delay = anomaly.correctedAt ? `${delayDays(anomaly.createdAt, anomaly.correctedAt).toFixed(1)} j` : '—';
+    const candidateDate = anomaly.effectiveCorrectedAt ?? anomaly.correctedAt;
+    const candidateDelay = candidateDate ? delayDays(anomaly.createdAt, candidateDate) : NaN;
+    const hasValidDelay = Number.isFinite(candidateDelay) && candidateDelay >= 0;
+    const correctedAt = hasValidDelay && candidateDate ? formatDateShort(candidateDate) : '—';
+    const delay = hasValidDelay ? `${candidateDelay.toFixed(1)} j` : '—';
+    const dateLabel = candidateDate && !hasValidDelay ? 'Date incohérente' : anomaly.correctionDateSource === 'issue_closed' ? 'Clôture estimée' :
+      anomaly.correctionDateSource === 'last_done' ? 'Dernier Done' :
+      anomaly.correctionDateSource === 'done' ? 'Done' : reasonLabels[reason];
     return `<tr data-table-row data-repository="${escapeHtml(repositoryName)}" data-status="${status}" data-criticality="${escapeHtml(criticality)}" data-categories="${escapeHtml(anomaly.categories.join('|'))}">
       <td><strong>${escapeHtml(anomaly.anomalyId)}</strong><small>${githubReference(snapshot, anomaly.provenance.sourceId ?? 'source inconnue', githubUrl)}</small></td>
       <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name?.trim() || anomaly.componentId?.trim() || 'composant non déterminé')}</small></td>
       <td><span class="tag tag-${criticality}">${criticalityLabel(anomaly.criticality)}</span></td>
       <td>${escapeHtml(categoriesText)}</td>
       <td><span class="state state-${status}">${statusLabel}</span></td>
-      <td>${created}</td><td>${correctedAt}</td><td>${delay}</td><td>${escapeHtml(reasonLabels[reason])}</td><td>${linkedPullRequests}</td>
+      <td>${created}</td><td>${correctedAt}</td><td>${delay}</td><td>${escapeHtml(dateLabel)}</td><td>${linkedPullRequests}</td>
     </tr>`;
   }).join('');
 
@@ -390,13 +399,19 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   </section>
 
   <article class="panel" id="history-coverage" aria-labelledby="history-coverage-heading">
-    <div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2 id="history-coverage-heading">Couverture des historiques et dates métier</h2></div><span class="badge">${coverage.issuesWithHistory} / ${coverage.issuesTotal} issues avec historique</span></div>
-    <p>${coverage.issuesWithoutHistory} issues sans transition de statut Project observable. ${coverage.correctionDatesAvailable} / ${coverage.anomaliesTotal} anomalies disposent d’une date de correction métier fiable.</p>
-    <p class="muted">Motifs d’indisponibilité : ${coverage.reasons.no_project_history} sans historique projet, ${coverage.reasons.no_done_transition} sans transition Done, ${coverage.reasons.multiple_done} avec plusieurs transitions Done. Ces chiffres décrivent la couverture des données ; ils ne modifient pas les KPI.</p>
-    <p class="muted">Une PR fusionnée ou une issue fermée ne prouve pas une transition métier Done. Les historiques anciens peuvent être indisponibles.</p>
+    <div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2 id="history-coverage-heading">Couverture des historiques et dates de correction</h2></div><span class="badge">${coverage.issuesWithHistory} / ${coverage.issuesTotal} issues avec historique</span></div>
+    <p>${coverage.issuesWithoutHistory} issues sans transition de statut Project observable. ${coverage.correctionDatesAvailable} / ${coverage.anomaliesTotal} anomalies disposent d’une date de correction calculable (Done ou clôture estimée).</p>
+    <p class="muted">Motifs d’indisponibilité : ${coverage.reasons.no_project_history} sans historique projet, ${coverage.reasons.no_done_transition} sans transition Done, ${coverage.reasons.multiple_done} avec plusieurs transitions Done. Les estimations de clôture entrent désormais dans le KPI officiel.</p>
+    <p class="muted">Une clôture utilisée en repli est une estimation, distincte d’une transition métier Done.</p>
   </article>
 
   <section class="section-heading"><div><p class="eyebrow">Délais</p><h2>Temps de correction</h2></div><span class="badge">jours calendaires</span></section>
+  <section class="kpi-grid anomaly-delay-grid">
+    ${metricCard('Délai moyen officiel · global', averageGlobal, `${averageGlobal.numerator} corrections · dates Done et estimées`, 'anomalies.html')}
+    ${metricCard('Sans estimation · Done', averageActual, `${averageActual.numerator} corrections · dates métier`, 'anomalies.html')}
+    ${metricCard('Estimations seules · clôture', averageEstimated, `${averageEstimated.numerator} corrections · closedAt`, 'anomalies.html')}
+  </section>
+  <p class="muted">Le délai global est calculé sur toutes les corrections admissibles ; les deux autres indicateurs détaillent les dates métier et les estimations. Les issues annulées et les durées invalides sont exclues.</p>
   <section class="kpi-grid anomaly-delay-grid">
     ${metricCard('Médiane', median, 'délai typique', 'anomalies.html')}
     ${metricCard('P90', p90, '9 anomalies sur 10 au plus', 'anomalies.html')}

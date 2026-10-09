@@ -273,7 +273,21 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
     unit: 'days',
     scope: 'anomaly',
     kind: 'duration',
-    definition: 'Délai moyen entre la création et la première correction métier.'
+    definition: 'Délai moyen officiel : dernière transition Done ou, à défaut admissible, clôture estimée.'
+  },
+  {
+    id: 'anomaly.correctionDelay.averageActual',
+    unit: 'days',
+    scope: 'anomaly',
+    kind: 'duration',
+    definition: 'Délai moyen calculé uniquement depuis les transitions Done.'
+  },
+  {
+    id: 'anomaly.correctionDelay.averageEstimated',
+    unit: 'days',
+    scope: 'anomaly',
+    kind: 'duration',
+    definition: 'Délai moyen calculé uniquement depuis les dates de clôture estimées.'
   },
   {
     id: 'anomaly.correctionDelay.median',

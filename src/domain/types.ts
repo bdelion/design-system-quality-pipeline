@@ -315,8 +315,12 @@ export interface Anomaly {
   status: AnomalyStatus;
   /** Date métier de détection : date de création de l'Issue source. */
   detectedAt: string;
-  /** Date métier de correction : transition Project canonique unique vers DONE. */
+  /** Date de la dernière transition Project vers DONE, si applicable. */
   correctedAt?: string;
+  /** Date retenue pour les KPI, y compris repli estimé sur closedAt. */
+  effectiveCorrectedAt?: string;
+  /** Provenance explicite de la date retenue. */
+  correctionDateSource?: 'done' | 'last_done' | 'issue_closed' | 'unavailable';
   /** @deprecated I3 migration compatibility. Use detectedAt. */
   createdAt: string;
   /** @deprecated I3 migration compatibility. Use correctedAt. */
