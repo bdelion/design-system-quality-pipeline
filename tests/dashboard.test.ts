@@ -60,7 +60,11 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(auditsHtml).toContain('design-system-react');
   const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
   expect(issuesHtml).toContain('Analyse des issues');
-  expect(issuesHtml).toContain('data-issue-kpi="global"');
+  for (const source of ['global', 'done', 'estimated']) {
+    for (const statistic of ['average', 'median', 'p90']) {
+      expect(issuesHtml).toContain(`data-issue-kpi="${source}-${statistic}"`);
+    }
+  }
   expect(issuesHtml).toContain('data-issue-components');
   expect(issuesHtml).toContain('data-issue-dedupe');
   expect(issuesHtml).toContain('data-issue-column-sort');

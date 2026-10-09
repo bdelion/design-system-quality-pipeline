@@ -36,12 +36,13 @@
     const componentOnly = $('[data-issue-components]').checked;
     const filtered = items.filter((item) => {
       const labels = item.labels.length ? item.labels : ['Sans label'];
-      const eligible = labels.filter((label) => (!componentOnly || /^component:/i.test(label)) && (!filters.label.value || label === filters.label.value));
-      return eligible.length && (!filters.repo.value || item.repo === filters.repo.value) && (!filters.type.value || item.type === filters.type.value) && (!filters.status.value || item.status === filters.status.value) && (!filters.githubState.value || item.githubState === filters.githubState.value) && (!q || [item.repo, item.number, item.title, item.type, item.status, ...labels].join(' ').toLocaleLowerCase('fr').includes(q));
+      const eligible = labels.filter((label) => !filters.label.value || label === filters.label.value);
+      const hasComponent = item.labels.some((label) => /^component:/i.test(label));
+      return eligible.length && (!componentOnly || hasComponent) && (!filters.repo.value || item.repo === filters.repo.value) && (!filters.type.value || item.type === filters.type.value) && (!filters.status.value || item.status === filters.status.value) && (!filters.githubState.value || item.githubState === filters.githubState.value) && (!q || [item.repo, item.number, item.title, item.type, item.status, ...labels].join(' ').toLocaleLowerCase('fr').includes(q));
     });
     const groups = new Map();
     for (const item of filtered) {
-      const eligible = (item.labels.length ? item.labels : ['Sans label']).filter((label) => (!componentOnly || /^component:/i.test(label)) && (!filters.label.value || label === filters.label.value));
+      const eligible = (item.labels.length ? item.labels : ['Sans label']).filter((label) => !filters.label.value || label === filters.label.value);
       for (const row of rowsFor(item, eligible)) {
         const groupKey = [item.repo, row.label, item.type].join('\u0000');
         if (!groups.has(groupKey)) groups.set(groupKey, []);
@@ -54,13 +55,12 @@
       const closed = distinct.filter((item) => item.status === 'closed');
       const cancelled = distinct.filter((item) => item.status === 'cancelled');
       const oldest = [...open].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))[0];
-      const delays = closed.map((item) => item.delay).filter((delay) => delay !== null);
       const rate = (count) => (100 * count / distinct.length).toFixed(1) + '%';
       const prs = unique(distinct.flatMap((item) => item.prs)).length;
-      return group.map((item) => ({ item, values: [item.repo, item.number, item.label, item.type, item.status, item.githubState, prs, distinct.length, open.length, closed.length, cancelled.length, rate(open.length), rate(closed.length), rate(cancelled.length), oldest ? `#${oldest.number}` : '—', oldest ? dayAge(oldest).toFixed(1) + ' j' : '—', number(percentile(delays, .5)), number(percentile(delays, .9)), item.delay === null ? '—' : number(item.delay)], oldest }));
+      return group.map((item) => ({ item, values: [item.repo, item.number, item.label, item.type, item.status, item.githubState, prs, distinct.length, open.length, closed.length, cancelled.length, rate(open.length), rate(closed.length), rate(cancelled.length), oldest ? `#${oldest.number}` : '—', oldest ? dayAge(oldest).toFixed(1) + ' j' : '—', item.delay === null ? '—' : number(item.delay)], oldest }));
     });
     const visible = entries.filter(({ values }) => columns.every((control, index) => !control.value || String(values[index]).toLocaleLowerCase('fr').includes(control.value.toLocaleLowerCase('fr'))));
-    const sortIndex = columnSort >= 0 ? columnSort : ({ repo: 0, number: 1, age: 15, total: 7, delay: 18 })[$('[data-issue-sort]').value];
+    const sortIndex = columnSort >= 0 ? columnSort : ({ repo: 0, number: 1, age: 15, total: 7, delay: 16 })[$('[data-issue-sort]').value];
     visible.sort((a, b) => {
       const av = a.values[sortIndex], bv = b.values[sortIndex];
       const na = parseFloat(av), nb = parseFloat(bv);
@@ -70,7 +70,10 @@
     const displayed = unique(visible.map(({ item }) => key(item)));
     const relevant = selectionActive ? items.filter((item) => selection.has(key(item)) && displayed.includes(key(item))) : items.filter((item) => displayed.includes(key(item)));
     for (const [name, candidates] of Object.entries({ global: relevant.filter((item) => item.delay !== null), done: relevant.filter((item) => item.delay !== null && item.source === 'done'), estimated: relevant.filter((item) => item.delay !== null && item.source === 'estimated') })) {
-      $('[data-issue-kpi="' + name + '"]').textContent = number(candidates.length ? candidates.reduce((sum, item) => sum + item.delay, 0) / candidates.length : null);
+      const delays = candidates.map((item) => item.delay);
+      $('[data-issue-kpi="' + name + '-average"]').textContent = number(delays.length ? delays.reduce((sum, delay) => sum + delay, 0) / delays.length : null);
+      $('[data-issue-kpi="' + name + '-median"]').textContent = number(percentile(delays, .5));
+      $('[data-issue-kpi="' + name + '-p90"]').textContent = number(percentile(delays, .9));
       $('[data-issue-count="' + name + '"]').textContent = candidates.length + ' correction(s) · ' + (name === 'global' ? 'Done + estimées' : name === 'done' ? 'Done' : 'closedAt');
     }
     $('[data-issue-summary]').textContent = `${visible.length} lignes · ${displayed.length} issues distinctes · ${selectionActive ? relevant.length + ' issues sélectionnées' : 'KPI sur les issues filtrées'}`;
@@ -86,6 +89,6 @@
   $('[data-issue-select-all]').addEventListener('change', (event) => { for (const { item } of render()) { if (event.target.checked) selection.add(key(item)); else selection.delete(key(item)); } selectionActive = true; redraw(); });
   $('[data-issue-rows]').addEventListener('change', (event) => { const id = event.target.dataset.issueCheck; if (!id) return; if (event.target.checked) selection.add(id); else selection.delete(id); selectionActive = true; redraw(); });
   root.querySelectorAll('[data-issue-column-sort]').forEach((button) => button.addEventListener('click', () => { const next = Number(button.dataset.issueColumnSort); descending = columnSort === next ? !descending : false; columnSort = next; redraw(); }));
-  $('[data-issue-export]').addEventListener('click', () => { const visible = render(); const rows = [['Repository','Issue','Label','Type','Statut','État GitHub','PR','Total','Ouvertes','Closed','Cancelled','Taux ouvert','Taux closed','Taux cancelled','Plus vieille ouverte','Âge','Médiane','P90','Délai'], ...visible.map(({ values }) => values)]; const csv = '\ufeff' + rows.map((row) => row.map((cell) => '"' + String(cell).replace(/"/g, '""') + '"').join(';')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = 'analyse-issues.csv'; link.click(); URL.revokeObjectURL(url); });
+  $('[data-issue-export]').addEventListener('click', () => { const visible = render(); const rows = [['Repository','Issue','Label','Type','Statut','État GitHub','PR','Total','Ouvertes','Closed','Cancelled','Taux ouvert','Taux closed','Taux cancelled','Plus vieille ouverte','Âge','Délai'], ...visible.map(({ values }) => values)]; const csv = '\ufeff' + rows.map((row) => row.map((cell) => '"' + String(cell).replace(/"/g, '""') + '"').join(';')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = 'analyse-issues.csv'; link.click(); URL.revokeObjectURL(url); });
   redraw();
 })();
