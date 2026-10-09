@@ -264,3 +264,7 @@ La prochaine étape est l'implémentation des contrats métier I1 dans `src/doma
 **Version du package :** `0.1.0`
 **Stack :** Node.js 22 · TypeScript · Commander · Vitest · ESLint
 **Modèle configuré actuel :** `2.1`
+
+### Diagnostic des historiques GitHub
+
+Commande officielle : `npm.cmd run diagnose:history -- --raw data/raw/my-real-dataset.json` ; voir [le guide de diagnostic](docs/08-implementation/diagnostic-historique-github.md). Les scripts de maintenance sont `scripts/diagnose-history.mjs` et `scripts/clean.mjs`.

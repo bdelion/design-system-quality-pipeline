@@ -1,10 +1,10 @@
 # Diagnostic local des historiques GitHub
 
-Cette livraison **ajoute une commande en lecture seule**, sans modifier le collecteur, la normalisation, le contrat I3, les KPI ni le dashboard.
+La commande `diagnose:history` effectue un diagnostic en lecture seule. Elle ne modifie ni le collecteur, ni la normalisation, ni le contrat I3, ni les KPI, ni le dashboard.
 
-## Installation
+## Prérequis
 
-Copier `package.json`, `scripts/diagnose-history.mjs` et `tests/diagnose-history.test.ts` à la racine du repository en conservant les dossiers. Le ZIP est un **patch**, pas un repository complet.
+Exécuter les commandes depuis la racine du repository avec Node.js compatible et les dépendances installées (`npm.cmd ci` sous PowerShell).
 
 ## 1. Analyse locale du RAW (aucun appel GitHub)
 
@@ -46,3 +46,16 @@ Sous `data/diagnostics/` :
 - Les événements appartenant à un projet historique qui n'est plus courant peuvent être visibles côté API mais absents du RAW.
 - Le diagnostic ne prouve pas qu'une donnée historique n'a jamais existé chez GitHub.
 - La date de fusion d'une PR n'est pas substituée à la transition `Done`.
+
+## Diagnostic V2 : événements et périodes
+
+- `history-periods.csv` : année de création des issues et volumes par année (aucune date complète).
+- `history-live-sample.csv` : `apiOnlyTransitions`, `rawOnlyTransitions` et `exactTransitionMatch` comparent les transitions individuellement, avec multiplicité. Les empreintes HMAC et leur clé restent en mémoire ; seules les **quantités** de divergences sont exportées.
+- L'échantillonnage alterne issues sans historique, historiques sans Done et témoins ayant un Done. `--sample` reste plafonné à 1 000.
+- La comparaison utilise `(projectId, status, timestamp)` : une différence de précision de date, une transition absente ou une évolution GitHub peut produire un écart. **Ce diagnostic n'attribue pas automatiquement la cause au collecteur.**
+- Les années de création et les petits groupes peuvent présenter un risque de réidentification ; relire les exports avant tout partage.
+
+## Scripts maintenus
+
+- `scripts/diagnose-history.mjs` : outil officiel de diagnostic, couvert par `tests/diagnose-history.test.ts`.
+- `scripts/clean.mjs` : nettoyage des seuls répertoires générés `dist` et `data/runs` (commande `npm.cmd run clean`).

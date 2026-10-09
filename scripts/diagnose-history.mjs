@@ -1,12 +1,62 @@
 #!/usr/bin/env node
-/* global process, fetch, URL, console */
+/* global process, fetch, console */
 /** Local, read-only GitHub history diagnostic. Export contains no raw names or identifiers. */
 import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 if (existsSync('.env') && typeof process.loadEnvFile === 'function') process.loadEnvFile('.env');
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { randomBytes, createHmac } from 'node:crypto';
 
+/** Returns a keyed, non-reversible digest; the per-run key is never exported. */
+function digest(key, value) {
+  return createHmac('sha256', key).update(String(value)).digest('hex').slice(0, 24);
+}
+
+/** Canonical identity of a status transition; missing fields remain explicit. */
+export function transitionKey(projectId, status, at) {
+  return JSON.stringify([String(projectId ?? ''), String(status ?? ''), String(at ?? '')]);
+}
+
+/** Counts keyed transitions as a multiset so repeated identical events remain visible. */
+function countTransitions(items, key) {
+  const counts = new Map();
+  for (const item of items) {
+    const hash = digest(key, transitionKey(item.projectId, item.status, item.at));
+    counts.set(hash, (counts.get(hash) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/** Computes differences without exporting raw event values or dates. */
+export function compareTransitions(raw, api, key) {
+  const a = countTransitions(raw, key);
+  const b = countTransitions(api, key);
+  let apiOnly = 0;
+  let rawOnly = 0;
+  for (const [hash, n] of b) apiOnly += Math.max(0, n - (a.get(hash) ?? 0));
+  for (const [hash, n] of a) rawOnly += Math.max(0, n - (b.get(hash) ?? 0));
+  return { apiOnly, rawOnly, exactMatch: apiOnly === 0 && rawOnly === 0 };
+}
+
+/** Flattens locally collected project status histories without changing source data. */
+function rawTransitions(issue) {
+  return (issue.projectStatuses ?? []).flatMap((project) =>
+    (project.statusHistory ?? []).map((event) => ({
+      projectId: project.projectId,
+      status: event.status,
+      at: event.transitionedAt
+    }))
+  );
+}
+
+/** Groups creation years; unknown or malformed dates do not expose raw values. */
+function creationPeriod(issue) {
+  const year = String(issue.createdAt ?? '').slice(0, 4);
+  return /^20\d{2}$/.test(year) ? year : 'UNKNOWN';
+}
+
+/** Parses and validates CLI options without accepting secrets as arguments. */
 export function parseArgs(argv) {
   const options = {
     raw: 'data/raw/my-real-dataset.json',
@@ -24,13 +74,16 @@ export function parseArgs(argv) {
     else throw new Error(`Unknown option: ${key}`);
   }
   options.sample = Number(options.sample);
-  if (!Number.isSafeInteger(options.sample) || options.sample < 1 || options.sample > 100)
-    throw new Error('--sample must be 1..100');
+  if (!Number.isSafeInteger(options.sample) || options.sample < 1 || options.sample > 1000)
+    throw new Error('--sample must be 1..1000');
   return options;
 }
 
+/** Lists the transitions already attached to project contexts in the RAW. */
 const historyOf = (issue) => (issue.projectStatuses ?? []).flatMap((p) => p.statusHistory ?? []);
+/** Recognizes the supported Done labels without inferring Done from CLOSED. */
 const isDone = (status) => /^(?:done|termin[eé]e?|✅\s*done)$/i.test(String(status ?? '').trim());
+/** Classifies an issue from its collected statuses and dated Done transitions. */
 export function classify(issue) {
   const history = historyOf(issue);
   const done = history.filter((t) => isDone(t.status) && t.transitionedAt);
@@ -54,6 +107,7 @@ export function classify(issue) {
   };
 }
 
+/** Produces non-identifying counts and local issue references for sampling. */
 function summarize(dataset) {
   const rows = [];
   for (const repo of dataset.repositories ?? [])
@@ -74,6 +128,7 @@ function summarize(dataset) {
   };
 }
 
+/** Reads every available GitHub status-timeline page for one issue. */
 async function fetchLiveHistory(repo, issue, token, graphqlUrl) {
   const owner = repo.owner;
   const name = repo.name;
@@ -83,6 +138,7 @@ async function fetchLiveHistory(repo, issue, token, graphqlUrl) {
   let done = 0;
   let pages = 0;
   let currentProjectCount = null;
+  const transitions = [];
   const historicalProjectIds = new Set();
   const currentProjectIds = new Set();
   do {
@@ -119,6 +175,7 @@ async function fetchLiveHistory(repo, issue, token, graphqlUrl) {
     for (const event of timeline?.nodes ?? []) {
       if (!event?.createdAt || !event?.status) continue;
       events++;
+      transitions.push({ projectId: event.project?.id, status: event.status, at: event.createdAt });
       if (isDone(event.status)) done++;
       if (event.project?.id) historicalProjectIds.add(event.project.id);
     }
@@ -133,16 +190,19 @@ async function fetchLiveHistory(repo, issue, token, graphqlUrl) {
     events,
     done,
     pages,
+    transitions,
     currentProjectCount,
     eventsForProjectsNotCurrent: [...historicalProjectIds].filter((id) => !currentProjectIds.has(id)).length
   };
 }
 
+/** Runs offline and optional live diagnostics, writing pseudonymized reports only. */
 export async function diagnose(options) {
   const raw = JSON.parse(await readFile(resolve(options.raw), 'utf8'));
   const { rows, totals } = summarize(raw);
   const salt = randomBytes(32);
-  const pseudonym = (value) => createHmac('sha256', salt).update(String(value)).digest('hex').slice(0, 16);
+  /** Creates a stable pseudonym within this run only. */
+  const pseudonym = (value) => digest(salt, value).slice(0, 16);
   const fixture = options.fixture ? JSON.parse(await readFile(resolve(options.fixture), 'utf8')) : null;
   const fixtureStats = fixture ? summarize(fixture).totals : null;
   // Cross-file identifiers are deliberately NOT matched: anonymization changes IDs and dates.
@@ -150,6 +210,7 @@ export async function diagnose(options) {
     issue: pseudonym(`${r.repo.id}:${r.issue.id}`),
     repository: pseudonym(r.repo.id),
     category: r.case,
+    createdYear: creationPeriod(r.issue),
     projectContexts: r.statusContexts,
     historyEvents: r.historyEvents,
     doneTransitions: r.doneTransitions,
@@ -161,11 +222,23 @@ export async function diagnose(options) {
     const token = process.env.GITHUB_TOKEN;
     if (!token) throw new Error('GITHUB_TOKEN is required for --live');
     const graphqlUrl = process.env.GITHUB_GRAPHQL_URL || 'https://api.github.com/graphql';
-    // Deterministic sampling of missing histories and PR-without-DONE, plus a few controls.
-    const targets = [
-      ...rows.filter((r) => r.historyEvents === 0 || (r.hasPr && r.doneTransitions === 0)),
-      ...rows.filter((r) => r.doneTransitions > 0)
-    ].slice(0, options.sample);
+    // Stratified round-robin sampling: controls are included even for small samples.
+    const groups = [
+      rows.filter((r) => r.historyEvents === 0),
+      rows.filter((r) => r.historyEvents > 0 && r.doneTransitions === 0),
+      rows.filter((r) => r.doneTransitions > 0)
+    ];
+    const targets = [];
+    for (let index = 0; targets.length < options.sample; index++) {
+      let added = false;
+      for (const group of groups) {
+        if (group[index] && targets.length < options.sample) {
+          targets.push(group[index]);
+          added = true;
+        }
+      }
+      if (!added) break;
+    }
     for (const row of targets) {
       const entry = {
         issue: pseudonym(`${row.repo.id}:${row.issue.id}`),
@@ -180,6 +253,10 @@ export async function diagnose(options) {
         entry.historicalProjectsNotCurrent = observed.eventsForProjectsNotCurrent;
         entry.apiExceedsRaw = observed.events > row.historyEvents;
         entry.apiDoneExceedsRaw = observed.done > row.doneTransitions;
+        const difference = compareTransitions(rawTransitions(row.issue), observed.transitions, salt);
+        entry.apiOnlyTransitions = difference.apiOnly;
+        entry.rawOnlyTransitions = difference.rawOnly;
+        entry.exactTransitionMatch = difference.exactMatch;
         live.outcomes.OK = (live.outcomes.OK ?? 0) + 1;
       } catch (error) {
         const code = String(error.message).startsWith('HTTP_')
@@ -219,12 +296,33 @@ export async function diagnose(options) {
       outcomes: live.outcomes,
       apiMoreEventsThanRaw: live.comparisons.filter((r) => r.apiExceedsRaw).length,
       apiMoreDoneThanRaw: live.comparisons.filter((r) => r.apiDoneExceedsRaw).length,
+      exactTransitionMismatches: live.comparisons.filter((r) => r.exactTransitionMatch === false).length,
+      apiOnlyTransitions: live.comparisons.reduce((sum, r) => sum + (r.apiOnlyTransitions ?? 0), 0),
+      rawOnlyTransitions: live.comparisons.reduce((sum, r) => sum + (r.rawOnlyTransitions ?? 0), 0),
       historicalProjectsNotCurrent: live.comparisons.reduce(
         (sum, r) => sum + (r.historicalProjectsNotCurrent ?? 0),
         0
       )
     }
   };
+  const periods = Object.entries(
+    cases.reduce((acc, row) => {
+      const period = row.createdYear;
+      const bucket = (acc[period] ??= {
+        createdYear: period,
+        issues: 0,
+        noHistory: 0,
+        prWithoutDatedDone: 0
+      });
+      bucket.issues++;
+      if (row.historyEvents === 0) bucket.noHistory++;
+      if (row.linkedPr && row.doneTransitions === 0) bucket.prWithoutDatedDone++;
+      return acc;
+    }, {})
+  )
+    .map(([, value]) => value)
+    .sort((a, b) => a.createdYear.localeCompare(b.createdYear));
+  /** Serializes controlled, non-free-text diagnostic columns as CSV. */
   const csv = (data) =>
     data.length
       ? [
@@ -238,6 +336,7 @@ export async function diagnose(options) {
       : '';
   await writeFile(join(output, 'history-summary.json'), JSON.stringify(summary, null, 2) + '\n');
   await writeFile(join(output, 'history-cases.csv'), csv(cases));
+  await writeFile(join(output, 'history-periods.csv'), csv(periods));
   if (options.live) await writeFile(join(output, 'history-live-sample.csv'), csv(live.comparisons));
   const report =
     `# Diagnostic local des historiques GitHub\n\nMode : ${summary.mode}. Les identifiants exportés sont des pseudonymes HMAC à sel aléatoire non exporté.\n\n` +
@@ -247,14 +346,14 @@ export async function diagnose(options) {
       .join('\n') +
     '\n\n' +
     (options.live
-      ? `## Comparaison API (échantillon)\n\nIssues vérifiées : ${live.checked}. Réponses API contenant davantage d'événements que le RAW : ${summary.live.apiMoreEventsThanRaw}. Davantage de transitions Done : ${summary.live.apiMoreDoneThanRaw}. Projets historiques absents des projets courants (somme sur échantillon) : ${summary.live.historicalProjectsNotCurrent}.\n\nErreurs par code : ${JSON.stringify(live.outcomes)}.\n\n`
+      ? `## Comparaison API (échantillon)\n\nIssues vérifiées : ${live.checked}. Réponses API contenant davantage d'événements que le RAW : ${summary.live.apiMoreEventsThanRaw}. Davantage de transitions Done : ${summary.live.apiMoreDoneThanRaw}. Écarts de transitions exactes : ${summary.live.exactTransitionMismatches}. Projets historiques absents des projets courants (somme sur échantillon) : ${summary.live.historicalProjectsNotCurrent}.\n\nErreurs par code : ${JSON.stringify(live.outcomes)}.\n\n`
       : '') +
-    `## Interprétation\n\nUne absence dans le RAW ne prouve pas une absence côté GitHub. Les différences API/RAW peuvent provenir de l'évolution des données entre les collectes. Le contrôle de pagination des projectItems est signalé explicitement. Une PR fusionnée ne prouve pas une transition métier Done. Le contrat I3 n'est pas modifié.\n\n## Confidentialité\n\nNe partager que ces fichiers de diagnostic après relecture. Ne pas partager le RAW, le token, les logs HTTP ni les fichiers de trace de l'anonymiseur. Les catégories et volumes peuvent rester sensibles.\n`;
+    `## Analyse temporelle\n\nVoir history-periods.csv (année de création, volumes sans historique et PR sans Done daté).\n\n## Interprétation\n\nUne absence dans le RAW ne prouve pas une absence côté GitHub. Les différences API/RAW peuvent provenir de l'évolution des données entre les collectes. Le contrôle de pagination des projectItems est signalé explicitement. Une PR fusionnée ne prouve pas une transition métier Done. Le contrat I3 n'est pas modifié.\n\n## Confidentialité\n\nNe partager que ces fichiers de diagnostic après relecture. Ne pas partager le RAW, le token, les logs HTTP ni les fichiers de trace de l'anonymiseur. Les catégories et volumes peuvent rester sensibles.\n`;
   await writeFile(join(output, 'history-report.md'), report);
   return summary;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     const options = parseArgs(process.argv.slice(2));
     if (options.help)

@@ -131,3 +131,5 @@ La réorganisation documentaire suit une migration progressive :
 7. seulement ensuite déplacer l'ancien document dans `_historique/`.
 
 Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cette vérification n'a pas été réalisée sujet par sujet.
+
+- [Diagnostic des historiques GitHub (API/RAW, confidentialité et scripts)](08-implementation/diagnostic-historique-github.md)
