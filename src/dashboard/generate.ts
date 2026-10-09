@@ -1,3 +1,4 @@
+import { calculateHistoryCoverage, correctionDateReason } from './history-coverage.js';
 /**
  * @module dashboard.generate
  * Génère les pages et ressources statiques du dashboard à partir d’un snapshot.
@@ -339,6 +340,10 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   const oldest = metricOrUnknown(metrics, 'anomaly.backlog.oldestAge');
   const criticalityCoverage = metricOrUnknown(metrics, 'anomaly.criticalityCoverage');
 
+  const coverage = calculateHistoryCoverage(snapshot.normalizedData.issues ?? [], snapshot.normalizedData.anomalies);
+  const coverageIssueById = new Map((snapshot.normalizedData.issues ?? []).map((issue) => [issue.issueId, issue]));
+  const reasonLabels = { available: 'Date métier fiable', multiple_done: 'Plusieurs transitions Done', no_project_history: 'Historique projet absent', no_done_transition: 'Aucune transition Done' };
+
   const rows = snapshot.normalizedData.anomalies.map((anomaly) => {
     const component = anomaly.componentId ? snapshot.normalizedData.components.find((item) => item.componentId === anomaly.componentId) : undefined;
     const repositoryName = libraryById.get(issueLibraryById.get(anomaly.issueId) ?? component?.libraryId ?? '') ?? 'repository inconnu';
@@ -348,16 +353,16 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
     const categoriesText = anomaly.categories.join(', ') || '—';
     const linkedPullRequests = anomaly.pullRequestRefs.map((reference) => githubReference(snapshot, reference, githubUrl)).join(' ') || '—';
     const created = formatDateShort(anomaly.createdAt);
-    const firstCorrection = anomaly.correctedAt ?? anomaly.firstDoneAt;
-    const correctedAt = firstCorrection ? formatDateShort(firstCorrection) : '—';
-    const delay = firstCorrection ? `${delayDays(anomaly.createdAt, firstCorrection).toFixed(1)} j` : '—';
+    const reason = correctionDateReason(anomaly, coverageIssueById.get(anomaly.issueId));
+    const correctedAt = anomaly.correctedAt ? formatDateShort(anomaly.correctedAt) : '—';
+    const delay = anomaly.correctedAt ? `${delayDays(anomaly.createdAt, anomaly.correctedAt).toFixed(1)} j` : '—';
     return `<tr data-table-row data-repository="${escapeHtml(repositoryName)}" data-status="${status}" data-criticality="${escapeHtml(criticality)}" data-categories="${escapeHtml(anomaly.categories.join('|'))}">
       <td><strong>${escapeHtml(anomaly.anomalyId)}</strong><small>${githubReference(snapshot, anomaly.provenance.sourceId ?? 'source inconnue', githubUrl)}</small></td>
       <td>${repositoryReference(snapshot, repositoryName, githubUrl)}<small>${escapeHtml(component?.name?.trim() || anomaly.componentId?.trim() || 'composant non déterminé')}</small></td>
       <td><span class="tag tag-${criticality}">${criticalityLabel(anomaly.criticality)}</span></td>
       <td>${escapeHtml(categoriesText)}</td>
       <td><span class="state state-${status}">${statusLabel}</span></td>
-      <td>${created}</td><td>${correctedAt}</td><td>${delay}</td><td>${linkedPullRequests}</td>
+      <td>${created}</td><td>${correctedAt}</td><td>${delay}</td><td>${escapeHtml(reasonLabels[reason])}</td><td>${linkedPullRequests}</td>
     </tr>`;
   }).join('');
 
@@ -384,6 +389,13 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
     ${flowMetricPanel('Annulées', cancelled, 'anomalies.html?status=cancelled', cancelled.definition)}
   </section>
 
+  <article class="panel" id="history-coverage" aria-labelledby="history-coverage-heading">
+    <div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2 id="history-coverage-heading">Couverture des historiques et dates métier</h2></div><span class="badge">${coverage.issuesWithHistory} / ${coverage.issuesTotal} issues avec historique</span></div>
+    <p>${coverage.issuesWithoutHistory} issues sans transition de statut Project observable. ${coverage.correctionDatesAvailable} / ${coverage.anomaliesTotal} anomalies disposent d’une date de correction métier fiable.</p>
+    <p class="muted">Motifs d’indisponibilité : ${coverage.reasons.no_project_history} sans historique projet, ${coverage.reasons.no_done_transition} sans transition Done, ${coverage.reasons.multiple_done} avec plusieurs transitions Done. Ces chiffres décrivent la couverture des données ; ils ne modifient pas les KPI.</p>
+    <p class="muted">Une PR fusionnée ou une issue fermée ne prouve pas une transition métier Done. Les historiques anciens peuvent être indisponibles.</p>
+  </article>
+
   <section class="section-heading"><div><p class="eyebrow">Délais</p><h2>Temps de correction</h2></div><span class="badge">jours calendaires</span></section>
   <section class="kpi-grid anomaly-delay-grid">
     ${metricCard('Médiane', median, 'délai typique', 'anomalies.html')}
@@ -399,7 +411,7 @@ function anomaliesContent(snapshot: Snapshot, githubUrl?: string): string {
   <article class="panel table-panel">
     <div class="panel-heading"><div><p class="eyebrow">Détail des objets</p><h2>Anomalies suivies</h2></div><span class="badge">${snapshot.normalizedData.anomalies.length} lignes</span></div>
     <div class="filter-bar"><input class="search" data-filter placeholder="Rechercher une anomalie, un composant, une catégorie..."><select data-filter-repository><option value="">Tous les repositories</option>${repositories.map((repository) => `<option value="${escapeHtml(repository)}">${escapeHtml(repository)}</option>`).join('')}</select><select data-filter-criticality><option value="">Toutes les criticités</option><option value="blocking">Bloquante</option><option value="major">Majeure</option><option value="minor">Mineure</option><option value="unknown">Inconnue</option></select><select data-filter-category><option value="">Toutes les catégories</option>${categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('')}</select><select data-filter-status><option value="">Tous les états</option><option value="open">Ouverte</option><option value="in_progress">En cours</option><option value="done">Terminée</option><option value="reopened">Rouverte</option><option value="cancelled">Annulée</option></select><button type="button" class="reset-button" data-reset-filters>Réinitialiser</button></div>
-    <div class="table-wrap"><table><thead><tr><th>Anomalie</th><th>Repository / composant</th><th>Criticité</th><th>Catégorie</th><th>État</th><th>Créée</th><th>1re correction</th><th>Délai</th><th>PR</th></tr></thead><tbody data-table>${rows}</tbody></table></div>
+    <div class="table-wrap"><table><thead><tr><th>Anomalie</th><th>Repository / composant</th><th>Criticité</th><th>Catégorie</th><th>État</th><th>Créée</th><th>Correction métier</th><th>Délai</th><th>Disponibilité date</th><th>PR</th></tr></thead><tbody data-table>${rows}</tbody></table></div>
   </article>
 
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Alertes et décisions de calcul</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${issues || '<li><div><strong>Aucune alerte</strong><p>Les métriques ne présentent aucune réserve DQ dans ce snapshot.</p></div></li>'}</ul></article>`;

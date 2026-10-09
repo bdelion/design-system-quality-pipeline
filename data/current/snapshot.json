@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20261009080833519-1a61c9df",
-  "capturedAt": "2026-10-09T08:08:33.519Z",
+  "snapshotId": "snapshot-20261009160815169-f02e9190",
+  "capturedAt": "2026-10-09T16:08:15.169Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-10-09T05:53:23.530Z",
@@ -245314,8 +245314,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T07:52:11.262Z",
-          "to": "2026-10-09T08:08:33.519Z"
+          "from": "2026-10-09T08:08:33.519Z",
+          "to": "2026-10-09T16:08:15.169Z"
         },
         "definition": "Nombre d’anomalies apparues entre le snapshot précédent et le snapshot courant.",
         "sourceEntityIds": [],
@@ -245333,8 +245333,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T07:52:11.262Z",
-          "to": "2026-10-09T08:08:33.519Z"
+          "from": "2026-10-09T08:08:33.519Z",
+          "to": "2026-10-09T16:08:15.169Z"
         },
         "definition": "Nombre d’anomalies ayant acquis leur première correction entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -245498,8 +245498,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T07:52:11.262Z",
-          "to": "2026-10-09T08:08:33.519Z"
+          "from": "2026-10-09T08:08:33.519Z",
+          "to": "2026-10-09T16:08:15.169Z"
         },
         "definition": "Nombre d’anomalies passées dans l’état rouvert entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -245511,36 +245511,17 @@
       },
       "anomaly.flow.cancelled": {
         "id": "anomaly.flow.cancelled",
-        "value": 16,
+        "value": 0,
         "unit": "count",
-        "numerator": 16,
-        "denominator": 18,
+        "numerator": 0,
+        "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T07:52:11.262Z",
-          "to": "2026-10-09T08:08:33.519Z"
+          "from": "2026-10-09T08:08:33.519Z",
+          "to": "2026-10-09T16:08:15.169Z"
         },
         "definition": "Nombre d’anomalies devenues annulées entre les deux snapshots.",
-        "sourceEntityIds": [
-          "anomaly-17cb5133f3a0",
-          "anomaly-0b79e8f1ac95",
-          "anomaly-ba2a199c418a",
-          "anomaly-72908abf396b",
-          "anomaly-093859ffe9e8",
-          "anomaly-28aa38197075",
-          "anomaly-9bc87fd5218b",
-          "anomaly-b6e88586e357",
-          "anomaly-fa1a12959e6d",
-          "anomaly-3c51a83a2ee1",
-          "anomaly-99a427a7a50a",
-          "anomaly-b32a7f9e175b",
-          "anomaly-2c88db7e9182",
-          "anomaly-4fa7d3034b0f",
-          "anomaly-3d474cce653b",
-          "anomaly-95953865a3f4",
-          "anomaly-a86f168d9cc4",
-          "anomaly-a6cbe104ef74"
-        ],
+        "sourceEntityIds": [],
         "reliability": {
           "status": "partial",
           "issueIds": [
