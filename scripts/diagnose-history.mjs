@@ -39,6 +39,28 @@ export function compareTransitions(raw, api, key) {
   return { apiOnly, rawOnly, exactMatch: apiOnly === 0 && rawOnly === 0 };
 }
 
+/** Classifies API-only transitions relative to an explicitly supplied RAW collection instant. */
+export function classifyExtraTransitions(raw, api, key, collectedAt) {
+  const counts = countTransitions(raw, key);
+  const remaining = new Map(counts);
+  const result = { beforeOrAtCollection: 0, afterCollection: 0, unknownTime: 0, done: 0, other: 0 };
+  for (const event of api) {
+    const hash = digest(key, transitionKey(event.projectId, event.status, event.at));
+    const available = remaining.get(hash) ?? 0;
+    if (available > 0) {
+      remaining.set(hash, available - 1);
+      continue;
+    }
+    if (isDone(event.status)) result.done++;
+    else result.other++;
+    const time = Date.parse(event.at ?? '');
+    if (!Number.isFinite(time)) result.unknownTime++;
+    else if (time <= Date.parse(collectedAt)) result.beforeOrAtCollection++;
+    else result.afterCollection++;
+  }
+  return result;
+}
+
 /** Flattens locally collected project status histories without changing source data. */
 function rawTransitions(issue) {
   return (issue.projectStatuses ?? []).flatMap((project) =>
@@ -67,7 +89,7 @@ export function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const key = argv[i];
     if (key === '--live') options.live = true;
-    else if (['--raw', '--fixture', '--output', '--sample'].includes(key)) {
+    else if (['--raw', '--fixture', '--output', '--sample', '--collected-at'].includes(key)) {
       if (!argv[i + 1]) throw new Error(`Missing value for ${key}`);
       options[key.slice(2)] = argv[++i];
     } else if (key === '--help') options.help = true;
@@ -76,6 +98,15 @@ export function parseArgs(argv) {
   options.sample = Number(options.sample);
   if (!Number.isSafeInteger(options.sample) || options.sample < 1 || options.sample > 1000)
     throw new Error('--sample must be 1..1000');
+  if (options['collected-at']) {
+    const value = options['collected-at'];
+    if (
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
+      !Number.isFinite(Date.parse(value))
+    )
+      throw new Error('--collected-at requires an ISO timestamp with timezone');
+    options.collectedAt = value;
+  }
   return options;
 }
 
@@ -257,6 +288,19 @@ export async function diagnose(options) {
         entry.apiOnlyTransitions = difference.apiOnly;
         entry.rawOnlyTransitions = difference.rawOnly;
         entry.exactTransitionMatch = difference.exactMatch;
+        if (options.collectedAt) {
+          const extra = classifyExtraTransitions(
+            rawTransitions(row.issue),
+            observed.transitions,
+            salt,
+            options.collectedAt
+          );
+          entry.apiOnlyBeforeOrAtCollection = extra.beforeOrAtCollection;
+          entry.apiOnlyAfterCollection = extra.afterCollection;
+          entry.apiOnlyUnknownTime = extra.unknownTime;
+          entry.apiOnlyDone = extra.done;
+          entry.apiOnlyOther = extra.other;
+        }
         live.outcomes.OK = (live.outcomes.OK ?? 0) + 1;
       } catch (error) {
         const code = String(error.message).startsWith('HTTP_')
@@ -299,6 +343,11 @@ export async function diagnose(options) {
       exactTransitionMismatches: live.comparisons.filter((r) => r.exactTransitionMatch === false).length,
       apiOnlyTransitions: live.comparisons.reduce((sum, r) => sum + (r.apiOnlyTransitions ?? 0), 0),
       rawOnlyTransitions: live.comparisons.reduce((sum, r) => sum + (r.rawOnlyTransitions ?? 0), 0),
+      apiOnlyBeforeOrAtCollection: live.comparisons.reduce(
+        (n, r) => n + (r.apiOnlyBeforeOrAtCollection ?? 0),
+        0
+      ),
+      apiOnlyAfterCollection: live.comparisons.reduce((n, r) => n + (r.apiOnlyAfterCollection ?? 0), 0),
       historicalProjectsNotCurrent: live.comparisons.reduce(
         (sum, r) => sum + (r.historicalProjectsNotCurrent ?? 0),
         0
@@ -358,7 +407,7 @@ if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
     const options = parseArgs(process.argv.slice(2));
     if (options.help)
       console.log(
-        'npm run diagnose:history -- --raw <local-raw.json> [--fixture <anonymized.json>] [--live --sample 20] [--output data/diagnostics]'
+        'npm run diagnose:history -- --raw <local-raw.json> [--fixture <anonymized.json>] [--live --sample 20 --collected-at 2026-10-09T08:00:00+02:00] [--output data/diagnostics]'
       );
     else console.log(JSON.stringify(await diagnose(options), null, 2));
   } catch (error) {
