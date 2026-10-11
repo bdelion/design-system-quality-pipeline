@@ -346,3 +346,5 @@ En CI ou lorsque stderr est redirigé, seuls le démarrage, le bilan et les aver
 ## Releases automatiques
 
 Chaque PR fusionnée sur `main` peut produire un tag `vX.Y.Z` et une release après réussite de toute la CI. Rupture explicite : majeure ; `feat` : mineure ; autres changements : patch. Les notes reprennent les explications utilisateurs de la PR et les liens de validation. Voir [activation, permissions et relances](docs/08-implementation/releases-automatiques.md).
+
+Les cartes de périmètre disposent d’une infobulle d’information accessible via le petit bouton « i », au clavier ou au clic.

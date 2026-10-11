@@ -1683,3 +1683,60 @@ caption {
     font-size: 12px;
   }
 }
+
+.compact-kpi {
+  padding: 14px 16px;
+}
+.compact-kpi .kpi-label {
+  display: block;
+  padding-right: 24px;
+}
+.compact-kpi .number-indicator {
+  font-size: 26px;
+  margin: 8px 0 6px;
+}
+.metric-info-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: #edf2fa;
+  color: var(--cyan);
+  font-size: 11px;
+  line-height: 1;
+}
+.metric-tooltip {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(320px, calc(100vw - 24px));
+  box-sizing: border-box;
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 32, 91, 0.16);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.metric-tooltip p {
+  margin: 0 0 10px;
+}
+.metric-tooltip p:empty {
+  display: none;
+}
+.metric-tooltip p:last-child {
+  margin-bottom: 0;
+}
+.metric-tooltip a {
+  color: var(--cyan);
+  text-decoration: underline;
+}

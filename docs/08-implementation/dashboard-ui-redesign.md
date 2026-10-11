@@ -30,3 +30,5 @@ Les captures sont des preuves de revue visuelle, sans comparaison pixel par pixe
 Validation : npm run check:dashboard. Prévisualisation : npm run dashboard:preview, puis npm run dashboard:serve -- data/dashboard-refactor-preview/dashboard.
 
 La page Accessibilité présente les répartitions par criticité, catégorie et composant en barres horizontales, avec valeurs textuelles et détails dépliables. Elles utilisent les agrégats Analytics du périmètre repository/composant/version ; un ciblage sans agrégat affiche une indisponibilité. Les populations présumées restent comprises dans ce périmètre, sans être requalifiées.
+
+Les cartes d’indicateurs de périmètre sont compactes. Un bouton d’information de 24 px en haut à droite ouvre une infobulle au clic, à Entrée ou Espace. Échap et un clic extérieur la ferment. Elle conserve les définitions, réserves et liens ; son rôle dialog permet ces liens interactifs. Les états indisponibles restent visibles dans la carte.

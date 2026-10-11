@@ -148,7 +148,7 @@ test('six espaces, explication proche du chiffre et absence des anciens cartouch
   await expect(page.locator('nav[aria-label="Navigation principale"] a')).toHaveCount(6);
   await expect(page.getByRole('heading', { name: 'Périmètre de navigation' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Preuves des métriques Analytics' })).toHaveCount(0);
-  await page.locator('.metric-info summary').first().click();
+  await page.locator('.metric-info-button').first().click();
   await expect(page.getByText('Composants couverts / composants présents', { exact: false })).toBeVisible();
   await page.goto('/quality.html');
   await expect(page.locator('[data-context-filter]')).toHaveCount(0);
@@ -289,4 +289,33 @@ test('les graphiques accessibilité restituent les agrégats et suivent les filt
   await page.goto('/accessibility.html?category=unknown');
   await expect(page.locator('[data-distribution]')).toHaveCount(0);
   await expect(page.locator('[data-workspace-breakdowns]')).toContainText('indisponibles');
+});
+
+test('cartes compactes et infobulles utilisables au clavier et sur mobile', async ({ page }, testInfo) => {
+  await page.goto('/accessibility.html');
+  const button = page.locator('.metric-info-button').first();
+  const card = page.locator('.compact-kpi').first();
+  const cardBounds = await card.boundingBox();
+  const buttonBounds = await button.boundingBox();
+  expect(buttonBounds!.width).toBeLessThanOrEqual(24);
+  expect(buttonBounds!.y - cardBounds!.y).toBeLessThan(16);
+  expect(cardBounds!.height).toBeLessThan(180);
+  await card.screenshot({ path: testInfo.outputPath('compact-card.png') });
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await expect(button).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('.metric-tooltip:popover-open')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(button).toHaveAttribute('aria-expanded', 'false');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await button.click();
+  const tooltip = page.locator('.metric-tooltip:popover-open');
+  const bounds = await tooltip.boundingBox();
+  await tooltip.screenshot({ path: testInfo.outputPath('metric-tooltip.png') });
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+  expect(
+    (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze())
+      .violations
+  ).toEqual([]);
 });

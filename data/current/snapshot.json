@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20261011160808087-80f4ba1c",
-  "capturedAt": "2026-10-11T16:08:08.087Z",
+  "snapshotId": "snapshot-20261011200749851-c28eb4ef",
+  "capturedAt": "2026-10-11T20:07:49.851Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-10-09T05:53:23.530Z",
@@ -415614,8 +415614,8 @@
         "denominator": 0,
         "scope": "issue",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Issues de tous types apparues entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -415990,8 +415990,8 @@
         "denominator": 0,
         "scope": "issue",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Issues de tous types passées à l’état traité entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -416366,8 +416366,8 @@
         "denominator": 0,
         "scope": "issue",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Issues de tous types passées de traité à ouvert entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -416742,8 +416742,8 @@
         "denominator": 0,
         "scope": "issue",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Issues de tous types devenues annulées entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -417118,8 +417118,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Nombre d’anomalies apparues entre le snapshot précédent et le snapshot courant.",
         "sourceEntityIds": [],
@@ -417137,8 +417137,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Nombre d’anomalies ayant acquis leur première correction entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -417279,8 +417279,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Nombre d’anomalies passées dans l’état rouvert entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -417298,8 +417298,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T15:47:46.208Z",
-          "to": "2026-10-11T16:08:08.087Z"
+          "from": "2026-10-11T19:59:54.924Z",
+          "to": "2026-10-11T20:07:49.851Z"
         },
         "definition": "Nombre d’anomalies devenues annulées entre les deux snapshots.",
         "sourceEntityIds": [],
