@@ -14,10 +14,13 @@ import type {
 import { applyComponentVersionVerdicts } from '../analytics/component-versions.js';
 
 /**
- * Builds release-time and current-knowledge views without rewriting business dates.
- * Release-time facts are selected only from explicit business timestamps.
+ * Construit les vues à la release et de connaissance actuelle sans réécrire les dates métier.
+ * Les états de release déjà capturés dans un snapshot comparable sont conservés immuables.
  */
-export function buildVersionHistoricalStates(data: NormalizedData): VersionHistoricalState[] {
+export function buildVersionHistoricalStates(
+  data: NormalizedData,
+  frozenStates: readonly VersionHistoricalState[] = []
+): VersionHistoricalState[] {
   return (data.versions ?? [])
     .filter((version): version is Version & { releasedAt: string } => version.releasedAt !== undefined)
     .sort(
@@ -27,7 +30,11 @@ export function buildVersionHistoricalStates(data: NormalizedData): VersionHisto
     .map((version) => ({
       versionId: version.versionId,
       releasedAt: version.releasedAt,
-      atRelease: buildVersionView(data, version, version.releasedAt),
+      atRelease: structuredClone(
+        frozenStates.find(
+          (state) => state.versionId === version.versionId && state.releasedAt === version.releasedAt
+        )?.atRelease ?? buildVersionView(data, version, version.releasedAt)
+      ),
       currentKnowledge: buildVersionView(data, version)
     }));
 }
@@ -102,7 +109,7 @@ export interface SnapshotCompatibility {
   ruleVersion: string;
 }
 
-/** Selects the latest snapshot that can be compared without mixing rule/model semantics. */
+/** Sélectionne le dernier snapshot comparable sans mélanger les règles, modèles ou périmètres. */
 export function latestComparableSnapshot(
   snapshots: Snapshot[],
   target: SnapshotCompatibility
@@ -160,7 +167,7 @@ export interface MetricHistoryPoint {
   reliability: string;
 }
 
-/** Reads stored metric values as-is; historical snapshots are never recalculated. */
+/** Lit les métriques stockées telles quelles, sans recalculer les anciens snapshots. */
 export function metricHistory(
   snapshots: Snapshot[],
   metricId: string,

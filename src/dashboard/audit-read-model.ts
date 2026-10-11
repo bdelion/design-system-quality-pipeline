@@ -1,6 +1,7 @@
 import type { Audit, ComponentVersion, Issue, Snapshot } from '../domain/types.js';
 import { anomaliesForAudit, auditVersionLabel } from './audit-relations.js';
-import { isCompletedAudit, latestCompletedAudit } from './audit-selection.js';
+import { latestCompletedAudit } from './audit-selection.js';
+import { auditProgress, issueClassification } from '../domain/business.js';
 
 /** Familles métier exclusives pour la lecture des issues du dashboard. */
 export type IssueFamily = 'audit' | 'anomaly' | 'other';
@@ -23,17 +24,14 @@ export interface ComponentVersionAuditSummary {
 
 /** Classe une issue à partir de son identité normalisée, sans assimiler BUG à anomalie RGAA. */
 export function classifyIssue(issue: Issue, snapshot: Pick<Snapshot, 'normalizedData'>): IssueFamily {
-  // L'identité d'audit prime en cas de données sources contradictoires.
-  if (snapshot.normalizedData.audits.some((audit) => audit.issueId === issue.issueId)) return 'audit';
-  if (snapshot.normalizedData.anomalies.some((anomaly) => anomaly.issueId === issue.issueId)) return 'anomaly';
-  return 'other';
+  const family = issueClassification(issue, snapshot.normalizedData);
+  return family === 'audit' ? 'audit' : ['audit_anomaly', 'anomaly'].includes(family) ? 'anomaly' : 'other';
 }
 
 /** Distingue l'avancement d'un audit de son résultat de conformité. */
-export function auditLifecycle(audit: Audit): { progress: 'pending' | 'ongoing' | 'completed'; verdict: Audit['objectiveAuditResult'] | null } {
-  if (audit.status === 'not_evaluated') return { progress: 'pending', verdict: null };
-  if (audit.status === 'in_progress') return { progress: 'ongoing', verdict: null };
-  return { progress: 'completed', verdict: audit.objectiveAuditResult };
+export function auditLifecycle(audit: Audit, issues: readonly Issue[] = []): { progress: ReturnType<typeof auditProgress>; verdict: Audit['objectiveAuditResult'] | null } {
+  const progress = auditProgress(audit, issues);
+  return { progress, verdict: progress === 'completed' ? audit.objectiveAuditResult : null };
 }
 
 /** Vue partagée, traçable et stable des audits, par composant et version canonique. */
@@ -42,7 +40,7 @@ export function auditReadModel(snapshot: Snapshot) {
   const versionById = new Map((versions ?? []).map((version) => [version.versionId, version]));
   return audits.map((audit) => {
     const relation = anomaliesForAudit(audit, anomalies, issues ?? []);
-    const lifecycle = auditLifecycle(audit);
+    const lifecycle = auditLifecycle(audit, issues ?? []);
     return {
       auditId: audit.auditId,
       issueId: audit.issueId,
@@ -50,9 +48,10 @@ export function auditReadModel(snapshot: Snapshot) {
       libraryId: audit.libraryId,
       versionId: audit.versionId,
       version: auditVersionLabel(audit, snapshot),
+      auditedArtifact: audit.auditedReleaseCandidate ?? null,
       versionKnown: Boolean(audit.versionId && versionById.has(audit.versionId)),
       ...lifecycle,
-      completedAt: isCompletedAudit(audit) ? audit.completedAt : undefined,
+      completedAt: lifecycle.progress === 'completed' ? audit.completedAt : undefined,
       linkedAnomalyIds: relation.linked.map((anomaly) => anomaly.anomalyId),
       unresolvedAnomalyIds: relation.unresolved.map((anomaly) => anomaly.anomalyId),
       openAnomalyIds: relation.linked.filter((anomaly) => ['open', 'reopened', 'in_progress'].includes(anomaly.status)).map((anomaly) => anomaly.anomalyId),
@@ -78,7 +77,7 @@ export function componentVersionAuditSummaries(snapshot: Snapshot): ComponentVer
     const matching = audits.filter((audit) =>
       audit.componentId === relation.componentId && audit.versionId === relation.versionId,
     );
-    const completed = latestCompletedAudit(matching);
+    const completed = latestCompletedAudit(matching,snapshot.normalizedData.issues ?? []);
     const ongoingAuditIds = matching.filter((audit) => audit.status === 'in_progress').map((audit) => audit.auditId);
     const pendingAuditIds = matching.filter((audit) => audit.status === 'not_evaluated').map((audit) => audit.auditId);
     // La couche de présentation n'invente pas un verdict : elle reprend le calcul

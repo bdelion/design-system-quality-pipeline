@@ -6,6 +6,8 @@ Le projet collecte des données GitHub, les normalise dans un modèle métier, c
 
 > **État du projet :** la documentation métier V1 a été consolidée jusqu'à D-243. Le code présent dans la branche reflète encore le modèle antérieur sur plusieurs points ; le plan d'implémentation V1 décrit la migration à réaliser. Une décision métier établie n'est donc pas nécessairement déjà implémentée.
 
+La consolidation du dashboard V2.2 couvre les dix chantiers ; les critères, preuves de vérification et limites sont consignés dans le [rapport de consolidation](docs/08-implementation/dashboard-consolidation-complete.md). Validation complète : `npm run check:dashboard`.
+
 La porte d'entrée de la documentation est [`docs/README.md`](docs/README.md).
 
 ## Pipeline actuel

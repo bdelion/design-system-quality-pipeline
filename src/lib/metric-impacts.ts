@@ -10,6 +10,28 @@ const RULE_METRIC_IMPACTS: Record<
   string,
   { pattern: string; action: 'include' | 'exclude' | 'unknown'; reason: string }[]
 > = {
+  'DQ-030': [
+    {
+      pattern: 'issue.*',
+      action: 'include',
+      reason:
+        'Le statut Project est absent, contradictoire ou incompatible avec Closed ; le traitement n’est pas prouvé.'
+    }
+  ],
+  'DQ-031': [
+    {
+      pattern: 'issue.treatmentDelay.*',
+      action: 'include',
+      reason: 'La date de clôture est une estimation explicite et non une transition Done.'
+    }
+  ],
+  'DQ-032': [
+    {
+      pattern: 'issue.treatmentDelay.*',
+      action: 'exclude',
+      reason: 'Une durée invalide ou négative ne contribue pas aux délais.'
+    }
+  ],
   'DQ-001': [
     { pattern: 'anomaly.byCriticality.*', action: 'exclude', reason: 'Criticité absente.' },
     { pattern: 'anomaly.criticalityCoverage', action: 'exclude', reason: 'Criticité absente.' }

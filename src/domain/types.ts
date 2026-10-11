@@ -34,7 +34,7 @@ export type MetricReliabilityStatus = DataQualityStatus;
  * Définit le type « AuditStatus » utilisé dans les contrats du pipeline.
  */
 export type AuditStatus =
-  'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
+  'not_evaluated' | 'in_progress' | 'cancelled' | 'conform' | 'conditional' | 'non_conform' | 'critical';
 /**
  * Définit le type « AnomalyStatus » utilisé dans les contrats du pipeline.
  */
@@ -345,6 +345,8 @@ export interface Audit {
   auditedReleaseCandidate?: string;
   auditedReleaseCandidateTag?: { name: string; createdAt?: string };
   completedAt?: string;
+  /** Progression métier indépendante du verdict et de la disponibilité d'une date. */
+  lifecycle?: 'pending' | 'ongoing' | 'completed' | 'cancelled';
   /** @deprecated I1 migration compatibility. Use versionId and Version.number. */
   version: string;
   status: AuditStatus;
@@ -425,12 +427,27 @@ export interface KpiValue {
   sourceEntityIds: string[];
 }
 
+/** Transition métier observée, avec date métier uniquement lorsqu'elle est prouvée. */
+export interface BusinessTransition {
+  entityType: 'issue' | 'audit' | 'anomaly' | 'componentVersion';
+  entityId: string;
+  issueId?: string;
+  from: string;
+  to: string;
+  observedAt: string;
+  businessAt?: string;
+  fromSnapshotId: string;
+  toSnapshotId: string;
+}
+
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
   /** V2 contract: all dashboard analytics must consume this map. */
   metrics: Record<string, Metric>;
   /** Flux temporels présents lorsque deux snapshots sont comparables. */
   flows?: Record<string, Metric>;
+  /** Journal observable entre deux snapshots comparables, distinct des stocks. */
+  transitions?: BusinessTransition[];
   /** @deprecated Compatibility projection of anomaly.total. */
   anomaliesDeclared: KpiValue;
   /** @deprecated Compatibility projection of anomaly.correctedEver. */

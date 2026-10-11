@@ -1,5 +1,15 @@
 # Changelog
 
+## Consolidation dashboard V2.2 — non publiée
+
+- Classification et états métier partagés ; Closed seul ne signifie plus traité ; audits annulés distincts.
+- Verdicts composant × version et héritage cohérents entre pages ; photographies de release préservées.
+- Analytics issues, statistiques dédupliquées, journal des transitions et chaîne de preuve exhaustive.
+- Navigation contextuelle commune, explications des métriques, DQ-030 à DQ-032, contrôles clavier et mobile.
+- Tests Vitest et Playwright/axe-core, TSDoc français, CI et documentation actualisés.
+
+Voir le [rapport des dix chantiers](docs/08-implementation/dashboard-consolidation-complete.md).
+
 ## V11 — Documentation
 
 - Ajout d'une documentation structurée par cadrage, métier, workflow, règles, indicateurs, données, architecture, décisions et implémentation.

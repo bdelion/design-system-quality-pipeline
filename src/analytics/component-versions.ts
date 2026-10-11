@@ -4,20 +4,23 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { isCompletedAudit } from '../domain/business.js';
 import type { Audit, ComponentVersion, NormalizedData, Version } from '../domain/types.js';
 
 /**
- * Materialise D-220..D-228 on historical Component x Version relations.
- *
- * Applicability is inherited across later PROD versions for the same stable
- * Component identity. When several completed Audits exist, the latest audited
- * PROD version at or before the target version supersedes older audit cohorts;
- * every completed Audit in that latest cohort contributes to the verdict.
+ * Matérialise D-220 à D-228 : héritage pour une identité stable sur les versions PROD suivantes.
+ * La cohorte de la version auditée la plus récente applicable remplace les cohortes antérieures ;
+ * chaque audit terminé et daté de cette cohorte contribue au verdict.
  */
 export function applyComponentVersionVerdicts(data: NormalizedData): void {
   const versions = data.versions ?? [];
   const versionById = new Map(versions.map((version) => [version.versionId, version]));
-  const completedAudits = data.audits.filter(isCompletedAudit);
+  const completedAudits = data.audits.filter(
+    (audit) =>
+      isCompletedAudit(audit, data.issues ?? []) &&
+      audit.completedAt !== undefined &&
+      Number.isFinite(Date.parse(audit.completedAt))
+  );
 
   for (const relation of data.componentVersions ?? []) {
     const targetVersion = versionById.get(relation.versionId);
@@ -31,16 +34,6 @@ export function applyComponentVersionVerdicts(data: NormalizedData): void {
           ? 'CONFORME'
           : 'NON_CONFORME';
   }
-}
-
-/**
- * Détermine si un audit est terminé à partir de sa date de clôture dans le contexte du pipeline de qualité.
- *
- * @param audit - Valeur de « audit » utilisée par ce traitement.
- * @returns Indique si la condition est satisfaite.
- */
-function isCompletedAudit(audit: Audit): boolean {
-  return audit.completedAt !== undefined;
 }
 
 /**
@@ -109,4 +102,16 @@ function compareProdVersions(left: string, right: string): number {
     if (difference !== 0) return difference;
   }
   return 0;
+}
+
+/** Recherche la relation de la dernière version PROD du composant ; restitue le verdict déjà calculé. */
+export function latestComponentVersion(
+  data: NormalizedData,
+  componentId: string
+): ComponentVersion | undefined {
+  const versions = new Map((data.versions ?? []).map((version) => [version.versionId, version]));
+  return (data.componentVersions ?? [])
+    .filter((relation) => relation.componentId === componentId && versions.has(relation.versionId))
+    .sort((a, b) => compareProdVersions(versions.get(a.versionId)!.number, versions.get(b.versionId)!.number))
+    .at(-1);
 }

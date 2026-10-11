@@ -170,3 +170,11 @@ implémentation
 
 La documentation métier reste la source de la décision ; le test protège
 ensuite son implémentation.
+
+## Validation intégrale du dashboard
+
+`npm run check:dashboard` exécute typage, lint sans avertissement, contrôle TSDoc des fonctions nommées TypeScript/JavaScript, tests Vitest, compilation, tests navigateur, formatage et génération TypeDoc. Sur PowerShell, utiliser `npm.cmd` si les scripts PowerShell sont bloqués.
+
+Les tests navigateur utilisent Edge installé sous Windows et Chromium Playwright sur Linux. Installer Chromium en CI avec `npx playwright install --with-deps chromium`. Le serveur HTTP de fixture est créé puis fermé dans le worker des tests ; les sorties sont isolées dans `data/browser-consolidation`. Le rapport HTML est dans `data/browser-report/index.html`, les traces d'échec dans `data/browser-results`. La CI conserve ces preuves comme artefacts.
+
+Les scénarios protègent Closed seul, Done seul, annulation, réouverture, date absente, contextes contradictoires/inconnus, durées invalides, héritage et cohortes composant × version, photographie de release gelée, parents ambigus et PR explicites. Les interactions vérifient filtres croisés, liens ciblés, contexte inconnu, remise à zéro, sélection et CSV. Axe-core exécute WCAG 2/2.1 A/AA sur sept pages en desktop et en mobile ; le lien d'évitement est utilisé au clavier. La validation ne couvre pas une collecte GitHub distante réelle, une revue complète avec lecteur d'écran ni un audit RGAA manuel.
