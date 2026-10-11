@@ -342,3 +342,7 @@ La page Accessibilité présente les répartitions par criticité, catégorie et
 En mode `--source github`, stderr affiche une ligne actualisée dans un terminal interactif : barre des repositories terminés, issues traitées sur les issues découvertes et dernier quota GraphQL reçu. Le nombre d’issues découvertes peut augmenter pendant la collecte ; le quota n’est pas un pourcentage d’avancement.
 
 En CI ou lorsque stderr est redirigé, seuls le démarrage, le bilan et les avertissements sont écrits, sans séquences ANSI. Une erreur clôt la progression avec un bilan « interrompue ». Les avertissements restent sur des lignes séparées. La collecte et les données produites ne sont pas modifiées.
+
+## Releases automatiques
+
+Chaque PR fusionnée sur `main` peut produire un tag `vX.Y.Z` et une release après réussite de toute la CI. Rupture explicite : majeure ; `feat` : mineure ; autres changements : patch. Les notes reprennent les explications utilisateurs de la PR et les liens de validation. Voir [activation, permissions et relances](docs/08-implementation/releases-automatiques.md).
