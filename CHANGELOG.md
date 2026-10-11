@@ -1,5 +1,13 @@
 # Changelog
 
+## Kit Codex / Copilot — non publié
+
+- Consignes racine et locales, trois skills et six tâches VS Code.
+- Contrôle `check:ai` intégré à npm et à la CI ; couverture du formatage étendue à `.agents/`.
+- Index D/Q régénérable avec `ai:index:update`, sans modification des décisions.
+- Références et chemins corrigés ; écart D-047 / date Done implémentée documenté.
+- Tests de non-régression des métadonnées, tâches, liens, chemins et index.
+
 ## Consolidation dashboard V2.2 — non publiée
 
 - Classification et états métier partagés ; Closed seul ne signifie plus traité ; audits annulés distincts.
