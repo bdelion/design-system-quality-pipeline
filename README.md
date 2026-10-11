@@ -324,3 +324,11 @@ graine privée dans `ANONYMIZATION_SEED`. Ajouter `--anonymize-components` pour
 pseudonymiser aussi les composants. Voir [Préparation des références](docs/08-implementation/preparation-references.md)
 pour les huit fichiers, les options de sélection des profils, les contrôles et
 la proposition de ménage. La référence synthétique V1 reste conservée.
+
+## Dashboard organisé par besoins
+
+Six espaces servent en priorité les responsables des audits d’accessibilité, puis la Squad. Voir la [matrice de refonte et ses populations](docs/08-implementation/dashboard-role-refactor.md). La commande `npm run dashboard:preview` génère une prévisualisation isolée et une liste CSV des issues accessibilité à examiner, sans réécrire le snapshot courant.
+
+### Consulter les filtres du dashboard
+
+Après génération, exécuter `npm run dashboard:serve` puis ouvrir http://127.0.0.1:4174/. L’ouverture directe en `file:///` bloque les modules JavaScript ; un message l’explique et désactive les contrôles inactifs. Pour la prévisualisation isolée : `npm run dashboard:preview`, puis `npm run dashboard:serve -- data/dashboard-refactor-preview/dashboard`. Arrêter le serveur avec Ctrl+C.

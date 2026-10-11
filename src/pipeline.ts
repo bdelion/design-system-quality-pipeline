@@ -57,7 +57,7 @@ export async function runPipeline(
   const normalized = normalizeGithub(raw, config.github, catalogue, config.auditVersion);
   applyComponentVersionVerdicts(normalized);
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);
-  const analytics = calculateKpis(normalized, qualityIssues);
+  const analytics = calculateKpis(normalized, qualityIssues, config.github.accessibilityRecognition);
   const capturedAt = new Date().toISOString();
   const previousSnapshot = latestComparableSnapshot(await loadSnapshots(), {
     scope: config.scope,

@@ -1,5 +1,16 @@
 # Changelog
 
+## Refonte du dashboard par besoins — non publiée
+
+- Synthèse globale rétablie sur l’accueil ; explications des chiffres indisponibles.
+- Serveur HTTP local pour les filtres, message en mode fichier et tableau DQ filtrable.
+- Compteurs numériques et icônes d’information accessibles.
+
+- Six espaces principaux, vues historiques conservées et filtres compacts.
+- Population accessibilité qualifiée ou présumée distincte des BUG génériques ; liste de revue exportable.
+- Agrégats communs par repository/composant/version, définitions près des chiffres et inconnues explicites.
+- Prévisualisation isolée, matrice de validation et contrôles des neuf pages desktop/mobile.
+
 ## Préparation des références — non publiée
 
 - Commande reference:prepare : profils GitHub locaux, référence fixture anonymisée, manifeste et rapport.

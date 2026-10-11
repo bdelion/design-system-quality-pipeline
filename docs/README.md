@@ -146,3 +146,7 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 - [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)
 
 - [Préparer les références GitHub/fixture et proposition de ménage](08-implementation/preparation-references.md)
+
+## Refonte du dashboard par besoins
+
+La [matrice besoin → population → indicateur → écran → test](08-implementation/dashboard-role-refactor.md) décrit les six espaces, la distinction entre BUG et accessibilité, les filtres et les limites des sources.

@@ -1,3 +1,4 @@
+import { accessibilityQualification, type AccessibilityRecognition } from '../domain/accessibility.js';
 import type { DataQualityIssue, Issue, Metric, NormalizedData } from '../domain/types.js';
 import { issueBusinessState, issueClassification, lastDoneAt } from '../domain/business.js';
 import { durationStatistics } from './statistics.js';
@@ -52,7 +53,8 @@ export function issueTreatment(issue: Issue) {
 /** Construit les faits Analytics des issues distinctes ; seules les versions explicitement reliées sont attribuées. */
 export function projectIssueFacts(
   data: NormalizedData,
-  quality: readonly DataQualityIssue[] = []
+  quality: readonly DataQualityIssue[] = [],
+  recognition: AccessibilityRecognition = {}
 ): IssueFact[] {
   const libraries = new Map(data.libraries.map((item) => [item.libraryId, item]));
   const components = new Map(data.components.map((item) => [item.componentId, item.name]));
@@ -86,6 +88,13 @@ export function projectIssueFacts(
           (issue.milestoneId !== undefined && issue.milestoneId === version.milestoneId))
     );
     const repo = libraries.get(issue.libraryId)?.repository ?? issue.repositoryId;
+    const qualification = accessibilityQualification(
+      issue.labels,
+      issue.accessibilityCategories,
+      issue.criticalities,
+      anomalies.some((anomaly) => anomaly.origin === 'AUDIT' && Boolean(anomaly.auditId)),
+      recognition.repositories?.[repo] ?? recognition.labelAllOf
+    );
     return {
       id: issue.issueId,
       key: `${repo}#${issue.number}`,
@@ -96,20 +105,23 @@ export function projectIssueFacts(
       labels: issue.labels,
       type: issue.rawIssueType ?? issue.issueType ?? 'Non renseigné',
       family: issueClassification(issue, data),
-      familyLabel: (
-        {
-          audit: 'Audit',
-          audit_anomaly: 'Anomalie d’audit',
-          anomaly:
-            anomalies[0]?.origin === 'HORS_AUDIT'
-              ? anomalies[0].criticality || anomalies[0].categories.length
-                ? 'Anomalie accessibilité hors audit'
-                : 'Bug hors audit · qualification RGAA non prouvée'
-              : 'Anomalie (origine indéterminée)',
-          improvement: 'Improvement d’audit',
-          other: 'Autre issue'
-        } as const
-      )[issueClassification(issue, data)],
+      familyLabel:
+        anomalies.length && qualification.status === 'qualified' && anomalies[0]?.origin !== 'AUDIT'
+          ? 'Anomalie d’accessibilité qualifiée · origine ' + anomalies[0]?.origin
+          : (
+              {
+                audit: 'Audit',
+                audit_anomaly: 'Anomalie d’accessibilité liée à un audit',
+                anomaly:
+                  anomalies[0]?.origin === 'HORS_AUDIT'
+                    ? anomalies[0].criticality || anomalies[0].categories.length
+                      ? 'Anomalie d’accessibilité présumée hors audit · à examiner'
+                      : 'Bug hors audit · qualification RGAA non prouvée'
+                    : 'Anomalie (origine indéterminée)',
+                improvement: 'Improvement d’audit',
+                other: 'Autre issue'
+              } as const
+            )[issueClassification(issue, data)],
       status: treatment.cancelled ? 'cancelled' : treatment.treated ? 'closed' : 'open',
       githubState: issue.state,
       componentIds: [...new Set(issue.componentIds)],

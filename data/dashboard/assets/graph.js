@@ -1,37 +1,45 @@
+import { currentContext, matchesRow } from './context.js';
 const filter = document.querySelector('[data-map-filter]');
 const kind = document.querySelector('[data-map-kind-filter]');
 const reset = document.querySelector('[data-map-reset]');
 const repositories = [...document.querySelectorAll('[data-map-repository]')];
 
+/** Combine recherche, niveau et contexte ; un parent n'est visible que s'il contient une preuve visible. */
 function applyMapFilters() {
-  const query = (filter?.value || '').toLowerCase().trim();
-  const selectedKind = kind?.value || '';
+  const query = (filter?.value || '').toLowerCase().trim(),
+    selectedKind = kind?.value || '';
+  const context = currentContext();
   repositories.forEach((repository) => {
-    const repositoryMatch = !query || repository.dataset.search.includes(query) || repository.textContent.toLowerCase().includes(query);
-    const componentBlocks = [...repository.querySelectorAll('[data-map-component]')];
     let visibleComponent = false;
-    componentBlocks.forEach((component) => {
-      const componentMatch = !query || component.dataset.search.includes(query) || component.textContent.toLowerCase().includes(query);
-      const nodes = [...component.querySelectorAll('[data-map-node]')];
+    repository.querySelectorAll('[data-map-component]').forEach((component) => {
       let visibleNode = false;
-      nodes.forEach((node) => {
+      component.querySelectorAll('[data-map-node]').forEach((node) => {
         const kindMatch = !selectedKind || node.dataset.mapKind === selectedKind;
-        const textMatch = !query || node.textContent.toLowerCase().includes(query) || componentMatch;
-        node.hidden = !(kindMatch && textMatch);
+        const textMatch =
+          !query ||
+          node.textContent.toLowerCase().includes(query) ||
+          component.dataset.search.includes(query);
+        node.hidden = !(kindMatch && textMatch && matchesRow(node, context));
         if (!node.hidden) visibleNode = true;
       });
-      component.hidden = !(componentMatch || visibleNode);
-      if (!component.hidden) visibleComponent = true;
+      component.hidden = !visibleNode;
+      if (visibleNode) visibleComponent = true;
     });
-    const repoKindMatch = !selectedKind || selectedKind === 'repository';
-    repository.hidden = !(repoKindMatch || visibleComponent || repositoryMatch);
+    const repositoryNode = repository.querySelector('[data-map-kind="repository"]');
+    const ownMatch =
+      (!selectedKind || selectedKind === 'repository') &&
+      (!query || repository.dataset.search.includes(query)) &&
+      repositoryNode &&
+      matchesRow(repositoryNode, context);
+    repository.hidden = !(ownMatch || visibleComponent);
   });
 }
-
 [filter, kind].filter(Boolean).forEach((control) => control.addEventListener('input', applyMapFilters));
 reset?.addEventListener('click', () => {
   if (filter) filter.value = '';
   if (kind) kind.value = '';
   applyMapFilters();
 });
+window.addEventListener('dashboard-context-change', applyMapFilters);
+window.addEventListener('popstate', applyMapFilters);
 applyMapFilters();
