@@ -257,3 +257,36 @@ test('la présence inconnue rend les ratios et le stock non couvert indisponible
   await expect(page.locator('[data-workspace-kpi="nonCovered"]')).toHaveText('Indisponible');
   await expect(page.locator('[data-workspace-kpi="unknown"]')).toHaveText('2');
 });
+
+test('les graphiques accessibilité restituent les agrégats et suivent les filtres', async ({
+  page
+}, testInfo) => {
+  await page.goto('/accessibility.html');
+  await expect(page.locator('[data-distribution]')).toHaveCount(3);
+  await page.locator('.distribution-grid').screenshot({ path: testInfo.outputPath('distributions.png') });
+  for (const repository of ['', 'acme/ds-react']) {
+    await page.locator('[data-context-filter="repository"]').selectOption(repository);
+    const summary = await page
+      .locator('#workspace-data')
+      .evaluate(
+        (node, repo) =>
+          JSON.parse(node.textContent!).scopes.find(
+            (scope: { repository: string; component: string; version: string }) =>
+              scope.repository === repo && !scope.component && !scope.version
+          ).summary,
+        repository
+      );
+    const rows = page.locator('[data-distribution="criticality"] .distribution-row');
+    await expect(rows).toHaveCount(Object.keys(summary.criticalities).length);
+    let index = 0;
+    for (const item of Object.values(summary.criticalities) as { declared: number }[]) {
+      await expect(rows.nth(index++).locator('strong')).toHaveText(String(item.declared));
+    }
+    await expect(page.locator('[data-distribution="category"] .distribution-row')).toHaveCount(
+      Object.keys(summary.categories).length
+    );
+  }
+  await page.goto('/accessibility.html?category=unknown');
+  await expect(page.locator('[data-distribution]')).toHaveCount(0);
+  await expect(page.locator('[data-workspace-breakdowns]')).toContainText('indisponibles');
+});

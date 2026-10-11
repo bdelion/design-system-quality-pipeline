@@ -28,3 +28,5 @@ Fond gris clair, surfaces blanches, navigation bleu foncé, cartes hiérarchisé
 Les captures sont des preuves de revue visuelle, sans comparaison pixel par pixel. Les contrôles axe ne constituent pas un audit RGAA complet. Les snapshots métier restent inchangés.
 
 Validation : npm run check:dashboard. Prévisualisation : npm run dashboard:preview, puis npm run dashboard:serve -- data/dashboard-refactor-preview/dashboard.
+
+La page Accessibilité présente les répartitions par criticité, catégorie et composant en barres horizontales, avec valeurs textuelles et détails dépliables. Elles utilisent les agrégats Analytics du périmètre repository/composant/version ; un ciblage sans agrégat affiche une indisponibilité. Les populations présumées restent comprises dans ce périmètre, sans être requalifiées.

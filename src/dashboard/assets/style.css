@@ -1613,3 +1613,73 @@ caption {
 .muted-node {
   opacity: 1;
 }
+
+.distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.distribution-chart {
+  margin: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  min-width: 0;
+}
+.distribution-chart figcaption {
+  color: var(--nav);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+.distribution-bars {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+.distribution-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(60px, 2fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.distribution-label {
+  overflow-wrap: anywhere;
+}
+.distribution-row .bar-track {
+  height: 10px;
+  border-radius: 5px;
+}
+.distribution-row .bar-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.distribution-row strong {
+  font-variant-numeric: tabular-nums;
+}
+.distribution-details {
+  margin-top: 20px;
+}
+.distribution-details summary {
+  cursor: pointer;
+  color: var(--cyan);
+  padding: 8px 0;
+}
+@media (max-width: 1000px) {
+  .distribution-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 420px) {
+  .distribution-chart {
+    padding: 14px;
+  }
+  .distribution-row {
+    gap: 8px;
+    font-size: 12px;
+  }
+}
