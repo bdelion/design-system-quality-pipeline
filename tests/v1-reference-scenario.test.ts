@@ -187,8 +187,10 @@ describe('I9 V1 reference scenario', () => {
     try {
       await generateDashboard(snapshot, output, 'https://github.test');
       const html = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
-      expect(html).toContain('Couverture Component × Version');
-      expect(html).toContain('Fiabilité par métrique');
+      expect(html).toContain('Couverture des composants');
+      expect(await readFile(resolve(output, 'dashboard/quality.html'), 'utf8')).toContain(
+        'Fiabilité par métrique'
+      );
       expect(await readFile(resolve(output, 'dashboard/assets/graph.js'), 'utf8')).toContain('data-map-node');
     } finally {
       await rm(output, { recursive: true, force: true });

@@ -175,3 +175,11 @@ réellement chargés et la politique de renouvellement des références.
 `npm run reference:prepare` génère une référence nommée et ses profils cohérents,
 avec validation avant publication et refus des écrasements par défaut.
 Voir [Préparation des références](preparation-references.md).
+
+## Catalogue historique demo-react 1.7.1
+
+Le 11 octobre 2026, la liste de 71 composants fournie explicitement par l’utilisateur est enregistrée dans `fixtures/full-dataset-anonymized.json`, sous le repository `demo-react`, entrée `historicalCatalogues` du tag `1.7.1`, avec statut `available`. Cette preuve déclarative remplace uniquement le statut `missing` de cette version ; les autres versions et repositories restent inchangés. Elle ne provient pas d’une nouvelle collecte GitHub.
+
+Le catalogue YAML courant associé reste vide : cette liste historique ne prouve pas la composition de la version courante ni les métadonnées des composants. Le normaliseur construit les composants et leurs présences en 1.7.1 depuis la preuve historique. Le test `full-dataset-catalogue.test.ts` vérifie les 71 relations et le verdict de LinkButton en 1.7.1.
+
+Validation de cet ajout : `npm run check` réussit (186 tests, 39 fichiers). Le pipeline fixture est rejoué et matérialise 71 relations, avec LinkButton `CONFORME` en 1.7.1 ; son statut global reste `PARTIAL`. `fixture:validate` détecte zéro chaîne suspecte et une référence PR vers une issue absente. La même erreur existe dans la fixture versionnée avant cet ajout (`pr-53e244c7` → `issue-4d76bdad`) ; elle est conservée pour diagnostic, sans suppression ni invention d’issue.

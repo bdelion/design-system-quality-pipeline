@@ -21,7 +21,6 @@ export interface ComponentVersionAuditSummary {
   applicableAuditIds: string[];
 }
 
-
 /** Classe une issue à partir de son identité normalisée, sans assimiler BUG à anomalie RGAA. */
 export function classifyIssue(issue: Issue, snapshot: Pick<Snapshot, 'normalizedData'>): IssueFamily {
   const family = issueClassification(issue, snapshot.normalizedData);
@@ -29,7 +28,10 @@ export function classifyIssue(issue: Issue, snapshot: Pick<Snapshot, 'normalized
 }
 
 /** Distingue l'avancement d'un audit de son résultat de conformité. */
-export function auditLifecycle(audit: Audit, issues: readonly Issue[] = []): { progress: ReturnType<typeof auditProgress>; verdict: Audit['objectiveAuditResult'] | null } {
+export function auditLifecycle(
+  audit: Audit,
+  issues: readonly Issue[] = []
+): { progress: ReturnType<typeof auditProgress>; verdict: Audit['objectiveAuditResult'] | null } {
   const progress = auditProgress(audit, issues);
   return { progress, verdict: progress === 'completed' ? audit.objectiveAuditResult : null };
 }
@@ -54,15 +56,24 @@ export function auditReadModel(snapshot: Snapshot) {
       completedAt: lifecycle.progress === 'completed' ? audit.completedAt : undefined,
       linkedAnomalyIds: relation.linked.map((anomaly) => anomaly.anomalyId),
       unresolvedAnomalyIds: relation.unresolved.map((anomaly) => anomaly.anomalyId),
-      openAnomalyIds: relation.linked.filter((anomaly) => ['open', 'reopened', 'in_progress'].includes(anomaly.status)).map((anomaly) => anomaly.anomalyId),
-      quality: audit.dataQualityStatus,
+      openAnomalyIds: relation.linked
+        .filter((anomaly) => ['open', 'reopened', 'in_progress'].includes(anomaly.status))
+        .map((anomaly) => anomaly.anomalyId),
+      quality: audit.dataQualityStatus
     };
   });
 }
 
 /** Dernier audit terminé strictement associé au couple composant/version. */
-export function latestAuditForComponentVersion(audits: readonly Audit[], relation: Pick<ComponentVersion, 'componentId' | 'versionId'>): Audit | undefined {
-  return latestCompletedAudit(audits.filter((audit) => audit.componentId === relation.componentId && audit.versionId === relation.versionId));
+export function latestAuditForComponentVersion(
+  audits: readonly Audit[],
+  relation: Pick<ComponentVersion, 'componentId' | 'versionId'>
+): Audit | undefined {
+  return latestCompletedAudit(
+    audits.filter(
+      (audit) => audit.componentId === relation.componentId && audit.versionId === relation.versionId
+    )
+  );
 }
 
 /**
@@ -74,12 +85,16 @@ export function componentVersionAuditSummaries(snapshot: Snapshot): ComponentVer
   const { componentVersions = [], audits } = snapshot.normalizedData;
   const auditsById = new Map(audits.map((audit) => [audit.auditId, audit]));
   return componentVersions.map((relation) => {
-    const matching = audits.filter((audit) =>
-      audit.componentId === relation.componentId && audit.versionId === relation.versionId,
+    const matching = audits.filter(
+      (audit) => audit.componentId === relation.componentId && audit.versionId === relation.versionId
     );
-    const completed = latestCompletedAudit(matching,snapshot.normalizedData.issues ?? []);
-    const ongoingAuditIds = matching.filter((audit) => audit.status === 'in_progress').map((audit) => audit.auditId);
-    const pendingAuditIds = matching.filter((audit) => audit.status === 'not_evaluated').map((audit) => audit.auditId);
+    const completed = latestCompletedAudit(matching, snapshot.normalizedData.issues ?? []);
+    const ongoingAuditIds = matching
+      .filter((audit) => audit.status === 'in_progress')
+      .map((audit) => audit.auditId);
+    const pendingAuditIds = matching
+      .filter((audit) => audit.status === 'not_evaluated')
+      .map((audit) => audit.auditId);
     // La couche de présentation n'invente pas un verdict : elle reprend le calcul
     // Analytics D-220..D-228, y compris son héritage historique explicite.
     const applicableAuditIds = relation.applicableAuditIds ?? [];
@@ -90,10 +105,15 @@ export function componentVersionAuditSummaries(snapshot: Snapshot): ComponentVer
       ...(completed ? { completedAuditId: completed.auditId } : {}),
       ongoingAuditIds,
       pendingAuditIds,
-      verdict: relation.verdict === 'CONFORME' ? 'conform' : relation.verdict === 'NON_CONFORME' ? 'non_conform' : null,
+      verdict:
+        relation.verdict === 'CONFORME'
+          ? 'conform'
+          : relation.verdict === 'NON_CONFORME'
+            ? 'non_conform'
+            : null,
       coverage: applicableAuditIds.length ? 'completed' : ongoingAuditIds.length ? 'ongoing' : 'not_audited',
       inherited,
-      applicableAuditIds,
+      applicableAuditIds
     };
   });
 }

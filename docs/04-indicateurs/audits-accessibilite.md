@@ -262,3 +262,7 @@ Audit de rattrapage post-PROD
 Un résultat obtenu après la publication ne doit pas être projeté
 rétroactivement comme s'il était connu à la date de sortie de la
 Version.
+
+## Restitution par besoins
+
+**IMPLÉMENTÉ :** les KPI d’accessibilité utilisent une population qualifiée ou présumée, séparée des BUG génériques. La couverture utilise les composants présents de chaque version courante ou sélectionnée ; la conformité utilise les couples couverts. Inconnues et annulations restent explicites. Les besoins sans source de consommation ou de maquettes sont affichés indisponibles. Voir la [matrice de validation](../08-implementation/dashboard-role-refactor.md).

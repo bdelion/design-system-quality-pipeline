@@ -1,3 +1,4 @@
+import type { WorkspaceAnalytics } from '../analytics/workspaces.js';
 /**
  * @module domain.types
  * Centralise les contrats RAW, les entités normalisées, les métriques et les snapshots V1.
@@ -302,6 +303,7 @@ export interface PullRequest {
 }
 
 /** Anomalie qualité rattachée à un composant et à un audit. */
+/** Spécialisation technique BUG ; la qualification accessibilité est indépendante et portée par Analytics.workspaces. */
 export interface Anomaly {
   anomalyId: string;
   issueId: string;
@@ -442,6 +444,8 @@ export interface BusinessTransition {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  /** Contrat additif des espaces métier, absent des anciens snapshots. */
+  workspaces?: WorkspaceAnalytics;
   /** V2 contract: all dashboard analytics must consume this map. */
   metrics: Record<string, Metric>;
   /** Flux temporels présents lorsque deux snapshots sont comparables. */

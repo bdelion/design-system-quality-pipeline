@@ -2,10 +2,7 @@ import type { Anomaly, Issue } from '../domain/types.js';
 
 /** Classification explicite de la disponibilité de la date métier de correction (contrat I3). */
 export type CorrectionDateReason =
-  | 'available'
-  | 'multiple_done'
-  | 'no_project_history'
-  | 'no_done_transition';
+  'available' | 'multiple_done' | 'no_project_history' | 'no_done_transition';
 
 /** Synthèse descriptive, distincte des KPI métier et de leurs dénominateurs. */
 export interface HistoryCoverage {
@@ -20,8 +17,10 @@ export interface HistoryCoverage {
 /** Détermine pourquoi une anomalie dispose ou non d'une date de correction métier fiable. */
 export function correctionDateReason(anomaly: Anomaly, issue?: Issue): CorrectionDateReason {
   if (anomaly.effectiveCorrectedAt ?? anomaly.correctedAt) return 'available';
-  const doneTransitions = issue?.projectContexts.flatMap((context) => context.statusHistory)
-    .filter((transition) => transition.status === 'DONE').length ?? 0;
+  const doneTransitions =
+    issue?.projectContexts
+      .flatMap((context) => context.statusHistory)
+      .filter((transition) => transition.status === 'DONE').length ?? 0;
   if (doneTransitions > 1) return 'multiple_done';
   if (!issue || !issue.projectContexts.some((context) => context.statusHistory.length > 0)) {
     return 'no_project_history';
@@ -36,11 +35,12 @@ export function calculateHistoryCoverage(issues: Issue[], anomalies: Anomaly[]):
     available: 0,
     multiple_done: 0,
     no_project_history: 0,
-    no_done_transition: 0,
+    no_done_transition: 0
   };
-  for (const anomaly of anomalies) reasons[correctionDateReason(anomaly, issueById.get(anomaly.issueId))] += 1;
+  for (const anomaly of anomalies)
+    reasons[correctionDateReason(anomaly, issueById.get(anomaly.issueId))] += 1;
   const issuesWithHistory = issues.filter((issue) =>
-    issue.projectContexts.some((context) => context.statusHistory.length > 0),
+    issue.projectContexts.some((context) => context.statusHistory.length > 0)
   ).length;
   return {
     issuesTotal: issues.length,
@@ -48,6 +48,6 @@ export function calculateHistoryCoverage(issues: Issue[], anomalies: Anomaly[]):
     issuesWithoutHistory: issues.length - issuesWithHistory,
     anomaliesTotal: anomalies.length,
     correctionDatesAvailable: reasons.available,
-    reasons,
+    reasons
   };
 }

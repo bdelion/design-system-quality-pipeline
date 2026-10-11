@@ -31,15 +31,16 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('design-system-react');
   expect(html).toContain('design-system-docs');
   expect(html).toContain('Délai moyen');
-  expect(html).toContain('Temps de traitement des issues par repository');
-  expect(html).toContain('Critères d’accessibilité');
+  const diagnostics = await readFile(resolve(output, 'dashboard/quality.html'), 'utf8');
+  expect(diagnostics).toContain('Temps de traitement des issues par repository');
+  expect(diagnostics).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
-  expect(html).toContain(
+  expect(diagnostics).toContain(
     'Les indicateurs sont calculés dans le pipeline puis expliqués ici avec leur périmètre, leur ratio et leur fiabilité.'
   );
-  expect(html).toContain('Couverture Component × Version');
-  expect(html).toContain('Fiabilité par métrique');
-  expect(html).toContain('Pourquoi certains chiffres sont partiels');
+  expect(diagnostics).toContain('Couverture Component × Version');
+  expect(diagnostics).toContain('Fiabilité par métrique');
+  expect(diagnostics).toContain('Pourquoi certains chiffres sont partiels');
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
   expect(html).toContain('window.__SNAPSHOT__');
   expect(html).toContain('class="sidebar"');
@@ -99,8 +100,8 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(anomaliesHtml).toContain('<th scope="col">Catégorie</th>');
   expect(anomaliesHtml).toContain('data-criticality="major"');
   expect(anomaliesHtml).toContain('data-categories="focus"');
-  expect(html).toContain('href="anomalies.html?criticality=major"');
-  expect(html).toContain('href="anomalies.html?category=focus"');
+  expect(diagnostics).toContain('href="anomalies.html?criticality=major"');
+  expect(diagnostics).toContain('href="anomalies.html?category=focus"');
   expect(anomaliesHtml).toContain('Cible : anomalie');
   expect(anomaliesHtml).toContain('Ouvrir la source');
   expect(anomaliesHtml).toContain('Aucune source GitHub disponible (nexus)');
@@ -270,7 +271,7 @@ it('uses the same treatment dates for Task issues across issues, components and 
     await generateDashboard(snapshot, output, 'https://github.test');
     const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
     const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
-    const overviewHtml = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
+    const overviewHtml = await readFile(resolve(output, 'dashboard/quality.html'), 'utf8');
     const issuePayload = JSON.parse(
       issuesHtml.match(/<script type="application\/json" id="issue-explorer-data">([^<]+)<\/script>/)![1]!
     );

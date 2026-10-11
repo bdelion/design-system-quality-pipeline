@@ -1,3 +1,4 @@
+import { validateAccessibilityRecognition, type AccessibilityRecognition } from './domain/accessibility.js';
 /**
  * @module config
  * Charge la configuration de traitement et les paramètres du pipeline.
@@ -11,6 +12,8 @@ import { configPath, resolveFixtureConfigPaths } from './lib/paths.js';
 
 /** Paramètres de lecture des issues et pull requests GitHub. */
 export interface GithubProcessingConfig {
+  /** Variantes explicites de labels accessibilité, communes ou par repository. */
+  accessibilityRecognition?: AccessibilityRecognition;
   labels: {
     componentPrefix: string;
     accessibilityCriticalityPrefix: string;
@@ -78,6 +81,7 @@ export async function loadConfig(
   const content = await readFile(path, 'utf8');
   const systemConfig = parse(content) as PipelineConfig;
   validateMilestoneDetection(systemConfig.github.milestoneDetection);
+  validateAccessibilityRecognition(systemConfig.github.accessibilityRecognition);
   return {
     ...systemConfig,
     githubApiUrl: process.env.GITHUB_API_URL ?? systemConfig.githubApiUrl,

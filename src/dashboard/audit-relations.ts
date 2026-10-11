@@ -14,25 +14,33 @@ export interface AuditAnomalyRelations {
 export function anomaliesForAudit(
   audit: Audit,
   anomalies: readonly Anomaly[],
-  issues: readonly Issue[],
+  issues: readonly Issue[]
 ): AuditAnomalyRelations {
   const issuesById = new Map(issues.map((issue) => [issue.issueId, issue]));
   const linked: Anomaly[] = [];
   const unresolved: Anomaly[] = [];
   for (const anomaly of anomalies) {
     const issue = issuesById.get(anomaly.issueId);
-    const parents = new Set([...(anomaly.parentRefs ?? []), ...(issue?.parentIssueId ? [issue.parentIssueId] : [])]);
+    const parents = new Set([
+      ...(anomaly.parentRefs ?? []),
+      ...(issue?.parentIssueId ? [issue.parentIssueId] : [])
+    ]);
     const ownRefs = new Set([audit.issueId, audit.auditId]);
     const parentMatches = parents.size > 0 && [...parents].every((parent) => ownRefs.has(parent));
-    const explicit = anomaly.auditId ? anomaly.auditId === audit.auditId && (parents.size === 0 || parentMatches) : parentMatches;
+    const explicit = anomaly.auditId
+      ? anomaly.auditId === audit.auditId && (parents.size === 0 || parentMatches)
+      : parentMatches;
     if (explicit) linked.push(anomaly);
-    else if (anomaly.componentId === audit.componentId || issue?.componentIds.includes(audit.componentId)) unresolved.push(anomaly);
+    else if (anomaly.componentId === audit.componentId || issue?.componentIds.includes(audit.componentId))
+      unresolved.push(anomaly);
   }
   return { linked, unresolved };
 }
 
 /** Retourne le libellé de version canonique lorsqu'il est disponible. */
 export function auditVersionLabel(audit: Audit, snapshot: Pick<Snapshot, 'normalizedData'>): string {
-  const version = snapshot.normalizedData.versions?.find((candidate) => candidate.versionId === audit.versionId);
+  const version = snapshot.normalizedData.versions?.find(
+    (candidate) => candidate.versionId === audit.versionId
+  );
   return version?.number ?? audit.version ?? 'Version indéterminée';
 }

@@ -1,3 +1,5 @@
+import { workspaceAnalytics } from './workspaces.js';
+import type { AccessibilityRecognition } from '../domain/accessibility.js';
 /**
  * @module analytics.kpis
  * Assemble les indicateurs V1 à partir des données normalisées et de Data Quality.
@@ -21,7 +23,11 @@ import { calculateMetrics } from './metrics.js';
  * @param dqIssues - Diagnostics de qualité qui influencent la fiabilité.
  * @returns Métriques de référence et projections de compatibilité legacy.
  */
-export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]): Analytics {
+export function calculateKpis(
+  data: NormalizedData,
+  dqIssues: DataQualityIssue[],
+  recognition: AccessibilityRecognition = {}
+): Analytics {
   const metrics = calculateMetrics(data, dqIssues);
   /**
    * Réalise le traitement « metric » dans le pipeline de qualité.
@@ -50,6 +56,7 @@ export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]
   };
 
   return {
+    workspaces: workspaceAnalytics(data, dqIssues, recognition),
     anomaliesDeclared: asLegacy('anomaly.total'),
     anomaliesCorrected: asLegacy('anomaly.correctedEver'),
     openAnomalies: asLegacy('anomaly.open'),
