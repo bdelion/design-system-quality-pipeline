@@ -7,7 +7,7 @@
 import { readFile } from 'node:fs/promises';
 import 'dotenv/config';
 import { parse } from 'yaml';
-import { configPath, fixtureConfigPaths } from './lib/paths.js';
+import { configPath, resolveFixtureConfigPaths } from './lib/paths.js';
 
 /** Paramètres de lecture des issues et pull requests GitHub. */
 export interface GithubProcessingConfig {
@@ -56,21 +56,11 @@ export async function loadConfig(
   source: 'fixture' | 'github' = 'github',
   fixtureFile?: string
 ): Promise<PipelineConfig> {
-  const filename =
+  const path =
     source === 'fixture'
-      ? fixtureFile
-        ? fixtureConfigPaths(fixtureFile).system.split(/[/\\]/).pop()!
-        : 'system.fixture.yaml'
-      : 'system.yaml';
-  let content: string;
-  try {
-    content = await readFile(`${configPath}/${filename}`, 'utf8');
-  } catch (error) {
-    if (source !== 'fixture' || (error as { code?: string }).code !== 'ENOENT') throw error;
-    // Legacy fallback kept for the default fixture workflow. Never silently
-    // switch a fixture to the real GitHub repository configuration first.
-    content = await readFile(`${configPath}/system.fixture.yaml`, 'utf8');
-  }
+      ? (await resolveFixtureConfigPaths(fixtureFile)).system
+      : `${configPath}/system.yaml`;
+  const content = await readFile(path, 'utf8');
   const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
   validateMilestoneDetection(systemConfig.github.milestoneDetection);
   return {

@@ -121,7 +121,7 @@ describe('collecteur GitHub', () => {
       throw new Error(`Unexpected GitHub request: ${url}`);
     }) as typeof fetch;
 
-    const config = await loadConfig();
+    const config = await loadConfig('fixture');
     const dataset = await collectGithub({
       token: 'test-token',
       owner: 'acme',
@@ -245,7 +245,7 @@ describe('collecteur GitHub', () => {
       throw new Error(`Unexpected GitHub request: ${url} ${init?.method ?? 'GET'}`);
     }) as typeof fetch;
 
-    const config = await loadConfig();
+    const config = await loadConfig('fixture');
     const dataset = await collectGithub({
       token: 'test-token',
       owner: 'acme',
@@ -320,7 +320,7 @@ describe('catalogue historique GitHub', () => {
       throw new Error(`Unexpected GitHub request: ${url}`);
     }) as typeof fetch;
 
-    const config = await loadConfig();
+    const config = await loadConfig('fixture');
     const dataset = await collectGithub({
       token: 'test-token',
       owner: 'acme',

@@ -12,7 +12,7 @@ import { loadConfig } from '../src/config.js';
 // Vérifie le contrat HTML public du dashboard sans dépendre d'un navigateur.
 it('generates static dashboard pages from the snapshot contract', async () => {
   const raw = await collectFixture();
-  const config = await loadConfig();
+  const config = await loadConfig('fixture');
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const issues = evaluateDataQuality(raw, normalized, config.github);
   const snapshot = buildSnapshot(
@@ -130,7 +130,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
 
 it('shows source repository and first correction even when anomaly has no component', async () => {
   const raw = await collectFixture();
-  const config = await loadConfig();
+  const config = await loadConfig('fixture');
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const anomaly = normalized.anomalies[0]!;
   const issue = (normalized.issues ?? []).find((entry) => entry.issueId === anomaly.issueId)!;
@@ -169,7 +169,7 @@ it('shows source repository and first correction even when anomaly has no compon
 
 it('renders cancelled status as a separate filter value and excludes it from done', async () => {
   const raw = await collectFixture();
-  const config = await loadConfig();
+  const config = await loadConfig('fixture');
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const anomaly = normalized.anomalies[0]!;
   anomaly.status = 'cancelled';
@@ -204,7 +204,7 @@ it('renders cancelled status as a separate filter value and excludes it from don
 
 it('does not display a negative correction delay for an inconsistent estimated closure', async () => {
   const raw = await collectFixture();
-  const config = await loadConfig();
+  const config = await loadConfig('fixture');
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const anomaly = normalized.anomalies[0]!;
   anomaly.createdAt = '2026-10-01T10:00:00Z';
@@ -235,7 +235,7 @@ it('does not display a negative correction delay for an inconsistent estimated c
 
 it('uses the same treatment dates for Task issues across issues, components and overview', async () => {
   const raw = await collectFixture();
-  const config = await loadConfig();
+  const config = await loadConfig('fixture');
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const issue = normalized.issues!.find((item) => item.componentIds.length > 0)!;
   issue.rawIssueType = 'Task';
@@ -297,7 +297,7 @@ it('uses the same treatment dates for Task issues across issues, components and 
 // Contrat inter-pages : l'historique Project prime sur le statut déclaré et sur GitHub.
 it('uses the last dated Project transition for reopened issues in both explorers', async () => {
   const raw = await collectFixture();
-  const config = await loadConfig();
+  const config = await loadConfig('fixture');
   const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
   const issue = normalized.issues!.find((item) => item.componentIds.length > 0)!;
   issue.rawIssueType = 'Documentation';

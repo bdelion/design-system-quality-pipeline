@@ -6,7 +6,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { parse } from 'yaml';
-import { cataloguePath, fixtureConfigPaths } from './lib/paths.js';
+import { cataloguePath, resolveFixtureConfigPaths } from './lib/paths.js';
 
 /** Statut de cycle de vie déclaré dans le catalogue de référence. */
 export type CatalogueStatus = 'stable' | 'experimental' | 'deprecated' | 'removed';
@@ -48,18 +48,8 @@ export async function loadCatalogue(
   fixtureFile?: string
 ): Promise<Catalogue> {
   const path =
-    source === 'fixture'
-      ? fixtureFile
-        ? fixtureConfigPaths(fixtureFile).catalogue
-        : cataloguePath.replace(/catalogue\.yaml$/, 'catalogue.fixture.yaml')
-      : cataloguePath;
-  let yaml: string;
-  try {
-    yaml = await readFile(path, 'utf8');
-  } catch (error) {
-    if (source !== 'fixture' || (error as { code?: string }).code !== 'ENOENT') throw error;
-    yaml = await readFile(cataloguePath.replace(/catalogue\.yaml$/, 'catalogue.fixture.yaml'), 'utf8');
-  }
+    source === 'fixture' ? (await resolveFixtureConfigPaths(fixtureFile)).catalogue : cataloguePath;
+  const yaml = await readFile(path, 'utf8');
   return validateCatalogue(parse(yaml));
 }
 

@@ -162,3 +162,10 @@ Le test I9 génère le dashboard dans un répertoire temporaire système unique
 et le nettoie dans un bloc `finally` ; il ne partage plus la sortie de
 `tests/dashboard.test.ts`. La présence des 19 scénarios dans la fixture
 ne garantit pas à elle seule 19 assertions indépendantes.
+
+## Sélection cohérente des profils
+
+Les deux configurations spécifiques doivent exister ensemble. Une paire partielle
+est refusée ; lorsque les deux sont absentes, la paire historique est utilisée.
+Voir [Configurations et tests](configurations-et-tests.md) pour les fichiers
+réellement chargés et la politique de renouvellement des références.
