@@ -50,3 +50,5 @@ La section **Preuves des métriques Analytics** expose définition, périmètre,
 `tests/dashboard-consolidation.test.ts`, `tests/dashboard-context-filter-contract.test.ts`, les tests I3/I6/I7 et `tests/browser/dashboard.spec.ts` protègent les contrats. Le [rapport de consolidation](dashboard-consolidation-complete.md) contient les résultats effectivement obtenus.
 
 Les photographies `atRelease` déjà présentes dans une capture compatible antérieure à la capture courante sont préservées pour les versions alors publiées. Une annulation ultérieure modifie `currentKnowledge`, sans réécrire la photographie acquise. Les différences de modèle, règles ou périmètre empêchent cette réutilisation.
+
+Le calcul actuel de la date de fin d’audit par dernière transition Done est un comportement implémenté du contrat V3. D-047 définit la date métier comme l’instant où la seconde condition Done + Closed est satisfaite ; l’écart est détaillé dans `docs/01-metier/audits.md` et reste à arbitrer. D-238 ne porte pas sur les dates.

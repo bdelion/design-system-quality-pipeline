@@ -133,3 +133,10 @@ La réorganisation documentaire suit une migration progressive :
 Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cette vérification n'a pas été réalisée sujet par sujet.
 
 - [Diagnostic des historiques GitHub (API/RAW, confidentialité et scripts)](08-implementation/diagnostic-historique-github.md)
+
+## Assistance au développement dans VS Code
+
+- [Configurer Codex et Copilot](08-implementation/codex-copilot-vscode.md)
+- [Index de contexte des agents](08-implementation/ai-context-map.md)
+- [Index de recherche des décisions](08-implementation/ai-decisions-index.md)
+- [Validation du kit IA et limites](08-implementation/ai-configuration-validation.md)
