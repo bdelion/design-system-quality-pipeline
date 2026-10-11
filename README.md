@@ -336,3 +336,9 @@ Après génération, exécuter `npm run dashboard:serve` puis ouvrir http://127.
 La [refonte visuelle du dashboard](docs/08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.
 
 La page Accessibilité présente les répartitions par criticité, catégorie et composant en barres horizontales, avec valeurs textuelles et détails dépliables. Elles utilisent les agrégats Analytics du périmètre repository/composant/version ; un ciblage sans agrégat affiche une indisponibilité. Les populations présumées restent comprises dans ce périmètre, sans être requalifiées.
+
+## Progression de la collecte GitHub
+
+En mode `--source github`, stderr affiche une ligne actualisée dans un terminal interactif : barre des repositories terminés, issues traitées sur les issues découvertes et dernier quota GraphQL reçu. Le nombre d’issues découvertes peut augmenter pendant la collecte ; le quota n’est pas un pourcentage d’avancement.
+
+En CI ou lorsque stderr est redirigé, seuls le démarrage, le bilan et les avertissements sont écrits, sans séquences ANSI. Une erreur clôt la progression avec un bilan « interrompue ». Les avertissements restent sur des lignes séparées. La collecte et les données produites ne sont pas modifiées.
