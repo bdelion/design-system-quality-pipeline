@@ -59,21 +59,6 @@ export async function runPipeline(
     modelVersion: config.modelVersion,
     ruleVersion: config.ruleVersion
   });
-  if (previousSnapshot && previousSnapshot.capturedAt < capturedAt) {
-    const diff = diffSnapshots(previousSnapshot, {
-      snapshotId: 'pending',
-      capturedAt,
-      scope: config.scope,
-      rawData: raw,
-      normalizedData: normalized,
-      dataQuality: { issues: qualityIssues, summary: { INFO: 0, WARNING: 0, ERROR: 0 } },
-      analytics,
-      ruleVersion: config.ruleVersion,
-      modelVersion: config.modelVersion,
-      reliability: 'partial'
-    });
-    analytics.flows = calculateFlowMetrics(diff, qualityIssues);
-  }
   const snapshot = buildSnapshot(
     raw,
     normalized,
@@ -82,8 +67,10 @@ export async function runPipeline(
     config.modelVersion,
     config.ruleVersion,
     config.scope,
-    capturedAt
+    capturedAt,
+    previousSnapshot
   );
+  completeSnapshotComparison(previousSnapshot, snapshot);
   await writeJson(`${runPath}/${snapshot.snapshotId}.json`, snapshot);
   await writeJson(`${currentPath}/snapshot.json`, snapshot);
   await generateDashboard(snapshot, dashboardPath, config.githubUrl, config.github.labels.componentPrefix);
@@ -124,3 +111,18 @@ export function pipelineStatus(snapshot: Snapshot): 'COMPLETE' | 'PARTIAL' {
 }
 
 export { calculateKpis, evaluateDataQuality, normalizeGithub, summarizeQuality };
+
+/** Complète les flux et le journal après attribution de l'identité réelle de la capture, sans identifiant provisoire. */
+export function completeSnapshotComparison(previous: Snapshot | undefined, current: Snapshot): void {
+  if (
+    !previous ||
+    previous.scope !== current.scope ||
+    previous.modelVersion !== current.modelVersion ||
+    previous.ruleVersion !== current.ruleVersion ||
+    !(Date.parse(previous.capturedAt) < Date.parse(current.capturedAt))
+  )
+    return;
+  const diff = diffSnapshots(previous, current);
+  current.analytics.flows = calculateFlowMetrics(diff, current.dataQuality.issues);
+  current.analytics.transitions = diff.businessTransitions;
+}

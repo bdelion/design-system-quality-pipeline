@@ -4,8 +4,10 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { isCompletedAudit, auditProgress } from '../domain/business.js';
+import { calculateIssueMetrics } from './issues.js';
 import type { DataQualityIssue, Metric, MetricBreakdown, NormalizedData } from '../domain/types.js';
-import { assertMetricContract, getMetricContract } from './catalog.js';
+import { assertMetricContract, getMetricContract, METRIC_CONTRACTS } from './catalog.js';
 import { applyMetricImpacts, matchesMetricPattern } from '../lib/metric-impacts.js';
 
 /**
@@ -123,41 +125,7 @@ function delayDays(createdAt: string, firstDoneAt: string): number {
 
 /** Construit les métriques V2 sans supprimer les données du snapshot. */
 export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssue[]): Record<string, Metric> {
-  const metricIds = [
-    'portfolio.repositories',
-    'portfolio.libraries',
-    'portfolio.components',
-    'portfolio.componentsAudited',
-    'portfolio.auditCoverage',
-    'audit.completed',
-    'audit.conform',
-    'audit.conditional',
-    'audit.nonConform',
-    'audit.critical',
-    'audit.conformityRate',
-    'componentVersion.total',
-    'componentVersion.covered',
-    'componentVersion.auditCoverage',
-    'componentVersion.conform',
-    'componentVersion.nonConform',
-    'componentVersion.conformityRate',
-    'anomaly.total',
-    'anomaly.open',
-    'anomaly.inProgress',
-    'anomaly.done',
-    'anomaly.byCriticality.blocking',
-    'anomaly.byCriticality.major',
-    'anomaly.byCriticality.minor',
-    'anomaly.criticalityCoverage',
-    'anomaly.byCategory.*',
-    'anomaly.correctedEver',
-    'anomaly.reopened',
-    'anomaly.cancelled',
-    'anomaly.correctionDelay.average',
-    'anomaly.correctionDelay.median',
-    'anomaly.correctionDelay.p90',
-    'anomaly.backlog.oldestAge'
-  ];
+  const metricIds = METRIC_CONTRACTS.map((contract) => contract.id);
   assertMetricContract(metricIds);
   const issues = applyMetricImpacts(dqIssues, metricIds);
   /**
@@ -175,9 +143,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
       )
     );
   const activeComponents = data.components.filter((component) => component.status === 'active');
-  const completedAudits = data.audits.filter(
-    (audit) => !['in_progress', 'not_evaluated'].includes(audit.status)
-  );
+  const completedAudits = data.audits.filter((audit) => isCompletedAudit(audit, data.issues ?? []));
   const activeComponentIds = new Set(activeComponents.map((component) => component.componentId));
   const auditedComponents = new Set(
     completedAudits
@@ -212,6 +178,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
   );
   const actualCorrected = corrected.filter((anomaly) => anomaly.correctionDateSource !== 'issue_closed');
   const estimatedCorrected = corrected.filter((anomaly) => anomaly.correctionDateSource === 'issue_closed');
+  /** Calcule la moyenne de la population de correction choisie, sans confondre réel et estimé. */
   const averageOf = (items: typeof corrected): number | 'unknown' =>
     items.length
       ? Number(
@@ -294,7 +261,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').length,
     completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').length,
     completedAudits.length,
-    completedAudits.map((x) => x.auditId),
+    completedAudits.filter((x) => x.objectiveAuditResult === 'conditional').map((x) => x.auditId),
     issues
   );
   m['audit.nonConform'] = metric(
@@ -302,7 +269,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length,
     completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').length,
     completedAudits.length,
-    completedAudits.map((x) => x.auditId),
+    completedAudits.filter((x) => x.objectiveAuditResult === 'non_conform').map((x) => x.auditId),
     issues
   );
   m['audit.critical'] = metric(
@@ -310,7 +277,7 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length,
     completedAudits.filter((x) => x.objectiveAuditResult === 'critical').length,
     completedAudits.length,
-    completedAudits.map((x) => x.auditId),
+    completedAudits.filter((x) => x.objectiveAuditResult === 'critical').map((x) => x.auditId),
     issues
   );
   m['audit.conformityRate'] = metric(
@@ -522,13 +489,14 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     (x) => ['open', 'reopened'].includes(x.status) && !excluded('anomaly.backlog.oldestAge').has(x.anomalyId)
   );
   const now = Date.parse(
-    data.anomalies.reduce(
-      (latest, x) => (x.createdAt > latest ? x.createdAt : latest),
-      '1970-01-01T00:00:00.000Z'
-    )
+    data.anomalies
+      .map((anomaly) => anomaly.provenance.collectedAt)
+      .filter((date) => Number.isFinite(Date.parse(date)))
+      .sort((a, b) => Date.parse(a) - Date.parse(b))
+      .at(-1) ?? ''
   );
   const oldest = open.length
-    ? Math.max(...open.map((x) => now - Date.parse(x.createdAt))) / 86_400_000
+    ? Math.max(0, ...open.map((x) => now - Date.parse(x.createdAt))) / 86_400_000
     : undefined;
   m['anomaly.backlog.oldestAge'] = metric(
     'anomaly.backlog.oldestAge',
@@ -538,5 +506,16 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
     open.map((x) => x.anomalyId),
     issues
   );
-  return m;
+  for (const progress of ['pending', 'ongoing', 'cancelled'] as const) {
+    const population = data.audits.filter((audit) => auditProgress(audit, data.issues ?? []) === progress);
+    m[`audit.${progress}`] = metric(
+      `audit.${progress}`,
+      population.length,
+      population.length,
+      data.audits.length,
+      population.map((audit) => audit.auditId),
+      issues
+    );
+  }
+  return { ...m, ...calculateIssueMetrics(data, dqIssues) };
 }

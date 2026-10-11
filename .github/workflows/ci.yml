@@ -26,7 +26,26 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: French TSDoc
+        run: npm run check:tsdoc
       - name: Tests
         run: npm test
       - name: Build
         run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser interactions and accessibility
+        run: npm run test:browser
+      - name: Formatting
+        run: npm run format:check
+      - name: API documentation
+        run: npm run docs:api
+      - name: Browser validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-browser-report
+          path: |
+            data/browser-report
+            data/browser-results

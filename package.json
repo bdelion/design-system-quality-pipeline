@@ -20,14 +20,17 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "check": "npm run typecheck && npm run lint && npm run check:tsdoc && npm test && npm run build",
     "fixture:anonymize": "tsx src/cli.ts fixture:anonymize",
     "fixture:prepare": "tsx src/cli.ts fixture:prepare",
     "fixture:validate": "tsx src/cli.ts fixture:validate",
     "format": "prettier --write \"{src,tests,scripts,config,docs,.github,.vscode}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
     "format:check": "prettier --check \"{src,tests,scripts,config,docs,.github,.vscode}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
     "docs:api": "typedoc",
-    "diagnose:history": "node scripts/diagnose-history.mjs"
+    "diagnose:history": "node scripts/diagnose-history.mjs",
+    "test:browser": "playwright test",
+    "check:dashboard": "npm run check && npm run test:browser && npm run format:check && npm run docs:api",
+    "check:tsdoc": "node scripts/check-tsdoc.mjs"
   },
   "dependencies": {
     "commander": "^14.0.0",
@@ -36,6 +39,8 @@
     "yaml": "^2.8.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.64.0",
     "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",

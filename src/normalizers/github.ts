@@ -6,6 +6,7 @@
 
 import { stableId } from '../lib/ids.js';
 import { validateMilestoneDetection, type GithubProcessingConfig } from '../config.js';
+import { issueBusinessState, currentProjectStatus, lastDoneAt } from '../domain/business.js';
 import type { Catalogue, CatalogueComponent } from '../catalogue.js';
 import type {
   Anomaly,
@@ -228,7 +229,16 @@ export function normalizeGithub(
   for (const repository of raw.repositories) {
     const library = libraryByRepository.get(repository.name)!;
     for (const issue of repository.issues) {
-      const componentName = issue.component ?? 'unknown';
+      const componentNames = [
+        ...new Set([
+          ...issue.labels
+            .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
+            .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
+            .filter(Boolean),
+          ...(issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
+        ])
+      ];
+      const componentName = componentNames[0] ?? '';
       const componentKey = `${library.libraryId}:${componentName}`;
       const componentId = currentComponentId(
         componentKey,
@@ -291,7 +301,7 @@ export function normalizeGithub(
               ? numericProjectValue(projectStatus.rawVelocity)
               : undefined;
           const statusRecognition = recognizeProjectStatus(projectStatus.status, rules);
-          // La dernière transition datée et reconnue fait foi pour le statut courant.
+          // La dernière transition datée fait foi ; une valeur non reconnue reste inconnue.
           const latestTransition = (projectStatus.statusHistory ?? [])
             .filter((transition) => Number.isFinite(Date.parse(transition.transitionedAt)))
             .sort((a, b) => Date.parse(a.transitionedAt) - Date.parse(b.transitionedAt))
@@ -299,7 +309,7 @@ export function normalizeGithub(
           const latestRecognition = latestTransition
             ? recognizeProjectStatus(latestTransition.status, rules)
             : undefined;
-          const currentRecognition = latestRecognition?.status ? latestRecognition : statusRecognition;
+          const currentRecognition = latestRecognition ?? statusRecognition;
           return {
             projectId: projectStatus.projectId,
             projectName: projectStatus.projectName,
@@ -338,12 +348,14 @@ export function normalizeGithub(
         provenance: { source: 'github', sourceId: issue.id, collectedAt: raw.collectedAt },
         dataQualityStatus: collectedStatus
       });
-      if (!componentsByName.has(`${library.libraryId}:${componentName}`)) {
-        const catalogueComponent = catalogueByRepositoryAndName.get(`${repository.name}:${componentName}`);
-        const inCatalogue = Boolean(catalogueComponent) || raw.catalogueComponents.includes(componentName);
-        componentsByName.set(`${library.libraryId}:${componentName}`, {
-          componentId,
-          name: componentName,
+      for (const name of componentNames) {
+        const key = `${library.libraryId}:${name}`;
+        if (componentsByName.has(key)) continue;
+        const catalogueComponent = catalogueByRepositoryAndName.get(`${repository.name}:${name}`);
+        const inCatalogue = Boolean(catalogueComponent) || raw.catalogueComponents.includes(name);
+        componentsByName.set(key, {
+          componentId: currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames),
+          name,
           libraryId: library.libraryId,
           status: 'active',
           aliases: [],
@@ -421,8 +433,26 @@ export function normalizeGithub(
     const componentId = issue.componentIds[0]!;
     const auditId = stableId('audit', issue.issueId);
     const completedAt = auditCompletedAt(issue);
-    const noSubIssues = issue.subIssueIds.length === 0;
-    const inferredConform = Boolean(completedAt && noSubIssues);
+    const businessState = issueBusinessState(issue);
+    const lifecycle =
+      businessState === 'cancelled'
+        ? 'cancelled'
+        : businessState === 'treated'
+          ? 'completed'
+          : issue.projectContexts.some((context) =>
+                ['IN_PROGRESS', 'IN_REVIEW', 'BLOCKED', 'DONE'].includes(currentProjectStatus(context) ?? '')
+              )
+            ? 'ongoing'
+            : 'pending';
+    const declaredResult = rawIssue?.auditResult;
+    const result =
+      lifecycle === 'completed'
+        ? declaredResult && ['conform', 'non_conform', 'conditional', 'critical'].includes(declaredResult)
+          ? declaredResult
+          : 'conform'
+        : lifecycle === 'ongoing'
+          ? 'in_progress'
+          : 'not_evaluated';
     const audit: Audit = {
       auditId,
       issueId: issue.issueId,
@@ -430,9 +460,10 @@ export function normalizeGithub(
       componentId,
       ...(targetVersion ? { versionId: targetVersion.versionId } : {}),
       version: targetVersion?.number ?? legacyVersion!,
-      status: rawIssue?.auditStatus ?? (inferredConform ? 'conform' : 'in_progress'),
+      status: lifecycle === 'cancelled' ? 'cancelled' : result,
+      lifecycle,
       sourceIssueId: issue.issueId,
-      objectiveAuditResult: rawIssue?.auditResult ?? (inferredConform ? 'conform' : 'in_progress'),
+      objectiveAuditResult: result,
       ...(rawIssue?.auditedReleaseCandidate
         ? { auditedReleaseCandidate: rawIssue.auditedReleaseCandidate }
         : {}),
@@ -475,17 +506,17 @@ export function normalizeGithub(
             (context) => context.projectId === projectStatus.projectId && context.status === 'CANCELLED'
           )
       );
-      const isCancelled = issue.projectContexts.some((context) => context.status === 'CANCELLED');
-      const currentStatuses = issue.projectContexts.map((context) => context.status);
+      const isCancelled = issueBusinessState(issue) === 'cancelled';
+      const currentStatuses = issue.projectContexts.map(currentProjectStatus);
       const businessStatus: Anomaly['status'] = isCancelled
         ? 'cancelled'
-        : currentStatuses.includes('DONE')
+        : issueBusinessState(issue) === 'treated'
           ? 'done'
           : currentStatuses.includes('IN_PROGRESS') || currentStatuses.includes('IN_REVIEW')
             ? 'in_progress'
-            : issue.state === 'OPEN'
-              ? 'open'
-              : 'done';
+            : lastDoneAt(issue)
+              ? 'reopened'
+              : 'open';
       const legacyComponentId =
         audit?.componentId ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
       const correctedAt = businessCorrectedAt(issue);
@@ -496,7 +527,8 @@ export function normalizeGithub(
         !isCancelled &&
         cancelledProjectStatuses.length === 0 &&
         issue.state === 'CLOSED' &&
-        !currentStatuses.some((status) => status !== 'DONE')
+        currentStatuses.length > 0 &&
+        currentStatuses.every((status) => status === 'DONE')
           ? issue.closedAt
           : undefined;
       const effectiveCorrectedAt =
@@ -546,6 +578,15 @@ export function normalizeGithub(
     }
   }
 
+  // Les anomalies explicitement liées affectent le résultat, même après correction.
+  for (const audit of audits) {
+    if (audit.lifecycle !== 'completed') continue;
+    if (anomalies.some((anomaly) => anomaly.auditId === audit.auditId)) {
+      if (audit.objectiveAuditResult === 'conform') audit.objectiveAuditResult = 'non_conform';
+    }
+    audit.status = audit.objectiveAuditResult;
+  }
+
   return {
     libraries,
     components: mergeComponents(historicalComponentsById, componentsByName),
@@ -559,7 +600,7 @@ export function normalizeGithub(
   };
 }
 
-/** Resolve the current identity without reusing an identity whose disappearance was proven. */
+/** Résout l’identité courante sans réutiliser celle dont la disparition a été prouvée. */
 function currentComponentId(
   key: string,
   latestHistoricalComponentIdByName: Map<string, string>,
@@ -571,7 +612,7 @@ function currentComponentId(
   );
 }
 
-/** Merge historical identities with richer current-catalogue/current-Issue metadata. */
+/** Fusionne les identités historiques avec les métadonnées du catalogue et des issues courantes. */
 function mergeComponents(
   historical: Map<string, Component>,
   currentByName: Map<string, Component>
@@ -586,7 +627,7 @@ function mergeComponents(
   );
 }
 
-/** Numeric comparison for strict M.m.r production versions. */
+/** Compare numériquement les versions PROD au format strict M.m.r. */
 function compareProdVersions(left: string, right: string): number {
   const leftParts = left.split('.').map(Number);
   const rightParts = right.split('.').map(Number);
@@ -634,13 +675,7 @@ function criticalityValue(value: string | undefined, rules: GithubProcessingConf
  */
 /** Dernière entrée datée dans DONE, y compris après une réouverture (contrat KPI V3). */
 function businessCorrectedAt(issue: Issue): string | undefined {
-  const dates = issue.projectContexts
-    .flatMap((context) => context.statusHistory)
-    .filter((transition) => transition.status === 'DONE')
-    .map((transition) => transition.transitionedAt)
-    .filter((date) => Number.isFinite(Date.parse(date)))
-    .sort((a, b) => Date.parse(a) - Date.parse(b));
-  return dates.at(-1);
+  return lastDoneAt(issue);
 }
 
 /**
@@ -649,21 +684,7 @@ function businessCorrectedAt(issue: Issue): string | undefined {
  * Aucune date de clôture GitHub n'est inventée en absence d'historique.
  */
 function auditCompletedAt(issue: Issue): string | undefined {
-  if (issue.state !== 'CLOSED') return undefined;
-  if (issue.projectContexts.some((context) => context.status === 'CANCELLED')) return undefined;
-  const currentDoneContexts = issue.projectContexts.filter((context) => context.status === 'DONE');
-  if (currentDoneContexts.length === 0) return undefined;
-
-  const lastTransitions = currentDoneContexts
-    .map((context) =>
-      context.statusHistory
-        .filter((transition) => Number.isFinite(Date.parse(transition.transitionedAt)))
-        .sort((a, b) => Date.parse(a.transitionedAt) - Date.parse(b.transitionedAt))
-        .at(-1)
-    )
-    .filter((transition) => transition?.status === 'DONE');
-  const dates = lastTransitions.map((transition) => transition!.transitionedAt);
-  return dates.sort((a, b) => Date.parse(a) - Date.parse(b)).at(-1);
+  return issueBusinessState(issue) === 'treated' ? lastDoneAt(issue) : undefined;
 }
 
 /**

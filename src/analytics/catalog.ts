@@ -22,6 +22,36 @@ export interface MetricContract {
  * Expose la constante « METRIC_CONTRACTS » du module.
  */
 export const METRIC_CONTRACTS: readonly MetricContract[] = [
+  ...['total', 'open', 'treated', 'cancelled'].map((name): MetricContract => ({
+    id: `issue.${name}`,
+    unit: 'count',
+    scope: 'issue',
+    kind: 'stock',
+    definition: (
+      {
+        total: 'Issues normalisées distinctes, tous types confondus.',
+        open: 'Issues non terminées ou sans preuve suffisante de Done et Closed.',
+        treated: 'Issues actuellement Done dans leurs Projects et Closed dans GitHub.',
+        cancelled: 'Issues annulées dans GitHub Projects ; elles ne sont pas traitées.'
+      } as Record<string, string>
+    )[name]!
+  })),
+  ...['global', 'done', 'estimated'].flatMap((cohort) =>
+    ['average', 'median', 'p90'].map((statistic): MetricContract => ({
+      id: `issue.treatmentDelay.${cohort}.${statistic}`,
+      unit: 'days',
+      scope: 'issue',
+      kind: 'duration',
+      definition: `Délai de traitement des issues distinctes : ${statistic}, population ${cohort}. Done et Closed requis ; dates estimées séparées ; annulations et durées invalides exclues.`
+    }))
+  ),
+  ...['pending', 'ongoing', 'cancelled'].map((progress): MetricContract => ({
+    id: `audit.${progress}`,
+    unit: 'count',
+    scope: 'audit',
+    kind: 'stock',
+    definition: `Audits de progression ${progress}, indépendamment d'un résultat déclaré.`
+  })),
   {
     id: 'portfolio.repositories',
     unit: 'count',
@@ -322,14 +352,16 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
     unit: 'days',
     scope: 'anomaly',
     kind: 'duration',
-    definition: 'Délai médian entre la création et la première correction métier.'
+    definition:
+      'Délai médian officiel entre la création et la dernière correction Done connue, ou une clôture explicitement estimée admissible.'
   },
   {
     id: 'anomaly.correctionDelay.p90',
     unit: 'days',
     scope: 'anomaly',
     kind: 'duration',
-    definition: '90e percentile du délai entre la création et la première correction métier.'
+    definition:
+      '90e percentile du délai officiel entre la création et la dernière correction Done connue, ou une clôture explicitement estimée admissible.'
   },
   {
     id: 'anomaly.backlog.oldestAge',
@@ -337,7 +369,7 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
     scope: 'anomaly',
     kind: 'duration',
     definition:
-      'Âge du plus ancien élément actuellement ouvert, calculé par rapport à la date la plus récente connue du snapshot.'
+      'Âge du plus ancien élément actuellement ouvert, calculé à la date de collecte des sources du snapshot.'
   }
 ] as const;
 
@@ -359,4 +391,20 @@ export function getMetricContract(id: string): MetricContract | undefined {
 export function assertMetricContract(metricIds: Iterable<string>): void {
   const unknown = [...new Set(metricIds)].filter((id) => !getMetricContract(id));
   if (unknown.length > 0) throw new Error(`Metrics missing from V2 contract: ${unknown.join(', ')}`);
+}
+
+/** Décrit la formule mathématique sans confondre l'effectif d'une durée et la somme de ses valeurs. */
+export function metricFormula(id: string): string {
+  const contract = getMetricContract(id);
+  if (contract?.kind === 'ratio')
+    return '100 × numérateur / dénominateur ; population vide : valeur inconnue.';
+  if (contract?.kind === 'stock' || contract?.kind === 'flow')
+    return 'Nombre d’identités distinctes retenues après exclusions, dans le périmètre et la période indiqués.';
+  if (id.toLowerCase().includes('median'))
+    return 'Quantile 0,5 des durées triées ; interpolation linéaire au rang (n − 1) × 0,5.';
+  if (id.toLowerCase().includes('p90'))
+    return 'Quantile 0,9 des durées triées ; interpolation linéaire au rang (n − 1) × 0,9.';
+  if (id.includes('oldest'))
+    return 'Date de collecte − date de création la plus ancienne des éléments retenus, en jours calendaires.';
+  return 'Somme des durées mesurables / effectif mesurable ; durée = (date de traitement − création) / 86 400 000 ms. Population vide : valeur inconnue.';
 }

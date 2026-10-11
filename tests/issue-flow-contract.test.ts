@@ -20,7 +20,14 @@ function issue(id: string, state: Issue['state']): Issue {
     accessibilityCategories: [],
     subIssueIds: [],
     linkedPullRequestIds: [],
-    projectContexts: [],
+    projectContexts: [
+      {
+        projectId: 'quality',
+        projectName: 'Qualité',
+        status: state === 'CLOSED' ? 'DONE' : 'BACKLOG',
+        statusHistory: []
+      }
+    ],
     provenance: { source: 'github', collectedAt: '2026-01-01T00:00:00Z' },
     dataQualityStatus: 'reliable'
   };

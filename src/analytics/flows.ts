@@ -47,7 +47,7 @@ function flowMetric(
     scope: contract.scope,
     period,
     definition: contract.definition,
-    sourceEntityIds,
+    sourceEntityIds: validEntityIds,
     reliability: {
       status: relevant.some((issue) =>
         issue.impacts.some(

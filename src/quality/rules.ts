@@ -1,3 +1,5 @@
+import { currentProjectStatus, issueBusinessState, lastDoneAt } from '../domain/business.js';
+import { METRIC_CONTRACTS } from '../analytics/catalog.js';
 /**
  * @module quality.rules
  * Évalue les règles Data Quality et leurs conséquences sur les données.
@@ -60,7 +62,8 @@ export function evaluateDataQuality(
    * @returns Résultat du traitement.
    */
   const isCurrentlyDone = (issue: NonNullable<ReturnType<typeof issueFor>>) =>
-    issue.projectContexts.some((context) => context.status === 'DONE');
+    issue.projectContexts.length > 0 &&
+    issue.projectContexts.every((context) => currentProjectStatus(context) === 'DONE');
   const rawIssueById = new Map(
     raw.repositories.flatMap((repository) => repository.issues).map((issue) => [issue.id, issue])
   );
@@ -79,6 +82,47 @@ export function evaluateDataQuality(
   // classified as missing; once a repository contains native Issue Types, absence on
   // one of its Issues is meaningful and must be reported (D-155).
   for (const issue of data.issues ?? []) {
+    const statuses = issue.projectContexts.map(currentProjectStatus);
+    if (
+      (issue.state === 'CLOSED' && issueBusinessState(issue) === 'open') ||
+      statuses.some((status) => status === undefined) ||
+      new Set(statuses).size > 1
+    )
+      add(
+        'DQ-030',
+        'WARNING',
+        'include',
+        'issue',
+        issue.issueId,
+        'Statut métier non prouvé ou contextes Project contradictoires ; Closed ne signifie pas Done.'
+      );
+    if (issueBusinessState(issue) === 'treated') {
+      const doneAt = lastDoneAt(issue);
+      if (!doneAt)
+        add(
+          'DQ-031',
+          'WARNING',
+          'include',
+          'issue',
+          issue.issueId,
+          'Done et Closed sont prouvés mais la date Done est absente ; seul un délai estimé peut être affiché.'
+        );
+      const date = doneAt ?? issue.closedAt;
+      if (
+        date &&
+        (!Number.isFinite(Date.parse(date)) ||
+          !Number.isFinite(Date.parse(issue.createdAt)) ||
+          Date.parse(date) < Date.parse(issue.createdAt))
+      )
+        add(
+          'DQ-032',
+          'WARNING',
+          'exclude',
+          'issue',
+          issue.issueId,
+          'Date de traitement invalide ou antérieure à la création ; délai exclu.'
+        );
+    }
     const rawIssue = rawIssueById.get(issue.issueId);
     const nativeIssueTypesAvailable = repositoryHasNativeIssueTypes.get(issue.repositoryId) ?? false;
     if (nativeIssueTypesAvailable && !issue.rawIssueType) {
@@ -456,44 +500,10 @@ export function evaluateDataQuality(
       'nexus',
       'Nexus is unavailable; release evidence is unknown.'
     );
-  return applyMetricImpacts(issues, [
-    'portfolio.repositories',
-    'portfolio.libraries',
-    'portfolio.components',
-    'portfolio.componentsAudited',
-    'portfolio.auditCoverage',
-    'audit.completed',
-    'audit.conform',
-    'audit.conditional',
-    'audit.nonConform',
-    'audit.critical',
-    'audit.conformityRate',
-    'componentVersion.total',
-    'componentVersion.covered',
-    'componentVersion.auditCoverage',
-    'componentVersion.conform',
-    'componentVersion.nonConform',
-    'componentVersion.conformityRate',
-    'anomaly.total',
-    'anomaly.open',
-    'anomaly.inProgress',
-    'anomaly.done',
-    'anomaly.byCriticality.blocking',
-    'anomaly.byCriticality.major',
-    'anomaly.byCriticality.minor',
-    'anomaly.criticalityCoverage',
-    'anomaly.correctedEver',
-    'anomaly.reopened',
-    'anomaly.cancelled',
-    'anomaly.correctionDelay.average',
-    'anomaly.correctionDelay.median',
-    'anomaly.correctionDelay.p90',
-    'anomaly.backlog.oldestAge',
-    'anomaly.flow.created',
-    'anomaly.flow.corrected',
-    'anomaly.flow.reopened',
-    'anomaly.flow.cancelled'
-  ]);
+  return applyMetricImpacts(
+    issues,
+    METRIC_CONTRACTS.map((contract) => contract.id)
+  );
 }
 
 /** Agrège les alertes par niveau pour l'affichage et le statut du pipeline. */

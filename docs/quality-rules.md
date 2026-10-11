@@ -47,3 +47,13 @@ Les issues dont un Project porte le statut `Cancelled` ne sont pas évaluées pa
 ## Source de vérité
 
 Les identifiants, sévérités, actions et messages sont définis dans [`config/quality-rules.yaml`](../config/quality-rules.yaml). L'implémentation correspondante se trouve dans [`src/quality/rules.ts`](../src/quality/rules.ts).
+
+## Diagnostics de consolidation V2.2
+
+| Règle                             | Objet                                                | Sévérité | Action métrique                |
+| --------------------------------- | ---------------------------------------------------- | -------- | ------------------------------ |
+| [DQ-030](quality-rules/DQ-030.md) | Statut métier non prouvé ou Projects contradictoires | WARNING  | include / fiabilité partielle  |
+| [DQ-031](quality-rules/DQ-031.md) | Done + Closed sans date Done                         | WARNING  | include / estimation explicite |
+| [DQ-032](quality-rules/DQ-032.md) | Date de traitement invalide ou négative              | WARNING  | exclude des délais uniquement  |
+
+Les stocks conservent une issue dont le délai est exclu. L'inconnue et l'estimation ne deviennent jamais une preuve de terminaison.

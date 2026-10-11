@@ -17,7 +17,8 @@ export function buildSnapshot(
   modelVersion: string,
   ruleVersion: string,
   scope: string,
-  capturedAt: string = new Date().toISOString()
+  capturedAt: string = new Date().toISOString(),
+  previousSnapshot?: Snapshot
 ): Snapshot {
   // Une alerte, y compris un simple avertissement, rend le snapshot partiel.
   const reliability = dqIssues.some((issue) => issue.severity === 'ERROR')
@@ -43,6 +44,17 @@ export function buildSnapshot(
     ruleVersion,
     modelVersion,
     reliability,
-    historicalStates: buildVersionHistoricalStates(normalizedData)
+    historicalStates: buildVersionHistoricalStates(
+      normalizedData,
+      previousSnapshot &&
+        previousSnapshot.scope === scope &&
+        previousSnapshot.modelVersion === modelVersion &&
+        previousSnapshot.ruleVersion === ruleVersion &&
+        Date.parse(previousSnapshot.capturedAt) < Date.parse(capturedAt)
+        ? (previousSnapshot.historicalStates?.filter(
+            (state) => Date.parse(state.releasedAt) <= Date.parse(previousSnapshot.capturedAt)
+          ) ?? [])
+        : []
+    )
   };
 }

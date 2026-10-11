@@ -116,3 +116,15 @@ rules:
     severity: ERROR
     action: exclude
     message: "Normalized entity contains an unresolved reference."
+  - id: DQ-030
+    severity: WARNING
+    action: include
+    message: "Statut métier non prouvé ou contextes Project contradictoires ; Closed ne signifie pas Done."
+  - id: DQ-031
+    severity: WARNING
+    action: include
+    message: "Done et Closed prouvés sans date Done ; délai éventuellement estimé."
+  - id: DQ-032
+    severity: WARNING
+    action: exclude
+    message: "Date de traitement invalide ou antérieure à la création ; délai exclu."

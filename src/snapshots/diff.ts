@@ -4,6 +4,9 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { issueBusinessState } from '../domain/business.js';
+import { businessTransitions } from './transitions.js';
+import type { BusinessTransition } from '../domain/types.js';
 import type {
   Audit,
   Anomaly,
@@ -59,6 +62,7 @@ export interface SnapshotDiff {
   anomaliesCorrected: string[];
   anomaliesReopened: string[];
   anomaliesCancelled: string[];
+  businessTransitions: BusinessTransition[];
 }
 
 /**
@@ -102,24 +106,22 @@ function byId<T>(items: T[], id: (item: T) => string): Map<string, T> {
 
 /** Détermine le statut métier observable d’une issue à la date du snapshot. */
 function issueState(issue: Issue): 'open' | 'treated' | 'cancelled' {
-  const statuses = issue.projectContexts
-    .map((context) => {
-      const latest = context.statusHistory
-        .filter((entry) => entry.status && Number.isFinite(Date.parse(entry.transitionedAt)))
-        .sort((a, b) => Date.parse(a.transitionedAt) - Date.parse(b.transitionedAt))
-        .at(-1);
-      return latest?.status ?? context.status;
-    })
-    .filter((status) => status !== undefined);
-  if (statuses.includes('CANCELLED')) return 'cancelled';
-  if (statuses.includes('DONE')) return 'treated';
-  if (statuses.length > 0) return 'open';
-  return issue.state === 'CLOSED' ? 'treated' : 'open';
+  return issueBusinessState(issue);
 }
 
 /** Compare deux snapshots et produit uniquement des faits observables entre les deux états. */
 export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
-  if (before.capturedAt >= after.capturedAt)
+  if (
+    before.scope !== after.scope ||
+    before.modelVersion !== after.modelVersion ||
+    before.ruleVersion !== after.ruleVersion
+  )
+    throw new Error('Snapshots incompatibles : périmètre, modèle ou règles différents.');
+  if (
+    !Number.isFinite(Date.parse(before.capturedAt)) ||
+    !Number.isFinite(Date.parse(after.capturedAt)) ||
+    Date.parse(before.capturedAt) >= Date.parse(after.capturedAt)
+  )
     throw new Error('Snapshot order is invalid: before must precede after.');
 
   const previousIssues = byId(before.normalizedData.issues ?? [], (item) => item.issueId);
@@ -212,6 +214,7 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     anomaliesCreated,
     anomaliesCorrected,
     anomaliesReopened,
-    anomaliesCancelled
+    anomaliesCancelled,
+    businessTransitions: businessTransitions(before, after)
   };
 }

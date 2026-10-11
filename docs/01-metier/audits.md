@@ -43,10 +43,7 @@ GitHub Issue State = Closed
 
 Le seul `Done` ou le seul `Closed` ne suffit pas.
 
-La date métier de réalisation correspond à l'instant où la seconde
-condition nécessaire (`Done` et `Closed`) devient satisfaite. Si
-l'historique Project disponible ne permet pas de déterminer cette date,
-aucune date n'est inventée et une réserve Data Quality est produite.
+La terminaison exige les deux conditions actuelles. Conformément à D-238 et au contrat V3, la date métier conservée est la dernière transition Project `Done` connue, même si la fermeture GitHub intervient ensuite. Sans cette date, l'audit peut être terminé mais sa date de réalisation reste inconnue (DQ-012) ; `closedAt` ne la remplace jamais. Un audit annulé ne contribue ni aux résultats d'audits terminés ni aux cohortes applicables.
 
 ---
 

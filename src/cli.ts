@@ -113,6 +113,7 @@ program
       console.log(`CONFIG ${options.configOutput}`);
       console.log(`CATALOGUE ${options.catalogueOutput}`);
       const manifestPath = `${options.output}.manifest.json`;
+      /** Calcule une empreinte SHA-256 pour vérifier les artefacts sans exposer leurs identités sources. */
       const digest = (value: string) => createHash('sha256').update(value).digest('hex');
       const manifest = {
         schemaVersion: 1,

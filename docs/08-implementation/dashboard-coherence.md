@@ -1,72 +1,52 @@
-# Cohérence des pages du dashboard — lot 3
+# Cohérence des pages du dashboard
 
-**État : implémenté dans le générateur et couvert par un test de non-régression ; validation npm à réaliser.**
+Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done` à un traitement.
 
-Les pages **Analyse des issues**, **Analyse des composants** et le tableau des délais de la **Vue d'ensemble** partagent la projection `issueTreatment` de `src/dashboard/generate.ts`.
+## Référentiel commun
 
-- Tous les types d'issues sont admissibles ; la classification « anomalie » n'est pas une condition d'entrée.
-- Pour chaque contexte Project, la dernière transition datée valide prévaut sur le statut courant déclaré. Sans transition datée valide, le statut déclaré est utilisé.
-- Une issue actuellement `DONE` est **traitée** ; `CANCELLED` est séparé. Une issue rouverte après `DONE` n'est plus traitée, même si GitHub indique `CLOSED`.
-- La dernière transition `DONE` du contexte actuellement terminé fournit la date métier. Sans date métier, une preuve de correction exploitable puis `closedAt` servent de repli ; la clôture est signalée comme **estimation**.
-- Une issue traitée sans date admissible compte parmi les traitées, mais pas dans les délais calculables. Les durées négatives ou invalides sont exclues.
-- La colonne « Traitées » de l'analyse des composants ne signifie pas « anomalies corrigées ».
+- `src/domain/business.ts` définit la classification exclusive, le statut Project effectif, le traitement `Done ET Closed` et le cycle de vie des audits.
+- `src/analytics/issues.ts` projette les mêmes faits sur toutes les issues, indépendamment de leur type. Les labels multi-composants ne multiplient pas leur poids dans les KPI.
+- `src/analytics/statistics.js` est partagé sans duplication entre Analytics, le générateur et les deux explorateurs. Les populations réelles et estimées possèdent leurs propres effectifs. Une population vide donne une valeur inconnue, pas zéro.
+- `src/dashboard/read-model.ts` met en cache les faits pendant une génération, puis les invalide au début de la génération suivante.
 
-Les pages spécialisées **Anomalies**, **Audits et composants**, **Cartographie** et **Historique** conservent leurs périmètres spécifiques ; elles ne doivent pas être confondues avec un stock de toutes les issues.
+Un `BUG` n'est pas une anomalie RGAA par son seul type. Les anomalies normalisées hors audit, les anomalies d'audit, les Improvements et les autres issues restent distincts. Une origine indéterminée reste signalée.
 
-## Contrôles
+## Traitement et dates
 
-Le test `tests/dashboard.test.ts` vérifie notamment une issue `Documentation` fermée côté GitHub, avec un statut Project déclaré `DONE` mais une dernière transition valide `BACKLOG` : les deux explorateurs doivent la présenter comme ouverte, sans délai.
+Le dernier événement Project daté prévaut sur le statut déclaré. Un événement daté non reconnu ne rétablit pas artificiellement un ancien statut connu. Les contextes Project contradictoires ne prouvent pas une terminaison.
 
-Validation locale attendue : `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm test` et `npm run build`.
+`Cancelled` est distinct de `Done` et exclut le délai de traitement. `Closed` sans preuve Project reste non traité / non prouvé, même si une ancienne valeur déclare un résultat conforme.
 
-### Lot 4 — sélection des audits dans les vues spécialisées
+Une issue `Done ET Closed` sans date Done peut contribuer au stock traité. Son délai utilise éventuellement `closedAt`, avec provenance **estimée**. Les audits n'utilisent jamais cette estimation pour leur date de réalisation ni pour les verdicts historiques. Les durées invalides ou négatives sont exclues.
 
-La cartographie et la page « Audits et composants » sélectionnent le dernier audit
-**terminé** d'un composant à l'aide de `latestCompletedAudit`. L'ordre d'entrée
-n'est pas une preuve de récence. La date métier `completedAt` est privilégiée ;
-la date de collecte sert seulement de critère de classement de secours et ne
-constitue jamais une date d'achèvement. Un audit en cours ne remplace pas un
-résultat terminé. Les KPI Analytics et les verdicts Component × Version restent
-calculés par le pipeline, et non par cette fonction de présentation.
+Les délais historiques d'anomalies corrigées puis rouvertes restent un périmètre distinct des délais des issues actuellement traitées. Comparer des KPI exige une population identique.
 
-Tests : `tests/dashboard-audit-selection.test.ts`.
+## Conformité et traçabilité
 
-## Lot 5 — Cartographie et historique
+La conformité vient des couples `Component × Version` et de leurs `applicableAuditIds`, selon D-220 à D-228. Le tableau identifie **direct** et **hérité**. Une campagne en cours ou annulée ne remplace pas une cohorte terminée et datée. La correction d'une anomalie ne revalide pas la conformité.
 
-- La cartographie représente **toutes les issues normalisées**, sans filtrage par type, par composant et sans dédupliquer une issue entre composants distincts. Elle conserve séparément les anomalies et leurs PR comme chaîne de preuve RGAA. Les issues sont liées à leur URL GitHub normalisée.
-- La page Historique affiche le **stock courant des issues distinctes** tous types confondus. Ses quatre indicateurs de flux restent explicitement limités aux anomalies, faute de métriques de flux génériques comparables dans le snapshot. Aucun flux global d'issues n'est inventé.
-- Les tests HTML vérifient le rendu de ces contrats.
+La synthèse d'un composant affiche le verdict de sa dernière version canonique, et l'explorateur reprend celui de la version filtrée. Le résultat d'un audit isolé n'est pas un verdict global du composant. Une version sans relation historique reste non couverte.
 
-### Lot 6 — Stock des issues dans Historique
+La cartographie contient une table exhaustive incluant les issues transverses. Chaque audit et chaque anomalie possède un lien ciblé ; une parenté multiple ou contradictoire n'attribue aucune anomalie. Une PR, un composant ou un libellé commun ne prouve pas une relation d'audit.
 
-Le bloc « Stock vs flux » présente le nombre d’issues **distinctes**, tous types confondus,
-ventilé en **ouvertes**, **traitées** et **annulées**. Le classement réutilise la même
-projection métier `issueTreatment` que les explorateurs (dernière transition Project
-valide prioritaire, repli GitHub en l’absence de statut Project). Les trois catégories
-sont exclusives et leur somme est égale au stock dédupliqué.
+## Navigation
 
-Cette ventilation est un **stock au snapshot courant**, pas une évolution entre deux
-snapshots. Les quatre flux de la page restent propres aux anomalies RGAA ; aucun flux
-d’issues génériques n’est inféré sans comparaison temporelle fiable.
+Les dimensions partagées sont `repository` (owner/name), `component` (nom ou identité canonique), `version` (numéro ou identité canonique), `issue`, `audit`, `anomaly` et `family`.
 
-## Flux temporels génériques (lot 7)
+Les filtres forment une intersection ; une dimension absente d'une preuve ne satisfait pas ce filtre. Une référence inconnue donne une population vide et reste visible dans le sélecteur. Les modifications mettent à jour l'URL, les liens et les vues. Effacer le périmètre supprime ses anciennes dimensions.
 
-Les métriques `issue.flow.created`, `issue.flow.treated`, `issue.flow.reopened` et `issue.flow.cancelled` comparent deux snapshots successifs et couvrent **tous les types d’issues**. Elles utilisent les derniers statuts Project datés valides, avec repli sur le statut GitHub en l’absence de contexte Project. Une issue créée déjà fermée est comptée comme création, sans inventer une transition de traitement. Les flux `anomaly.flow.*` restent distincts : ne jamais additionner ces familles, car une anomalie est également une issue. Sans snapshot antérieur, la page affiche « — » et non zéro.
+Les liens ciblant une issue, un audit ou une anomalie remplacent les anciennes identités, familles et versions afin d'éviter un contexte contradictoire. Les paramètres explicitement écrits dans le lien cible et son ancre sont conservés. Les liens externes et téléchargements restent indépendants.
 
-## Contrat transversal des audits (consolidation)
+Les cartes KPI présentent le **snapshot complet**, explicitement indiqué sur chaque page. Les tableaux et statistiques des explorateurs suivent les filtres et la sélection ; ils ne prétendent pas recalculer des verdicts Analytics dans le navigateur.
 
-- **Issue** : unité de travail GitHub, tous types confondus.
-- **Audit** : contrôle identifié pour un composant et une version ; un audit `in_progress` ou `not_evaluated` n'est pas terminé.
-- **Anomalie** : écart qualité/accessibilité rattachable à une issue, éventuellement issu d'un audit. Les trois volumes ne sont pas additifs.
-- Les pages _Composants_, _Cartographie_ et _Audits_ utilisent `latestCompletedAudit` pour le dernier résultat terminé ; un audit en cours ne remplace pas ce résultat.
-- La page _Audits_ expose séparément les audits terminés, en cours et non évalués, ainsi que le détail de chaque audit et sa version.
-- La conformité _Component × Version_ provient des verdicts Analytics ; les audits en cours ne deviennent jamais conformes par défaut.
-- Les anomalies d'un composant ne sont pas automatiquement attribuées à chacun de ses audits : une association par audit exige une relation explicite.
+## Historique et explicabilité
 
-### Consolidation — preuve de rattachement et version canonique
+Le journal donne l'entité, l'état avant/après, les deux identifiants de snapshot et la date d'observation. Une date métier n'est présentée que si un événement Project explicite existe dans l'intervalle. Sans comparaison compatible, les flux et transitions sont indisponibles, pas nuls.
 
-- Une anomalie n’est attribuée à un audit que si `anomaly.auditId`, `anomaly.parentRefs` ou `Issue.parentIssueId` désigne explicitement l’identifiant de l’audit ou de son issue source. Un composant commun ne suffit pas.
-- La table des audits affiche les anomalies liées à **cet audit**, et signale séparément les anomalies du composant sans relation prouvée. Ces dernières ne doivent pas être imputées à une version.
-- Le libellé de version privilégie `Audit.versionId → Version.number`, avec repli sur `Audit.version` pour compatibilité. Les verdicts `Component × Version` restent produits par Analytics, sans recalcul HTML.
-- Les indicateurs de patrimoine par composant restent distincts des résultats par audit et par version.
-- Tests : `tests/dashboard-audit-relations.test.ts`.
+La section **Preuves des métriques Analytics** expose définition, périmètre, effectifs, sources, exclusions et diagnostics DQ sur toutes les pages. Les populations issues/anomalies et stocks/flux ne sont pas additives.
+
+## Validation
+
+`tests/dashboard-consolidation.test.ts`, `tests/dashboard-context-filter-contract.test.ts`, les tests I3/I6/I7 et `tests/browser/dashboard.spec.ts` protègent les contrats. Le [rapport de consolidation](dashboard-consolidation-complete.md) contient les résultats effectivement obtenus.
+
+Les photographies `atRelease` déjà présentes dans une capture compatible antérieure à la capture courante sont préservées pour les versions alors publiées. Une annulation ultérieure modifie `currentKnowledge`, sans réécrire la photographie acquise. Les différences de modèle, règles ou périmètre empêchent cette réutilisation.
