@@ -1,6 +1,7 @@
+/** Removes generated build and run artifacts without touching source datasets. */
 import { rm } from 'node:fs/promises';
 
-await Promise.all([
-  rm('dist', { recursive: true, force: true }),
-  rm('data/runs', { recursive: true, force: true })
-]);
+/** Paths exclusively owned by build/run commands. */
+const generatedPaths = ['dist', 'data/runs'];
+
+await Promise.all(generatedPaths.map((path) => rm(path, { recursive: true, force: true })));

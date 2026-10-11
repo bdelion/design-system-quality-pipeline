@@ -68,7 +68,7 @@ Les projections de compatibilité existantes peuvent être conservées temporair
 ### 2.3 Niveaux de priorité
 
 | Priorité | Signification                                                                                   |
-|:---------|:------------------------------------------------------------------------------------------------|
+| :------- | :---------------------------------------------------------------------------------------------- |
 | P0       | Nécessaire au chemin critique V1 ou à la fiabilité du modèle métier                             |
 | P1       | Nécessaire à une V1 fonctionnellement complète, mais peut être implémenté après les contrats P0 |
 | P2       | Amélioration non bloquante ou préparation d’une évolution ultérieure                            |
@@ -108,7 +108,7 @@ sur une fixture de référence adaptée au contrat du lot.
 ## 4. Vue d’ensemble du séquencement
 
 | Lot | Intitulé                                  | Dépend de                    | Gate principal                                                                        |
-|:----|:------------------------------------------|:-----------------------------|:--------------------------------------------------------------------------------------|
+| :-- | :---------------------------------------- | :--------------------------- | :------------------------------------------------------------------------------------ |
 | I0  | Baseline technique                        | —                            | Branche actuelle reproductible et verte                                               |
 | I1  | Contrats de domaine V1                    | I0                           | Le modèle peut représenter sans ambiguïté les décisions métier V1                     |
 | I2  | Collecte GitHub enrichie                  | I1                           | Le RAW contient les faits GitHub nécessaires sans inférence métier                    |
@@ -174,15 +174,15 @@ Un document de baseline peut être ajouté si l’équipe souhaite conserver les
 
 1. Installer exactement les dépendances du lockfile avec `npm ci`.
 2. Exécuter séparément :
-    - `npm run typecheck` ;
-    - `npm run lint` ;
-    - `npm test` ;
-    - `npm run build`.
+   - `npm run typecheck` ;
+   - `npm run lint` ;
+   - `npm test` ;
+   - `npm run build`.
 3. Classer chaque échec :
-    - défaut réel de la branche ;
-    - test obsolète ;
-    - problème d’environnement ;
-    - incohérence de type déjà présente.
+   - défaut réel de la branche ;
+   - test obsolète ;
+   - problème d’environnement ;
+   - incohérence de type déjà présente.
 4. Corriger uniquement les défauts nécessaires à l’obtention d’une baseline verte.
 5. Ne pas profiter de I0 pour commencer le refactor métier.
 
@@ -838,13 +838,13 @@ Recommandé :
 Introduire une API explicite, par exemple conceptuellement :
 
 ```ts
-loadCatalogueAtVersion(repository, version)
+loadCatalogueAtVersion(repository, version);
 ```
 
 ou :
 
 ```ts
-loadCatalogueAtRef(repository, tag)
+loadCatalogueAtRef(repository, tag);
 ```
 
 Cette API doit :
@@ -888,6 +888,17 @@ Bloque le calcul correct de la couverture historique dans I6.
 
 Chaque Version analysée peut être associée à son Catalogue historique ou à un état explicite d’indisponibilité.
 
+### 9.9 Implémentation I4
+
+I4 est découpé en deux incréments vérifiables :
+
+- **I4.1 — collecte historique** : lecture et validation de `config/catalogue.yaml` au tag PROD exact, avec conservation explicite des états `available`, `missing` et `invalid` dans le RAW ;
+- **I4.2 — identité historique** : matérialisation des relations `ComponentVersion` uniquement pour les Catalogues `available`.
+
+Pour I4.2, l’identité d’un Component est conservée tant que les Catalogues historiques disponibles ne prouvent pas sa disparition. Un Catalogue `missing` ou `invalid` constitue une absence de preuve et ne provoque donc aucune rupture d’identité. En revanche, si un Catalogue `available` ne contient plus un Component précédemment présent, son identité est terminée ; toute réapparition ultérieure crée un nouveau `componentId`, conformément à D-218.
+
+`ComponentVersion` matérialise à ce stade la présence historique et sa provenance. Le `verdict` et les `applicableAuditIds` restent non calculés jusqu’au lot analytique qui applique D-220 à D-228 ; I4 ne produit pas artificiellement `NON_COUVERT`.
+
 ---
 
 ## 10. Lot I5 — Data Quality V1
@@ -924,7 +935,7 @@ Les identifiants des nouvelles règles ne doivent être attribués qu’après v
 #### Règles à réaligner
 
 | Règle actuelle | Cible V1                                                                             |
-|:---------------|:-------------------------------------------------------------------------------------|
+| :------------- | :----------------------------------------------------------------------------------- |
 | DQ-001/DQ-002  | Criticité RGAA contrôlée uniquement pour une Anomalie issue d’un Audit Accessibilité |
 | DQ-003         | Une Anomalie d’Audit doit avoir exactement un parent Audit                           |
 | DQ-004/DQ-005  | Cohérence `Done` / `Closed` / merge PR selon le profil applicable                    |
@@ -1469,7 +1480,7 @@ Une suite de non-régression V1 suffisamment représentative pour faire évoluer
 Les points suivants ne doivent pas être tranchés implicitement par le code.
 
 | Question                                                 | Lot consommateur | Règle de conduite                                                                                |
-|:---------------------------------------------------------|:-----------------|:-------------------------------------------------------------------------------------------------|
+| :------------------------------------------------------- | :--------------- | :----------------------------------------------------------------------------------------------- |
 | Q-020 — profils exacts de workflow                       | I5, I8           | Limiter les contrôles aux invariants déjà établis tant que la question reste ouverte             |
 | Q-021 — exceptions à la PR obligatoire                   | I5               | Ne pas transformer l’absence de PR en erreur universelle                                         |
 | Q-022 — règles exactes de `Cancelled`                    | I5, I6           | Ne pas promouvoir DQ-008/DQ-010 en invariants définitifs                                         |

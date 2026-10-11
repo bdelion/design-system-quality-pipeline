@@ -6,6 +6,8 @@ Le projet collecte des données GitHub, les normalise dans un modèle métier, c
 
 > **État du projet :** la documentation métier V1 a été consolidée jusqu'à D-243. Le code présent dans la branche reflète encore le modèle antérieur sur plusieurs points ; le plan d'implémentation V1 décrit la migration à réaliser. Une décision métier établie n'est donc pas nécessairement déjà implémentée.
 
+La consolidation du dashboard V2.2 couvre les dix chantiers ; les critères, preuves de vérification et limites sont consignés dans le [rapport de consolidation](docs/08-implementation/dashboard-consolidation-complete.md). Validation complète : `npm run check:dashboard`.
+
 La porte d'entrée de la documentation est [`docs/README.md`](docs/README.md).
 
 ## Pipeline actuel
@@ -228,20 +230,20 @@ Le README reste volontairement synthétique. Utiliser [`docs/README.md`](docs/RE
 
 Parcours principaux :
 
-| Besoin | Document |
-|---|---|
-| Vision et périmètre | [`docs/00-cadrage/vision.md`](docs/00-cadrage/vision.md) |
-| Décisions et questions | [`docs/00-cadrage/questions-ouvertes.md`](docs/00-cadrage/questions-ouvertes.md) |
-| Modèle métier | [`docs/01-metier/modele-metier.md`](docs/01-metier/modele-metier.md) |
-| Audits | [`docs/01-metier/audits.md`](docs/01-metier/audits.md) |
-| Workflow GitHub | [`docs/02-workflow/README.md`](docs/02-workflow/README.md) |
-| Règles | [`docs/03-regles/README.md`](docs/03-regles/README.md) |
-| Indicateurs | [`docs/04-indicateurs/catalogue-indicateurs.md`](docs/04-indicateurs/catalogue-indicateurs.md) |
-| Architecture des données | [`docs/05-donnees/architecture-donnees.md`](docs/05-donnees/architecture-donnees.md) |
-| Architecture logicielle | [`docs/06-architecture/architecture.md`](docs/06-architecture/architecture.md) |
-| Développement | [`docs/08-implementation/guide-developpement.md`](docs/08-implementation/guide-developpement.md) |
-| Plan V1 | [`docs/08-implementation/plan-implementation-v1.md`](docs/08-implementation/plan-implementation-v1.md) |
-| Data Quality | [`docs/quality-rules.md`](docs/quality-rules.md) |
+| Besoin                   | Document                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Vision et périmètre      | [`docs/00-cadrage/vision.md`](docs/00-cadrage/vision.md)                                               |
+| Décisions et questions   | [`docs/00-cadrage/questions-ouvertes.md`](docs/00-cadrage/questions-ouvertes.md)                       |
+| Modèle métier            | [`docs/01-metier/modele-metier.md`](docs/01-metier/modele-metier.md)                                   |
+| Audits                   | [`docs/01-metier/audits.md`](docs/01-metier/audits.md)                                                 |
+| Workflow GitHub          | [`docs/02-workflow/README.md`](docs/02-workflow/README.md)                                             |
+| Règles                   | [`docs/03-regles/README.md`](docs/03-regles/README.md)                                                 |
+| Indicateurs              | [`docs/04-indicateurs/catalogue-indicateurs.md`](docs/04-indicateurs/catalogue-indicateurs.md)         |
+| Architecture des données | [`docs/05-donnees/architecture-donnees.md`](docs/05-donnees/architecture-donnees.md)                   |
+| Architecture logicielle  | [`docs/06-architecture/architecture.md`](docs/06-architecture/architecture.md)                         |
+| Développement            | [`docs/08-implementation/guide-developpement.md`](docs/08-implementation/guide-developpement.md)       |
+| Plan V1                  | [`docs/08-implementation/plan-implementation-v1.md`](docs/08-implementation/plan-implementation-v1.md) |
+| Data Quality             | [`docs/quality-rules.md`](docs/quality-rules.md)                                                       |
 
 `specifications/` conserve les sources et demandes ayant alimenté le cadrage ; il ne remplace pas la documentation normative courante.
 
@@ -264,3 +266,83 @@ La prochaine étape est l'implémentation des contrats métier I1 dans `src/doma
 **Version du package :** `0.1.0`
 **Stack :** Node.js 22 · TypeScript · Commander · Vitest · ESLint
 **Modèle configuré actuel :** `2.1`
+
+### Diagnostic des historiques GitHub
+
+Commande officielle : `npm.cmd run diagnose:history -- --raw data/raw/my-real-dataset.json` ; voir [le guide de diagnostic](docs/08-implementation/diagnostic-historique-github.md). Les scripts de maintenance sont `scripts/diagnose-history.mjs` et `scripts/clean.mjs`.
+
+### Cohérence des statuts et délais du dashboard
+
+Les explorateurs d'issues et de composants ainsi que la synthèse des délais
+utilisent une projection commune, indépendante du type d'issue. La dernière
+transition Project datée valide détermine le statut métier ; `closedAt` n'est
+qu'une estimation de date de traitement lorsqu'aucune date métier n'est
+exploitable. Les pages spécialisées conservent leurs périmètres.
+Voir [la documentation de cohérence](docs/08-implementation/dashboard-coherence.md).
+
+La sélection des audits affichés dans la cartographie et la page « Audits et composants »
+est documentée dans [la cohérence du dashboard](docs/08-implementation/dashboard-coherence.md).
+
+### Cohérence cartographie / historique (lot 5)
+
+La cartographie montre toutes les issues associées aux composants, indépendamment du type, tout en conservant une branche spécialisée pour les anomalies RGAA. L'historique distingue le stock courant de toutes les issues des flux d'anomalies disponibles. Voir `docs/08-implementation/dashboard-coherence.md`.
+
+La page **Historique** distingue le stock courant des issues de tous types (ouvertes, traitées, annulées) des flux temporels propres aux anomalies ; voir `docs/08-implementation/dashboard-coherence.md`.
+
+### Historique des issues (tous types)
+
+La page Historique présente les flux `issue.flow.*` (créées, traitées, rouvertes, annulées) séparément des flux RGAA `anomaly.flow.*`. Les deux séries requièrent deux snapshots comparables ; voir `docs/08-implementation/dashboard-coherence.md`.
+
+### Cohérence des vues d'audit
+
+Les issues représentent tous les travaux GitHub, les audits représentent les contrôles de composants par version et les anomalies représentent les écarts. Ces catégories ne s'additionnent pas. La vue Audits distingue les contrôles terminés, en cours et non évalués, ainsi que les verdicts Component × Version calculés par Analytics. Voir `docs/08-implementation/dashboard-coherence.md`.
+
+Les tableaux d’audits comptent uniquement les anomalies dont le lien parent/audit est explicite ; les anomalies sans rattachement vérifiable restent visibles sans être attribuées arbitrairement à une version. Voir `docs/08-implementation/dashboard-coherence.md`.
+
+## Travail avec Codex et Copilot
+
+Le dépôt fournit des consignes `AGENTS.md`, trois skills partagées et des tâches VS Code.
+Consulter le [guide de configuration](docs/08-implementation/codex-copilot-vscode.md)
+pour l’installation, la compatibilité et les lectures ciblées.
+
+`npm run check:ai` valide le kit sans réseau ni écriture. Après modification du registre D/Q,
+`npm run ai:index:update` régénère son index. Le contrôle IA est intégré à `npm run check`
+et à la CI ; `format:check` inclut également `.agents/`.
+
+## Configurations et données de test
+
+Voir [Configurations, sources et données de test](docs/08-implementation/configurations-et-tests.md)
+pour les fichiers réellement chargés, les commandes GitHub/fixture et la politique
+de renouvellement des jeux anonymisés. Les profils d'une fixture sont sélectionnés
+ensemble ; une paire spécifique incomplète est refusée.
+
+## Préparation de références cohérentes
+
+`npm run reference:prepare -- --input data/raw/collecte.json --name octobre`
+prépare les profils GitHub locaux et une référence anonymisée ; renseigner une
+graine privée dans `ANONYMIZATION_SEED`. Ajouter `--anonymize-components` pour
+pseudonymiser aussi les composants. Voir [Préparation des références](docs/08-implementation/preparation-references.md)
+pour les huit fichiers, les options de sélection des profils, les contrôles et
+la proposition de ménage. La référence synthétique V1 reste conservée.
+
+## Dashboard organisé par besoins
+
+Six espaces servent en priorité les responsables des audits d’accessibilité, puis la Squad. Voir la [matrice de refonte et ses populations](docs/08-implementation/dashboard-role-refactor.md). La commande `npm run dashboard:preview` génère une prévisualisation isolée et une liste CSV des issues accessibilité à examiner, sans réécrire le snapshot courant.
+
+### Consulter les filtres du dashboard
+
+Après génération, exécuter `npm run dashboard:serve` puis ouvrir http://127.0.0.1:4174/. L’ouverture directe en `file:///` bloque les modules JavaScript ; un message l’explique et désactive les contrôles inactifs. Pour la prévisualisation isolée : `npm run dashboard:preview`, puis `npm run dashboard:serve -- data/dashboard-refactor-preview/dashboard`. Arrêter le serveur avec Ctrl+C.
+
+La [refonte visuelle du dashboard](docs/08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.
+
+La page Accessibilité présente les répartitions par criticité, catégorie et composant en barres horizontales, avec valeurs textuelles et détails dépliables. Elles utilisent les agrégats Analytics du périmètre repository/composant/version ; un ciblage sans agrégat affiche une indisponibilité. Les populations présumées restent comprises dans ce périmètre, sans être requalifiées.
+
+## Progression de la collecte GitHub
+
+En mode `--source github`, stderr affiche une ligne actualisée dans un terminal interactif : barre des repositories terminés, issues traitées sur les issues découvertes et dernier quota GraphQL reçu. Le nombre d’issues découvertes peut augmenter pendant la collecte ; le quota n’est pas un pourcentage d’avancement.
+
+En CI ou lorsque stderr est redirigé, seuls le démarrage, le bilan et les avertissements sont écrits, sans séquences ANSI. Une erreur clôt la progression avec un bilan « interrompue ». Les avertissements restent sur des lignes séparées. La collecte et les données produites ne sont pas modifiées.
+
+## Releases automatiques
+
+Chaque PR fusionnée sur `main` peut produire un tag `vX.Y.Z` et une release après réussite de toute la CI. Rupture explicite : majeure ; `feat` : mineure ; autres changements : patch. Les notes reprennent les explications utilisateurs de la PR et les liens de validation. Voir [activation, permissions et relances](docs/08-implementation/releases-automatiques.md).

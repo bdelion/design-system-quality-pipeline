@@ -1,3 +1,9 @@
+/**
+ * @module collectors.fixture
+ * Lit une fixture locale en respectant le contrat de collecte RAW.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { readJson } from '../lib/files.js';
 import { fixturePath } from '../lib/paths.js';
 import type { RawDataset } from '../domain/types.js';

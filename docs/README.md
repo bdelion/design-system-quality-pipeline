@@ -23,16 +23,16 @@ Les documents distinguent volontairement les statuts suivants :
 
 Il n'existe pas une source unique valable pour toutes les questions.
 
-| Question | Source de référence |
-|---|---|
-| Quelle décision métier a été prise ? | `docs/00-cadrage/questions-ouvertes.md` et documents métier courants |
-| Quel modèle métier voulons-nous construire ? | `docs/01-metier/`, puis les règles et décisions associées |
-| Quel workflow cible est documenté ? | `docs/02-workflow/` et `docs/03-regles/` |
-| Quels indicateurs voulons-nous produire ? | `docs/04-indicateurs/` |
-| Quel comportement est réellement exécuté aujourd'hui ? | code, tests et configuration versionnés |
-| Quelle était la demande ou la matière métier d'origine ? | `specifications/` |
-| Pourquoi une décision d'architecture structurante a-t-elle été prise ? | `docs/07-decisions/` |
-| Que disait une documentation remplacée ? | `docs/_historique/` lorsqu'elle y aura été archivée |
+| Question                                                               | Source de référence                                                  |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Quelle décision métier a été prise ?                                   | `docs/00-cadrage/questions-ouvertes.md` et documents métier courants |
+| Quel modèle métier voulons-nous construire ?                           | `docs/01-metier/`, puis les règles et décisions associées            |
+| Quel workflow cible est documenté ?                                    | `docs/02-workflow/` et `docs/03-regles/`                             |
+| Quels indicateurs voulons-nous produire ?                              | `docs/04-indicateurs/`                                               |
+| Quel comportement est réellement exécuté aujourd'hui ?                 | code, tests et configuration versionnés                              |
+| Quelle était la demande ou la matière métier d'origine ?               | `specifications/`                                                    |
+| Pourquoi une décision d'architecture structurante a-t-elle été prise ? | `docs/07-decisions/`                                                 |
+| Que disait une documentation remplacée ?                               | `docs/_historique/` lorsqu'elle y aura été archivée                  |
 
 Une décision métier établie n'est pas invalidée parce que le code ne l'implémente pas encore. Dans ce cas, l'écart doit être traité comme un **écart entre cible et implémentation**, et non comme une contradiction à résoudre en faveur du code.
 
@@ -54,20 +54,20 @@ Le registre n'a pas vocation à remplacer les documents métier thématiques : i
 
 ## Parcours recommandé
 
-| Besoin | Document |
-|---|---|
-| Comprendre le projet | `00-cadrage/vision.md` |
-| Comprendre le périmètre | `00-cadrage/perimetre.md` |
-| Consulter les décisions et questions | `00-cadrage/questions-ouvertes.md` |
-| Comprendre les objets métier | `01-metier/modele-metier.md` |
-| Comprendre le workflow | `02-workflow/README.md` |
-| Connaître les règles | `03-regles/README.md` |
-| Connaître les indicateurs | `04-indicateurs/catalogue-indicateurs.md` |
-| Comprendre les données | `05-donnees/architecture-donnees.md` |
-| Comprendre l'architecture logicielle | `06-architecture/architecture.md` |
-| Comprendre les décisions d'architecture | `07-decisions/README.md` |
-| Développer | `08-implementation/guide-developpement.md` |
-| Préparer une présentation | `../presentation/README.md` |
+| Besoin                                  | Document                                   |
+| --------------------------------------- | ------------------------------------------ |
+| Comprendre le projet                    | `00-cadrage/vision.md`                     |
+| Comprendre le périmètre                 | `00-cadrage/perimetre.md`                  |
+| Consulter les décisions et questions    | `00-cadrage/questions-ouvertes.md`         |
+| Comprendre les objets métier            | `01-metier/modele-metier.md`               |
+| Comprendre le workflow                  | `02-workflow/README.md`                    |
+| Connaître les règles                    | `03-regles/README.md`                      |
+| Connaître les indicateurs               | `04-indicateurs/catalogue-indicateurs.md`  |
+| Comprendre les données                  | `05-donnees/architecture-donnees.md`       |
+| Comprendre l'architecture logicielle    | `06-architecture/architecture.md`          |
+| Comprendre les décisions d'architecture | `07-decisions/README.md`                   |
+| Développer                              | `08-implementation/guide-developpement.md` |
+| Préparer une présentation               | `../presentation/README.md`                |
 
 ## Rôle de `specifications/`
 
@@ -131,3 +131,26 @@ La réorganisation documentaire suit une migration progressive :
 7. seulement ensuite déplacer l'ancien document dans `_historique/`.
 
 Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cette vérification n'a pas été réalisée sujet par sujet.
+
+- [Diagnostic des historiques GitHub (API/RAW, confidentialité et scripts)](08-implementation/diagnostic-historique-github.md)
+
+## Assistance au développement dans VS Code
+
+- [Configurer Codex et Copilot](08-implementation/codex-copilot-vscode.md)
+- [Index de contexte des agents](08-implementation/ai-context-map.md)
+- [Index de recherche des décisions](08-implementation/ai-decisions-index.md)
+- [Validation du kit IA et limites](08-implementation/ai-configuration-validation.md)
+
+## Configurations et tests
+
+- [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)
+
+- [Préparer les références GitHub/fixture et proposition de ménage](08-implementation/preparation-references.md)
+
+## Refonte du dashboard par besoins
+
+La [matrice besoin → population → indicateur → écran → test](08-implementation/dashboard-role-refactor.md) décrit les six espaces, la distinction entre BUG et accessibilité, les filtres et les limites des sources.
+
+La [refonte visuelle du dashboard](08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.
+
+La publication après merge est décrite dans [Releases automatiques](08-implementation/releases-automatiques.md).

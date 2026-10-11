@@ -71,7 +71,7 @@ sous-Issues » en invariant métier universel.
 - passage `Backlog → Ready` lorsque les sous-Issues sont Ready ;
 - passage à `In progress` lorsque la première sous-Issue démarre ;
 - passage potentiel à `In review` lorsque les sous-Issues sont
-    terminées et qu'une RC est disponible ;
+  terminées et qu'une RC est disponible ;
 - passage potentiel à `Done` après retours clients satisfaisants.
 
 Ces formulations comportent explicitement des mentions telles que « à
@@ -83,21 +83,23 @@ déterminer » ou « pourrait ».
 
 ## 6. Matrice EPIC
 
-  Dimension             Règle
-  --------------------- --------------------------------------------------
-  Issue Type            `🚀 Epic` dans la source
-  Grooming              présent à la création dans les scénarios décrits
-  Velocity              non pesée dans la source
-  Iteration             possible
-  Milestone             possible
-  Branche propre        non
-  Pull Request propre   non
-  Sous-Issues           oui ; cardinalité générale à formaliser
-  Blocked               possible
-  Ready                 déclencheur exact ouvert
-  In progress           déclencheur exact ouvert
-  In review             déclencheur exact ouvert
-  Done                  déclencheur exact ouvert
+Dimension Règle
+
+---
+
+Issue Type `🚀 Epic` dans la source
+Grooming présent à la création dans les scénarios décrits
+Velocity non pesée dans la source
+Iteration possible
+Milestone possible
+Branche propre non
+Pull Request propre non
+Sous-Issues oui ; cardinalité générale à formaliser
+Blocked possible
+Ready déclencheur exact ouvert
+In progress déclencheur exact ouvert
+In review déclencheur exact ouvert
+Done déclencheur exact ouvert
 
 ---
 

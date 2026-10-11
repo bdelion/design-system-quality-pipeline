@@ -1,177 +1,32 @@
-# Dashboard
+# Dashboard statique V2.2
 
-## Statut
+Le dashboard est généré depuis un snapshot en lecture seule. Il conserve les sept pages historiques et ajoute accessibility.html et quality.html. Les six espaces principaux et leurs populations sont décrits dans la [matrice de refonte](../08-implementation/dashboard-role-refactor.md). Les pages historiques sont : `index.html` (synthèse), `issues.html` (toutes les issues), `components.html` (exploration par composant), `audits.html` (cycles de vie et composant × version), `anomalies.html` (spécialisation anomalies et DQ), `graph.html` (cartographie et chaîne de preuve exhaustive), `history.html` (stocks, flux et transitions).
 
-**ÉTAT IMPLÉMENTÉ** pour le dashboard décrit ici.
+## Responsabilités
 
-La cible UX et fonctionnelle finale sera définie après consolidation du
-modèle métier et des indicateurs.
+- `src/domain/business.ts` : classification exclusive, statut actuel Project, Done ET Closed, annulation et cycle d'audit.
+- `src/analytics/issues.ts`, `component-versions.ts`, `catalog.ts` : faits, verdicts et contrats des indicateurs.
+- `src/analytics/statistics.js` : moyenne, médiane et P90 partagés avec le navigateur, déduplication et populations séparées.
+- `src/dashboard/read-model.ts` : projection des preuves par snapshot ; aucune nouvelle attribution d'audit.
+- `src/dashboard/evidence.ts` : sources, exclusions, formules, diagnostics et journal.
+- `src/dashboard/assets/context.js` : intersection exacte du périmètre et propagation des liens.
 
-## Principe
+Les cartes accessibilité suivent les agrégats pré-calculés du périmètre repository/composant/version. Les anciens agrégats du snapshot complet sont masqués en contexte filtré. Les tableaux et statistiques d'exploration suivent le contexte et la sélection. Un résultat par composant concerne sa dernière version PROD ; un filtre vers une autre version utilise la table des couples et ne présente pas ce résultat comme celui de la version filtrée. La couverture par repository de la page audits utilise les verdicts des dernières versions PROD, tandis que `portfolio.componentsAudited` mesure le patrimoine avec un audit terminé dans son historique : ces populations différentes sont nommées distinctement.
 
-Le dashboard actuel est statique.
+## Consultation et accessibilité
 
-Il est généré à partir d'un Snapshot et ne nécessite ni serveur
-applicatif ni base de données pour être consulté.
+Servir le répertoire généré sur HTTP(S) avec un serveur de fichiers statiques : les modules JavaScript partagés nécessitent cette origine. Aucun serveur applicatif ni base de données n'est requis. Un lien d'évitement, des contrôles nommés, un focus visible, des tableaux défilants accessibles au clavier et des annonces de filtrage assurent l'accès aux interactions. Les tests Playwright exécutent les neuf pages sur desktop et mobile et axe-core contrôle WCAG A/AA ; cela ne constitue pas un audit RGAA manuel.
 
-```text
-Snapshot
-   ↓
-générateur
-   ↓
-HTML + JavaScript + CSS
-```
+## Compatibilité historique
 
-## Pages actuelles
+Le modèle et les règles passent à `2.2` / `dq-2026.10-consolidation`. Aucun ancien fichier de snapshot n'est réécrit. Un diff n'est calculé qu'entre captures chronologiques au périmètre, modèle et règles compatibles. Une photographie à la publication déjà conservée dans un snapshot compatible est gelée ; les connaissances actuelles peuvent évoluer sans réécrire cette photographie. Sans capture ancienne compatible, la vue à la publication est une reconstruction avec les preuves temporelles disponibles et ne prétend pas connaître des événements manquants.
 
-Le générateur produit notamment :
+Voir le [contrat de cohérence](../08-implementation/dashboard-coherence.md) et le [rapport de validation](../08-implementation/dashboard-consolidation-complete.md).
 
-```text
-index.html
-anomalies.html
-audits.html
-graph.html
-history.html
-```
+## Consultation locale et diagnostics filtrables
 
-### `index.html`
+La commande `npm run dashboard:serve` sert `data/dashboard` sur http://127.0.0.1:4174/ (interface locale uniquement, sans cache navigateur). Un dossier différent peut être passé en argument. En mode fichier, une indication explique la nécessité de HTTP et les contrôles interactifs sont désactivés.
 
-Vue de synthèse des KPI et de l'état global observable.
+Qualité des données présente un tableau : règle, sévérité, repository, type et identité de l’entité, diagnostic, action et effets sur les métriques. Les filtres repository/règle/sévérité/action/type/métrique et la recherche se combinent ; le compteur annonce les alertes affichées. Les repositories non prouvés restent « Non déterminé ». Les cartes accessibilité disposent d’une icône d’information accessible au clavier avec un nom décrivant le chiffre concerné.
 
-### `anomalies.html`
-
-Vue détaillée des Anomalies, métriques, criticités, catégories, délais
-et alertes DQ associées.
-
-### `audits.html`
-
-Vue orientée Composants et Audits.
-
-### `graph.html`
-
-Cartographie des relations entre Composants, Issues et Pull Requests
-avec recherche et badges d'état.
-
-### `history.html`
-
-Vue des flux observés entre le Snapshot précédent et le Snapshot courant
-lorsqu'une comparaison est disponible.
-
-## Assets
-
-Les assets sont maintenus séparément sous :
-
-```text
-src/dashboard/assets/
-```
-
-et copiés lors de la génération.
-
-Ils comprennent actuellement :
-
-- `style.css` ;
-- `app.js` ;
-- `graph.js` ;
-- `logo.svg`.
-
-Les pages HTML portent la structure et les données nécessaires ; les
-comportements communs restent dans les assets.
-
-## Consommation des métriques
-
-Les nouveaux écrans doivent consommer :
-
-```text
-analytics.metrics[metricId]
-```
-
-et utiliser les informations portées par la métrique :
-
-- `value` ;
-- `numerator` ;
-- `denominator` ;
-- `definition` ;
-- `scope` ;
-- `reliability` ;
-- `exclusions`.
-
-Le dashboard ne doit pas recalculer les règles métier ou les formules
-KPI.
-
-## Data Quality
-
-Les alertes DQ restent visibles et explicables.
-
-Le dashboard peut afficher :
-
-- règle concernée ;
-- cible ;
-- source ;
-- impacts ;
-- fiabilité de la métrique.
-
-Pour le comportement actuel `DQ-006`, il peut proposer la copie d'une
-structure YAML de Catalogue à compléter. Cette action reste une aide
-utilisateur : le navigateur n'écrit pas directement dans le Catalogue.
-
-## Liens GitHub
-
-Les liens GitHub sont construits uniquement lorsqu'une URL GitHub est
-fournie à la génération.
-
-Sans cette configuration, le dashboard affiche les références sous forme
-de texte.
-
-Les valeurs injectées dans le HTML doivent être échappées.
-
-## Historique
-
-`history.html` affiche actuellement les flux :
-
-```text
-anomaly.flow.created
-anomaly.flow.corrected
-anomaly.flow.reopened
-anomaly.flow.cancelled
-```
-
-uniquement lorsqu'un Snapshot précédent comparable est disponible.
-
-Sans comparaison, l'interface doit indiquer que les flux ne sont pas
-disponibles plutôt que d'afficher artificiellement zéro.
-
-## Séparation des responsabilités
-
-```text
-Metric Engine
-    ↓
-Snapshot
-    ↓
-Dashboard
-```
-
-Le dashboard est une couche de restitution.
-
-Il ne doit pas :
-
-- redéfinir la conformité ;
-- recalculer les ratios ;
-- décider quelles entités doivent être exclues ;
-- transformer une donnée inconnue en zéro ;
-- reconstruire une règle DQ.
-
-## Cible future
-
-Les besoins déjà identifiés prévoient plusieurs niveaux de lecture :
-
-- Portfolio / Executive ;
-- Librairie ;
-- Composant ;
-- Audit / Version ;
-- Issue / traçabilité.
-
-Chaque KPI devra pouvoir conduire aux entités sources qui expliquent sa
-valeur.
-
-La conception détaillée de cette cible interviendra après M3 afin de ne
-pas figer l'interface avant la consolidation du modèle métier.
+La [refonte visuelle du dashboard](../08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.

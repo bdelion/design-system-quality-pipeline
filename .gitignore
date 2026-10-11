@@ -1,5 +1,7 @@
 *.trace.json
 raw/
+# Documentation HTML générée par TypeDoc
+/docs/api/
 
 # Created by https://www.toptal.com/developers/gitignore/api/git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
@@ -586,3 +588,22 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/git,vim,java,emacs,linux,macos,maven,python,eclipse,windows,notepadpp,sonarqube,tortoisegit,intellij+all,visualstudiocode,react
+
+# Documentation TypeDoc générée
+
+# Artefacts locaux de consolidation et validation navigateur
+/data/browser-consolidation/
+/data/browser-report/
+/data/browser-results/
+/data/consolidation-*.json
+/data/dashboard-edit.mjs
+/data/test-dashboard*/
+/Microsoft/Windows/PowerShell/ModuleAnalysisCache
+
+/data/consolidation-reference/
+/data/consolidation-volume/
+
+# Profils GitHub locaux générés (identités réelles)
+/config/local/
+
+/data/dashboard-refactor-preview/

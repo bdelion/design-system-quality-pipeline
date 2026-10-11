@@ -114,7 +114,7 @@ un nouvel Audit fictif.
 Un Component décommissionné :
 
 - reste présent dans l'historique des Versions où il était applicable
-    ;
+  ;
 - est exclu du périmètre actif après sa décommission.
 
 La date et la représentation technique exactes de la décommission

@@ -195,3 +195,36 @@ Restent notamment à instruire :
 
 Ces questions doivent être résolues avant de figer la stratégie de
 persistance.
+
+---
+
+## 12. I7 — historique V1 implémenté
+
+I7 matérialise deux vues distinctes pour chaque Version PROD dont `releasedAt` est connu :
+
+```text
+historicalStates[].atRelease
+historicalStates[].currentKnowledge
+```
+
+`atRelease` ne retient que les faits disposant d'une date métier explicite antérieure ou égale à `releasedAt`. Un Audit terminé après la Release et une Anomalie détectée après la Release ne sont donc jamais rétroprojetés.
+
+`currentKnowledge` restitue au contraire ce que le Snapshot courant sait aujourd'hui de cette Version, y compris les Audits de rattrapage réalisés après sa publication.
+
+Les verdicts `ComponentVersion` de chaque vue sont recalculés uniquement à partir des faits appartenant à cette vue. `Snapshot.capturedAt` reste une date d'observation et n'est jamais utilisé comme substitut de `detectedAt`, `correctedAt`, `completedAt` ou `releasedAt`.
+
+### Comparabilité
+
+Deux Snapshots ne sont utilisés pour les flows que si les trois métadonnées suivantes sont identiques :
+
+```text
+scope
+modelVersion
+ruleVersion
+```
+
+Le Snapshot précédent est choisi par `capturedAt`, jamais par l'ordre lexical des noms de fichiers.
+
+### Historique des métriques
+
+Une série historique utilise les valeurs de métriques déjà persistées dans chaque Snapshot compatible. Les anciens Snapshots ne sont pas recalculés avec les règles ou le modèle courants.

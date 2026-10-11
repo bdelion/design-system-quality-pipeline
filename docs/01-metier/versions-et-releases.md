@@ -188,7 +188,7 @@ Restent notamment ouvertes ou partielles :
 - source exacte de la date de Release ;
 - règles en cas de Tag ou Milestone PROD manquants ;
 - impact des Audits de rattrapage sur les vues actuelles et
-    historiques.
+  historiques.
 
 ---
 

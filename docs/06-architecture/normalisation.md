@@ -116,7 +116,7 @@ La normalisation ne doit pas :
 - transformer une absence d'information en résultat négatif ;
 - intégrer des règles de présentation propres au dashboard ;
 - figer les cardinalités du domaine à partir des seules structures
-    TypeScript actuelles.
+  TypeScript actuelles.
 
 ## Évolution cible
 

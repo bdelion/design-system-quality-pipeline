@@ -1,13 +1,62 @@
+import type { WorkspaceAnalytics } from '../analytics/workspaces.js';
+/**
+ * @module domain.types
+ * Centralise les contrats RAW, les entités normalisées, les métriques et les snapshots V1.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 /** Origine d'une donnée et statut de fiabilité associé. */
 export type Source = 'github' | 'catalogue' | 'manual' | 'suggested';
+/**
+ * Définit le type « DataQualityStatus » utilisé dans les contrats du pipeline.
+ */
 export type DataQualityStatus = 'reliable' | 'partial' | 'unknown' | 'invalid';
+/**
+ * Définit le type « Severity » utilisé dans les contrats du pipeline.
+ */
 export type Severity = 'INFO' | 'WARNING' | 'ERROR';
+/**
+ * Définit le type « DqAction » utilisé dans les contrats du pipeline.
+ */
 export type DqAction = 'include' | 'exclude' | 'block';
+/**
+ * Définit le type « MetricUnit » utilisé dans les contrats du pipeline.
+ */
 export type MetricUnit = 'count' | 'percentage' | 'days';
-export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
+/**
+ * Définit le type « MetricScope » utilisé dans les contrats du pipeline.
+ */
+export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly' | 'issue';
+/**
+ * Définit le type « MetricReliabilityStatus » utilisé dans les contrats du pipeline.
+ */
 export type MetricReliabilityStatus = DataQualityStatus;
-export type AuditStatus = 'not_evaluated' | 'in_progress' | 'conform' | 'conditional' | 'non_conform' | 'critical';
+/**
+ * Définit le type « AuditStatus » utilisé dans les contrats du pipeline.
+ */
+export type AuditStatus =
+  'not_evaluated' | 'in_progress' | 'cancelled' | 'conform' | 'conditional' | 'non_conform' | 'critical';
+/**
+ * Définit le type « AnomalyStatus » utilisé dans les contrats du pipeline.
+ */
 export type AnomalyStatus = 'open' | 'in_progress' | 'done' | 'reopened' | 'cancelled';
+/**
+ * Définit le type « CanonicalIssueType » utilisé dans les contrats du pipeline.
+ */
+export type CanonicalIssueType = 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE';
+/**
+ * Définit le type « CanonicalProjectStatus » utilisé dans les contrats du pipeline.
+ */
+export type CanonicalProjectStatus =
+  'BACKLOG' | 'READY' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'CANCELLED';
+/**
+ * Définit le type « AnomalyOrigin » utilisé dans les contrats du pipeline.
+ */
+export type AnomalyOrigin = 'AUDIT' | 'HORS_AUDIT' | 'UNDETERMINED';
+/**
+ * Définit le type « ComponentVersionVerdict » utilisé dans les contrats du pipeline.
+ */
+export type ComponentVersionVerdict = 'NON_COUVERT' | 'CONFORME' | 'NON_CONFORME';
 
 /** Trace l'origine technique d'une entité normalisée. */
 export interface Provenance {
@@ -16,6 +65,9 @@ export interface Provenance {
   collectedAt: string;
 }
 
+/**
+ * Données RAW d’un repository et de ses éléments associés.
+ */
 export interface RawRepository {
   id: string;
   name: string;
@@ -23,6 +75,24 @@ export interface RawRepository {
   defaultBranch: string;
   issues: RawIssue[];
   pullRequests: RawPullRequest[];
+  /** Git tags collected from the repository. Legacy fixtures may omit them. */
+  gitTags?: RawGitTag[];
+  /** Historical catalogue evidence read from exact PROD tags. */
+  historicalCatalogues?: RawHistoricalCatalogue[];
+}
+
+/** Catalogue component presence captured at one exact PROD Git tag. */
+export interface RawHistoricalCatalogue {
+  tagName: string;
+  status: 'available' | 'missing' | 'invalid';
+  componentNames: string[];
+}
+
+/** Git tag evidence used to establish PROD publication dates. */
+export interface RawGitTag {
+  name: string;
+  /** Present only when GitHub exposes a trustworthy annotated-tag date. */
+  createdAt?: string;
 }
 
 /** Issue GitHub conservée dans le modèle RAW avant normalisation. */
@@ -31,7 +101,14 @@ export interface RawIssue {
   number: number;
   title: string;
   state: 'OPEN' | 'CLOSED';
+  /** Legacy canonicalized value kept until all fixtures are migrated. */
   issueType: 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE' | 'OTHER' | 'UNKNOWN';
+  /** Raw GitHub Issue Type, when GitHub provides one. */
+  rawIssueType?: string;
+  /** Canonical web URL collected from GitHub. Legacy fixtures may omit it. */
+  url?: string;
+  /** Release Candidate explicitly audited, distinct from the target PROD Version. */
+  auditedReleaseCandidate?: string;
   labels: string[];
   component?: string;
   criticities: string[];
@@ -46,11 +123,22 @@ export interface RawIssue {
   milestone?: RawMilestone;
 }
 
+/** Transition historique du statut d'une issue dans un GitHub Project. */
+export interface RawProjectStatusTransition {
+  previousStatus?: string;
+  status: string;
+  transitionedAt: string;
+}
+
 /** Statut d'une issue dans un GitHub Project. */
 export interface RawProjectStatus {
   projectId: string;
   projectName: string;
   status: string;
+  iteration?: ProjectIteration;
+  rawVelocity?: string | number;
+  rawScheduling?: string | number;
+  statusHistory?: RawProjectStatusTransition[];
 }
 
 /** Milestone GitHub rattachée à une issue. */
@@ -108,6 +196,101 @@ export interface Component {
   dataQualityStatus: DataQualityStatus;
 }
 
+/** Valeur d'Iteration conservée dans le contexte du GitHub Project source. */
+export interface ProjectIteration {
+  iterationId: string;
+  title: string;
+  startDate?: string;
+  durationDays?: number;
+  endDate?: string;
+}
+
+/** Transition de statut observée dans un GitHub Project. */
+export interface ProjectStatusTransition {
+  previousRawStatus?: string;
+  previousStatus?: CanonicalProjectStatus;
+  previousCandidateStatuses?: CanonicalProjectStatus[];
+  rawStatus: string;
+  status?: CanonicalProjectStatus;
+  candidateStatuses?: CanonicalProjectStatus[];
+  transitionedAt: string;
+}
+
+/** Données d'une Issue contextualisées par le GitHub Project qui les porte. */
+export interface IssueProjectContext {
+  projectId: string;
+  projectName: string;
+  rawStatus?: string;
+  status?: CanonicalProjectStatus;
+  candidateStatuses?: CanonicalProjectStatus[];
+  iteration?: ProjectIteration;
+  rawVelocity?: string | number;
+  velocity?: number;
+  rawScheduling?: string | number;
+  statusHistory: ProjectStatusTransition[];
+}
+
+/** Issue GitHub générique conservée exhaustivement dans le modèle normalisé. */
+export interface Issue {
+  issueId: string;
+  repositoryId: string;
+  libraryId: string;
+  number: number;
+  title: string;
+  url: string;
+  state: 'OPEN' | 'CLOSED';
+  createdAt: string;
+  closedAt?: string;
+  labels: string[];
+  milestoneId?: string;
+  rawIssueType?: string;
+  issueType?: CanonicalIssueType;
+  candidateIssueTypes?: CanonicalIssueType[];
+  componentIds: string[];
+  criticalities: string[];
+  accessibilityCategories: string[];
+  parentIssueId?: string;
+  subIssueIds: string[];
+  linkedPullRequestIds: string[];
+  projectContexts: IssueProjectContext[];
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+/** Version PROD canonique et faits Git associés. */
+export interface Version {
+  versionId: string;
+  libraryId: string;
+  number: string;
+  releasedAt?: string;
+  milestoneId?: string;
+  prodTag?: { name: string; createdAt?: string };
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+/** Présence historique explicite d'un Component dans une Version. */
+export interface ComponentVersion {
+  componentVersionId: string;
+  componentId: string;
+  versionId: string;
+  /** Calculated later from applicable completed Audits (D-220..D-228). */
+  verdict?: ComponentVersionVerdict;
+  /** Calculated together with the aggregate verdict. */
+  applicableAuditIds?: string[];
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
+/** Amélioration rattachée de manière univoque à un Audit valide. */
+export interface AuditImprovement {
+  auditImprovementId: string;
+  issueId: string;
+  auditId: string;
+  provenance: Provenance;
+  dataQualityStatus: DataQualityStatus;
+}
+
 /** Pull request indépendante du format de l'API GitHub. */
 export interface PullRequest {
   pullRequestId: string;
@@ -120,14 +303,29 @@ export interface PullRequest {
 }
 
 /** Anomalie qualité rattachée à un composant et à un audit. */
+/** Spécialisation technique BUG ; la qualification accessibilité est indépendante et portée par Analytics.workspaces. */
 export interface Anomaly {
   anomalyId: string;
-  auditId: string;
-  componentId: string;
+  issueId: string;
+  origin: AnomalyOrigin;
+  /** @deprecated I1 migration compatibility. AUDIT anomalies will ultimately use the optional relation below. */
+  auditId?: string;
+  /** @deprecated I1 migration compatibility. Source Component relations are carried by Issue.componentIds. */
+  componentId?: string;
   criticality: 'blocking' | 'major' | 'minor' | undefined;
   categories: string[];
   status: AnomalyStatus;
+  /** Date métier de détection : date de création de l'Issue source. */
+  detectedAt: string;
+  /** Date de la dernière transition Project vers DONE, si applicable. */
+  correctedAt?: string;
+  /** Date retenue pour les KPI, y compris repli estimé sur closedAt. */
+  effectiveCorrectedAt?: string;
+  /** Provenance explicite de la date retenue. */
+  correctionDateSource?: 'done' | 'last_done' | 'issue_closed' | 'unavailable';
+  /** @deprecated I3 migration compatibility. Use detectedAt. */
   createdAt: string;
+  /** @deprecated I3 migration compatibility. Use correctedAt. */
   firstDoneAt: string | undefined;
   technicalCorrectedAt?: string;
   everCorrected: boolean;
@@ -142,10 +340,19 @@ export interface Anomaly {
 /** Audit normalisé à partir des données disponibles. */
 export interface Audit {
   auditId: string;
+  issueId: string;
   libraryId: string;
   componentId: string;
+  versionId?: string;
+  auditedReleaseCandidate?: string;
+  auditedReleaseCandidateTag?: { name: string; createdAt?: string };
+  completedAt?: string;
+  /** Progression métier indépendante du verdict et de la disponibilité d'une date. */
+  lifecycle?: 'pending' | 'ongoing' | 'completed' | 'cancelled';
+  /** @deprecated I1 migration compatibility. Use versionId and Version.number. */
   version: string;
   status: AuditStatus;
+  /** @deprecated I1 migration compatibility. Use issueId. */
   sourceIssueId: string;
   objectiveAuditResult: AuditStatus;
   provenance: Provenance;
@@ -172,16 +379,25 @@ export interface DataQualityImpact {
   reason: string;
 }
 
+/**
+ * Définit le contrat de données « MetricPeriod » utilisé par le pipeline.
+ */
 export interface MetricPeriod {
   from?: string;
   to?: string;
 }
 
+/**
+ * État de fiabilité d’une métrique compte tenu des données disponibles.
+ */
 export interface MetricReliability {
   status: MetricReliabilityStatus;
   issueIds: string[];
 }
 
+/**
+ * Définit le contrat de données « MetricBreakdown » utilisé par le pipeline.
+ */
 export interface MetricBreakdown {
   dimension: string;
   values: Record<string, number>;
@@ -213,12 +429,29 @@ export interface KpiValue {
   sourceEntityIds: string[];
 }
 
+/** Transition métier observée, avec date métier uniquement lorsqu'elle est prouvée. */
+export interface BusinessTransition {
+  entityType: 'issue' | 'audit' | 'anomaly' | 'componentVersion';
+  entityId: string;
+  issueId?: string;
+  from: string;
+  to: string;
+  observedAt: string;
+  businessAt?: string;
+  fromSnapshotId: string;
+  toSnapshotId: string;
+}
+
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  /** Contrat additif des espaces métier, absent des anciens snapshots. */
+  workspaces?: WorkspaceAnalytics;
   /** V2 contract: all dashboard analytics must consume this map. */
   metrics: Record<string, Metric>;
   /** Flux temporels présents lorsque deux snapshots sont comparables. */
   flows?: Record<string, Metric>;
+  /** Journal observable entre deux snapshots comparables, distinct des stocks. */
+  transitions?: BusinessTransition[];
   /** @deprecated Compatibility projection of anomaly.total. */
   anomaliesDeclared: KpiValue;
   /** @deprecated Compatibility projection of anomaly.correctedEver. */
@@ -238,12 +471,45 @@ export interface Analytics {
 }
 
 /** Données métier après collecte et normalisation. */
+/**
+ * Agrégat des entités métier normalisées.
+ */
 export interface NormalizedData {
   libraries: Library[];
   components: Component[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  issues?: Issue[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  versions?: Version[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  componentVersions?: ComponentVersion[];
   audits: Audit[];
   anomalies: Anomaly[];
+  /** I1 target collection. Optional only during the staged migration of existing normalizers. */
+  auditImprovements?: AuditImprovement[];
   pullRequests: PullRequest[];
+}
+
+/** Projection historique d'une Version, figée selon les dates métier. */
+/**
+ * Vue d’une version à un instant métier donné.
+ */
+export interface VersionHistoricalView {
+  versionId: string;
+  releasedAt: string;
+  componentVersions: ComponentVersion[];
+  audits: Audit[];
+  anomalies: Anomaly[];
+}
+
+/**
+ * Comparaison entre état à la publication et connaissances actuelles.
+ */
+export interface VersionHistoricalState {
+  versionId: string;
+  releasedAt: string;
+  atRelease: VersionHistoricalView;
+  currentKnowledge: VersionHistoricalView;
 }
 
 /** Snapshot immuable regroupant sources, résultats et décisions de qualité. */
@@ -258,4 +524,6 @@ export interface Snapshot {
   ruleVersion: string;
   modelVersion: string;
   reliability: DataQualityStatus;
+  /** Release-time projection versus knowledge available at capture time. */
+  historicalStates?: VersionHistoricalState[];
 }

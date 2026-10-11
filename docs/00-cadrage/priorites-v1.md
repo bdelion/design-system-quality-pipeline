@@ -203,46 +203,46 @@ cible.
 ## Versions et sources
 
 - `Q-007` --- vérifier le rôle réel d'une GitHub Release et ne pas la
-    rendre obligatoire sans preuve ;
+  rendre obligatoire sans preuve ;
 - `Q-008` --- définir le comportement DQ si la Milestone PROD manque ;
 - `Q-009` --- définir le comportement DQ si le Tag Git attendu manque
-    ;
+  ;
 - `Q-037` --- déterminer les données Nexus réellement nécessaires ;
 - `Q-038` --- déterminer si Jenkins doit être interrogé directement ;
 - `Q-068` --- vérifier la disponibilité technique des timestamps
-    nécessaires au passage `Done`.
+  nécessaires au passage `Done`.
 
 ## Workflow
 
 - `Q-020` --- formalisation technique des profils STANDARD, EPIC,
-    AUDIT, RELEASE et CONCEPTION ;
+  AUDIT, RELEASE et CONCEPTION ;
 - `Q-021` --- traduire les exceptions PR déjà identifiées en règles
-    exécutables ;
+  exécutables ;
 - `Q-022` --- formaliser les propriétés interdites ou tolérées pour
-    `Cancelled`.
+  `Cancelled`.
 
 ## Audits et qualité de données
 
 - `Q-055` --- définir le minimum du futur template d'Issue d'Audit ;
 - `Q-059` --- confirmer avec l'auditeur la sémantique exacte des
-    criticités RGAA ;
+  criticités RGAA ;
 - `Q-061` --- confirmer la responsabilité opérationnelle de clôture
-    d'une Anomalie ;
+  d'une Anomalie ;
 - `Q-062` --- matérialiser le déclenchement d'une revalidation ;
 - `Q-063` --- préciser qui crée ou matérialise la revalidation ;
 - `Q-070` --- choisir la sévérité DQ de plusieurs Audits non terminés
-    pour un même `Component × Version` ;
+  pour un même `Component × Version` ;
 - `Q-073` --- définir la sévérité d'une incohérence entre sources de
-    Version ;
+  Version ;
 - `Q-074` --- définir la restitution UX d'une information de Version
-    manquante.
+  manquante.
 
 ## Anomalies non issues d'Audit
 
 - `Q-097` --- préciser la gestion complète des Versions affectées
-    après Release ;
+  après Release ;
 - `Q-098` --- stabiliser la représentation d'une Version affectée pour
-    un Bug hors Audit ;
+  un Bug hors Audit ;
 - `Q-099` --- définir le format exact de cette information.
 
 Ces sujets peuvent être traités avec les tests, fixtures et cas réels
@@ -275,9 +275,9 @@ tout en gardant un modèle extensible.
 - `Q-015` --- objet métier `Audit` indépendant de l'Issue GitHub ;
 - `Q-016` --- objet `Campagne d'Audit` explicite ;
 - `Q-051` --- règle organisationnelle de blocage PROD selon la
-    couverture ;
+  couverture ;
 - `Q-052` --- règle organisationnelle de blocage PROD selon les
-    Anomalies ;
+  Anomalies ;
 - `Q-053` --- migration des anciennes Issues vers le modèle cible ;
 - `Q-060` --- mécanisme opérationnel complet de revalidation ;
 - `Q-065` --- pilotage des Audits lors des changements de Version.
@@ -307,13 +307,13 @@ plutôt qu'un score global non défini.
 - `Q-034` --- politique complète de déclenchement des Snapshots ;
 - `Q-036` --- durée de conservation ;
 - `Q-077` --- détermination automatique NEW / EVOLVED / UNCHANGED /
-    DECOMMISSIONED ;
+  DECOMMISSIONED ;
 - `Q-078` --- mécanisme de comparaison des Components entre Versions ;
 - `Q-079` --- recherche de la Version SemVer précédente dans les
-    différents flux ;
+  différents flux ;
 - `Q-082` / `Q-083` --- représentation complète de la réactivation ;
 - `Q-084` --- UX détaillée de l'origine directe ou héritée d'un
-    verdict.
+  verdict.
 
 Une V1 peut conserver des Snapshots à chaque exécution et exposer
 l'origine d'un verdict de manière simple, sans résoudre toute
@@ -325,7 +325,7 @@ l'automatisation historique.
 - `Q-105` --- ratios d'usage à conserver ;
 - `Q-106` --- autres ratios d'usage ;
 - `Q-111` --- heuristique de détection d'un label Component
-    probablement manquant ;
+  probablement manquant ;
 - `Q-112` --- design avancé de la page Issues multi-filtres ;
 - `Q-113` --- futurs types de sub-Issues d'Audit.
 
@@ -366,37 +366,37 @@ apparaître lors de l'implémentation :
 - `Q-010` --- signification de `M.m.r-Audit` ;
 - `Q-017` --- principe du verdict d'Audit ;
 - `Q-018` --- distinction Audit pré-PROD / rattrapage, hors
-    identification exacte de la RC ;
+  identification exacte de la RC ;
 - `Q-044` --- famille actuellement pratiquée : Accessibilité ;
 - `Q-047` --- un Audit concerne exactement un Component ;
 - `Q-049` --- fin d'une Issue d'Audit = `Done` + `Closed` ;
 - `Q-050` --- relation Audit → Anomalie par sub-Issue et cardinalité
-    précisée par les décisions ultérieures ;
+  précisée par les décisions ultérieures ;
 - `Q-054` --- distinction Version déclarée / Version d'artefact ;
 - `Q-064` --- absence de relation directe obligatoire entre Anomalies
-    de deux Audits successifs ;
+  de deux Audits successifs ;
 - `Q-067` --- dernier Audit terminé applicable pour un même
-    `Component × Version` ;
+  `Component × Version` ;
 - `Q-069` --- un Audit en cours ne remplace pas le verdict acquis ;
 - `Q-071` / `Q-072` / `Q-075` --- principes d'identification de la
-    Version auditée et gestion des sources disponibles ;
+  Version auditée et gestion des sources disponibles ;
 - `Q-076` / `Q-080` --- dénominateur de couverture fondé sur le
-    Catalogue applicable ;
+  Catalogue applicable ;
 - `Q-085` --- un Component évolué ne perd pas automatiquement son
-    verdict ;
+  verdict ;
 - `Q-086` / `Q-087` / `Q-088` --- qualification d'Audit d'un Component
-    évolué ou nouveau ;
+  évolué ou nouveau ;
 - `Q-090` / `Q-091` / `Q-092` / `Q-093` --- traitement des Anomalies
-    et agrégations associées ;
+  et agrégations associées ;
 - `Q-094` / `Q-095` --- distinction vue courante / vue historique et
-    état figé à la Release ;
+  état figé à la Release ;
 - `Q-100` --- distinction Version observée / Version affectée ;
 - `Q-101` / `Q-102` / `Q-103` --- erreurs d'intégration client
-    annulées et suivi séparé ;
+  annulées et suivi séparé ;
 - `Q-107` / `Q-108` / `Q-109` / `Q-110` --- Issues sans Component et
-    comptage multi-Component ;
+  comptage multi-Component ;
 - `Q-114` --- une Issue d'Anomalie compte comme une Anomalie, sans
-    extraction d'occurrences internes.
+  extraction d'occurrences internes.
 
 Lorsque le registre canonique porte encore un statut ancien pour l'une
 de ces questions, sa mise à jour doit être faite séparément et

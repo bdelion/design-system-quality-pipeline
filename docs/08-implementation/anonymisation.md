@@ -252,4 +252,4 @@ L'objectif est double :
 
 - préserver la structure analytique nécessaire ;
 - réduire le risque qu'un nouveau champ sensible soit diffusé
-    automatiquement parce qu'il a été ajouté en amont.
+  automatiquement parce qu'il a été ajouté en amont.

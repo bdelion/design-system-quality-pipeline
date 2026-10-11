@@ -8,10 +8,10 @@ La documentation distingue :
 
 - le **socle commun** observé pour les Issues ;
 - les **profils de workflow** nécessaires pour éviter d'appliquer les
-    mêmes contraintes à tous les types de travail ;
+  mêmes contraintes à tous les types de travail ;
 - les règles déjà établies ;
 - les propositions encore présentes dans les sources mais non
-    validées.
+  validées.
 
 Le document source historique principal est
 `specifications/gh-workflow.md`.
@@ -27,14 +27,14 @@ automatiquement une règle normative.
 Les pages de ce dossier utilisent les statuts suivants :
 
 - **ÉTABLI** : règle suffisamment validée pour être utilisée dans le
-    modèle ;
+  modèle ;
 - **ACTUEL** : comportement observé aujourd'hui, sans garantie qu'il
-    constitue la cible ;
+  constitue la cible ;
 - **ORIENTATION** : fonctionnement souhaité mais pas encore
-    entièrement formalisé ;
+  entièrement formalisé ;
 - **À FORMALISER** : règle encore ouverte dans le registre D/Q ;
 - **PROPOSITION SOURCE** : idée présente dans
-    `specifications/gh-workflow.md` mais non validée.
+  `specifications/gh-workflow.md` mais non validée.
 
 ---
 
@@ -81,15 +81,15 @@ Les contraintes ne sont pas identiques selon la nature du travail.
 Exemples établis ou fortement caractérisés par les sources :
 
 - une Epic n'est pas portée par une branche ou une Pull Request propre
-    ;
+  ;
 - un Audit ne correspond pas à une modification de code et ne doit
-    donc pas recevoir artificiellement une branche ou une Pull Request ;
+  donc pas recevoir artificiellement une branche ou une Pull Request ;
 - une Issue standard de réalisation utilise normalement une branche et
-    une Pull Request ;
+  une Pull Request ;
 - une Release manipule explicitement des branches et une Pull Request
-    de publication ;
+  de publication ;
 - une Conception suit une activité Design dont les règles de passage
-    ne sont pas encore suffisamment stabilisées.
+  ne sont pas encore suffisamment stabilisées.
 
 Une règle universelle telle que :
 
@@ -120,13 +120,15 @@ Leur formalisation définitive comme profils métier reste ouverte dans
 Ils sont néanmoins documentés séparément afin de rendre visibles les
 différences déjà connues.
 
-  Profil       Rôle
-  ------------ ------------------------------------------------
-  STANDARD     travail de réalisation suivant le flux nominal
-  EPIC         regroupement cohérent de sous-Issues
-  AUDIT        évaluation d'un Composant
-  RELEASE      pilotage d'une publication
-  CONCEPTION   travail de conception Design
+Profil Rôle
+
+---
+
+STANDARD travail de réalisation suivant le flux nominal
+EPIC regroupement cohérent de sous-Issues
+AUDIT évaluation d'un Composant
+RELEASE pilotage d'une publication
+CONCEPTION travail de conception Design
 
 ---
 
@@ -140,56 +142,59 @@ Légende :
 - `OUVERT` : règle insuffisamment stabilisée.
 
 ---
-  Dimension   STANDARD        EPIC           AUDIT          RELEASE           CONCEPTION
-  ----------- --------------- -------------- -------------- ----------------- ------------
-  Backlog /   OUI             OUI dans la    OUI pour       OUVERT            OUI dans la
-  Grooming                    source         résultats                        source
-                                             d'Audit ;
-                                             Audit lui-même
-                                             à consolider
 
-  Velocity    `> 0` après     NON / non      ACTUEL : `0`   OUVERT            OUVERT
-              pesée dans le   pesée dans la  dans la source
-              nominal         source
+Dimension STANDARD EPIC AUDIT RELEASE CONCEPTION
 
-  Iteration   requise pour    SELON CAS      OUVERT         OUVERT            OUVERT
-              prise en charge
-              nominale
+---
 
-  Milestone   selon           possible       requise pour   `M.m.r`           OUVERT
-              planification                  rattachement
-                                             Version de
-                                             conformité
+Backlog / OUI OUI dans la OUI pour OUVERT OUI dans la
+Grooming source résultats source
+d'Audit ;
+Audit lui-même
+à consolider
 
-  Branche     OUI à partir de NON            NON            branche de        OUVERT
-  propre      la réalisation                                release/hotfix,
-              nominale                                      sémantique
-                                                            spécifique
+Velocity `> 0` après NON / non ACTUEL : `0` OUVERT OUVERT
+pesée dans le pesée dans la dans la source
+nominal source
 
-  Pull        OUI dans le     NON            NON            OUI dans le       OUVERT
-  Request     traitement                                    processus de
-  propre      nominal                                       publication
-                                                            décrit
+Iteration requise pour SELON CAS OUVERT OUVERT OUVERT
+prise en charge
+nominale
 
-  In review   lié à la revue  transitions    ne doit pas    processus         OUVERT
-              de PR           spécifiques    être déduit    spécifique
-                              non            d'une PR
-                              stabilisées
+Milestone selon possible requise pour `M.m.r` OUVERT
+planification rattachement
+Version de
+conformité
 
-  Done        réalisation     dépend des     doit être      processus         OUVERT
-              terminée        sous-Issues,   combiné avec   spécifique
-                              règle exacte   Issue Closed
-                              ouverte        pour Audit
-                                             réalisé
+Branche OUI à partir de NON NON branche de OUVERT
+propre la réalisation release/hotfix,
+nominale sémantique
+spécifique
 
-  Blocked     transversal     possible       possible en    présent dans la   OUVERT
-                                             principe,      source,
-                                             règle          transition exacte
-                                             détaillée non  ouverte
-                                             formalisée
+Pull OUI dans le NON NON OUI dans le OUVERT
+Request traitement processus de
+propre nominal publication
+décrit
 
-  Cancelled   terminal        possible       non spécifié   non spécifié      non spécifié
-              alternatif
+In review lié à la revue transitions ne doit pas processus OUVERT
+de PR spécifiques être déduit spécifique
+non d'une PR
+stabilisées
+
+Done réalisation dépend des doit être processus OUVERT
+terminée sous-Issues, combiné avec spécifique
+règle exacte Issue Closed
+ouverte pour Audit
+réalisé
+
+Blocked transversal possible possible en présent dans la OUVERT
+principe, source,
+règle transition exacte
+détaillée non ouverte
+formalisée
+
+Cancelled terminal possible non spécifié non spécifié non spécifié
+alternatif
 ---
 
 Cette matrice ne ferme pas `Q-020`, `Q-021` ou `Q-022`.

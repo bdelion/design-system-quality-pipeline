@@ -9,10 +9,10 @@ Il distingue trois niveaux :
 
 - **ÉTABLI** : définition métier suffisamment stabilisée ;
 - **IMPLÉMENTÉ** : métrique présente dans le moteur actuel,
-    éventuellement avec une définition historique à confronter au métier
-    ;
+  éventuellement avec une définition historique à confronter au métier
+  ;
 - **FUTUR / À INSTRUIRE** : indicateur souhaité mais dont la source,
-    la formule ou la sémantique n'est pas encore suffisamment définie.
+  la formule ou la sémantique n'est pas encore suffisamment définie.
 
 Un indicateur ne doit pas être considéré comme établi uniquement parce
 qu'il existe dans le code.
@@ -169,7 +169,7 @@ Exemple :
 
 - nombre d'Anomalies ouvertes aujourd'hui ;
 - nombre d'Anomalies ouvertes au moment de la publication d'une
-    Version.
+  Version.
 
 Une correction ultérieure ne doit pas réécrire la photographie
 historique d'une ancienne Version.

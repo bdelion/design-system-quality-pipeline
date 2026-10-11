@@ -19,7 +19,7 @@ La source décrit notamment :
 
 - PR éventuellement `Draft` avant la phase de revue ;
 - PR ouverte/non Draft lorsque les Issues associées sont en
-    `In review` ;
+  `In review` ;
 - assignee ;
 - reviewers pendant la revue ;
 - approbation ;
@@ -121,13 +121,15 @@ de Conception.
 
 ## 9. Matrice
 
-  Profil             PR propre
-  ------------------ ------------------------------
-  STANDARD de code   attendue dans le nominal
-  EPIC               non
-  AUDIT              non
-  RELEASE            oui dans le processus décrit
-  CONCEPTION         non établi
+Profil PR propre
+
+---
+
+STANDARD de code attendue dans le nominal
+EPIC non
+AUDIT non
+RELEASE oui dans le processus décrit
+CONCEPTION non établi
 
 Cette matrice explique pourquoi `Q-021` doit être résolue par profil
 plutôt que par une règle globale.

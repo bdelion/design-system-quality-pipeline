@@ -36,9 +36,9 @@ Pour chaque Repository configuré, l'implémentation collecte notamment :
 3. les Pull Requests paginées ;
 4. la timeline des Issues ;
 5. les relations Development et les statuts Projects v2 via GraphQL
-    lorsqu'une URL GraphQL est configurée ;
+   lorsqu'une URL GraphQL est configurée ;
 6. les informations de Projects classiques via REST lorsque
-    disponibles.
+   disponibles.
 
 Les Pull Requests apparaissant dans l'endpoint REST des Issues sont
 filtrées pour éviter les doublons.
@@ -53,7 +53,7 @@ L'implémentation actuelle recherche les relations Issue/PR à partir de
 plusieurs signaux structurés ou textuels :
 
 - mots-clés de fermeture configurés tels que `Closes`, `Fixes` ou
-    `Resolves` ;
+  `Resolves` ;
 - titre ou corps selon le traitement concerné ;
 - timeline GitHub ;
 - références Development récupérées via GraphQL.

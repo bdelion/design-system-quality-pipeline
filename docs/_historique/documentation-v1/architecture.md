@@ -37,7 +37,6 @@ flowchart LR
 - Les KPI distinguent une valeur calculable d'une valeur inconnue.
 - Les sorties sont rejouables avec la version du modèle et des règles.
 
-
 ## Schéma v2
 
 > ℹ️ https://gitdiagram.com/bdelion/design-system-quality-pipeline

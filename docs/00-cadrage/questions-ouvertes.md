@@ -899,7 +899,6 @@ Le dashboard doit donc distinguer le verdict de chaque Audit du verdict courant 
 
 ---
 
-
 > D-222 remplace la sélection du dernier Audit terminé par un verdict calculé sur l’ensemble des Audits terminés applicables.
 
 ### D-047 — Date de réalisation d'un Audit
@@ -945,7 +944,6 @@ Lorsque l'Audit B devient `Done + Closed`, son verdict devient alors le nouveau 
 
 ---
 
-
 > D-223 conserve le principe qu’un Audit incomplet ne modifie pas le verdict, mais le verdict acquis est désormais calculé selon D-222.
 
 ### D-049 — Séparer conformité courante et activité d'Audit en cours
@@ -972,7 +970,6 @@ L'information indiquant qu'un Audit est en cours doit être visible quelque part
 **Statut : Supplanté par D-222 et D-223**
 
 ---
-
 
 > La distinction entre verdict courant et Audit en cours demeure, mais le verdict courant n’est plus issu du seul dernier Audit terminé.
 
@@ -2945,7 +2942,6 @@ de la Squad. D'autres dimensions et indicateurs restent à challenger.
 
 ---
 
-
 > **Extension :** D-237 ajoute `UNDETERMINED` aux valeurs canoniques de `Anomaly.origin` pour les relations vers un Audit suggérées mais non validables.
 
 ### D-139 --- Date de détection d'une Anomalie
@@ -3141,11 +3137,11 @@ github:
   issueTypes:
     keywords:
       AUDIT:
-        - "audit"
+        - 'audit'
       BUG:
-        - "bug"
-        - "rgaa"
-        - "a11y"
+        - 'bug'
+        - 'rgaa'
+        - 'a11y'
 ```
 
 Ainsi :
@@ -3301,7 +3297,6 @@ L’identifiant `DQ-xxx` définitif de cette règle sera attribué lors du lot I
 
 **Statut : Établi**
 
-
 ### D-156 — Conservation du titre dans l’Issue normalisée
 
 Toute `Issue` normalisée conserve le titre de l’Issue GitHub dans une propriété `title`.
@@ -3312,7 +3307,6 @@ Cette décision ne préjuge pas encore des autres propriétés minimales de l’
 
 **Statut : Établi**
 
-
 ### D-157 — Conservation de l’état GitHub dans l’Issue normalisée
 
 Toute `Issue` normalisée conserve son état GitHub dans une propriété `state`, avec les valeurs `OPEN` ou `CLOSED`.
@@ -3322,7 +3316,6 @@ Cet état représente exclusivement l’état natif de l’Issue GitHub. Il est 
 La propriété `state` appartient au socle générique de l’Issue et reste disponible indépendamment de l’existence d’une spécialisation métier telle que `Audit`, `Anomaly` ou `AuditImprovement`.
 
 **Statut : Établi**
-
 
 ### D-158 — Conservation des dates GitHub natives de l’Issue normalisée
 
@@ -3337,7 +3330,6 @@ Elles constituent des faits GitHub et ne doivent pas être confondues avec les d
 
 **Statut : Établi**
 
-
 ### D-159 — Conservation exhaustive des labels GitHub de l’Issue normalisée
 
 Toute `Issue` normalisée conserve l’ensemble de ses labels GitHub dans une propriété `labels: string[]`.
@@ -3347,7 +3339,6 @@ Cette conservation ne se limite pas aux labels actuellement interprétés par le
 Les notions métier dérivées à partir de labels restent séparées de la collection brute `labels` et ne la remplacent pas.
 
 **Statut : Établi**
-
 
 ### D-160 — Rattachement explicite de l’Issue normalisée au repository
 
@@ -3359,7 +3350,6 @@ Cette décision prépare notamment l’évolution cible dans laquelle une même 
 
 **Statut : Établi**
 
-
 ### D-161 — Conservation de l’URL GitHub de l’Issue normalisée
 
 Toute `Issue` normalisée conserve explicitement son URL GitHub dans une propriété `url: string`.
@@ -3369,7 +3359,6 @@ Cette URL est une donnée source de l’Issue. Elle permet aux couches aval, not
 La propriété `url` appartient au socle générique de l’Issue et reste disponible indépendamment de l’existence d’une spécialisation métier.
 
 **Statut : Établi**
-
 
 ### D-162 — Conservation du rattachement à la Milestone dans l’Issue normalisée
 
@@ -3381,7 +3370,6 @@ Cette information appartient au socle générique de l’Issue, indépendamment 
 
 **Statut : Établi**
 
-
 ### D-163 — Conservation des statuts GitHub Projects de l’Issue normalisée
 
 Toute `Issue` normalisée conserve ses rattachements et statuts GitHub Projects dans une propriété `projectStatuses`.
@@ -3391,7 +3379,6 @@ Cette information appartient au socle générique de l’Issue et reste conserv�
 Les statuts GitHub Projects, par exemple `Backlog`, `Ready`, `In progress`, `In review` ou `Done`, restent distincts de `state: 'OPEN' | 'CLOSED'`, qui représente l’état natif GitHub de l’Issue.
 
 **Statut : Établi**
-
 
 ### D-164 — Conservation des relations parent / sous-Issues
 
@@ -3403,7 +3390,6 @@ Ces relations appartiennent au socle générique de l’Issue et sont conservée
 
 **Statut : Établi**
 
-
 ### D-165 — Conservation des Pull Requests liés à l’Issue
 
 Toute `Issue` normalisée conserve les références aux Pull Requests qui lui sont liés dans `linkedPullRequestIds: string[]`.
@@ -3411,7 +3397,6 @@ Toute `Issue` normalisée conserve les références aux Pull Requests qui lui so
 Cette information appartient au socle générique de l’Issue et reste disponible même lorsqu’elle n’est pas immédiatement utilisée par une spécialisation métier.
 
 **Statut : Établi**
-
 
 ### D-166 — Conservation de l’Iteration GitHub Projects
 
@@ -3421,7 +3406,6 @@ L’Iteration est une donnée générique de pilotage de l’Issue. Sa représen
 
 **Statut : Établi**
 
-
 ### D-167 — Conservation du champ Velocity GitHub Projects
 
 Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Velocity`, cette information est conservée dans l’Issue normalisée.
@@ -3430,7 +3414,6 @@ Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Velocity
 
 **Statut : Établi**
 
-
 ### D-168 — Conservation du champ Scheduling GitHub Projects
 
 Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Scheduling`, cette information est conservée dans l’Issue normalisée.
@@ -3438,7 +3421,6 @@ Lorsqu’une `Issue` possède une valeur pour le champ GitHub Projects `Scheduli
 `Scheduling` est une donnée générique de pilotage de l’Issue et n’est pas limitée aux Audits ou aux Anomalies. Sa représentation normalisée détaillée sera alignée avec le contrat GitHub Projects.
 
 **Statut : Établi**
-
 
 ### D-169 — Conservation des Components dérivés dans l’Issue normalisée
 
@@ -3450,7 +3432,6 @@ La dérivation des `componentIds` doit rester traçable vers les labels source e
 
 **Statut : Établi**
 
-
 ### D-170 — Conservation des criticités reconnues dans l’Issue normalisée
 
 Toute `Issue` normalisée conserve les informations de criticité reconnues à partir de ses labels, même lorsque l’Issue n’est pas ensuite spécialisée en anomalie d’Audit Accessibility.
@@ -3460,7 +3441,6 @@ Cette conservation au niveau générique ne donne pas automatiquement une séman
 Les labels GitHub source restent conservés conformément à D-159.
 
 **Statut : Établi**
-
 
 ### D-171 — Conservation des catégories Accessibility reconnues dans l’Issue normalisée
 
@@ -3472,7 +3452,6 @@ Les labels GitHub source restent conservés conformément à D-159.
 
 **Statut : Établi**
 
-
 ### D-172 — Structuration des données GitHub Projects par Project d’origine
 
 Lorsqu’une `Issue` appartient à plusieurs GitHub Projects, ses informations Project sont conservées dans le contexte du Project dont elles proviennent.
@@ -3482,7 +3461,6 @@ Les données telles que le statut, l’Iteration, `Velocity` et `Scheduling` ne 
 Le modèle normalisé doit permettre d’identifier le Project source de chaque ensemble de valeurs Project.
 
 **Statut : Établi**
-
 
 ### D-173 — Conservation et signalement des valeurs GitHub Projects non reconnues
 
@@ -3494,7 +3472,6 @@ Cette règle s’applique aux valeurs Project soumises à reconnaissance ou cano
 
 **Statut : Établi**
 
-
 ### D-174 — Conservation de l’identité du GitHub Project
 
 Chaque rattachement d’une `Issue` à un GitHub Project conserve explicitement `projectId` et `projectName`.
@@ -3504,7 +3481,6 @@ Chaque rattachement d’une `Issue` à un GitHub Project conserve explicitement 
 Ces deux informations appartiennent au contexte Project associé à l’Issue.
 
 **Statut : Établi**
-
 
 ### D-175 — Séparation du statut Project brut et du statut canonique
 
@@ -3516,7 +3492,6 @@ Si aucune notion canonique n’est reconnue, la valeur brute reste conservée et
 
 **Statut : Établi**
 
-
 ### D-176 — Recalcul du statut Project canonique avec la configuration courante
 
 À chaque exécution du pipeline, le statut Project canonique est recalculé à partir du statut Project brut et de la configuration courante.
@@ -3526,7 +3501,6 @@ La notion canonique est une interprétation dérivée et non une vérité histor
 Les traitements métier qui dépendent du statut canonique utilisent le résultat de cette canonicalisation courante.
 
 **Statut : Établi**
-
 
 ### D-177 — Correspondance stricte des variantes de statut Project
 
@@ -3538,7 +3512,6 @@ Une variante configurée doit donc représenter une valeur complète acceptable 
 
 **Statut : Établi**
 
-
 ### D-178 — Gestion d’une correspondance ambiguë de statut Project
 
 Si une valeur brute de statut Project correspond à plusieurs notions canoniques configurées, aucune notion canonique n’est sélectionnée automatiquement.
@@ -3548,7 +3521,6 @@ La valeur brute est conservée, le statut canonique reste absent, les notions ca
 Aucune priorité implicite entre notions canoniques n’est autorisée. Le numéro de règle `DQ-xxx` sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
 
 **Statut : Établi**
-
 
 ### D-179 — Conservation des données source de l’Iteration GitHub Projects
 
@@ -3560,7 +3532,6 @@ Le contrat d’Iteration doit permettre de représenter l’absence d’une info
 
 **Statut : Établi**
 
-
 ### D-180 — Rattachement de l’Iteration au contexte GitHub Project
 
 L’Iteration d’une `Issue` est conservée dans le contexte du GitHub Project qui la porte et non comme une propriété globale unique de l’Issue.
@@ -3569,7 +3540,6 @@ Cette règle prolonge D-172 : si une même Issue appartient à plusieurs Project
 
 **Statut : Établi**
 
-
 ### D-181 — Séparation de la Velocity brute et de la valeur numérique normalisée
 
 Lorsqu’une valeur `Velocity` est présente dans GitHub Projects, le modèle normalisé conserve sa valeur brute et, lorsqu’elle est interprétable comme un nombre valide, une valeur numérique normalisée distincte.
@@ -3577,7 +3547,6 @@ Lorsqu’une valeur `Velocity` est présente dans GitHub Projects, le modèle no
 La valeur numérique ne remplace jamais la valeur brute. Cette séparation permet de préserver la donnée source tout en fournissant une représentation directement exploitable par les règles métier et les analyses.
 
 **Statut : Établi**
-
 
 ### D-182 — Traitement d’une Velocity non interprétable
 
@@ -3589,7 +3558,6 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après
 
 **Statut : Établi**
 
-
 ### D-183 — Conservation systématique de la valeur brute Scheduling
 
 Lorsqu’une valeur `Scheduling` est présente dans GitHub Projects, sa valeur brute telle que collectée est systématiquement conservée dans le contexte du Project qui la porte.
@@ -3598,7 +3566,6 @@ Toute interprétation, validation ou canonicalisation actuelle ou future de `Sch
 
 **Statut : Établi**
 
-
 ### D-184 — Conservation de l’historique des statuts GitHub Projects
 
 Le modèle normalisé conserve l’historique des changements de statut GitHub Projects d’une `Issue`, et pas uniquement son statut courant.
@@ -3606,7 +3573,6 @@ Le modèle normalisé conserve l’historique des changements de statut GitHub P
 Cet historique appartient au contexte du Project concerné. Il fournit notamment les faits nécessaires au calcul de dates métier telles que `correctedAt` et `completedAt` sans les déduire du seul état courant.
 
 **Statut : Établi**
-
 
 ### D-185 — Contenu minimal d’une transition de statut Project
 
@@ -3618,7 +3584,6 @@ Ces données constituent les faits source de la transition et restent distinctes
 
 **Statut : Établi**
 
-
 ### D-186 — Canonicalisation des statuts dans l’historique Project
 
 Les statuts présents dans l’historique GitHub Projects sont canonicalisés selon les mêmes règles que le statut Project courant définies par D-175 à D-178.
@@ -3627,7 +3592,6 @@ Les valeurs brutes historiques restent toujours conservées. La canonicalisation
 
 **Statut : Établi**
 
-
 ### D-187 — Conservation exhaustive des transitions Project
 
 Toutes les transitions de statut GitHub Projects disponibles sont conservées dans l’historique normalisé.
@@ -3635,7 +3599,6 @@ Toutes les transitions de statut GitHub Projects disponibles sont conservées da
 En particulier, plusieurs passages à `Done`, ainsi que les sorties ultérieures de `Done`, ne sont pas réduits au premier ou au dernier événement. Les règles métier sélectionnent ensuite la ou les transitions pertinentes selon leur besoin.
 
 **Statut : Établi**
-
 
 ### D-188 — Gestion d’un historique Project incomplet ou indisponible
 
@@ -3647,7 +3610,6 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après
 
 **Statut : Établi**
 
-
 ### D-189 — Audit comme spécialisation référencée de l’Issue
 
 Un `Audit` normalisé référence son `Issue` générique via `issueId`.
@@ -3657,7 +3619,6 @@ Les données GitHub communes telles que le titre, l’état, les labels, l’URL
 `Audit` porte uniquement son identité et ses propriétés ou relations métier spécifiques.
 
 **Statut : Établi**
-
 
 ### D-190 — Anomaly comme spécialisation référencée de l’Issue
 
@@ -3669,7 +3630,6 @@ Les faits GitHub communs restent portés par `Issue` et ne sont pas dupliqués d
 
 **Statut : Établi**
 
-
 ### D-191 — AuditImprovement comme spécialisation référencée de l’Issue
 
 Une `AuditImprovement` normalisée référence son `Issue` générique via `issueId`.
@@ -3677,7 +3637,6 @@ Une `AuditImprovement` normalisée référence son `Issue` générique via `issu
 Les faits GitHub communs restent portés par `Issue`. `AuditImprovement` ne duplique pas le titre, l’état, les labels, l’URL ou les autres propriétés génériques déjà conservées par l’Issue.
 
 **Statut : Établi**
-
 
 ### D-192 — Identifiants métier propres aux spécialisations
 
@@ -3689,7 +3648,6 @@ La stratégie concrète de génération de ces identifiants doit être détermin
 
 **Statut : Établi**
 
-
 ### D-193 — Relation optionnelle Anomaly vers Audit selon son origine
 
 Une `Anomaly` d’origine `AUDIT` porte explicitement l’`auditId` de l’Audit auquel elle est rattachée lorsque cette relation est valide.
@@ -3700,7 +3658,6 @@ L’absence d’`auditId` peut également représenter une anomalie dont la rela
 
 **Statut : Établi**
 
-
 ### D-194 — Relation obligatoire AuditImprovement vers Audit
 
 Une `AuditImprovement` est une amélioration rattachée à un Audit et porte obligatoirement l’`auditId` de son Audit parent.
@@ -3708,7 +3665,6 @@ Une `AuditImprovement` est une amélioration rattachée à un Audit et porte obl
 Une Issue Feature qui ne permet pas d’établir une relation valide avec un Audit ne doit pas être artificiellement rattachée à un Audit. Son traitement spécialisé éventuel doit respecter les règles de qualification et de Data Quality applicables.
 
 **Statut : Établi**
-
 
 ### D-195 — Component explicite sur Audit
 
@@ -3720,7 +3676,6 @@ La valeur doit être validée à partir des faits source et des règles de recon
 
 **Statut : Établi**
 
-
 ### D-196 — Component explicite sur une Anomaly d’Audit
 
 Une `Anomaly` d’origine `AUDIT` porte explicitement le `componentId` associé à son Audit lorsque la relation est valide.
@@ -3731,7 +3686,6 @@ Elle ne doit pas masquer une éventuelle incohérence entre le Component porté 
 
 **Statut : Établi**
 
-
 ### D-197 — Gestion d’une incohérence de Component entre Audit et anomalie
 
 Si les faits source de l’Issue enfant indiquent un Component différent de celui de l’Audit parent, le pipeline conserve les faits source et ne corrige pas automatiquement le Component.
@@ -3741,7 +3695,6 @@ L’incohérence est signalée par une Data Quality non bloquante. Les données 
 Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5 après vérification du registre Data Quality canonique.
 
 **Statut : Établi**
-
 
 ### D-198 — Conservation d’une Anomaly malgré un parent Audit absent ou invalide
 
@@ -3755,7 +3708,6 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
 
 **Statut : Établi**
 
-
 ### D-199 — Identifiant métier stable de Version
 
 Une `Version` normalisée dispose d’un `versionId` métier stable, distinct des identifiants GitHub des Tags, Milestones ou autres objets techniques associés.
@@ -3763,7 +3715,6 @@ Une `Version` normalisée dispose d’un `versionId` métier stable, distinct de
 Cet identifiant permet de référencer la Version de manière stable dans le modèle normalisé indépendamment des représentations GitHub qui contribuent à son établissement.
 
 **Statut : Établi**
-
 
 ### D-200 — Numéro PROD canonique de Version
 
@@ -3773,7 +3724,6 @@ Ce numéro reste distinct de la Release Candidate éventuellement auditée avant
 
 **Statut : Établi**
 
-
 ### D-201 — Git tag PROD requis pour considérer une Version publiée
 
 Une Version PROD n’est considérée comme effectivement publiée que si le Git tag correspondant exactement à son numéro canonique `M.m.r` existe.
@@ -3781,7 +3731,6 @@ Une Version PROD n’est considérée comme effectivement publiée que si le Git
 Une Milestone, un Audit ou une autre donnée faisant référence à `M.m.r` peut permettre d’identifier une Version attendue, mais ne suffit pas à établir sa publication effective.
 
 **Statut : Établi**
-
 
 ### D-202 — Git tag PROD comme source de vérité de releasedAt
 
@@ -3793,7 +3742,6 @@ Si la date du tag ne peut pas être établie, `releasedAt` reste absent.
 
 **Statut : Établi**
 
-
 ### D-203 — Conservation d’une Version identifiable sans tag PROD
 
 Lorsqu’une Version PROD `M.m.r` est identifiable à partir d’une Milestone, d’un Audit ou d’un autre fait métier mais que le Git tag PROD correspondant est absent, la Version reste conservée dans le modèle normalisé.
@@ -3804,7 +3752,6 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
 
 **Statut : Établi**
 
-
 ### D-204 — Rattachement de la Milestone PROD à la Version
 
 Lorsqu’une Milestone correspondant à la Version PROD `M.m.r` existe, la `Version` conserve explicitement sa référence via `milestoneId`.
@@ -3812,7 +3759,6 @@ Lorsqu’une Milestone correspondant à la Version PROD `M.m.r` existe, la `Vers
 Cette relation ne fait pas de la Milestone la source de vérité de `releasedAt`, qui reste déterminé par le Git tag PROD conformément à D-202.
 
 **Statut : Établi**
-
 
 ### D-205 — Séparation entre Version PROD cible et RC auditée
 
@@ -3822,7 +3768,6 @@ La RC auditée est une propriété du contexte d’Audit et ne remplace pas l’
 
 **Statut : Établi**
 
-
 ### D-206 — Conservation du Git tag de la RC auditée
 
 Lorsque la Release Candidate auditée possède un Git tag, le modèle conserve explicitement la référence à ce tag ainsi que sa date disponible.
@@ -3830,7 +3775,6 @@ Lorsque la Release Candidate auditée possède un Git tag, le modèle conserve e
 Ces informations restent distinctes du Git tag PROD et de `Version.releasedAt`.
 
 **Statut : Établi**
-
 
 ### D-207 — Gestion d’une RC auditée indéterminable
 
@@ -3842,7 +3786,6 @@ Le numéro de règle `DQ-xxx` correspondant sera attribué lors du lot I5.
 
 **Statut : Établi**
 
-
 ### D-208 — Version cible d’un Audit de rattrapage
 
 Un Audit de rattrapage réalisé après publication référence directement la Version PROD canonique `M.m.r`.
@@ -3851,13 +3794,11 @@ Aucune Release Candidate artificielle n’est requise ou créée pour un Audit d
 
 **Statut : Établi**
 
-
 ### D-209 — Catalogue historique propre à chaque Version PROD
 
 Chaque Version PROD possède son propre Catalogue historique, représentant les Components présents dans le repository pour cette Version.
 
 **Statut : Établi**
-
 
 ### D-210 — Catalogue historique lu dans le Git tree du tag PROD
 
@@ -3865,13 +3806,11 @@ Le Catalogue historique d’une Version est reconstruit à partir du fichier de 
 
 **Statut : Établi**
 
-
 ### D-211 — Catalogue indéterminable lorsqu’un tag PROD manque
 
 Si une Version est identifiable mais que son tag PROD est absent, son Catalogue historique est indéterminable. Le catalogue courant n’est pas utilisé comme fallback.
 
 **Statut : Établi**
-
 
 ### D-212 — Catalogue absent ou illisible au tag PROD
 
@@ -3879,13 +3818,11 @@ Si le tag PROD existe mais que le fichier Catalogue attendu est absent ou illisi
 
 **Statut : Établi**
 
-
 ### D-213 — Conservation historique d’un Component supprimé
 
 Un Component présent dans le Catalogue d’une ancienne Version reste membre du Catalogue historique de cette Version même s’il a ensuite été supprimé du catalogue courant.
 
 **Statut : Établi**
-
 
 ### D-214 — Absence historique d’un Component ajouté ultérieurement
 
@@ -3893,13 +3830,11 @@ Un Component ajouté après une Version `M.m.r` est absent du Catalogue historiq
 
 **Statut : Établi**
 
-
 ### D-215 — Identifiant métier stable de Component
 
 Chaque `Component` possède un `componentId` métier stable, distinct de son nom ou libellé affiché.
 
 **Statut : Établi**
-
 
 ### D-216 — Identité d’un Component conservée entre Versions continues
 
@@ -3907,13 +3842,11 @@ Lorsqu’un même Component métier est présent dans plusieurs Versions continu
 
 **Statut : Établi**
 
-
 ### D-217 — Renommage explicite d’un Component
 
 Un renommage peut conserver le `componentId` lorsqu’il est explicitement établi que le Component métier reste le même. Cette continuité doit être déclarée par configuration ou règle explicite et ne doit jamais être devinée automatiquement.
 
 **Statut : Établi**
-
 
 ### D-218 — Nouvelle identité après disparition puis réapparition
 
@@ -3921,13 +3854,11 @@ Lorsqu’un Component disparaît du Catalogue pendant une ou plusieurs Versions 
 
 **Statut : Établi**
 
-
 ### D-219 — Matérialisation de la relation Component × Version
 
 Le modèle normalisé matérialise explicitement la présence d’un Component dans une Version. Les KPI et verdicts ne doivent pas reconstruire implicitement cette relation à partir du catalogue courant.
 
 **Statut : Établi**
-
 
 ### D-220 — Couverture fondée sur au moins un Audit terminé applicable
 
@@ -3935,13 +3866,11 @@ Un couple `Component × Version` est couvert dès lors qu’au moins un Audit ap
 
 **Statut : Établi**
 
-
 ### D-221 — Audit incomplet insuffisant pour la couverture
 
 Un Audit commencé mais non terminé ne rend jamais un couple `Component × Version` couvert à lui seul.
 
 **Statut : Établi**
-
 
 ### D-222 — Verdict courant agrégé sur l’ensemble des Audits terminés applicables
 
@@ -3949,13 +3878,11 @@ Le verdict courant d’un couple `Component × Version` est calculé à partir d
 
 **Statut : Établi**
 
-
 ### D-223 — Un Audit incomplet ne modifie pas le verdict acquis
 
 Un Audit plus récent mais incomplet ne contribue pas au verdict courant et ne remplace pas l’état acquis à partir des Audits terminés applicables.
 
 **Statut : Établi**
-
 
 ### D-224 — Conformité conditionnée à l’absence d’anomalie d’Audit ouverte pertinente
 
@@ -3963,13 +3890,11 @@ Un couple `Component × Version` couvert ne peut être conforme que si l’ensem
 
 **Statut : Établi**
 
-
 ### D-225 — AuditImprovement sans effet sur le verdict de conformité
 
 Une `AuditImprovement`, ouverte ou fermée, n’intervient jamais dans le calcul du verdict de conformité d’un couple `Component × Version`.
 
 **Statut : Établi**
-
 
 ### D-226 — Correction d’une anomalie insuffisante pour rétablir la conformité
 
@@ -3977,13 +3902,11 @@ La correction ou la fermeture d’une anomalie issue d’un Audit ne rétablit p
 
 **Statut : Établi**
 
-
 ### D-227 — Anomalie HORS_AUDIT sans effet direct sur la conformité d’Audit
 
 Une anomalie d’origine `HORS_AUDIT` ne modifie pas directement le verdict de conformité calculé à partir des Audits applicables au couple `Component × Version`.
 
 **Statut : Établi**
-
 
 ### D-228 — État NON_COUVERT en absence d’Audit terminé applicable
 
@@ -3991,13 +3914,11 @@ Si un Component appartient au Catalogue historique d’une Version mais ne poss�
 
 **Statut : Établi**
 
-
 ### D-229 — Issue Audit sans Component reconnu
 
 Si une Issue reconnue comme Audit ne possède aucun Component reconnu, l’Issue générique est conservée mais aucun `Audit` métier valide n’est matérialisé. Aucun Component n’est inventé. Une Data Quality non bloquante signale l’absence du Component requis. Son identifiant `DQ-xxx` sera attribué en I5.
 
 **Statut : Établi**
-
 
 ### D-230 — Issue Audit avec plusieurs Components reconnus
 
@@ -4005,13 +3926,11 @@ Si une Issue reconnue comme Audit possède plusieurs Components reconnus, l’Is
 
 **Statut : Établi**
 
-
 ### D-231 — Issue Audit sans Version PROD cible déterminable
 
 Si la Version PROD cible d’une Issue Audit ne peut pas être déterminée, l’Issue générique est conservée mais aucun `Audit` métier complet et valide n’est matérialisé. Aucune Version cible n’est inventée. Une Data Quality non bloquante signale l’information manquante. Son identifiant `DQ-xxx` sera attribué en I5.
 
 **Statut : Établi**
-
 
 ### D-232 — Conservation des anomalies enfants d’un Audit invalide
 
@@ -4019,13 +3938,11 @@ Lorsqu’une Issue Audit parente existe mais ne peut pas être matérialisée co
 
 **Statut : Établi**
 
-
 ### D-233 — Feature enfant sans Audit parent valide
 
 Une Issue `Feature` dont l’Audit parent est absent ou invalide reste conservée comme `Issue` générique mais n’est pas matérialisée en `AuditImprovement`. Un `AuditImprovement` exige un Audit parent valide conformément à D-194. Une Data Quality non bloquante peut signaler la relation attendue non validable.
 
 **Statut : Établi**
-
 
 ### D-234 — Bug rattaché à plusieurs Audits valides
 
@@ -4033,13 +3950,11 @@ Si une Issue `Bug` est sous-Issue de plusieurs Audits valides, l’`Anomaly` est
 
 **Statut : Établi**
 
-
 ### D-235 — Feature rattachée à plusieurs Audits valides
 
 Si une Issue `Feature` est sous-Issue de plusieurs Audits valides, aucune `AuditImprovement` n’est matérialisée tant que la relation vers l’Audit n’est pas univoque. L’Issue générique reste conservée et une Data Quality non bloquante expose l’ambiguïté et les Audits candidats.
 
 **Statut : Établi**
-
 
 ### D-236 — Origine indéterminée d’une anomalie à relation Audit non validable
 
@@ -4047,13 +3962,11 @@ Lorsqu’une Issue `Bug` présente une relation qui suggère une origine Audit m
 
 **Statut : Établi**
 
-
 ### D-237 — Trois valeurs canoniques pour Anomaly.origin
 
 Le contrat normalisé de `Anomaly.origin` accepte trois valeurs canoniques : `AUDIT`, `HORS_AUDIT` et `UNDETERMINED`. `UNDETERMINED` représente les situations où les faits source suggèrent une relation d’Audit mais ne permettent pas de la valider. Cette décision étend D-138.
 
 **Statut : Établi**
-
 
 ### D-238 — Cardinalité Component des anomalies HORS_AUDIT
 
@@ -4061,13 +3974,11 @@ Une `Anomaly` d’origine `HORS_AUDIT` n’impose pas exactement un Component. E
 
 **Statut : Établi**
 
-
 ### D-239 — Cardinalité Component des anomalies UNDETERMINED
 
 Une `Anomaly` d’origine `UNDETERMINED` conserve également les 0..n Components dérivés de son Issue générique. Le pipeline ne sélectionne pas artificiellement un Component.
 
 **Statut : Établi**
-
 
 ### D-240 — Unicité des spécialisations par Issue
 
@@ -4075,13 +3986,11 @@ Une Issue GitHub donnée peut produire au maximum une instance de chaque spécia
 
 **Statut : Établi**
 
-
 ### D-241 — Intégrité référentielle du modèle normalisé
 
 Toute référence normalisée telle que `issueId`, `auditId`, `componentId`, `versionId` ou `milestoneId` doit pointer vers une entité réellement présente dans le dataset normalisé lorsque la relation est matérialisée. Si une relation attendue ne peut pas être résolue, aucune référence orpheline n’est créée : la référence reste absente et une Data Quality non bloquante signale l’incohérence.
 
 **Statut : Établi**
-
 
 ### D-242 — Déterminisme de la normalisation
 
@@ -4089,29 +3998,11 @@ Toute référence normalisée telle que `issueId`, `auditId`, `componentId`, `ve
 
 **Statut : Établi**
 
-
 ### D-243 — Clôture conditionnelle du lot I1 avant implémentation
 
 I1 est fonctionnellement spécifié lorsque ses décisions permettent de définir les contrats TypeScript sans ambiguïté métier bloquante. Avant de déclarer I1 `GREEN` et de modifier le code, un checkpoint final est réalisé sur un ZIP complet et à jour du repository contenant les décisions appliquées jusqu’à D-243. Il vérifie au minimum décisions actives/supplantées, documentation, configuration, contrats TypeScript existants, tests et fixtures. Les questions non bloquantes restantes sont reportées aux lots I2 à I9.
 
 **Statut : Établi**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---
 
@@ -4638,7 +4529,7 @@ Pour un Audit pré-PROD :
 
 - la Milestone de l'Issue d'Audit porte la Version cible `M.m.r` ;
 - un champ explicite de l'Issue d'Audit porte la RC réellement auditée
-    `M.m.r-rc.n`.
+  `M.m.r-rc.n`.
 
 La Milestone et le champ de RC auditée sont complémentaires.
 

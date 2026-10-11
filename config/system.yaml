@@ -1,5 +1,5 @@
-modelVersion: "2.1"
-ruleVersion: "dq-2026.09"
+modelVersion: "2.2"
+ruleVersion: "dq-2026.10-consolidation"
 auditVersion: "2026.09"
 scope: "configured-github-repositories"
 githubOwner: "example"
@@ -33,6 +33,45 @@ github:
         - "bug"
         - "rgaa"
         - "a11y"
+  projectStatuses:
+    keywords:
+      BACKLOG:
+        - "Backlog"
+        - "📋 Backlog"
+      READY:
+        - "Ready"
+        - "🔖 Ready"
+      IN_PROGRESS:
+        - "In progress"
+        - "🏗 In progress"
+      IN_REVIEW:
+        - "In review"
+        - "👀 In review"
+      DONE:
+        - "Done"
+        - "✅ Done"
+      BLOCKED:
+        - "Blocked"
+        - "✋ Blocked"
+      CANCELLED:
+        - "Cancelled"
+        - "🛑 Cancelled"
+  milestoneDetection:
+    caseSensitive: false
+    patterns:
+      - id: release
+        regex: '^(?<version>\d+\.\d+\.\d+)$'
+        kind: release
+      - id: audit
+        regex: '^(?<version>\d+\.\d+\.\d+)-Audit$'
+        kind: audit
+  auditDetection:
+    strategies:
+      - issueTypes: [Audit]
+        requireComponent: true
+      - issueTypes: [Task]
+        requiredLabels: ["Audit RGAA"]
+        requireComponent: true
   closingKeywords:
     - "close"
     - "closed"

@@ -2,15 +2,15 @@
 
 ## Étapes et contrats
 
-| Étape | Entrée | Sortie | Responsable |
-| --- | --- | --- | --- |
-| Collecte | Fixture ou API GitHub | `RawDataset` | `collectors/` |
-| Référence | YAML catalogue | `Catalogue` | `catalogue.ts` |
-| Normalisation | RAW + catalogue + règles | `NormalizedData` | `normalizers/github.ts` |
-| Qualité | RAW + normalisé + règles | `DataQualityIssue[]` | `quality/rules.ts` |
-| Analyse | Normalisé + alertes | `Analytics` | `analytics/kpis.ts` |
-| Snapshot | Tous les résultats | `Snapshot` | `snapshots/snapshot.ts` |
-| Restitution | Snapshot | HTML/JS/CSS | `dashboard/generate.ts` |
+| Étape         | Entrée                   | Sortie               | Responsable             |
+| ------------- | ------------------------ | -------------------- | ----------------------- |
+| Collecte      | Fixture ou API GitHub    | `RawDataset`         | `collectors/`           |
+| Référence     | YAML catalogue           | `Catalogue`          | `catalogue.ts`          |
+| Normalisation | RAW + catalogue + règles | `NormalizedData`     | `normalizers/github.ts` |
+| Qualité       | RAW + normalisé + règles | `DataQualityIssue[]` | `quality/rules.ts`      |
+| Analyse       | Normalisé + alertes      | `Analytics`          | `analytics/kpis.ts`     |
+| Snapshot      | Tous les résultats       | `Snapshot`           | `snapshots/snapshot.ts` |
+| Restitution   | Snapshot                 | HTML/JS/CSS          | `dashboard/generate.ts` |
 
 ## RAW
 

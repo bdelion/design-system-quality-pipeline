@@ -22,12 +22,12 @@ Ce domaine constitue la priorité immédiate du projet.
 
 Il doit permettre de mesurer notamment :
 
-* la conformité des composants ;
-* les anomalies ;
-* leur criticité ;
-* la couverture des audits ;
-* la qualité des composants ;
-* les résultats liés aux audits d'accessibilité, notamment RGAA/WAI-ARIA lorsque les données disponibles permettent de les établir.
+- la conformité des composants ;
+- les anomalies ;
+- leur criticité ;
+- la couverture des audits ;
+- la qualité des composants ;
+- les résultats liés aux audits d'accessibilité, notamment RGAA/WAI-ARIA lorsque les données disponibles permettent de les établir.
 
 Les indicateurs et leur définition précise seront définis progressivement dans les spécifications fonctionnelles.
 
@@ -39,13 +39,13 @@ Le produit doit également permettre de suivre le fonctionnement opérationnel d
 
 Le périmètre identifié à ce stade comprend notamment :
 
-* les travaux en cours ;
-* les anomalies ;
-* les audits ;
-* les sprints ou itérations ;
-* les délais ;
-* les versions ;
-* l'évolution de l'activité dans le temps.
+- les travaux en cours ;
+- les anomalies ;
+- les audits ;
+- les sprints ou itérations ;
+- les délais ;
+- les versions ;
+- l'évolution de l'activité dans le temps.
 
 Les règles précises de calcul et les indicateurs associés restent à définir dans les documents métier et indicateurs.
 
@@ -57,13 +57,13 @@ Les règles précises de calcul et les indicateurs associés restent à définir
 
 Les besoins identifiés à ce stade sont notamment :
 
-* connaître les versions des librairies utilisées par les applications ;
-* connaître les composants utilisés ;
-* dénombrer l'utilisation de chaque composant ;
-* identifier les composants les plus utilisés ;
-* suivre la dette liée aux versions des librairies ;
-* identifier les montées de version attendues ;
-* permettre l'émission d'alertes à destination des Squads responsables.
+- connaître les versions des librairies utilisées par les applications ;
+- connaître les composants utilisés ;
+- dénombrer l'utilisation de chaque composant ;
+- identifier les composants les plus utilisés ;
+- suivre la dette liée aux versions des librairies ;
+- identifier les montées de version attendues ;
+- permettre l'émission d'alertes à destination des Squads responsables.
 
 Un objectif complémentaire est d'étudier la possibilité de fournir une information de qualité RGAA/WAI-ARIA pour une application consommatrice.
 
@@ -111,12 +111,12 @@ Dashboard HTML
 
 Cette architecture doit toutefois conserver la possibilité d'évoluer ultérieurement vers :
 
-* plusieurs sources de données ;
-* l'analyse des applications consommatrices ;
-* une API ;
-* un backend ;
-* une base de données ;
-* un frontend applicatif.
+- plusieurs sources de données ;
+- l'analyse des applications consommatrices ;
+- une API ;
+- un backend ;
+- une base de données ;
+- un frontend applicatif.
 
 La manière précise de réaliser cette évolution sera définie ultérieurement.
 
@@ -126,11 +126,11 @@ La manière précise de réaliser cette évolution sera définie ultérieurement
 
 Le projet doit privilégier :
 
-* des définitions métier explicites ;
-* des indicateurs traçables jusqu'aux données sources ;
-* une distinction entre données, règles métier, qualité des données et indicateurs ;
-* des décisions documentées ;
-* des éléments non définis explicitement identifiés comme « À instruire » ;
-* une architecture permettant l'évolution progressive du périmètre.
+- des définitions métier explicites ;
+- des indicateurs traçables jusqu'aux données sources ;
+- une distinction entre données, règles métier, qualité des données et indicateurs ;
+- des décisions documentées ;
+- des éléments non définis explicitement identifiés comme « À instruire » ;
+- une architecture permettant l'évolution progressive du périmètre.
 
 Le dashboard ne doit pas devenir une source implicite de définitions métier : les règles et définitions doivent être documentées indépendamment de leur représentation graphique.

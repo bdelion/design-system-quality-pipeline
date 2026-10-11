@@ -1,3 +1,9 @@
+/**
+ * @module lib.files
+ * Fournit les opérations de lecture et d’écriture JSON.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 

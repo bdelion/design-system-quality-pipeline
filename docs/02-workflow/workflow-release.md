@@ -105,7 +105,7 @@ Les règles détaillées de review sont documentées dans
 La source indique notamment que l'Issue de Release :
 
 - resterait `Blocked` **ou `Backlog`** tant que les autres Issues ne
-    sont pas terminées ;
+  sont pas terminées ;
 - deviendrait `Ready` après une période de retour des early adopters.
 
 La présence explicite de l'alternative `Blocked (ou Backlog ?)` montre
@@ -117,19 +117,21 @@ Elle ne doit pas être transformée en règle DQ.
 
 ## 7. Matrice RELEASE
 
-  Dimension                   Règle
-  --------------------------- ---------------------------------------------
-  Milestone                   `M.m.r` dans le scénario décrit
-  Version                     `M.m.r`
-  Branche source              release ou hotfix selon contexte
-  Branche cible               master ou support selon contexte
-  Pull Request                fait partie du processus décrit
-  Checklist                   prévue par la source
-  Backlog / Blocked initial   ouvert
-  Ready                       déclencheur exact ouvert
-  In progress                 à formaliser
-  In review                   à formaliser avec PR
-  Done                        à formaliser par rapport à publication PROD
+Dimension Règle
+
+---
+
+Milestone `M.m.r` dans le scénario décrit
+Version `M.m.r`
+Branche source release ou hotfix selon contexte
+Branche cible master ou support selon contexte
+Pull Request fait partie du processus décrit
+Checklist prévue par la source
+Backlog / Blocked initial ouvert
+Ready déclencheur exact ouvert
+In progress à formaliser
+In review à formaliser avec PR
+Done à formaliser par rapport à publication PROD
 
 ---
 
