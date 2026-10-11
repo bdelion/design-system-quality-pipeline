@@ -24,6 +24,34 @@ function canonicalContext() {
     version: params.get('version') || ''
   };
 }
+/** Présente une ventilation pré-calculée en barres ; seule leur échelle visuelle est adaptée. */
+function distributionChart(title, entries, note, dimension) {
+  const maximum = Math.max(0, ...entries.map(([, value]) => value));
+  return (
+    '<figure class="distribution-chart" data-distribution="' +
+    dimension +
+    '"><figcaption>' +
+    escape(title) +
+    '</figcaption><ul class="distribution-bars">' +
+    (entries.length
+      ? entries
+          .map(
+            ([label, value]) =>
+              '<li class="distribution-row"><span class="distribution-label">' +
+              escape(label) +
+              '</span><span class="bar-track" aria-hidden="true"><i style="width:' +
+              (maximum > 0 ? (value / maximum) * 100 : 0) +
+              '%"></i></span><strong>' +
+              format(value) +
+              '</strong></li>'
+          )
+          .join('')
+      : '<li>Aucune donnée de répartition disponible.</li>') +
+    '</ul><p class="panel-note">' +
+    escape(note) +
+    '</p></figure>'
+  );
+}
 /** Restitue les résultats Analytics du périmètre choisi et les mêmes sources dans les tableaux. */
 function renderWorkspace() {
   if (!model) return;
@@ -87,7 +115,30 @@ function renderWorkspace() {
   const breakdowns = document.querySelector('[data-workspace-breakdowns]');
   if (breakdowns)
     breakdowns.innerHTML = summary
-      ? `<h3>Par criticité</h3><div class="table-wrap" tabindex="0" role="region" aria-label="Répartition par criticité"><table><thead><tr><th scope="col">Criticité</th><th scope="col">Déclarées</th><th scope="col">Traitées</th><th scope="col">Délai moyen</th><th scope="col">Calculables</th></tr></thead><tbody>${Object.entries(
+      ? '<div class="distribution-grid">' +
+        distributionChart(
+          'Répartition par criticité',
+          Object.entries(summary.criticalities).map(([key, item]) => [
+            { blocking: 'Bloquante', major: 'Majeure', minor: 'Mineure', unknown: 'Inconnue' }[key] ?? key,
+            item.declared
+          ]),
+          'Anomalies d’accessibilité non annulées ; les criticités inconnues restent visibles.',
+          'criticality'
+        ) +
+        distributionChart(
+          'Critères d’accessibilité',
+          Object.entries(summary.categories),
+          'Multi-étiquettes : une anomalie peut appartenir à plusieurs catégories. Une catégorie absente ne vaut pas zéro.',
+          'category'
+        ) +
+        distributionChart(
+          'Répartition par composant',
+          Object.entries(summary.byComponent),
+          'Relations explicites uniquement ; une anomalie peut concerner plusieurs composants.',
+          'component'
+        ) +
+        '</div><details class="distribution-details"><summary>Voir les détails des répartitions</summary>' +
+        `<h3>Par criticité</h3><div class="table-wrap" tabindex="0" role="region" aria-label="Répartition par criticité"><table><thead><tr><th scope="col">Criticité</th><th scope="col">Déclarées</th><th scope="col">Traitées</th><th scope="col">Délai moyen</th><th scope="col">Calculables</th></tr></thead><tbody>${Object.entries(
           summary.criticalities
         )
           .map(
@@ -102,7 +153,7 @@ function renderWorkspace() {
           Object.entries(summary.byComponent)
             .map(([key, count]) => `<li>${escape(key)} : ${count}</li>`)
             .join('') || '<li>Aucun composant explicitement relié</li>'
-        }</ul>`
+        }</ul></details>`
       : '<p>Ventilations indisponibles pour ce périmètre.</p>';
   document.querySelectorAll('[data-workspace-row]').forEach((row) => {
     const fact = JSON.parse(row.dataset.context);

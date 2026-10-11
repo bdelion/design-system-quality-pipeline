@@ -42,6 +42,15 @@ export function workspaceNavigation(title: string): string {
             : title === 'Historique'
               ? 'history'
               : 'quality';
+  const icons: Record<string, string> = {
+    index:
+      '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    accessibility: '<circle cx="12" cy="4" r="2"/><path d="M4 9h16M12 6v8M7 21l5-7 5 7"/>',
+    issues: '<path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/>',
+    components: '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
+    history: '<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/>',
+    quality: '<path d="m12 3 9 4v6c0 4-5 7-9 9-4-2-9-5-9-9V7l9-4Z"/><path d="m8 12 3 3 5-6"/>'
+  };
   const links = [
     ['index', 'Vue d’ensemble'],
     ['accessibility', 'Accessibilité'],
@@ -50,7 +59,7 @@ export function workspaceNavigation(title: string): string {
     ['history', 'Historique'],
     ['quality', 'Qualité des données']
   ];
-  return `<nav class="side-nav" aria-label="Navigation principale">${links.map(([file, label]) => `<a data-workspace-nav href="${file}.html"${group === file ? ' aria-current="page" class="active"' : ''}>${label}</a>`).join('')}</nav>`;
+  return `<nav class="side-nav" aria-label="Navigation principale">${links.map(([file, label]) => `<a data-workspace-nav href="${file}.html"${group === file ? ' aria-current="page" class="active"' : ''}>${`<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" focusable="false">${icons[file!]}</svg>`}<span>${label}</span></a>`).join('')}</nav>`;
 }
 /** Fournit les liens détaillés sans dupliquer les espaces dans la navigation principale. */
 export function workspaceSubnavigation(title: string): string {

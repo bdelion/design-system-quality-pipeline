@@ -28,7 +28,7 @@ for (const pageName of [
   'graph',
   'history'
 ]) {
-  test(`${pageName} : scripts sans erreur et accessibilité WCAG A/AA`, async ({ page }) => {
+  test(`${pageName} : scripts sans erreur et accessibilité WCAG A/AA`, async ({ page }, testInfo) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`/${pageName}.html`);
@@ -47,8 +47,17 @@ for (const pageName of [
       }))
     ).toEqual([]);
     expect(errors).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('desktop.png'), fullPage: false });
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.locator('h1')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
+    for (const link of await page.locator('[data-workspace-nav]').all()) {
+      const bounds = await link.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+    }
+    await page.screenshot({ path: testInfo.outputPath('mobile.png'), fullPage: false });
     const mobileAccessibility = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();
@@ -247,4 +256,37 @@ test('la présence inconnue rend les ratios et le stock non couvert indisponible
   await expect(page.locator('[data-workspace-ratio="conformity"]')).toHaveText('Ratio indisponible');
   await expect(page.locator('[data-workspace-kpi="nonCovered"]')).toHaveText('Indisponible');
   await expect(page.locator('[data-workspace-kpi="unknown"]')).toHaveText('2');
+});
+
+test('les graphiques accessibilité restituent les agrégats et suivent les filtres', async ({
+  page
+}, testInfo) => {
+  await page.goto('/accessibility.html');
+  await expect(page.locator('[data-distribution]')).toHaveCount(3);
+  await page.locator('.distribution-grid').screenshot({ path: testInfo.outputPath('distributions.png') });
+  for (const repository of ['', 'acme/ds-react']) {
+    await page.locator('[data-context-filter="repository"]').selectOption(repository);
+    const summary = await page
+      .locator('#workspace-data')
+      .evaluate(
+        (node, repo) =>
+          JSON.parse(node.textContent!).scopes.find(
+            (scope: { repository: string; component: string; version: string }) =>
+              scope.repository === repo && !scope.component && !scope.version
+          ).summary,
+        repository
+      );
+    const rows = page.locator('[data-distribution="criticality"] .distribution-row');
+    await expect(rows).toHaveCount(Object.keys(summary.criticalities).length);
+    let index = 0;
+    for (const item of Object.values(summary.criticalities) as { declared: number }[]) {
+      await expect(rows.nth(index++).locator('strong')).toHaveText(String(item.declared));
+    }
+    await expect(page.locator('[data-distribution="category"] .distribution-row')).toHaveCount(
+      Object.keys(summary.categories).length
+    );
+  }
+  await page.goto('/accessibility.html?category=unknown');
+  await expect(page.locator('[data-distribution]')).toHaveCount(0);
+  await expect(page.locator('[data-workspace-breakdowns]')).toContainText('indisponibles');
 });

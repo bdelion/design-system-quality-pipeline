@@ -44,7 +44,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
   expect(html).toContain('window.__SNAPSHOT__');
   expect(html).toContain('class="sidebar"');
-  expect(html).toContain('ArchInsight');
+  expect(html).toContain('<span>Design System Quality</span>');
   expect(html).toContain('assets/logo.svg');
   const auditsHtml = await readFile(resolve(output, 'dashboard/audits.html'), 'utf8');
   expect(auditsHtml).toContain('Périmètre auditable');

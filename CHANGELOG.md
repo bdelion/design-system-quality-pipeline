@@ -1,5 +1,13 @@
 # Changelog
 
+## Refonte visuelle du dashboard — non publiée
+
+- Répartitions graphiques rétablies dans Accessibilité, filtrées et accompagnées de détails accessibles.
+
+- Interface claire inspirée des recommandations dashboard et de la palette Michelin.
+- Navigation illustrée, cartes et tableaux harmonisés, filtres et focus visibles.
+- Polices locales et adaptation mobile vérifiée sur les neuf pages.
+
 ## Refonte du dashboard par besoins — non publiée
 
 - Synthèse globale rétablie sur l’accueil ; explications des chiffres indisponibles.
