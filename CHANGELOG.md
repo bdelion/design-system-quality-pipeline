@@ -1,5 +1,11 @@
 # Changelog
 
+## Configurations et tests — non publié
+
+- Sélection cohérente des paires system/catalogue de fixture ; refus des profils partiels.
+- Tests isolés des configurations GitHub opérationnelles et quatre régressions ciblées.
+- Guide des fichiers requis, de leur positionnement et du renouvellement des jeux anonymisés.
+
 ## Kit Codex / Copilot — non publié
 
 - Consignes racine et locales, trois skills et six tâches VS Code.

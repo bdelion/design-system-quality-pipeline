@@ -308,3 +308,10 @@ pour l’installation, la compatibilité et les lectures ciblées.
 `npm run check:ai` valide le kit sans réseau ni écriture. Après modification du registre D/Q,
 `npm run ai:index:update` régénère son index. Le contrôle IA est intégré à `npm run check`
 et à la CI ; `format:check` inclut également `.agents/`.
+
+## Configurations et données de test
+
+Voir [Configurations, sources et données de test](docs/08-implementation/configurations-et-tests.md)
+pour les fichiers réellement chargés, les commandes GitHub/fixture et la politique
+de renouvellement des jeux anonymisés. Les profils d'une fixture sont sélectionnés
+ensemble ; une paire spécifique incomplète est refusée.

@@ -7,7 +7,7 @@ import { loadConfig } from '../src/config.js';
 import { loadCatalogue, validateCatalogue } from '../src/catalogue.js';
 
 const raw = await collectFixture();
-const config = await loadConfig();
+const config = await loadConfig('fixture');
 const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
 const issues = evaluateDataQuality(raw, normalized, config.github);
 
@@ -44,7 +44,7 @@ describe('quality pipeline', () => {
 
   // Le catalogue enrichit les composants connus sans changer la source des anomalies.
   it('uses catalogue-only components as portfolio entities when the catalogue maps them to a repository', async () => {
-    const catalogue = await loadCatalogue();
+    const catalogue = await loadCatalogue('fixture');
     const synthetic = structuredClone(raw);
     synthetic.repositories[1]!.issues = synthetic.repositories[1]!.issues.filter(
       (issue) => issue.component !== 'Toast'
@@ -79,7 +79,7 @@ describe('quality pipeline', () => {
   });
 
   it('loads the catalogue as the reference list of known components', async () => {
-    const catalogue = await loadCatalogue();
+    const catalogue = await loadCatalogue('fixture');
     const catalogueRaw = {
       ...raw,
       catalogueComponents: catalogue.components.map((component) => component.name)
