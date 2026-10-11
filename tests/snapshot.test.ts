@@ -10,7 +10,7 @@ import { loadConfig } from '../src/config.js';
 describe('snapshot contract', () => {
   it('preserves RAW, normalized data, DQ and rule versions together', async () => {
     const raw = await collectFixture();
-    const config = await loadConfig();
+    const config = await loadConfig('fixture');
     const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
     const issues = evaluateDataQuality(raw, normalized, config.github);
     const snapshot = buildSnapshot(

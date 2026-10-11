@@ -8,7 +8,7 @@ import { loadConfig } from '../src/config.js';
 describe('V2 fixture analytical contract', () => {
   it('produces the expected self-explaining metrics', async () => {
     const raw = await collectFixture();
-    const config = await loadConfig();
+    const config = await loadConfig('fixture');
     const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
     const issues = evaluateDataQuality(raw, normalized, config.github);
     const metrics = calculateKpis(normalized, issues).metrics;

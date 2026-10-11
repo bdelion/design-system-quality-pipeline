@@ -140,3 +140,7 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 - [Index de contexte des agents](08-implementation/ai-context-map.md)
 - [Index de recherche des décisions](08-implementation/ai-decisions-index.md)
 - [Validation du kit IA et limites](08-implementation/ai-configuration-validation.md)
+
+## Configurations et tests
+
+- [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)
