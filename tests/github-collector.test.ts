@@ -17,6 +17,7 @@ describe('collecteur GitHub', () => {
     const requests: string[] = [];
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
+      if (url.includes('/contents/package.json?')) return new Response('', { status: 404 });
       requests.push(url);
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(
@@ -152,6 +153,7 @@ describe('collecteur GitHub', () => {
   it('récupère une PR liée manuellement via GraphQL sans mot-clé de fermeture', async () => {
     globalThis.fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
+      if (url.includes('/contents/package.json?')) return new Response('', { status: 404 });
       if (url === 'https://api.github.com/graphql') {
         return new Response(
           JSON.stringify({
@@ -290,6 +292,7 @@ describe('catalogue historique GitHub', () => {
   it('lit le catalogue au tag PROD exact et conserve les indisponibilités sans fallback', async () => {
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
+      if (url.includes('/contents/package.json?')) return new Response('', { status: 404 });
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(
           JSON.stringify({

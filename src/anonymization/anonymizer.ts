@@ -243,6 +243,7 @@ export function anonymizeDataset(input: RawDataset, options: AnonymizationOption
     name: map('repository', repository.name, 'repo'),
     owner: map('owner', repository.owner, 'owner'),
     defaultBranch: repository.defaultBranch,
+    ...(repository.packageManifest ? { packageManifest: { ...repository.packageManifest } } : {}),
     issues: repository.issues.map((issue) => anonymizeIssue(issue, repository.name, options, map, report)),
     pullRequests: repository.pullRequests.map((pr) =>
       anonymizePullRequest(pr, repository.name, options, map, report)

@@ -73,12 +73,20 @@ export interface RawRepository {
   name: string;
   owner: string;
   defaultBranch: string;
+  /** Version du package racine lue sur la branche par défaut ; absente dans les anciens RAW. */
+  packageManifest?: RawPackageManifest;
   issues: RawIssue[];
   pullRequests: RawPullRequest[];
   /** Git tags collected from the repository. Legacy fixtures may omit them. */
   gitTags?: RawGitTag[];
   /** Historical catalogue evidence read from exact PROD tags. */
   historicalCatalogues?: RawHistoricalCatalogue[];
+}
+
+/** État de lecture du package.json racine, sans conserver ses autres champs. */
+export interface RawPackageManifest {
+  status: 'available' | 'missing' | 'invalid';
+  version?: string;
 }
 
 /** Catalogue component presence captured at one exact PROD Git tag. */
@@ -171,6 +179,8 @@ export interface Library {
   libraryId: string;
   name: string;
   repository: string;
+  /** Borne déclarée ; ne constitue pas une preuve de publication PROD. */
+  packageManifest?: RawPackageManifest;
   status: 'active' | 'deprecated' | 'experimental' | 'removed';
   provenance: Provenance;
   dataQualityStatus: DataQualityStatus;
@@ -232,6 +242,8 @@ export interface IssueProjectContext {
 
 /** Issue GitHub générique conservée exhaustivement dans le modèle normalisé. */
 export interface Issue {
+  /** Milestone future ou parent audit futur explicite : activité conservée, accessibilité exclue. */
+  futureVersion?: boolean;
   issueId: string;
   repositoryId: string;
   libraryId: string;

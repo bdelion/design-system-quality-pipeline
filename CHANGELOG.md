@@ -1,5 +1,13 @@
 # Changelog
 
+## Périmètre des versions — issue #39 — non publié
+
+- Lecture de la version du package racine et exclusion des versions futures des analyses accessibilité et conformité.
+- Issues et PR futures conservées dans l’activité des équipes, avec libellé explicite.
+- Nouvelle version de règles dans les sept profils pour séparer les comparaisons avant/après ce périmètre.
+- Borne préservée par l’anonymisation ; réserves DQ pour les anciens RAW ou packages absents/invalides.
+- Tests des collectes, comparaisons numériques, périmètres multi-repositories, snapshots et pages générées.
+
 ## Releases automatiques — non publiées
 
 - Job de tag et release sur main après succès de la CI complète.

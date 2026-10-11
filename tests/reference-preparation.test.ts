@@ -55,6 +55,28 @@ function options(outputRoot: string) {
 }
 
 describe('préparation des références', () => {
+  it('préserve le package déclaré et les versions futures dans le RAW anonyme préparé', async () => {
+    const root = await directory();
+    const sourcePath = join(root, 'source.json');
+    const source = JSON.parse(await readFile(sourcePath, 'utf8')) as RawDataset;
+    source.repositories[0]!.packageManifest = { status: 'available', version: '1.8.0' };
+    source.repositories[0]!.gitTags = [{ name: '1.8.0' }, { name: '1.9.0' }];
+    await writeFile(sourcePath, JSON.stringify(source));
+    await prepareReferences(options(root));
+    const prepared = JSON.parse(
+      await readFile(join(root, 'fixtures/demo-reference.json'), 'utf8')
+    ) as RawDataset;
+    expect(prepared.repositories[0]?.packageManifest).toEqual(source.repositories[0]!.packageManifest);
+    expect(prepared.repositories[0]?.gitTags).toHaveLength(2);
+    const selection = {
+      systemConfig: join(root, 'config/system.demo-reference.yaml'),
+      catalogueConfig: join(root, 'config/catalogue.demo-reference.yaml')
+    };
+    const system = await loadConfig('fixture', undefined, selection);
+    expect(normalizeGithub(prepared, system.github).versions?.map((version) => version.number)).toEqual([
+      '1.8.0'
+    ]);
+  });
   it('produit des profils GitHub réels et une référence anonyme cohérente, utilisables explicitement', async () => {
     const root = await directory();
     const files = await prepareReferences(options(root));

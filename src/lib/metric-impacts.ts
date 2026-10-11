@@ -10,6 +10,19 @@ const RULE_METRIC_IMPACTS: Record<
   string,
   { pattern: string; action: 'include' | 'exclude' | 'unknown'; reason: string }[]
 > = {
+  'DQ-033': [
+    'audit.*',
+    'anomaly.*',
+    'portfolio.components',
+    'portfolio.componentsAudited',
+    'portfolio.auditCoverage',
+    'portfolio.release.*',
+    'componentVersion.*'
+  ].map((pattern) => ({
+    pattern,
+    action: 'include',
+    reason: 'La borne package.json est inconnue : le périmètre des versions ne peut pas être garanti.'
+  })),
   'DQ-030': [
     {
       pattern: 'issue.*',

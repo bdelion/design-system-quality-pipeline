@@ -4,10 +4,12 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { nominalVersion } from '../domain/version-scope.js';
 import pLimit from 'p-limit';
 import { CollectionProgress } from '../lib/collection-progress.js';
 import type {
   RawDataset,
+  RawPackageManifest,
   RawGitTag,
   RawHistoricalCatalogue,
   RawIssue,
@@ -152,6 +154,7 @@ async function collectRepository(
     `/repos/${encodeURIComponent(options.owner)}/${encodeURIComponent(repositoryName)}`,
     options
   );
+  const packageManifest = await collectPackageManifest(apiUrl, repository, options);
   const issues = await githubGetAll<GithubIssue>(
     apiUrl,
     `/repos/${repository.full_name}/issues?state=all&per_page=100`,
@@ -227,11 +230,44 @@ async function collectRepository(
     name: repository.name,
     owner: repository.owner.login,
     defaultBranch: repository.default_branch,
+    packageManifest,
     issues: rawIssues,
     pullRequests: rawPullRequests,
     gitTags,
     historicalCatalogues
   };
+}
+
+/** Lit uniquement la version du package racine sur la branche par défaut ; les erreurs API restent bloquantes. */
+async function collectPackageManifest(
+  apiUrl: string,
+  repository: GithubRepository,
+  options: CollectionOptions
+): Promise<RawPackageManifest> {
+  let content: { type?: string; encoding?: string; content?: string };
+  try {
+    content = await githubGet(
+      apiUrl,
+      `/repos/${repository.full_name}/contents/package.json?ref=${encodeURIComponent(repository.default_branch)}`,
+      options
+    );
+  } catch (error) {
+    if (error instanceof Error && error.message === 'GitHub API request failed (404)')
+      return { status: 'missing' };
+    throw error;
+  }
+  try {
+    if (content.type !== 'file' || content.encoding !== 'base64' || typeof content.content !== 'string')
+      return { status: 'invalid' };
+    const manifest: unknown = JSON.parse(Buffer.from(content.content, 'base64').toString('utf8'));
+    const version =
+      manifest && typeof manifest === 'object' && 'version' in manifest ? manifest.version : undefined;
+    return typeof version === 'string' && nominalVersion(version)
+      ? { status: 'available', version: version.trim() }
+      : { status: 'invalid' };
+  } catch {
+    return { status: 'invalid' };
+  }
 }
 
 /** Collecte les tags Git sans inventer de date pour les lightweight tags. */

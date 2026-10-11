@@ -1,5 +1,5 @@
 modelVersion: "2.2"
-ruleVersion: "dq-2026.10-consolidation"
+ruleVersion: "dq-2026.10-version-scope"
 auditVersion: "2026.09"
 scope: configured-github-repositories
 githubOwner: example

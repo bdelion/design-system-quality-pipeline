@@ -4,6 +4,7 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { isFutureVersion, milestoneVersionNumber } from '../domain/version-scope.js';
 import { stableId } from '../lib/ids.js';
 import { validateMilestoneDetection, type GithubProcessingConfig } from '../config.js';
 import { issueBusinessState, currentProjectStatus, lastDoneAt } from '../domain/business.js';
@@ -34,7 +35,8 @@ const collectedStatus: DataQualityStatus = 'reliable';
  * Les données RAW restent la source de vérité des faits observés. La normalisation
  * construit les relations entre bibliothèques, versions, composants, audits et
  * anomalies, sans masquer les informations manquantes : elles sont ensuite
- * évaluées par la couche Data Quality.
+ * évaluées par la couche Data Quality. Le package borne les versions et populations
+ * accessibilité ; l’activité des issues futures reste conservée.
  *
  * @param raw - Données collectées, incluant les repositories et leurs événements.
  * @param rules - Règles de correspondance et de spécialisation GitHub.
@@ -54,6 +56,7 @@ export function normalizeGithub(
     name: repository.name,
     repository: `${repository.owner}/${repository.name}`,
     defaultBranch: repository.defaultBranch,
+    ...(repository.packageManifest ? { packageManifest: { ...repository.packageManifest } } : {}),
     status: 'active',
     provenance: { source: 'github', sourceId: repository.id, collectedAt: raw.collectedAt },
     dataQualityStatus: collectedStatus
@@ -77,19 +80,61 @@ export function normalizeGithub(
   );
   const resolvedAuditVersion = auditVersion ?? catalogue?.version ?? 'unknown';
 
+  const futureAuditIssueIds = new Set(
+    raw.repositories.flatMap((repository) =>
+      repository.issues
+        .filter(
+          (issue) =>
+            (isFutureVersion(
+              milestoneVersionNumber(issue.milestone?.title, rules),
+              repository.packageManifest
+            ) ||
+              (issue.rawIssueType === undefined &&
+                issue.issueType === 'AUDIT' &&
+                isFutureVersion(resolvedAuditVersion, repository.packageManifest))) &&
+            (recognizeIssueType(issue.rawIssueType, rules).issueType === 'AUDIT' ||
+              (issue.rawIssueType === undefined && issue.issueType === 'AUDIT') ||
+              configuredAuditIssue(
+                issue,
+                rules,
+                issue.labels.filter((label) =>
+                  label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase())
+                ).length
+              ))
+        )
+        .map((issue) => issue.id)
+    )
+  );
+  const futureIssueIds = new Set(
+    raw.repositories.flatMap((repository) =>
+      repository.issues
+        .filter(
+          (issue) =>
+            isFutureVersion(
+              milestoneVersionNumber(issue.milestone?.title, rules),
+              repository.packageManifest
+            ) ||
+            futureAuditIssueIds.has(issue.id) ||
+            (issue.parents.length === 1 && futureAuditIssueIds.has(issue.parents[0]!))
+        )
+        .map((issue) => issue.id)
+    )
+  );
+  const manifestByLibrary = new Map(libraries.map((library) => [library.libraryId, library.packageManifest]));
   const versionByLibraryAndNumber = new Map<string, Version>();
   for (const repository of raw.repositories) {
     const library = libraryByRepository.get(repository.name)!;
     const milestoneIdsByVersion = new Map<string, Set<string>>();
     for (const issue of repository.issues) {
       const number = milestoneVersionNumber(issue.milestone?.title, rules);
-      if (!number || !issue.milestone) continue;
+      if (!number || !issue.milestone || isFutureVersion(number, repository.packageManifest)) continue;
       const milestoneIds = milestoneIdsByVersion.get(number) ?? new Set<string>();
       milestoneIds.add(String(issue.milestone.id));
       milestoneIdsByVersion.set(number, milestoneIds);
     }
     const tagByVersion = new Map(
       (repository.gitTags ?? [])
+        .filter((tag) => !isFutureVersion(tag.name, repository.packageManifest))
         .map((tag) => [prodVersionNumber(tag.name), tag] as const)
         .filter((entry): entry is [string, NonNullable<(typeof entry)[1]>] => Boolean(entry[0]))
     );
@@ -228,7 +273,23 @@ export function normalizeGithub(
   // Les composants sont indexés par bibliothèque pour éviter les collisions entre repositories.
   for (const repository of raw.repositories) {
     const library = libraryByRepository.get(repository.name)!;
+    const currentComponentNames = new Set(
+      repository.issues
+        .filter((issue) => !futureIssueIds.has(issue.id))
+        .flatMap((issue) => [
+          ...issue.labels
+            .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
+            .map((label) => label.slice(rules.labels.componentPrefix.length).trim()),
+          ...(issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
+        ])
+    );
+    /** Conserve les composants dont la présence est attestée indépendamment de cette issue future. */
+    const knownComponent = (name: string): boolean =>
+      currentComponentNames.has(name) ||
+      componentsByName.has(`${library.libraryId}:${name}`) ||
+      latestHistoricalComponentIdByName.has(`${library.libraryId}:${name}`);
     for (const issue of repository.issues) {
+      const futureVersion = futureIssueIds.has(issue.id);
       const componentNames = [
         ...new Set([
           ...issue.labels
@@ -237,7 +298,7 @@ export function normalizeGithub(
             .filter(Boolean),
           ...(issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
         ])
-      ];
+      ].filter((name) => !futureVersion || knownComponent(name));
       const componentName = componentNames[0] ?? '';
       const componentKey = `${library.libraryId}:${componentName}`;
       const componentId = currentComponentId(
@@ -250,6 +311,7 @@ export function normalizeGithub(
         .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
         .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
         .filter(Boolean)
+        .filter((name) => !futureVersion || knownComponent(name))
         .map((name) => {
           const key = `${library.libraryId}:${name}`;
           return currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames);
@@ -259,7 +321,10 @@ export function normalizeGithub(
       // native rawIssueType/complete I1 facts. Never use this fallback for new
       // I1 collections.
       const componentIds =
-        issue.rawIssueType === undefined && recognizedComponentIds.length === 0 && issue.component
+        issue.rawIssueType === undefined &&
+        recognizedComponentIds.length === 0 &&
+        issue.component &&
+        componentNames.length > 0
           ? [componentId]
           : recognizedComponentIds;
       const criticalities = issue.labels
@@ -274,6 +339,7 @@ export function normalizeGithub(
         .map((label) => label.slice(rules.labels.accessibilityCategoryPrefix.length).trim());
       issues.push({
         issueId: issue.id,
+        ...(futureVersion ? { futureVersion: true } : {}),
         repositoryId: repository.id,
         libraryId: library.libraryId,
         number: issue.number,
@@ -404,19 +470,12 @@ export function normalizeGithub(
   const hasKnownAuditVersion = resolvedAuditVersion !== 'unknown';
 
   for (const issue of issues) {
+    if (issue.futureVersion) continue;
     const rawIssue = rawIssueById.get(issue.issueId);
     const legacyAudit = specializationIssueType(issue, rawIssue) === 'AUDIT';
-    const configuredAudit =
-      rules.auditDetection?.strategies.some(
-        (strategy) =>
-          strategy.issueTypes.some(
-            (type) => type.toLowerCase() === (rawIssue?.rawIssueType ?? '').toLowerCase()
-          ) &&
-          (strategy.requiredLabels ?? []).every((label) =>
-            issue.labels.some((actual) => actual.toLowerCase() === label.toLowerCase())
-          ) &&
-          (!strategy.requireComponent || issue.componentIds.length === 1)
-      ) ?? false;
+    const configuredAudit = rawIssue
+      ? configuredAuditIssue(rawIssue, rules, issue.componentIds.length)
+      : false;
     if ((!legacyAudit && !configuredAudit) || issue.componentIds.length !== 1) continue;
     const targetNumber =
       rawIssue?.rawIssueType !== undefined
@@ -424,6 +483,7 @@ export function normalizeGithub(
         : hasKnownAuditVersion
           ? resolvedAuditVersion
           : undefined;
+    if (isFutureVersion(targetNumber, manifestByLibrary.get(issue.libraryId))) continue;
     const targetVersion = targetNumber
       ? versionByLibraryAndNumber.get(`${issue.libraryId}:${targetNumber}`)
       : undefined;
@@ -479,6 +539,7 @@ export function normalizeGithub(
   }
 
   for (const issue of issues) {
+    if (issue.futureVersion) continue;
     const rawIssue = rawIssueById.get(issue.issueId);
     const parentIds = rawIssue?.parents ?? [];
     const validParentAudits = parentIds
@@ -713,22 +774,6 @@ function prodVersionNumber(value: string | undefined): string | undefined {
   return /^\d+\.\d+\.\d+$/.test(normalized) ? normalized : undefined;
 }
 
-/** Extrait une version depuis une milestone suivant la première règle configurée. */
-function milestoneVersionNumber(
-  value: string | undefined,
-  rules: GithubProcessingConfig
-): string | undefined {
-  if (!value) return undefined;
-  if (!rules.milestoneDetection) return prodVersionNumber(value);
-  const title = value.trim();
-  for (const pattern of rules.milestoneDetection.patterns) {
-    const match = new RegExp(pattern.regex, rules.milestoneDetection.caseSensitive ? '' : 'i').exec(title);
-    const version = match?.groups?.version?.trim();
-    if (version) return version;
-  }
-  return undefined;
-}
-
 /**
  * Réalise le traitement « specialization issue type » dans le pipeline de qualité.
  *
@@ -745,6 +790,24 @@ function specializationIssueType(
   return legacy && ['EPIC', 'AUDIT', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(legacy)
     ? (legacy as CanonicalIssueType)
     : undefined;
+}
+
+/** Reconnaît les stratégies d'audit configurées avec leurs labels et cardinalité de composant. */
+function configuredAuditIssue(
+  issue: RawIssue,
+  rules: GithubProcessingConfig,
+  componentCount: number
+): boolean {
+  return (
+    rules.auditDetection?.strategies.some(
+      (strategy) =>
+        strategy.issueTypes.some((type) => type.toLowerCase() === (issue.rawIssueType ?? '').toLowerCase()) &&
+        (strategy.requiredLabels ?? []).every((label) =>
+          issue.labels.some((actual) => actual.toLowerCase() === label.toLowerCase())
+        ) &&
+        (!strategy.requireComponent || componentCount === 1)
+    ) ?? false
+  );
 }
 
 /** Reconnait strictement un statut Project a partir des variantes configurees. */
