@@ -26,6 +26,17 @@
   fill(filters.repo, unique(items.map((item) => item.repo)));
   fill(filters.label, unique(items.flatMap((item) => item.labels)));
   fill(filters.type, unique(items.map((item) => item.type)));
+  // Restaure le contexte de navigation partagé sans inventer de filtre de version
+  // lorsque les issues ne portent pas de relation de version fiable.
+  const context = new URLSearchParams(window.location.search);
+  const repository = context.get('repository');
+  if (repository && [...filters.repo.options].some((option) => option.value === repository)) filters.repo.value = repository;
+  const component = context.get('component');
+  if (component) {
+    const componentLabel = items.flatMap((item) => item.labels).find((label) => label.toLocaleLowerCase('fr') === (componentPrefix + component).toLocaleLowerCase('fr'));
+    if (componentLabel && [...filters.label.options].some((option) => option.value === componentLabel)) filters.label.value = componentLabel;
+  }
+
   if (root.hasAttribute('data-components-explorer')) $('[data-issue-components]').checked = true;
   const columns = [...root.querySelectorAll('[data-issue-column]')];
   const key = (item) => item.key;

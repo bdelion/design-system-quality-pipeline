@@ -74,6 +74,10 @@ export function calculateFlowMetrics(
   dqIssues: DataQualityIssue[] = []
 ): Record<string, Metric> {
   return {
+    'issue.flow.created': flowMetric('issue.flow.created', diff.issuesCreated, diff.period, dqIssues),
+    'issue.flow.treated': flowMetric('issue.flow.treated', diff.issuesTreated, diff.period, dqIssues),
+    'issue.flow.reopened': flowMetric('issue.flow.reopened', diff.issuesReopened, diff.period, dqIssues),
+    'issue.flow.cancelled': flowMetric('issue.flow.cancelled', diff.issuesCancelled, diff.period, dqIssues),
     'anomaly.flow.created': flowMetric('anomaly.flow.created', diff.anomaliesCreated, diff.period, dqIssues),
     'anomaly.flow.corrected': flowMetric(
       'anomaly.flow.corrected',

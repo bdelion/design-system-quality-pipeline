@@ -241,6 +241,34 @@ export const METRIC_CONTRACTS: readonly MetricContract[] = [
     notes: 'Les anomalies annulées sont exclues des métriques de stock valides.'
   },
   {
+    id: 'issue.flow.created',
+    unit: 'count',
+    scope: 'issue',
+    kind: 'flow',
+    definition: 'Issues de tous types apparues entre les deux snapshots.'
+  },
+  {
+    id: 'issue.flow.treated',
+    unit: 'count',
+    scope: 'issue',
+    kind: 'flow',
+    definition: 'Issues de tous types passées à l’état traité entre les deux snapshots.'
+  },
+  {
+    id: 'issue.flow.reopened',
+    unit: 'count',
+    scope: 'issue',
+    kind: 'flow',
+    definition: 'Issues de tous types passées de traité à ouvert entre les deux snapshots.'
+  },
+  {
+    id: 'issue.flow.cancelled',
+    unit: 'count',
+    scope: 'issue',
+    kind: 'flow',
+    definition: 'Issues de tous types devenues annulées entre les deux snapshots.'
+  },
+  {
     id: 'anomaly.flow.created',
     unit: 'count',
     scope: 'anomaly',

@@ -31,7 +31,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('design-system-react');
   expect(html).toContain('design-system-docs');
   expect(html).toContain('Délai moyen');
-  expect(html).toContain('Temps de correction par repository');
+  expect(html).toContain('Temps de traitement des issues par repository');
   expect(html).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
   expect(html).toContain(
@@ -71,6 +71,26 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(issuesHtml).toContain('assets/issues.js');
   expect(issuesHtml).toContain('issue-explorer-data');
   expect(html).toContain('href="issues.html"');
+  const graphHtml = await readFile(resolve(output, 'dashboard/graph.html'), 'utf8');
+  expect(graphHtml).toContain('Issues (tous types)');
+  expect(graphHtml).toContain('data-map-kind="issue"');
+  expect(graphHtml).toContain('href="https://github.com/example/design-system-react/issues/204"');
+  const historyHtml = await readFile(resolve(output, 'dashboard/history.html'), 'utf8');
+  expect(auditsHtml).toContain('Audits en cours');
+  expect(auditsHtml).toContain('Audits non évalués');
+  expect(auditsHtml).toContain('Traçabilité de chaque audit, par version');
+  expect(auditsHtml).toContain('data-audit-version=');
+  expect(auditsHtml).toContain('État de l’audit');
+  expect(historyHtml).toContain('data-history-issue-flows');
+  expect(historyHtml).toContain('Flux des anomalies');
+  expect(historyHtml).toContain('issues distinctes, tous types confondus');
+  expect(historyHtml).toContain('Les flux des issues et des anomalies sont observés entre deux snapshots');
+  expect(historyHtml).toContain('ne doivent pas être additionnés');
+  expect(historyHtml).toContain('data-history-issue-stock');
+  expect(historyHtml).toContain('Issues (tous types) : <strong>8</strong> distinctes');
+  expect(historyHtml).toContain('<strong>3</strong> ouvertes');
+  expect(historyHtml).toContain('<strong>5</strong> traitées');
+  expect(historyHtml).toContain('<strong>0</strong> annulées');
   const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
@@ -91,8 +111,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(anomaliesHtml).toContain('data-filter-repository');
   expect(anomaliesHtml).toContain('data-filter-criticality');
   expect(anomaliesHtml).toContain('data-reset-filters');
-  const graphHtml = await readFile(resolve(output, 'dashboard/graph.html'), 'utf8');
-  expect(graphHtml).toContain('Repository → composant → audit → anomalie → PR');
+  expect(graphHtml).toContain('Repository → composant → issues / audit → anomalie → PR');
   expect(graphHtml).toContain('assets/graph.js');
   expect(graphHtml).toContain('Patrimoine et chaîne de preuve');
   expect(graphHtml).toContain('data-map-filter');
@@ -209,6 +228,128 @@ it('does not display a negative correction delay for an inconsistent estimated c
     const row = html.match(new RegExp(`<tr[^>]*>[\\s\\S]*?${anomaly.anomalyId}[\\s\\S]*?<\\/tr>`))?.[0];
     expect(row).toContain('Date incohérente');
     expect(row).not.toContain('-56.0 j');
+  } finally {
+    await rm(output, { recursive: true, force: true });
+  }
+});
+
+it('uses the same treatment dates for Task issues across issues, components and overview', async () => {
+  const raw = await collectFixture();
+  const config = await loadConfig();
+  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
+  const issue = normalized.issues!.find((item) => item.componentIds.length > 0)!;
+  issue.rawIssueType = 'Task';
+  issue.state = 'CLOSED';
+  issue.createdAt = '2026-09-01T00:00:00.000Z';
+  issue.closedAt = '2026-09-09T00:00:00.000Z';
+  issue.projectContexts = [
+    {
+      projectId: 'project-test',
+      projectName: 'Tests',
+      status: 'DONE',
+      statusHistory: [
+        { rawStatus: 'Done', status: 'DONE', transitionedAt: '2026-09-03T00:00:00.000Z' },
+        { rawStatus: 'Backlog', status: 'BACKLOG', transitionedAt: '2026-09-04T00:00:00.000Z' },
+        { rawStatus: 'Done', status: 'DONE', transitionedAt: '2026-09-06T00:00:00.000Z' }
+      ]
+    }
+  ];
+  normalized.anomalies = normalized.anomalies.filter((item) => item.issueId !== issue.issueId);
+  const quality = evaluateDataQuality(raw, normalized, config.github);
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    quality,
+    calculateKpis(normalized, quality),
+    '2.1',
+    'dq-test',
+    'test'
+  );
+  const output = resolve(process.cwd(), 'data/test-dashboard-consistency');
+  try {
+    await generateDashboard(snapshot, output, 'https://github.test');
+    const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
+    const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
+    const overviewHtml = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
+    const issuePayload = JSON.parse(
+      issuesHtml.match(/<script type="application\/json" id="issue-explorer-data">([^<]+)<\/script>/)![1]!
+    );
+    const componentRows = JSON.parse(
+      componentsHtml.match(
+        /<script type="application\/json" id="component-analysis-data">([^<]+)<\/script>/
+      )![1]!
+    );
+    const projectedIssue = issuePayload.items.find(
+      (item: { number: number }) => item.number === issue.number
+    );
+    const componentItem = componentRows
+      .flatMap((row: { items: { number: number }[] }) => row.items)
+      .find((item: { number: number }) => item.number === issue.number);
+    expect(projectedIssue).toMatchObject({ type: 'Task', status: 'closed', source: 'done', delay: 5 });
+    expect(componentItem).toMatchObject({ treated: true, source: 'done', delay: 5 });
+    expect(overviewHtml).toContain('Temps de traitement des issues par repository');
+    expect(issuesHtml).toContain('Délai de traitement');
+  } finally {
+    await rm(output, { recursive: true, force: true });
+  }
+});
+
+// Contrat inter-pages : l'historique Project prime sur le statut déclaré et sur GitHub.
+it('uses the last dated Project transition for reopened issues in both explorers', async () => {
+  const raw = await collectFixture();
+  const config = await loadConfig();
+  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
+  const issue = normalized.issues!.find((item) => item.componentIds.length > 0)!;
+  issue.rawIssueType = 'Documentation';
+  issue.state = 'CLOSED';
+  issue.createdAt = '2026-09-01T00:00:00.000Z';
+  issue.closedAt = '2026-09-08T00:00:00.000Z';
+  issue.projectContexts = [
+    {
+      projectId: 'project-test',
+      projectName: 'Tests',
+      status: 'DONE',
+      statusHistory: [
+        { rawStatus: 'Done', status: 'DONE', transitionedAt: '2026-09-03T00:00:00.000Z' },
+        { rawStatus: 'Backlog', status: 'BACKLOG', transitionedAt: '2026-09-05T00:00:00.000Z' }
+      ]
+    }
+  ];
+  normalized.anomalies = normalized.anomalies.filter((item) => item.issueId !== issue.issueId);
+  const quality = evaluateDataQuality(raw, normalized, config.github);
+  const snapshot = buildSnapshot(
+    raw,
+    normalized,
+    quality,
+    calculateKpis(normalized, quality),
+    '2.1',
+    'dq-test',
+    'test'
+  );
+  const output = resolve(process.cwd(), 'data/test-dashboard-last-transition');
+  try {
+    await generateDashboard(snapshot, output, 'https://github.test');
+    const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
+    const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
+    const issuePayload = JSON.parse(
+      issuesHtml.match(/<script type="application\/json" id="issue-explorer-data">([^<]+)<\/script>/)![1]!
+    );
+    const componentRows = JSON.parse(
+      componentsHtml.match(
+        /<script type="application\/json" id="component-analysis-data">([^<]+)<\/script>/
+      )![1]!
+    );
+    const projected = issuePayload.items.find((item: { number: number }) => item.number === issue.number);
+    const component = componentRows
+      .flatMap((row: { items: { number: number }[] }) => row.items)
+      .find((item: { number: number }) => item.number === issue.number);
+    expect(projected).toMatchObject({
+      type: 'Documentation',
+      status: 'open',
+      delay: null,
+      source: 'unavailable'
+    });
+    expect(component).toMatchObject({ open: true, treated: false, delay: null, source: 'unavailable' });
   } finally {
     await rm(output, { recursive: true, force: true });
   }

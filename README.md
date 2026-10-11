@@ -268,3 +268,31 @@ La prochaine étape est l'implémentation des contrats métier I1 dans `src/doma
 ### Diagnostic des historiques GitHub
 
 Commande officielle : `npm.cmd run diagnose:history -- --raw data/raw/my-real-dataset.json` ; voir [le guide de diagnostic](docs/08-implementation/diagnostic-historique-github.md). Les scripts de maintenance sont `scripts/diagnose-history.mjs` et `scripts/clean.mjs`.
+
+### Cohérence des statuts et délais du dashboard
+
+Les explorateurs d'issues et de composants ainsi que la synthèse des délais
+utilisent une projection commune, indépendante du type d'issue. La dernière
+transition Project datée valide détermine le statut métier ; `closedAt` n'est
+qu'une estimation de date de traitement lorsqu'aucune date métier n'est
+exploitable. Les pages spécialisées conservent leurs périmètres.
+Voir [la documentation de cohérence](docs/08-implementation/dashboard-coherence.md).
+
+La sélection des audits affichés dans la cartographie et la page « Audits et composants »
+est documentée dans [la cohérence du dashboard](docs/08-implementation/dashboard-coherence.md).
+
+### Cohérence cartographie / historique (lot 5)
+
+La cartographie montre toutes les issues associées aux composants, indépendamment du type, tout en conservant une branche spécialisée pour les anomalies RGAA. L'historique distingue le stock courant de toutes les issues des flux d'anomalies disponibles. Voir `docs/08-implementation/dashboard-coherence.md`.
+
+La page **Historique** distingue le stock courant des issues de tous types (ouvertes, traitées, annulées) des flux temporels propres aux anomalies ; voir `docs/08-implementation/dashboard-coherence.md`.
+
+### Historique des issues (tous types)
+
+La page Historique présente les flux `issue.flow.*` (créées, traitées, rouvertes, annulées) séparément des flux RGAA `anomaly.flow.*`. Les deux séries requièrent deux snapshots comparables ; voir `docs/08-implementation/dashboard-coherence.md`.
+
+### Cohérence des vues d'audit
+
+Les issues représentent tous les travaux GitHub, les audits représentent les contrôles de composants par version et les anomalies représentent les écarts. Ces catégories ne s'additionnent pas. La vue Audits distingue les contrôles terminés, en cours et non évalués, ainsi que les verdicts Component × Version calculés par Analytics. Voir `docs/08-implementation/dashboard-coherence.md`.
+
+Les tableaux d’audits comptent uniquement les anomalies dont le lien parent/audit est explicite ; les anomalies sans rattachement vérifiable restent visibles sans être attribuées arbitrairement à une version. Voir `docs/08-implementation/dashboard-coherence.md`.

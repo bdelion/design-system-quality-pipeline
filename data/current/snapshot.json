@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20261011065417877-25547394",
-  "capturedAt": "2026-10-11T06:54:17.877Z",
+  "snapshotId": "snapshot-20261011082913287-6b68e1e0",
+  "capturedAt": "2026-10-11T08:29:13.287Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-10-09T05:53:23.530Z",
@@ -247623,6 +247623,82 @@
       }
     },
     "flows": {
+      "issue.flow.created": {
+        "id": "issue.flow.created",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 0,
+        "scope": "issue",
+        "period": {
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
+        },
+        "definition": "Issues de tous types apparues entre les deux snapshots.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "issue.flow.treated": {
+        "id": "issue.flow.treated",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 0,
+        "scope": "issue",
+        "period": {
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
+        },
+        "definition": "Issues de tous types passées à l’état traité entre les deux snapshots.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "issue.flow.reopened": {
+        "id": "issue.flow.reopened",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 0,
+        "scope": "issue",
+        "period": {
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
+        },
+        "definition": "Issues de tous types passées de traité à ouvert entre les deux snapshots.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
+      "issue.flow.cancelled": {
+        "id": "issue.flow.cancelled",
+        "value": 0,
+        "unit": "count",
+        "numerator": 0,
+        "denominator": 0,
+        "scope": "issue",
+        "period": {
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
+        },
+        "definition": "Issues de tous types devenues annulées entre les deux snapshots.",
+        "sourceEntityIds": [],
+        "reliability": {
+          "status": "reliable",
+          "issueIds": []
+        },
+        "exclusions": []
+      },
       "anomaly.flow.created": {
         "id": "anomaly.flow.created",
         "value": 0,
@@ -247631,8 +247707,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T06:44:35.170Z",
-          "to": "2026-10-11T06:54:17.877Z"
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
         },
         "definition": "Nombre d’anomalies apparues entre le snapshot précédent et le snapshot courant.",
         "sourceEntityIds": [],
@@ -247650,8 +247726,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T06:44:35.170Z",
-          "to": "2026-10-11T06:54:17.877Z"
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
         },
         "definition": "Nombre d’anomalies ayant acquis leur première correction entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -247812,8 +247888,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T06:44:35.170Z",
-          "to": "2026-10-11T06:54:17.877Z"
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
         },
         "definition": "Nombre d’anomalies passées dans l’état rouvert entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -247831,8 +247907,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-11T06:44:35.170Z",
-          "to": "2026-10-11T06:54:17.877Z"
+          "from": "2026-10-11T08:23:59.815Z",
+          "to": "2026-10-11T08:29:13.287Z"
         },
         "definition": "Nombre d’anomalies devenues annulées entre les deux snapshots.",
         "sourceEntityIds": [],

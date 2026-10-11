@@ -5,6 +5,16 @@ if (capturedAt) capturedAt.textContent = new Date(snapshot.capturedAt).toLocaleS
 if (ruleVersion) ruleVersion.textContent = snapshot.ruleVersion;
 
 const rows = [...document.querySelectorAll('[data-table] tr')];
+// Un filtre contextuel absent des attributs de la ligne ne doit jamais être ignoré
+// silencieusement : il s'agit d'une information non vérifiable.
+const contextParams = new URLSearchParams(window.location.search);
+function matchesContext(row, fields = ['repository', 'component', 'version']) {
+  return fields.every((field) => {
+    const expected = contextParams.get(field);
+    return !expected || (row.hasAttribute('data-' + field) && row.getAttribute('data-' + field) === expected);
+  });
+}
+
 const controls = {
   text: document.querySelector('[data-filter]'),
   repository: document.querySelector('[data-filter-repository]'),
@@ -19,11 +29,14 @@ function applyFilters() {
       && (!controls.repository?.value || row.dataset.repository === controls.repository.value)
       && (!controls.criticality?.value || row.dataset.criticality === controls.criticality.value)
       && (!controls.category?.value || row.dataset.categories.split('|').includes(controls.category.value))
-      && (!controls.status?.value || row.dataset.status === controls.status.value);
+      && (!controls.status?.value || row.dataset.status === controls.status.value)
+      && matchesContext(row, ['repository']);
     row.hidden = !matches;
   });
 }
 const params = new URLSearchParams(window.location.search);
+if (controls.repository && params.get('repository')) controls.repository.value = params.get('repository');
+if (controls.text && params.get('q')) controls.text.value = params.get('q');
 if (controls.criticality && params.get('criticality')) controls.criticality.value = params.get('criticality');
 if (controls.category && params.get('category')) controls.category.value = params.get('category');
 if (controls.status && params.get('status')) controls.status.value = params.get('status');
@@ -33,6 +46,32 @@ document.querySelector('[data-reset-filters]')?.addEventListener('click', () => 
   applyFilters();
 });
 applyFilters();
+
+// Transmet uniquement les filtres métier connus aux liens internes du dashboard.
+// Les liens externes, ancres et téléchargements restent inchangés.
+const sharedFilterKeys = ['repository', 'component', 'version'];
+const context = new URLSearchParams();
+sharedFilterKeys.forEach((key) => {
+  const value = params.get(key);
+  if (value) context.set(key, value);
+});
+const propagateContext = () => {
+  const repository = controls.repository?.value || params.get('repository');
+  if (repository) context.set('repository', repository);
+  else context.delete('repository');
+  document.querySelectorAll('a[href]').forEach((link) => {
+    const raw = link.getAttribute('href');
+    if (!raw || !/^(?:index|issues|anomalies|components|audits|graph|history)\.html(?:[?#]|$)/.test(raw)) return;
+    const [withoutHash, hash = ''] = raw.split('#', 2);
+    const [pathname, search = ''] = withoutHash.split('?', 2);
+    const next = new URLSearchParams(search);
+    context.forEach((value, key) => { next.set(key, value); });
+    sharedFilterKeys.forEach((key) => { if (!context.has(key)) next.delete(key); });
+    link.setAttribute('href', pathname + (next.size ? '?' + next.toString() : '') + (hash ? '#' + hash : ''));
+  });
+};
+controls.repository?.addEventListener('change', propagateContext);
+propagateContext();
 
 document.querySelectorAll('[data-copy-yaml]').forEach((button) => {
   button.addEventListener('click', async () => {
@@ -66,7 +105,7 @@ const applyComponentFilters = () => {
   componentRows.forEach((row) => {
     const textMatch = !query || row.textContent.toLowerCase().includes(query);
     const resultMatch = !result || row.dataset.componentResult === result || (result === 'audited' && row.dataset.componentAudited === 'audited') || (result === 'not_audited' && row.dataset.componentAudited === 'not_audited');
-    row.hidden = !(textMatch && resultMatch);
+    row.hidden = !(textMatch && resultMatch && matchesContext(row, ['repository', 'component']));
   });
 };
 [componentText, componentResult].filter(Boolean).forEach((control) => control.addEventListener('input', applyComponentFilters));
@@ -77,7 +116,10 @@ const componentVersionRows = [...document.querySelectorAll('[data-component-vers
 const componentVersionVerdict = document.querySelector('[data-component-version-verdict]');
 const applyComponentVersionFilter = () => {
   const verdict = componentVersionVerdict?.value || '';
-  componentVersionRows.forEach((row) => { row.hidden = Boolean(verdict) && row.dataset.verdict !== verdict; });
+  componentVersionRows.forEach((row) => { row.hidden = (Boolean(verdict) && row.dataset.verdict !== verdict) || !matchesContext(row); });
 };
 componentVersionVerdict?.addEventListener('input', applyComponentVersionFilter);
 applyComponentVersionFilter();
+
+// Le filtrage contextuel est combiné aux filtres locaux dans leurs fonctions respectives.
+

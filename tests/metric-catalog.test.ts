@@ -52,6 +52,10 @@ describe('V2 metric contract', () => {
       (contract) => contract.id
     );
     expect(flows).toEqual([
+      'issue.flow.created',
+      'issue.flow.treated',
+      'issue.flow.reopened',
+      'issue.flow.cancelled',
       'anomaly.flow.created',
       'anomaly.flow.corrected',
       'anomaly.flow.reopened',

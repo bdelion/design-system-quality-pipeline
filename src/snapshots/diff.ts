@@ -10,6 +10,7 @@ import type {
   Component,
   ComponentVersion,
   Library,
+  Issue,
   PullRequest,
   Snapshot,
   Version
@@ -45,6 +46,11 @@ export interface SnapshotDiff {
   components: EntityDelta;
   audits: EntityDelta;
   anomalies: EntityDelta;
+  issues: EntityDelta;
+  issuesCreated: string[];
+  issuesTreated: string[];
+  issuesReopened: string[];
+  issuesCancelled: string[];
   versions: EntityDelta;
   componentVersions: EntityDelta;
   pullRequests: EntityDelta;
@@ -94,10 +100,47 @@ function byId<T>(items: T[], id: (item: T) => string): Map<string, T> {
   return new Map(items.map((item) => [id(item), item]));
 }
 
+/** Détermine le statut métier observable d’une issue à la date du snapshot. */
+function issueState(issue: Issue): 'open' | 'treated' | 'cancelled' {
+  const statuses = issue.projectContexts
+    .map((context) => {
+      const latest = context.statusHistory
+        .filter((entry) => entry.status && Number.isFinite(Date.parse(entry.transitionedAt)))
+        .sort((a, b) => Date.parse(a.transitionedAt) - Date.parse(b.transitionedAt))
+        .at(-1);
+      return latest?.status ?? context.status;
+    })
+    .filter((status) => status !== undefined);
+  if (statuses.includes('CANCELLED')) return 'cancelled';
+  if (statuses.includes('DONE')) return 'treated';
+  if (statuses.length > 0) return 'open';
+  return issue.state === 'CLOSED' ? 'treated' : 'open';
+}
+
 /** Compare deux snapshots et produit uniquement des faits observables entre les deux états. */
 export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
   if (before.capturedAt >= after.capturedAt)
     throw new Error('Snapshot order is invalid: before must precede after.');
+
+  const previousIssues = byId(before.normalizedData.issues ?? [], (item) => item.issueId);
+  const currentIssues = byId(after.normalizedData.issues ?? [], (item) => item.issueId);
+  const issuesTreated: string[] = [];
+  const issuesReopened: string[] = [];
+  const issuesCancelled: string[] = [];
+  for (const [issueId, current] of currentIssues) {
+    const previous = previousIssues.get(issueId);
+    if (!previous) continue;
+    const from = issueState(previous);
+    const to = issueState(current);
+    if (from !== 'treated' && to === 'treated') issuesTreated.push(issueId);
+    if (from === 'treated' && to === 'open') issuesReopened.push(issueId);
+    if (from !== 'cancelled' && to === 'cancelled') issuesCancelled.push(issueId);
+  }
+  const issueDelta = delta(
+    before.normalizedData.issues ?? [],
+    after.normalizedData.issues ?? [],
+    (item) => item.issueId
+  );
 
   const previousAnomalies = byId(before.normalizedData.anomalies, (item) => item.anomalyId);
   const currentAnomalies = byId(after.normalizedData.anomalies, (item) => item.anomalyId);
@@ -129,6 +172,11 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     fromCapturedAt: before.capturedAt,
     toCapturedAt: after.capturedAt,
     period: { from: before.capturedAt, to: after.capturedAt },
+    issues: issueDelta,
+    issuesCreated: issueDelta.added,
+    issuesTreated,
+    issuesReopened,
+    issuesCancelled,
     libraries: delta(
       before.normalizedData.libraries,
       after.normalizedData.libraries,

@@ -25,7 +25,7 @@ export type MetricUnit = 'count' | 'percentage' | 'days';
 /**
  * Définit le type « MetricScope » utilisé dans les contrats du pipeline.
  */
-export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly';
+export type MetricScope = 'portfolio' | 'library' | 'component' | 'audit' | 'anomaly' | 'issue';
 /**
  * Définit le type « MetricReliabilityStatus » utilisé dans les contrats du pipeline.
  */

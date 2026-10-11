@@ -12,6 +12,18 @@
     const values = [...new Set(rows.map((row) => row[field]).filter(Boolean))].sort((a,b) => a.localeCompare(b,'fr'));
     for (const value of values) { const option = document.createElement('option'); option.value = value; option.textContent = value; $(`[data-component-filter="${field}"]`).append(option); }
   }
+
+  // Applique réellement les paramètres transmis depuis les autres pages.
+  const context = new URLSearchParams(window.location.search);
+  const requested = {
+    repository: context.get('repository'),
+    name: context.get('component'),
+    version: context.get('version')
+  };
+  for (const [field, value] of Object.entries(requested)) {
+    const control = $(`[data-component-filter="${field}"]`);
+    if (value && control && [...control.options].some((option) => option.value === value)) control.value = value;
+  }
   const columns = [...root.querySelectorAll('[data-component-column]')];
   const percentile = (xs,p) => { if (!xs.length) return null; const sorted = [...xs].sort((a,b)=>a-b); const n=(sorted.length-1)*p; return sorted[Math.floor(n)]+(sorted[Math.ceil(n)]-sorted[Math.floor(n)])*(n-Math.floor(n)); };
   const age = (item) => Math.max(0,(Date.now()-Date.parse(item.createdAt))/86400000);
