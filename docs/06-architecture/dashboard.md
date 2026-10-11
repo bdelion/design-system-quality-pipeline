@@ -28,3 +28,5 @@ Voir le [contrat de cohérence](../08-implementation/dashboard-coherence.md) et 
 La commande `npm run dashboard:serve` sert `data/dashboard` sur http://127.0.0.1:4174/ (interface locale uniquement, sans cache navigateur). Un dossier différent peut être passé en argument. En mode fichier, une indication explique la nécessité de HTTP et les contrôles interactifs sont désactivés.
 
 Qualité des données présente un tableau : règle, sévérité, repository, type et identité de l’entité, diagnostic, action et effets sur les métriques. Les filtres repository/règle/sévérité/action/type/métrique et la recherche se combinent ; le compteur annonce les alertes affichées. Les repositories non prouvés restent « Non déterminé ». Les cartes accessibilité disposent d’une icône d’information accessible au clavier avec un nom décrivant le chiffre concerné.
+
+La [refonte visuelle du dashboard](../08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.

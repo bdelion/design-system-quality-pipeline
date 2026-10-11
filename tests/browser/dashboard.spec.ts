@@ -28,7 +28,7 @@ for (const pageName of [
   'graph',
   'history'
 ]) {
-  test(`${pageName} : scripts sans erreur et accessibilité WCAG A/AA`, async ({ page }) => {
+  test(`${pageName} : scripts sans erreur et accessibilité WCAG A/AA`, async ({ page }, testInfo) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`/${pageName}.html`);
@@ -47,8 +47,17 @@ for (const pageName of [
       }))
     ).toEqual([]);
     expect(errors).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('desktop.png'), fullPage: false });
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.locator('h1')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
+    for (const link of await page.locator('[data-workspace-nav]').all()) {
+      const bounds = await link.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+    }
+    await page.screenshot({ path: testInfo.outputPath('mobile.png'), fullPage: false });
     const mobileAccessibility = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
       .analyze();

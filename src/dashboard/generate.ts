@@ -72,8 +72,8 @@ export async function generateDashboard(
       page(
         snapshot,
         'Vue d’ensemble',
-        '<section class="panel"><h2>Qualité du Design System</h2><p>Tous les repositories · versions PROD courantes pour la conformité. Audits, anomalies accessibilité et activité des équipes restent distincts.</p><a href="accessibility.html">Voir tous les indicateurs accessibilité</a></section>' +
-          '<section class="panel"><h2>Accessibilité · versions PROD courantes</h2></section>' +
+        '<section class="panel overview-intro"><h2>Qualité du Design System</h2><p>Tous les repositories · versions PROD courantes pour la conformité. Audits, anomalies accessibilité et activité des équipes restent distincts.</p><a href="accessibility.html">Voir tous les indicateurs accessibilité</a></section>' +
+          '<h2 class="section-title">Accessibilité · versions PROD courantes</h2>' +
           workspaceCards(snapshot, true) +
           globalOverviewCards(snapshot),
         serializedSnapshot
@@ -196,7 +196,7 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 <body>
 <section class="panel" data-file-warning hidden role="alert"><h2>Ouvrir le dashboard sur HTTP</h2><p>Les filtres et graphiques interactifs nécessitent un serveur local. Exécuter <code>npm run dashboard:serve</code> puis ouvrir <a href="http://127.0.0.1:4174/">http://127.0.0.1:4174/</a>.</p></section>
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
-  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${qualityLabel(snapshot.reliability)}</span></div></header>
+  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Design System Quality</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${qualityLabel(snapshot.reliability)}</span></div></header>
   <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${title === 'Qualité des données' ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined)}${content}${workspacePayload(snapshot)}</main></div>
   <script>window.__SNAPSHOT__ = ${serializedSnapshot}; if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script>${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
 </body></html>`

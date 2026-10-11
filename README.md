@@ -332,3 +332,5 @@ Six espaces servent en priorité les responsables des audits d’accessibilité,
 ### Consulter les filtres du dashboard
 
 Après génération, exécuter `npm run dashboard:serve` puis ouvrir http://127.0.0.1:4174/. L’ouverture directe en `file:///` bloque les modules JavaScript ; un message l’explique et désactive les contrôles inactifs. Pour la prévisualisation isolée : `npm run dashboard:preview`, puis `npm run dashboard:serve -- data/dashboard-refactor-preview/dashboard`. Arrêter le serveur avec Ctrl+C.
+
+La [refonte visuelle du dashboard](docs/08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.
