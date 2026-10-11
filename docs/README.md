@@ -144,3 +144,5 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 ## Configurations et tests
 
 - [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)
+
+- [Préparer les références GitHub/fixture et proposition de ménage](08-implementation/preparation-references.md)

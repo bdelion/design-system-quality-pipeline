@@ -602,3 +602,6 @@ $RECYCLE.BIN/
 
 /data/consolidation-reference/
 /data/consolidation-volume/
+
+# Profils GitHub locaux générés (identités réelles)
+/config/local/

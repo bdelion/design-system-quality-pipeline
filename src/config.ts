@@ -51,23 +51,38 @@ export interface PipelineConfig {
   github: GithubProcessingConfig;
 }
 
+/** Paire explicite de profils ; les deux chemins doivent être fournis ensemble. */
+export interface ConfigSelection {
+  systemConfig?: string;
+  catalogueConfig?: string;
+}
+
+/** Refuse une sélection partielle afin de ne pas mélanger des configurations de sources différentes. */
+export function assertConfigSelection(selection: ConfigSelection): void {
+  if (Boolean(selection.systemConfig) !== Boolean(selection.catalogueConfig))
+    throw new Error('Fournir ensemble --system-config et --catalogue-config.');
+}
+
 /** Charge la configuration YAML et complète les URLs avec l'environnement. */
 export async function loadConfig(
   source: 'fixture' | 'github' = 'github',
-  fixtureFile?: string
+  fixtureFile?: string,
+  selection: ConfigSelection = {}
 ): Promise<PipelineConfig> {
+  assertConfigSelection(selection);
   const path =
-    source === 'fixture'
+    selection.systemConfig ??
+    (source === 'fixture'
       ? (await resolveFixtureConfigPaths(fixtureFile)).system
-      : `${configPath}/system.yaml`;
+      : `${configPath}/system.yaml`);
   const content = await readFile(path, 'utf8');
-  const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
+  const systemConfig = parse(content) as PipelineConfig;
   validateMilestoneDetection(systemConfig.github.milestoneDetection);
   return {
     ...systemConfig,
-    githubApiUrl: process.env.GITHUB_API_URL,
-    githubGraphqlUrl: process.env.GITHUB_GRAPHQL_URL,
-    githubUrl: process.env.GITHUB_URL
+    githubApiUrl: process.env.GITHUB_API_URL ?? systemConfig.githubApiUrl,
+    githubGraphqlUrl: process.env.GITHUB_GRAPHQL_URL ?? systemConfig.githubGraphqlUrl,
+    githubUrl: process.env.GITHUB_URL ?? systemConfig.githubUrl
   };
 }
 

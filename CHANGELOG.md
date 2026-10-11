@@ -1,5 +1,13 @@
 # Changelog
 
+## Préparation des références — non publiée
+
+- Commande reference:prepare : profils GitHub locaux, référence fixture anonymisée, manifeste et rapport.
+- Sélection explicite de paires system/catalogue pour les commandes existantes.
+- Validation avant publication, refus des écrasements, restauration en cas d’erreur et protection de V1.
+- Anonymisation des métadonnées du catalogue et mapping cohérent des labels de composants sur option.
+- Tests, guide d’utilisation et proposition de ménage sans suppression des références existantes.
+
 ## Configurations et tests — non publié
 
 - Sélection cohérente des paires system/catalogue de fixture ; refus des profils partiels.
