@@ -17,11 +17,9 @@ import type { RawDataset } from '../domain/types.js';
 export type StableMapper = (namespace: string, source: string, prefix: string) => string;
 
 /**
- * Creates the fixture pipeline configuration from the source RAW dataset.
+ * Produit la configuration fixture à partir du périmètre du RAW source.
  *
- * Repository scope is deliberately derived from the RAW dataset, not from
- * system.yaml: the generated configuration must describe exactly the fixture
- * that was just produced.
+ * Le périmètre provient du RAW et non de system.yaml afin de décrire exactement la fixture produite.
  */
 export function anonymizePipelineConfig(
   config: PipelineConfig,
@@ -48,25 +46,25 @@ export function anonymizePipelineConfig(
 }
 
 /**
- * Creates the anonymized catalogue configuration from the reference catalogue.
- * The reference catalogue is the source of truth for the fixture catalogue.
- * Repository/component identities use the same mapping as the anonymized RAW.
+ * Produit le catalogue anonymisé avec les mêmes correspondances que le RAW.
+ * Le catalogue source conserve la responsabilité des métadonnées métier.
  */
 export function anonymizeCatalogue(
   config: Catalogue,
   source: RawDataset,
   options: AnonymizationOptions,
-  map: StableMapper
+  map: StableMapper,
+  componentPrefix: string = 'Component:'
 ): Catalogue {
   // Le RAW peut ne pas fournir catalogueComponents : récupérer les composants
   // observés dans les labels sans fabriquer de métadonnées métier.
-  const prefix = 'Component:';
+  const prefix = componentPrefix;
   const sourceComponents = new Set(source.catalogueComponents);
   for (const repository of source.repositories) {
     for (const issue of repository.issues) {
       if (issue.component) sourceComponents.add(issue.component);
       for (const label of issue.labels) {
-        const index = label.indexOf(prefix);
+        const index = label.toLowerCase().indexOf(prefix.toLowerCase());
         if (index >= 0) {
           const component = label.slice(index + prefix.length).trim();
           if (component) sourceComponents.add(component);

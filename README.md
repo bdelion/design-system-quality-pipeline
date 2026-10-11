@@ -315,3 +315,12 @@ Voir [Configurations, sources et données de test](docs/08-implementation/config
 pour les fichiers réellement chargés, les commandes GitHub/fixture et la politique
 de renouvellement des jeux anonymisés. Les profils d'une fixture sont sélectionnés
 ensemble ; une paire spécifique incomplète est refusée.
+
+## Préparation de références cohérentes
+
+`npm run reference:prepare -- --input data/raw/collecte.json --name octobre`
+prépare les profils GitHub locaux et une référence anonymisée ; renseigner une
+graine privée dans `ANONYMIZATION_SEED`. Ajouter `--anonymize-components` pour
+pseudonymiser aussi les composants. Voir [Préparation des références](docs/08-implementation/preparation-references.md)
+pour les huit fichiers, les options de sélection des profils, les contrôles et
+la proposition de ménage. La référence synthétique V1 reste conservée.

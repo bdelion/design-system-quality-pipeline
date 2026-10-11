@@ -36,7 +36,11 @@ function reset(re: RegExp): RegExp {
  * Free-form text remains fully scanned for phone-like values.
  */
 function containsPhone(value: string): boolean {
-  if (ISO_TIMESTAMP.test(value.trim())) return false;
+  if (
+    ISO_TIMESTAMP.test(value.trim()) ||
+    (/^\d{4}-\d{2}-\d{2}$/.test(value.trim()) && Number.isFinite(Date.parse(value)))
+  )
+    return false;
   return reset(PHONE).test(value);
 }
 

@@ -6,7 +6,7 @@
 
 import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
-import { loadConfig } from './config.js';
+import { loadConfig, type ConfigSelection } from './config.js';
 import { calculateKpis } from './analytics/kpis.js';
 import { readJson, writeJson } from './lib/files.js';
 import { currentPath, dashboardPath, fixturePath, runPath } from './lib/paths.js';
@@ -30,10 +30,15 @@ export type CollectionSource = 'fixture' | 'github';
 /** Exécute la collecte, la normalisation, les contrôles, les KPI et les sorties. */
 export async function runPipeline(
   source: CollectionSource = 'fixture',
-  selectedFixturePath: string = fixturePath
+  selectedFixturePath: string = fixturePath,
+  selection: ConfigSelection = {}
 ): Promise<Snapshot> {
-  const config = await loadConfig(source, source === 'fixture' ? selectedFixturePath : undefined);
-  const catalogue = await loadCatalogue(source, source === 'fixture' ? selectedFixturePath : undefined);
+  const config = await loadConfig(source, source === 'fixture' ? selectedFixturePath : undefined, selection);
+  const catalogue = await loadCatalogue(
+    source,
+    source === 'fixture' ? selectedFixturePath : undefined,
+    selection
+  );
   const raw =
     source === 'github'
       ? await collectGithub({

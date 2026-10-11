@@ -122,3 +122,11 @@ et `git diff --check`. Le périmètre V1 est validé par
 Cette dernière commande a nécessité une exécution hors sandbox après une erreur
 système `uv_os_get_passwd / ENOMEM` au démarrage de tsx dans le sandbox.
 Aucune collecte GitHub ni régénération des datasets anonymisés n'a été effectuée.
+
+## Profils de référence explicites
+
+Les commandes acceptent maintenant une paire `--system-config` / `--catalogue-config`
+pour sélectionner des profils nommés. Les profils GitHub générés restent locaux
+sous `config/local/`, ignoré par Git. `reference:prepare` automatise la préparation
+et les contrôles ; voir [Préparation des références](preparation-references.md).
+Cette sélection complète les chemins par défaut décrits ci-dessus.

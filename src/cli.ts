@@ -4,10 +4,11 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { prepareReferences } from './anonymization/prepare.js';
 import { Command } from 'commander';
 import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
-import { loadConfig } from './config.js';
+import { loadConfig, assertConfigSelection, type ConfigSelection } from './config.js';
 import { loadCatalogue } from './catalogue.js';
 import { runPipeline, pipelineStatus, type CollectionSource } from './pipeline.js';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -33,7 +34,10 @@ import type { RawDataset } from './domain/types.js';
 const program = new Command()
   .name('design-system-quality')
   .description('GitHub-first Design System quality pipeline')
-  .version('0.1.0');
+  .version('0.1.0')
+  .hook('preAction', (_parent, command) => {
+    assertConfigSelection(command.opts<ConfigSelection>());
+  });
 
 // La collecte reste volontairement en lecture seule : elle produit un RAW sans modifier GitHub.
 
@@ -168,36 +172,45 @@ program
   .description('Collect read-only data from a fixture or GitHub')
   .option('--source <source>', 'fixture or github', 'fixture')
   .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
+  .option('--system-config <path>', 'explicit system YAML profile')
+  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
   .option('--output <path>', 'write the RawDataset JSON to this file')
-  .action(async (options: { source: CollectionSource; fixture: string; output?: string }) => {
-    const config = await loadConfig(
-      options.source,
-      options.source === 'fixture' ? options.fixture : undefined
-    );
-    const raw =
-      options.source === 'github'
-        ? await collectGithub({
-            token: githubTokenFromEnvironment(),
-            owner: config.githubOwner,
-            repositories: config.repositories,
-            apiUrl: config.githubApiUrl,
-            graphqlUrl: config.githubGraphqlUrl,
-            rules: config.github
-          })
-        : await collectFixture(options.fixture);
-    if (options.output) await writeFile(options.output, `${JSON.stringify(raw, null, 2)}\n`, 'utf8');
-    console.log(
-      `COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt}${options.output ? ` -> ${options.output}` : ''}`
-    );
-  });
+  .action(
+    async (options: ConfigSelection & { source: CollectionSource; fixture: string; output?: string }) => {
+      const config = await loadConfig(
+        options.source,
+        options.source === 'fixture' ? options.fixture : undefined,
+        options
+      );
+      if (options.catalogueConfig) await loadCatalogue(options.source, undefined, options);
+      const raw =
+        options.source === 'github'
+          ? await collectGithub({
+              token: githubTokenFromEnvironment(),
+              owner: config.githubOwner,
+              repositories: config.repositories,
+              apiUrl: config.githubApiUrl,
+              graphqlUrl: config.githubGraphqlUrl,
+              rules: config.github
+            })
+          : await collectFixture(options.fixture);
+      if (options.output) await writeFile(options.output, `${JSON.stringify(raw, null, 2)}\n`, 'utf8');
+      console.log(
+        `COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt}${options.output ? ` -> ${options.output}` : ''}`
+      );
+    }
+  );
 
 // Cette commande vérifie le périmètre configuré sans lancer les étapes coûteuses du pipeline.
 program
   .command('validate')
   .description('Validate configuration and source scope')
   .option('--fixture <path>', 'fixture JSON file', fixturePath)
-  .action(async (options: { fixture: string }) => {
-    const config = await loadConfig('fixture', options.fixture);
+  .option('--system-config <path>', 'explicit system YAML profile')
+  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
+  .action(async (options: ConfigSelection & { fixture: string }) => {
+    const config = await loadConfig('fixture', options.fixture, options);
+    await loadCatalogue('fixture', options.fixture, options);
     const raw = await collectFixture(options.fixture);
     const actual = new Set(raw.repositories.map((repository) => repository.name));
     const missing = config.repositories.filter((repository) => !actual.has(repository));
@@ -213,8 +226,10 @@ program
   .description('Run normalization, Data Quality and KPI calculations')
   .option('--source <source>', 'fixture or github', 'fixture')
   .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .action(async (options: { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture);
+  .option('--system-config <path>', 'explicit system YAML profile')
+  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
+  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
+    const snapshot = await runPipeline(options.source, options.fixture, options);
     console.log(
       `ANALYZED ${snapshot.normalizedData.anomalies.length} anomalies; ${snapshot.dataQuality.issues.length} DQ issues`
     );
@@ -225,8 +240,10 @@ program
   .description('Build and persist an immutable snapshot and dashboard')
   .option('--source <source>', 'fixture or github', 'fixture')
   .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .action(async (options: { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture);
+  .option('--system-config <path>', 'explicit system YAML profile')
+  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
+  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
+    const snapshot = await runPipeline(options.source, options.fixture, options);
     console.log(`SNAPSHOT ${snapshot.snapshotId}`);
   });
 
@@ -235,8 +252,10 @@ program
   .description('Generate static dashboard pages from the current pipeline snapshot')
   .option('--source <source>', 'fixture or github', 'fixture')
   .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .action(async (options: { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture);
+  .option('--system-config <path>', 'explicit system YAML profile')
+  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
+  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
+    const snapshot = await runPipeline(options.source, options.fixture, options);
     console.log(`DASHBOARD data/dashboard/index.html (${snapshot.snapshotId})`);
   });
 
@@ -246,10 +265,37 @@ program
   .description('Run the complete fixture or GitHub pipeline')
   .option('--source <source>', 'fixture or github', 'fixture')
   .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .action(async (options: { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture);
+  .option('--system-config <path>', 'explicit system YAML profile')
+  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
+  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
+    const snapshot = await runPipeline(options.source, options.fixture, options);
     console.log(`${pipelineStatus(snapshot)} ${snapshot.snapshotId}`);
     console.log(JSON.stringify(snapshot.analytics, null, 2));
+  });
+
+program
+  .command('reference:prepare')
+  .description('Préparer les profils GitHub locaux et une référence fixture anonymisée cohérente')
+  .requiredOption('--input <path>', 'fichier RAW collecté')
+  .requiredOption('--name <name>', 'nom stable de la référence')
+  .option('--system-config <path>', 'configuration source system')
+  .option('--catalogue-config <path>', 'catalogue source')
+  .option('--seed <seed>', 'graine privée reproductible', process.env.ANONYMIZATION_SEED)
+  .option('--date-offset-days <days>', 'décalage des dates', process.env.ANON_DATE_OFFSET_DAYS ?? '-365')
+  .option('--anonymize-components', 'anonymiser aussi les composants et leurs labels associés')
+  .option('--force', 'remplacer explicitement les artefacts de cette référence')
+  .action(async (options) => {
+    const files = await prepareReferences({
+      input: options.input,
+      name: options.name,
+      seed: options.seed,
+      dateOffsetDays: Number(options.dateOffsetDays),
+      anonymizeComponents: Boolean(options.anonymizeComponents),
+      force: Boolean(options.force),
+      selection: options
+    });
+    for (const file of files) console.log('GENERATED ' + file);
+    console.log('Référence préparée ; revue des champs métier conservés requise avant partage.');
   });
 
 await program.parseAsync();
