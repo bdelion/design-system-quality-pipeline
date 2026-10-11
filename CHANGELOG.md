@@ -1,5 +1,12 @@
 # Changelog
 
+## Releases automatiques — non publiées
+
+- Job de tag et release sur main après succès de la CI complète.
+- Formatage immédiatement après installation et TypeDoc avant les tests navigateur.
+- Versionnement Conventional Commits, notes utilisateurs issues des PR et reprise sans doublon.
+- Tests des collisions, erreurs, permissions du workflow et modèle de PR.
+
 ## Progression console GitHub — non publiée
 
 - Ligne de progression actualisée en terminal, avec repositories, issues et quota GraphQL.

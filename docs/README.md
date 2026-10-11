@@ -152,3 +152,5 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 La [matrice besoin → population → indicateur → écran → test](08-implementation/dashboard-role-refactor.md) décrit les six espaces, la distinction entre BUG et accessibilité, les filtres et les limites des sources.
 
 La [refonte visuelle du dashboard](08-implementation/dashboard-ui-redesign.md) décrit la palette, les références et les contrôles desktop/mobile.
+
+La publication après merge est décrite dans [Releases automatiques](08-implementation/releases-automatiques.md).
