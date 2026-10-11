@@ -318,3 +318,37 @@ document
     )
   );
 renderQuality();
+
+for (const button of document.querySelectorAll('.metric-info-button')) {
+  const tooltip = document.getElementById(button.getAttribute('popovertarget'));
+  if (!tooltip) continue;
+  /** Place l’infobulle près de son bouton en restant dans la fenêtre visible. */
+  function positionTooltip() {
+    const anchor = button.getBoundingClientRect();
+    const bounds = tooltip.getBoundingClientRect();
+    tooltip.style.left =
+      Math.max(12, Math.min(anchor.right - bounds.width, window.innerWidth - bounds.width - 12)) + 'px';
+    tooltip.style.top =
+      Math.max(
+        12,
+        anchor.bottom + bounds.height + 8 <= window.innerHeight
+          ? anchor.bottom + 8
+          : anchor.top - bounds.height - 8
+      ) + 'px';
+  }
+  tooltip.addEventListener('toggle', (event) => {
+    const open = event.newState === 'open';
+    button.setAttribute('aria-expanded', String(open));
+    if (open) positionTooltip();
+  });
+  window.addEventListener('resize', () => {
+    if (tooltip.matches(':popover-open')) positionTooltip();
+  });
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (tooltip.matches(':popover-open')) positionTooltip();
+    },
+    true
+  );
+}

@@ -14,6 +14,8 @@
 
 ## Refonte visuelle du dashboard — non publiée
 
+- Cartes de périmètre compactes et petit bouton d’information en haut à droite ouvrant une infobulle accessible.
+
 - Répartitions graphiques rétablies dans Accessibilité, filtrées et accompagnées de détails accessibles.
 
 - Interface claire inspirée des recommandations dashboard et de la palette Michelin.
