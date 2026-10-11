@@ -169,3 +169,9 @@ Les deux configurations spécifiques doivent exister ensemble. Une paire partiel
 est refusée ; lorsque les deux sont absentes, la paire historique est utilisée.
 Voir [Configurations et tests](configurations-et-tests.md) pour les fichiers
 réellement chargés et la politique de renouvellement des références.
+
+## Préparation unifiée
+
+`npm run reference:prepare` génère une référence nommée et ses profils cohérents,
+avec validation avant publication et refus des écrasements par défaut.
+Voir [Préparation des références](preparation-references.md).

@@ -4,6 +4,7 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
+import { assertConfigSelection, type ConfigSelection } from './config.js';
 import { readFile } from 'node:fs/promises';
 import { parse } from 'yaml';
 import { cataloguePath, resolveFixtureConfigPaths } from './lib/paths.js';
@@ -45,10 +46,13 @@ const auditFrequencies = new Set<CatalogueAudit['frequency']>(['monthly', 'quart
 /** Charge puis valide le catalogue avant de le rendre disponible au pipeline. */
 export async function loadCatalogue(
   source: 'fixture' | 'github' = 'github',
-  fixtureFile?: string
+  fixtureFile?: string,
+  selection: ConfigSelection = {}
 ): Promise<Catalogue> {
+  assertConfigSelection(selection);
   const path =
-    source === 'fixture' ? (await resolveFixtureConfigPaths(fixtureFile)).catalogue : cataloguePath;
+    selection.catalogueConfig ??
+    (source === 'fixture' ? (await resolveFixtureConfigPaths(fixtureFile)).catalogue : cataloguePath);
   const yaml = await readFile(path, 'utf8');
   return validateCatalogue(parse(yaml));
 }

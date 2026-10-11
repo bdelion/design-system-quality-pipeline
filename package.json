@@ -32,7 +32,8 @@
     "check:dashboard": "npm run check && npm run test:browser && npm run format:check && npm run docs:api",
     "check:tsdoc": "node scripts/check-tsdoc.mjs",
     "check:ai": "node scripts/check-ai-config.mjs",
-    "ai:index:update": "node scripts/update-ai-decisions-index.mjs"
+    "ai:index:update": "node scripts/update-ai-decisions-index.mjs",
+    "reference:prepare": "tsx src/cli.ts reference:prepare"
   },
   "dependencies": {
     "commander": "^14.0.0",
