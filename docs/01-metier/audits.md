@@ -43,7 +43,11 @@ GitHub Issue State = Closed
 
 Le seul `Done` ou le seul `Closed` ne suffit pas.
 
-La terminaison exige les deux conditions actuelles. Conformément à D-238 et au contrat V3, la date métier conservée est la dernière transition Project `Done` connue, même si la fermeture GitHub intervient ensuite. Sans cette date, l'audit peut être terminé mais sa date de réalisation reste inconnue (DQ-012) ; `closedAt` ne la remplace jamais. Un audit annulé ne contribue ni aux résultats d'audits terminés ni aux cohortes applicables.
+**ÉTABLI — D-047 :** la date de réalisation est l'instant où la seconde condition nécessaire (`Done` et `Closed`) est satisfaite. Cette décision reste la référence métier du registre. D-238 concerne la cardinalité des composants des anomalies hors audit ; elle ne définit aucune date d'audit.
+
+**IMPLÉMENTÉ — contrat V3 :** `auditCompletedAt` conserve la dernière transition Project `Done` connue, même si la fermeture GitHub intervient ensuite. Sans cette date, l'audit peut être terminé mais sa date de réalisation reste inconnue (DQ-012) ; `closedAt` ne la remplace jamais. Un audit annulé ne contribue ni aux résultats d'audits terminés ni aux cohortes applicables.
+
+**ÉCART À ARBITRER :** lorsque la fermeture GitHub intervient après Done, le calcul actuel et D-047 ne désignent pas le même instant. Cette différence est documentée ; elle ne vaut ni amendement de D-047 ni autorisation de migration du code.
 
 ---
 

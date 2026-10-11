@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modification DSQ"
+  short_description: "Modifier le pipeline avec tests et documentation"
+  default_prompt: "Utilise $dsq-change pour corriger ce comportement."

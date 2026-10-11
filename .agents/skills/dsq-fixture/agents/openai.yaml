@@ -1,0 +1,4 @@
+interface:
+  display_name: "Diagnostic fixture DSQ"
+  short_description: "Diagnostiquer anonymisation et intégrité des fixtures"
+  default_prompt: "Utilise $dsq-fixture pour diagnostiquer cette fixture."

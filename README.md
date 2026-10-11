@@ -298,3 +298,13 @@ La page Historique présente les flux `issue.flow.*` (créées, traitées, rouve
 Les issues représentent tous les travaux GitHub, les audits représentent les contrôles de composants par version et les anomalies représentent les écarts. Ces catégories ne s'additionnent pas. La vue Audits distingue les contrôles terminés, en cours et non évalués, ainsi que les verdicts Component × Version calculés par Analytics. Voir `docs/08-implementation/dashboard-coherence.md`.
 
 Les tableaux d’audits comptent uniquement les anomalies dont le lien parent/audit est explicite ; les anomalies sans rattachement vérifiable restent visibles sans être attribuées arbitrairement à une version. Voir `docs/08-implementation/dashboard-coherence.md`.
+
+## Travail avec Codex et Copilot
+
+Le dépôt fournit des consignes `AGENTS.md`, trois skills partagées et des tâches VS Code.
+Consulter le [guide de configuration](docs/08-implementation/codex-copilot-vscode.md)
+pour l’installation, la compatibilité et les lectures ciblées.
+
+`npm run check:ai` valide le kit sans réseau ni écriture. Après modification du registre D/Q,
+`npm run ai:index:update` régénère son index. Le contrôle IA est intégré à `npm run check`
+et à la CI ; `format:check` inclut également `.agents/`.

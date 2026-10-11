@@ -1,0 +1,4 @@
+interface:
+  display_name: "Revue métier DSQ"
+  short_description: "Comparer décisions métier et implémentation actuelle"
+  default_prompt: "Utilise $dsq-business-review pour analyser cet écart métier."
