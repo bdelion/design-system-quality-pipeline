@@ -25,6 +25,14 @@ export interface GithubProcessingConfig {
   projectStatuses: {
     keywords: Record<string, string[]>;
   };
+  /** Conventions de reconnaissance des milestones, évaluées dans l'ordre. */
+  milestoneDetection?: {
+    caseSensitive?: boolean;
+    patterns: { id: string; regex: string; kind: 'release' | 'audit' }[];
+  };
+  auditDetection?: {
+    strategies: { issueTypes: string[]; requiredLabels?: string[]; requireComponent?: boolean }[];
+  };
   closingKeywords: string[];
   cancelledProjectStatuses: string[];
 }
@@ -64,10 +72,35 @@ export async function loadConfig(
     content = await readFile(`${configPath}/system.fixture.yaml`, 'utf8');
   }
   const systemConfig = parse(content) as Omit<PipelineConfig, 'githubApiUrl' | 'githubUrl'>;
+  validateMilestoneDetection(systemConfig.github.milestoneDetection);
   return {
     ...systemConfig,
     githubApiUrl: process.env.GITHUB_API_URL,
     githubGraphqlUrl: process.env.GITHUB_GRAPHQL_URL,
     githubUrl: process.env.GITHUB_URL
   };
+}
+
+/** Vérifie les règles de milestones avant toute normalisation. */
+export function validateMilestoneDetection(config: GithubProcessingConfig['milestoneDetection']): void {
+  if (!config) return;
+  if (!Array.isArray(config.patterns) || config.patterns.length === 0) {
+    throw new Error('milestoneDetection.patterns doit contenir au moins une règle');
+  }
+  const ids = new Set<string>();
+  for (const pattern of config.patterns) {
+    if (!pattern.id || ids.has(pattern.id))
+      throw new Error(`Identifiant de milestone dupliqué ou absent : ${pattern.id}`);
+    ids.add(pattern.id);
+    if (pattern.kind !== 'release' && pattern.kind !== 'audit')
+      throw new Error(`Type de milestone invalide : ${pattern.id}`);
+    let regex: RegExp;
+    try {
+      regex = new RegExp(pattern.regex, config.caseSensitive ? '' : 'i');
+    } catch {
+      throw new Error(`Expression régulière de milestone invalide : ${pattern.id}`);
+    }
+    if (!regex.source.includes('(?<version>'))
+      throw new Error(`Groupe nommé version manquant : ${pattern.id}`);
+  }
 }

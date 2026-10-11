@@ -142,13 +142,25 @@ describe('I1 Issue normalization', () => {
       }
     ];
     const context = normalizeGithub(raw, rules).issues?.[0]?.projectContexts[0];
-    expect(context?.status).toBe('IN_PROGRESS');
+    expect(context?.rawStatus).toBe('  🏗 IN PROGRESS  ');
+    expect(context?.status).toBe('DONE');
     expect(context?.statusHistory[0]).toMatchObject({ previousStatus: 'BACKLOG', status: 'DONE' });
   });
 
   it('preserves unknown Project statuses without inventing a canonical value', () => {
     const raw = dataset();
     raw.repositories[0]!.issues[0]!.projectStatuses![0]!.status = 'Todo';
+    const context = normalizeGithub(raw, rules).issues?.[0]?.projectContexts[0];
+    expect(context?.rawStatus).toBe('Todo');
+    expect(context?.status).toBe('IN_PROGRESS');
+    expect(context?.candidateStatuses).toBeUndefined();
+  });
+
+  it('does not invent a canonical status when both collected status and history are unknown', () => {
+    const raw = dataset();
+    const projectStatus = raw.repositories[0]!.issues[0]!.projectStatuses![0]!;
+    projectStatus.status = 'Todo';
+    projectStatus.statusHistory = [];
     const context = normalizeGithub(raw, rules).issues?.[0]?.projectContexts[0];
     expect(context?.rawStatus).toBe('Todo');
     expect(context?.status).toBeUndefined();

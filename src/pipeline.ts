@@ -86,7 +86,7 @@ export async function runPipeline(
   );
   await writeJson(`${runPath}/${snapshot.snapshotId}.json`, snapshot);
   await writeJson(`${currentPath}/snapshot.json`, snapshot);
-  await generateDashboard(snapshot, dashboardPath, config.githubUrl);
+  await generateDashboard(snapshot, dashboardPath, config.githubUrl, config.github.labels.componentPrefix);
   return snapshot;
 }
 

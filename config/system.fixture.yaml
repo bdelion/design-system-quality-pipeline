@@ -56,6 +56,13 @@ github:
       CANCELLED:
         - Cancelled
         - 🛑 Cancelled
+  auditDetection:
+    strategies:
+      - issueTypes: [Audit]
+        requireComponent: true
+      - issueTypes: [Task]
+        requiredLabels: ["Audit RGAA"]
+        requireComponent: true
   closingKeywords:
     - close
     - closed

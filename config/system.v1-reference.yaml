@@ -28,5 +28,12 @@ github:
       DONE: ["Done"]
       BLOCKED: ["Blocked"]
       CANCELLED: ["Cancelled"]
+  auditDetection:
+    strategies:
+      - issueTypes: [Audit]
+        requireComponent: true
+      - issueTypes: [Task]
+        requiredLabels: ["Audit RGAA"]
+        requireComponent: true
   closingKeywords: ["close", "closed", "closes", "fix", "fixed", "fixes", "resolve", "resolved", "resolves"]
   cancelledProjectStatuses: ["Cancelled"]

@@ -1,6 +1,6 @@
 {
-  "snapshotId": "snapshot-20261009162512355-e6e30aab",
-  "capturedAt": "2026-10-09T16:25:12.355Z",
+  "snapshotId": "snapshot-20261011065417877-25547394",
+  "capturedAt": "2026-10-11T06:54:17.877Z",
   "scope": "configured-github-repositories",
   "rawData": {
     "collectedAt": "2026-10-09T05:53:23.530Z",
@@ -173815,7 +173815,6 @@
         "libraryId": "lib-324735cdb771",
         "number": "1.7.1",
         "releasedAt": "2026-07-31T13:41:44.000Z",
-        "milestoneId": "101016",
         "prodTag": {
           "name": "1.7.1",
           "createdAt": "2026-07-31T13:41:44.000Z"
@@ -174258,6 +174257,325 @@
     "componentVersions": [],
     "audits": [
       {
+        "auditId": "audit-96185333b36f",
+        "issueId": "issue-3f7078bb",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-3a817753b889",
+        "versionId": "version-638b82644312",
+        "version": "1.8.0",
+        "status": "in_progress",
+        "sourceIssueId": "issue-3f7078bb",
+        "objectiveAuditResult": "in_progress",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-3f7078bb",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-218d0dcc48a2",
+        "issueId": "issue-bacb44dc",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-6c869eafdb1e",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "in_progress",
+        "sourceIssueId": "issue-bacb44dc",
+        "objectiveAuditResult": "in_progress",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-bacb44dc",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-516f9b077a94",
+        "issueId": "issue-70245746",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-8243c44cf1de",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "in_progress",
+        "sourceIssueId": "issue-70245746",
+        "objectiveAuditResult": "in_progress",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-70245746",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-3369703473c2",
+        "issueId": "issue-8bcf7265",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-346caab3430d",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "in_progress",
+        "sourceIssueId": "issue-8bcf7265",
+        "objectiveAuditResult": "in_progress",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-8bcf7265",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-6579e9efd815",
+        "issueId": "issue-c6b517e0",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-66ffc82869ab",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-c6b517e0",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-18T12:17:17.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-c6b517e0",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-703ce7f08880",
+        "issueId": "issue-0b852e4e",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-c33eaab81e99",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-0b852e4e",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-18T07:33:37.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-0b852e4e",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-50b2988b2b78",
+        "issueId": "issue-d9c29f2c",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-90ba0caa9327",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-d9c29f2c",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-17T08:51:57.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-d9c29f2c",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-bde046522fd7",
+        "issueId": "issue-e4d152ad",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-76d3fad3b334",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-e4d152ad",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-17T08:27:24.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-e4d152ad",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-59b794dd7afa",
+        "issueId": "issue-93de7a25",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-268206122f14",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-93de7a25",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-17T13:55:18.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-93de7a25",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-8f55125860ef",
+        "issueId": "issue-f571fdad",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-a3b68f6a4b97",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-f571fdad",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-11T08:11:01.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-f571fdad",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-0ed4e906f105",
+        "issueId": "issue-072095b6",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-c5d7f4c289b5",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-072095b6",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-11T12:27:37.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-072095b6",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-31756760591a",
+        "issueId": "issue-c8ed777d",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-b10103ddc5b7",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-c8ed777d",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-04T09:14:40.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-c8ed777d",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-135556b60880",
+        "issueId": "issue-d361d0ac",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-87a1c347fa86",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-d361d0ac",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-25T12:08:35.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-d361d0ac",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-cc4488e3096f",
+        "issueId": "issue-c287ed63",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-d56c59f61a2c",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-c287ed63",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-10T08:24:04.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-c287ed63",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-0f8047cbf8d9",
+        "issueId": "issue-f932fd7e",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-7970cfa9716b",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "in_progress",
+        "sourceIssueId": "issue-f932fd7e",
+        "objectiveAuditResult": "in_progress",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-f932fd7e",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-5f40e5262c52",
+        "issueId": "issue-575daa7a",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-44f70a7c1dd7",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-575daa7a",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-18T12:21:32.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-575daa7a",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-1feb8290b907",
+        "issueId": "issue-8d0f02cf",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-c351282f7bd9",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-8d0f02cf",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-23T13:58:32.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-8d0f02cf",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
+        "auditId": "audit-10ea48c293b0",
+        "issueId": "issue-26fe310e",
+        "libraryId": "lib-324735cdb771",
+        "componentId": "component-3ce34d157a54",
+        "versionId": "version-737fa099658b",
+        "version": "1.7.1",
+        "status": "conform",
+        "sourceIssueId": "issue-26fe310e",
+        "objectiveAuditResult": "conform",
+        "completedAt": "2026-09-23T15:30:15.000Z",
+        "provenance": {
+          "source": "github",
+          "sourceId": "issue-26fe310e",
+          "collectedAt": "2026-10-09T05:53:23.530Z"
+        },
+        "dataQualityStatus": "reliable"
+      },
+      {
         "auditId": "audit-a435c0893037",
         "issueId": "issue-d0f675da",
         "libraryId": "lib-324735cdb771",
@@ -174295,9 +174613,9 @@
         "libraryId": "lib-324735cdb771",
         "componentId": "component-c5d7f4c289b5",
         "version": "2026.09",
-        "status": "in_progress",
+        "status": "conform",
         "sourceIssueId": "issue-5d58aba0",
-        "objectiveAuditResult": "in_progress",
+        "objectiveAuditResult": "conform",
         "completedAt": "2025-12-10T13:34:58.000Z",
         "provenance": {
           "source": "github",
@@ -174328,9 +174646,9 @@
         "libraryId": "lib-324735cdb771",
         "componentId": "component-c351282f7bd9",
         "version": "2026.09",
-        "status": "in_progress",
+        "status": "conform",
         "sourceIssueId": "issue-e4acffef",
-        "objectiveAuditResult": "in_progress",
+        "objectiveAuditResult": "conform",
         "completedAt": "2026-02-12T12:40:39.000Z",
         "provenance": {
           "source": "github",
@@ -174345,9 +174663,9 @@
         "libraryId": "lib-324735cdb771",
         "componentId": "component-c351282f7bd9",
         "version": "2026.09",
-        "status": "in_progress",
+        "status": "conform",
         "sourceIssueId": "issue-f2fc02df",
-        "objectiveAuditResult": "in_progress",
+        "objectiveAuditResult": "conform",
         "completedAt": "2026-05-29T07:13:01.000Z",
         "provenance": {
           "source": "github",
@@ -233870,6 +234188,23 @@
         ]
       },
       {
+        "id": "DQ-014:audit-0f8047cbf8d9",
+        "ruleId": "DQ-014",
+        "severity": "WARNING",
+        "action": "include",
+        "entityType": "audit",
+        "entityId": "audit-0f8047cbf8d9",
+        "message": "Project status is Done while the GitHub issue is still open.",
+        "detectedAt": "2026-10-09T05:53:23.530Z",
+        "impacts": [
+          {
+            "metricId": "audit.completed",
+            "action": "exclude",
+            "reason": "Un Audit n’est pas réalisé tant que son Issue GitHub reste ouverte."
+          }
+        ]
+      },
+      {
         "id": "DQ-012:audit-605548eb01a1",
         "ruleId": "DQ-012",
         "severity": "WARNING",
@@ -237214,7 +237549,7 @@
     ],
     "summary": {
       "INFO": 0,
-      "WARNING": 1966,
+      "WARNING": 1967,
       "ERROR": 249
     }
   },
@@ -237805,19 +238140,50 @@
       "statut": 2
     },
     "auditsCoverage": {
-      "value": 0,
-      "numerator": 0,
+      "value": 61.9,
+      "numerator": 13,
       "denominator": 21,
       "definition": "Composants actifs disposant d’un audit terminé / composants actifs du périmètre.",
-      "sourceEntityIds": [],
+      "sourceEntityIds": [
+        "component-66ffc82869ab",
+        "component-c33eaab81e99",
+        "component-90ba0caa9327",
+        "component-76d3fad3b334",
+        "component-268206122f14",
+        "component-a3b68f6a4b97",
+        "component-c5d7f4c289b5",
+        "component-b10103ddc5b7",
+        "component-87a1c347fa86",
+        "component-d56c59f61a2c",
+        "component-44f70a7c1dd7",
+        "component-c351282f7bd9",
+        "component-3ce34d157a54"
+      ],
       "reliability": "partial"
     },
     "conformityRate": {
-      "value": "unknown",
-      "numerator": 0,
-      "denominator": 0,
+      "value": 100,
+      "numerator": 16,
+      "denominator": 16,
       "definition": "Audits conformes / audits terminés.",
-      "sourceEntityIds": [],
+      "sourceEntityIds": [
+        "audit-6579e9efd815",
+        "audit-703ce7f08880",
+        "audit-50b2988b2b78",
+        "audit-bde046522fd7",
+        "audit-59b794dd7afa",
+        "audit-8f55125860ef",
+        "audit-0ed4e906f105",
+        "audit-31756760591a",
+        "audit-135556b60880",
+        "audit-cc4488e3096f",
+        "audit-5f40e5262c52",
+        "audit-1feb8290b907",
+        "audit-10ea48c293b0",
+        "audit-1239c60e56cc",
+        "audit-f7adc46a74b1",
+        "audit-435e449f4ee9"
+      ],
       "reliability": "reliable"
     },
     "averageCorrectionDelayDays": {
@@ -238452,13 +238818,27 @@
       },
       "portfolio.componentsAudited": {
         "id": "portfolio.componentsAudited",
-        "value": 0,
+        "value": 13,
         "unit": "count",
-        "numerator": 0,
+        "numerator": 13,
         "denominator": 21,
         "scope": "portfolio",
         "definition": "Nombre de composants actifs disposant d’au moins un audit terminé.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "component-66ffc82869ab",
+          "component-c33eaab81e99",
+          "component-90ba0caa9327",
+          "component-76d3fad3b334",
+          "component-268206122f14",
+          "component-a3b68f6a4b97",
+          "component-c5d7f4c289b5",
+          "component-b10103ddc5b7",
+          "component-87a1c347fa86",
+          "component-d56c59f61a2c",
+          "component-44f70a7c1dd7",
+          "component-c351282f7bd9",
+          "component-3ce34d157a54"
+        ],
         "reliability": {
           "status": "partial",
           "issueIds": [
@@ -238489,13 +238869,27 @@
       },
       "portfolio.auditCoverage": {
         "id": "portfolio.auditCoverage",
-        "value": 0,
+        "value": 61.9,
         "unit": "percentage",
-        "numerator": 0,
+        "numerator": 13,
         "denominator": 21,
         "scope": "portfolio",
         "definition": "Composants actifs disposant d’un audit terminé / composants actifs du périmètre.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "component-66ffc82869ab",
+          "component-c33eaab81e99",
+          "component-90ba0caa9327",
+          "component-76d3fad3b334",
+          "component-268206122f14",
+          "component-a3b68f6a4b97",
+          "component-c5d7f4c289b5",
+          "component-b10103ddc5b7",
+          "component-87a1c347fa86",
+          "component-d56c59f61a2c",
+          "component-44f70a7c1dd7",
+          "component-c351282f7bd9",
+          "component-3ce34d157a54"
+        ],
         "reliability": {
           "status": "partial",
           "issueIds": [
@@ -238526,31 +238920,71 @@
       },
       "audit.completed": {
         "id": "audit.completed",
-        "value": 0,
+        "value": 16,
         "unit": "count",
-        "numerator": 0,
-        "denominator": 12,
+        "numerator": 16,
+        "denominator": 30,
         "scope": "audit",
         "definition": "Nombre d’audits ayant atteint un résultat exploitable.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "audit-6579e9efd815",
+          "audit-703ce7f08880",
+          "audit-50b2988b2b78",
+          "audit-bde046522fd7",
+          "audit-59b794dd7afa",
+          "audit-8f55125860ef",
+          "audit-0ed4e906f105",
+          "audit-31756760591a",
+          "audit-135556b60880",
+          "audit-cc4488e3096f",
+          "audit-5f40e5262c52",
+          "audit-1feb8290b907",
+          "audit-10ea48c293b0",
+          "audit-1239c60e56cc",
+          "audit-f7adc46a74b1",
+          "audit-435e449f4ee9"
+        ],
         "reliability": {
           "status": "partial",
           "issueIds": [
+            "DQ-014:audit-0f8047cbf8d9",
             "DQ-012:audit-605548eb01a1",
             "DQ-012:audit-3d39228e97f9"
           ]
         },
-        "exclusions": []
+        "exclusions": [
+          {
+            "entityId": "audit-0f8047cbf8d9",
+            "ruleId": "DQ-014"
+          }
+        ]
       },
       "audit.conform": {
         "id": "audit.conform",
-        "value": 0,
+        "value": 16,
         "unit": "count",
-        "numerator": 0,
-        "denominator": 0,
+        "numerator": 16,
+        "denominator": 16,
         "scope": "audit",
         "definition": "Nombre d’audits dont le résultat objectif est conforme.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "audit-6579e9efd815",
+          "audit-703ce7f08880",
+          "audit-50b2988b2b78",
+          "audit-bde046522fd7",
+          "audit-59b794dd7afa",
+          "audit-8f55125860ef",
+          "audit-0ed4e906f105",
+          "audit-31756760591a",
+          "audit-135556b60880",
+          "audit-cc4488e3096f",
+          "audit-5f40e5262c52",
+          "audit-1feb8290b907",
+          "audit-10ea48c293b0",
+          "audit-1239c60e56cc",
+          "audit-f7adc46a74b1",
+          "audit-435e449f4ee9"
+        ],
         "reliability": {
           "status": "reliable",
           "issueIds": []
@@ -238562,10 +238996,27 @@
         "value": 0,
         "unit": "count",
         "numerator": 0,
-        "denominator": 0,
+        "denominator": 16,
         "scope": "audit",
         "definition": "Nombre d’audits dont le résultat objectif est conditionnel.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "audit-6579e9efd815",
+          "audit-703ce7f08880",
+          "audit-50b2988b2b78",
+          "audit-bde046522fd7",
+          "audit-59b794dd7afa",
+          "audit-8f55125860ef",
+          "audit-0ed4e906f105",
+          "audit-31756760591a",
+          "audit-135556b60880",
+          "audit-cc4488e3096f",
+          "audit-5f40e5262c52",
+          "audit-1feb8290b907",
+          "audit-10ea48c293b0",
+          "audit-1239c60e56cc",
+          "audit-f7adc46a74b1",
+          "audit-435e449f4ee9"
+        ],
         "reliability": {
           "status": "reliable",
           "issueIds": []
@@ -238577,10 +239028,27 @@
         "value": 0,
         "unit": "count",
         "numerator": 0,
-        "denominator": 0,
+        "denominator": 16,
         "scope": "audit",
         "definition": "Nombre d’audits dont le résultat objectif est non conforme.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "audit-6579e9efd815",
+          "audit-703ce7f08880",
+          "audit-50b2988b2b78",
+          "audit-bde046522fd7",
+          "audit-59b794dd7afa",
+          "audit-8f55125860ef",
+          "audit-0ed4e906f105",
+          "audit-31756760591a",
+          "audit-135556b60880",
+          "audit-cc4488e3096f",
+          "audit-5f40e5262c52",
+          "audit-1feb8290b907",
+          "audit-10ea48c293b0",
+          "audit-1239c60e56cc",
+          "audit-f7adc46a74b1",
+          "audit-435e449f4ee9"
+        ],
         "reliability": {
           "status": "reliable",
           "issueIds": []
@@ -238592,10 +239060,27 @@
         "value": 0,
         "unit": "count",
         "numerator": 0,
-        "denominator": 0,
+        "denominator": 16,
         "scope": "audit",
         "definition": "Nombre d’audits dont le résultat objectif est critique.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "audit-6579e9efd815",
+          "audit-703ce7f08880",
+          "audit-50b2988b2b78",
+          "audit-bde046522fd7",
+          "audit-59b794dd7afa",
+          "audit-8f55125860ef",
+          "audit-0ed4e906f105",
+          "audit-31756760591a",
+          "audit-135556b60880",
+          "audit-cc4488e3096f",
+          "audit-5f40e5262c52",
+          "audit-1feb8290b907",
+          "audit-10ea48c293b0",
+          "audit-1239c60e56cc",
+          "audit-f7adc46a74b1",
+          "audit-435e449f4ee9"
+        ],
         "reliability": {
           "status": "reliable",
           "issueIds": []
@@ -238604,13 +239089,30 @@
       },
       "audit.conformityRate": {
         "id": "audit.conformityRate",
-        "value": "unknown",
+        "value": 100,
         "unit": "percentage",
-        "numerator": 0,
-        "denominator": 0,
+        "numerator": 16,
+        "denominator": 16,
         "scope": "audit",
         "definition": "Audits conformes / audits terminés.",
-        "sourceEntityIds": [],
+        "sourceEntityIds": [
+          "audit-6579e9efd815",
+          "audit-703ce7f08880",
+          "audit-50b2988b2b78",
+          "audit-bde046522fd7",
+          "audit-59b794dd7afa",
+          "audit-8f55125860ef",
+          "audit-0ed4e906f105",
+          "audit-31756760591a",
+          "audit-135556b60880",
+          "audit-cc4488e3096f",
+          "audit-5f40e5262c52",
+          "audit-1feb8290b907",
+          "audit-10ea48c293b0",
+          "audit-1239c60e56cc",
+          "audit-f7adc46a74b1",
+          "audit-435e449f4ee9"
+        ],
         "reliability": {
           "status": "reliable",
           "issueIds": []
@@ -247129,8 +247631,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T16:08:15.169Z",
-          "to": "2026-10-09T16:25:12.355Z"
+          "from": "2026-10-11T06:44:35.170Z",
+          "to": "2026-10-11T06:54:17.877Z"
         },
         "definition": "Nombre d’anomalies apparues entre le snapshot précédent et le snapshot courant.",
         "sourceEntityIds": [],
@@ -247142,21 +247644,17 @@
       },
       "anomaly.flow.corrected": {
         "id": "anomaly.flow.corrected",
-        "value": 3,
+        "value": 0,
         "unit": "count",
-        "numerator": 3,
-        "denominator": 3,
+        "numerator": 0,
+        "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T16:08:15.169Z",
-          "to": "2026-10-09T16:25:12.355Z"
+          "from": "2026-10-11T06:44:35.170Z",
+          "to": "2026-10-11T06:54:17.877Z"
         },
         "definition": "Nombre d’anomalies ayant acquis leur première correction entre les deux snapshots.",
-        "sourceEntityIds": [
-          "anomaly-6140e9828b7f",
-          "anomaly-4225c89d478a",
-          "anomaly-bfdcc5c2a957"
-        ],
+        "sourceEntityIds": [],
         "reliability": {
           "status": "unknown",
           "issueIds": [
@@ -247314,8 +247812,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T16:08:15.169Z",
-          "to": "2026-10-09T16:25:12.355Z"
+          "from": "2026-10-11T06:44:35.170Z",
+          "to": "2026-10-11T06:54:17.877Z"
         },
         "definition": "Nombre d’anomalies passées dans l’état rouvert entre les deux snapshots.",
         "sourceEntityIds": [],
@@ -247333,8 +247831,8 @@
         "denominator": 0,
         "scope": "anomaly",
         "period": {
-          "from": "2026-10-09T16:08:15.169Z",
-          "to": "2026-10-09T16:25:12.355Z"
+          "from": "2026-10-11T06:44:35.170Z",
+          "to": "2026-10-11T06:54:17.877Z"
         },
         "definition": "Nombre d’anomalies devenues annulées entre les deux snapshots.",
         "sourceEntityIds": [],

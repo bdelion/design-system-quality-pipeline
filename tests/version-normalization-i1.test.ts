@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeGithub } from '../src/normalizers/github.js';
-import type { GithubProcessingConfig } from '../src/config.js';
+import { validateMilestoneDetection, type GithubProcessingConfig } from '../src/config.js';
 import type { RawDataset, RawIssue } from '../src/domain/types.js';
 
 const rules: GithubProcessingConfig = {
@@ -75,6 +75,44 @@ function dataset(
     ]
   };
 }
+
+describe('Configuration des milestones', () => {
+  const configured: GithubProcessingConfig = {
+    ...rules,
+    milestoneDetection: {
+      caseSensitive: false,
+      patterns: [
+        { id: 'release', regex: '^(?<version>\\d+\\.\\d+\\.\\d+)$', kind: 'release' },
+        { id: 'audit', regex: '^(?<version>\\d+\\.\\d+\\.\\d+)-Audit$', kind: 'audit' }
+      ]
+    }
+  };
+
+  it('reconnaît la version d’une milestone Audit sans modifier la version PROD', () => {
+    const normalized = normalizeGithub(dataset(auditIssue('audit-1', '1.7.1-Audit'), []), configured);
+    expect(normalized.versions?.[0]?.number).toBe('1.7.1');
+    expect(normalized.audits).toHaveLength(1);
+    expect(normalized.audits[0]?.versionId).toBe(normalized.versions?.[0]?.versionId);
+  });
+
+  it('conserve le mode strict sans configuration', () => {
+    expect(normalizeGithub(dataset(auditIssue('audit-1', '1.7.1-Audit'), []), rules).audits).toEqual([]);
+  });
+
+  it('refuse les règles invalides et les identifiants dupliqués', () => {
+    expect(() =>
+      validateMilestoneDetection({ patterns: [{ id: 'bad', regex: '(', kind: 'audit' }] })
+    ).toThrow();
+    expect(() =>
+      validateMilestoneDetection({
+        patterns: [
+          { id: 'same', regex: '(?<version>.*)', kind: 'audit' },
+          { id: 'same', regex: '(?<version>.*)', kind: 'release' }
+        ]
+      })
+    ).toThrow();
+  });
+});
 
 describe('I1 Version normalization', () => {
   it('materializes a published PROD Version from exact milestone and annotated Git tag evidence', () => {

@@ -56,6 +56,22 @@ github:
       CANCELLED:
         - Cancelled
         - 🛑 Cancelled
+  milestoneDetection:
+    caseSensitive: false
+    patterns:
+      - id: release
+        regex: '^(?<version>\d+\.\d+\.\d+)$'
+        kind: release
+      - id: audit
+        regex: '^(?<version>\d+\.\d+\.\d+)-Audit$'
+        kind: audit
+  auditDetection:
+    strategies:
+      - issueTypes: [Audit]
+        requireComponent: true
+      - issueTypes: [Task]
+        requiredLabels: ["Audit RGAA"]
+        requireComponent: true
   closingKeywords:
     - close
     - closed

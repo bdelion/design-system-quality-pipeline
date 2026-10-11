@@ -5,7 +5,7 @@
  */
 
 import { stableId } from '../lib/ids.js';
-import type { GithubProcessingConfig } from '../config.js';
+import { validateMilestoneDetection, type GithubProcessingConfig } from '../config.js';
 import type { Catalogue, CatalogueComponent } from '../catalogue.js';
 import type {
   Anomaly,
@@ -47,6 +47,7 @@ export function normalizeGithub(
   catalogue?: Catalogue,
   auditVersion?: string
 ): NormalizedData {
+  validateMilestoneDetection(rules.milestoneDetection);
   const libraries: Library[] = raw.repositories.map((repository) => ({
     libraryId: stableId('lib', repository.name),
     name: repository.name,
@@ -80,7 +81,7 @@ export function normalizeGithub(
     const library = libraryByRepository.get(repository.name)!;
     const milestoneIdsByVersion = new Map<string, Set<string>>();
     for (const issue of repository.issues) {
-      const number = prodVersionNumber(issue.milestone?.title);
+      const number = milestoneVersionNumber(issue.milestone?.title, rules);
       if (!number || !issue.milestone) continue;
       const milestoneIds = milestoneIdsByVersion.get(number) ?? new Set<string>();
       milestoneIds.add(String(issue.milestone.id));
@@ -290,13 +291,22 @@ export function normalizeGithub(
               ? numericProjectValue(projectStatus.rawVelocity)
               : undefined;
           const statusRecognition = recognizeProjectStatus(projectStatus.status, rules);
+          // La dernière transition datée et reconnue fait foi pour le statut courant.
+          const latestTransition = (projectStatus.statusHistory ?? [])
+            .filter((transition) => Number.isFinite(Date.parse(transition.transitionedAt)))
+            .sort((a, b) => Date.parse(a.transitionedAt) - Date.parse(b.transitionedAt))
+            .at(-1);
+          const latestRecognition = latestTransition
+            ? recognizeProjectStatus(latestTransition.status, rules)
+            : undefined;
+          const currentRecognition = latestRecognition?.status ? latestRecognition : statusRecognition;
           return {
             projectId: projectStatus.projectId,
             projectName: projectStatus.projectName,
             rawStatus: projectStatus.status,
-            ...(statusRecognition.status ? { status: statusRecognition.status } : {}),
-            ...(statusRecognition.candidateStatuses.length > 1
-              ? { candidateStatuses: statusRecognition.candidateStatuses }
+            ...(currentRecognition.status ? { status: currentRecognition.status } : {}),
+            ...(currentRecognition.candidateStatuses.length > 1
+              ? { candidateStatuses: currentRecognition.candidateStatuses }
               : {}),
             ...(projectStatus.iteration ? { iteration: { ...projectStatus.iteration } } : {}),
             ...(projectStatus.rawVelocity !== undefined ? { rawVelocity: projectStatus.rawVelocity } : {}),
@@ -383,10 +393,22 @@ export function normalizeGithub(
 
   for (const issue of issues) {
     const rawIssue = rawIssueById.get(issue.issueId);
-    if (specializationIssueType(issue, rawIssue) !== 'AUDIT' || issue.componentIds.length !== 1) continue;
+    const legacyAudit = specializationIssueType(issue, rawIssue) === 'AUDIT';
+    const configuredAudit =
+      rules.auditDetection?.strategies.some(
+        (strategy) =>
+          strategy.issueTypes.some(
+            (type) => type.toLowerCase() === (rawIssue?.rawIssueType ?? '').toLowerCase()
+          ) &&
+          (strategy.requiredLabels ?? []).every((label) =>
+            issue.labels.some((actual) => actual.toLowerCase() === label.toLowerCase())
+          ) &&
+          (!strategy.requireComponent || issue.componentIds.length === 1)
+      ) ?? false;
+    if ((!legacyAudit && !configuredAudit) || issue.componentIds.length !== 1) continue;
     const targetNumber =
       rawIssue?.rawIssueType !== undefined
-        ? prodVersionNumber(rawIssue.milestone?.title)
+        ? milestoneVersionNumber(rawIssue.milestone?.title, rules)
         : hasKnownAuditVersion
           ? resolvedAuditVersion
           : undefined;
@@ -399,6 +421,8 @@ export function normalizeGithub(
     const componentId = issue.componentIds[0]!;
     const auditId = stableId('audit', issue.issueId);
     const completedAt = auditCompletedAt(issue);
+    const noSubIssues = issue.subIssueIds.length === 0;
+    const inferredConform = Boolean(completedAt && noSubIssues);
     const audit: Audit = {
       auditId,
       issueId: issue.issueId,
@@ -406,9 +430,9 @@ export function normalizeGithub(
       componentId,
       ...(targetVersion ? { versionId: targetVersion.versionId } : {}),
       version: targetVersion?.number ?? legacyVersion!,
-      status: rawIssue?.auditStatus ?? 'in_progress',
+      status: rawIssue?.auditStatus ?? (inferredConform ? 'conform' : 'in_progress'),
       sourceIssueId: issue.issueId,
-      objectiveAuditResult: rawIssue?.auditResult ?? 'in_progress',
+      objectiveAuditResult: rawIssue?.auditResult ?? (inferredConform ? 'conform' : 'in_progress'),
       ...(rawIssue?.auditedReleaseCandidate
         ? { auditedReleaseCandidate: rawIssue.auditedReleaseCandidate }
         : {}),
@@ -608,17 +632,6 @@ function criticalityValue(value: string | undefined, rules: GithubProcessingConf
  * their legacy issueType is used only to keep the migration executable until
  * those fixtures are recollected. It is deliberately not copied into Issue.
  */
-/**
- * Retourne l'unique transition canonique vers DONE.
- * Zéro ou plusieurs transitions sont volontairement indéterminables (D-187/D-188).
- */
-function uniqueDoneTransitionAt(issue: Issue): string | undefined {
-  const doneTransitions = issue.projectContexts.flatMap((context) =>
-    context.statusHistory.filter((transition) => transition.status === 'DONE')
-  );
-  return doneTransitions.length === 1 ? doneTransitions[0]!.transitionedAt : undefined;
-}
-
 /** Dernière entrée datée dans DONE, y compris après une réouverture (contrat KPI V3). */
 function businessCorrectedAt(issue: Issue): string | undefined {
   const dates = issue.projectContexts
@@ -631,14 +644,26 @@ function businessCorrectedAt(issue: Issue): string | undefined {
 }
 
 /**
- * Date de réalisation d'un Audit (D-141).
- * L'Issue doit être fermée, son état Project courant doit être DONE et l'entrée
- * dans DONE doit être déterminable sans ambiguïté.
+ * Date d'achèvement d'un audit : dernière transition chronologique valide.
+ * Une issue fermée n'est terminée que si le dernier état Project est DONE.
+ * Aucune date de clôture GitHub n'est inventée en absence d'historique.
  */
 function auditCompletedAt(issue: Issue): string | undefined {
   if (issue.state !== 'CLOSED') return undefined;
-  if (!issue.projectContexts.some((context) => context.status === 'DONE')) return undefined;
-  return uniqueDoneTransitionAt(issue);
+  if (issue.projectContexts.some((context) => context.status === 'CANCELLED')) return undefined;
+  const currentDoneContexts = issue.projectContexts.filter((context) => context.status === 'DONE');
+  if (currentDoneContexts.length === 0) return undefined;
+
+  const lastTransitions = currentDoneContexts
+    .map((context) =>
+      context.statusHistory
+        .filter((transition) => Number.isFinite(Date.parse(transition.transitionedAt)))
+        .sort((a, b) => Date.parse(a.transitionedAt) - Date.parse(b.transitionedAt))
+        .at(-1)
+    )
+    .filter((transition) => transition?.status === 'DONE');
+  const dates = lastTransitions.map((transition) => transition!.transitionedAt);
+  return dates.sort((a, b) => Date.parse(a) - Date.parse(b)).at(-1);
 }
 
 /**
@@ -665,6 +690,22 @@ function prodVersionNumber(value: string | undefined): string | undefined {
   if (!value) return undefined;
   const normalized = value.trim();
   return /^\d+\.\d+\.\d+$/.test(normalized) ? normalized : undefined;
+}
+
+/** Extrait une version depuis une milestone suivant la première règle configurée. */
+function milestoneVersionNumber(
+  value: string | undefined,
+  rules: GithubProcessingConfig
+): string | undefined {
+  if (!value) return undefined;
+  if (!rules.milestoneDetection) return prodVersionNumber(value);
+  const title = value.trim();
+  for (const pattern of rules.milestoneDetection.patterns) {
+    const match = new RegExp(pattern.regex, rules.milestoneDetection.caseSensitive ? '' : 'i').exec(title);
+    const version = match?.groups?.version?.trim();
+    if (version) return version;
+  }
+  return undefined;
 }
 
 /**

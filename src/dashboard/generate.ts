@@ -23,7 +23,7 @@ const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.me
  * @param outputRoot - Répertoire racine de sortie (sous-dossier `dashboard`).
  * @param githubUrl - URL de référence optionnelle pour les liens GitHub.
  */
-export async function generateDashboard(snapshot: Snapshot, outputRoot: string, githubUrl?: string): Promise<void> {
+export async function generateDashboard(snapshot: Snapshot, outputRoot: string, githubUrl?: string, componentPrefix = 'Component:'): Promise<void> {
   const dashboardPath = resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });
   const serializedSnapshot = JSON.stringify(snapshot).replace(/</g, '\\u003c');
@@ -34,15 +34,17 @@ export async function generateDashboard(snapshot: Snapshot, outputRoot: string, 
   void dashboardClientScript;
   await Promise.all([
     writeFile(resolve(dashboardPath, 'index.html'), page(snapshot, 'Vue d’ensemble', overviewContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
-    writeFile(resolve(dashboardPath, 'issues.html'), page(snapshot, 'Analyse des issues', issuesExplorerContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'issues.html'), page(snapshot, 'Analyse des issues', issuesExplorerContent(snapshot, githubUrl, componentPrefix), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'anomalies.html'), page(snapshot, 'Anomalies', anomaliesContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'audits.html'), page(snapshot, 'Audits et composants', auditsContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
+    writeFile(resolve(dashboardPath, 'components.html'), page(snapshot, 'Analyse des composants', componentsExplorerContent(snapshot, githubUrl, componentPrefix), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'graph.html'), page(snapshot, 'Cartographie', graphContent(snapshot, githubUrl), serializedSnapshot), 'utf8'),
     writeFile(resolve(dashboardPath, 'history.html'), page(snapshot, 'Historique', historyContent(snapshot), serializedSnapshot), 'utf8'),
     copyDashboardAsset(dashboardPath, 'style.css'),
     copyDashboardAsset(dashboardPath, 'app.js'),
     copyDashboardAsset(dashboardPath, 'graph.js'),
     copyDashboardAsset(dashboardPath, 'issues.js'),
+    copyDashboardAsset(dashboardPath, 'components.js'),
     copyDashboardAsset(dashboardPath, 'logo.svg')
   ]);
 }
@@ -66,8 +68,8 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 </head>
 <body>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>ArchInsight</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${title === 'Vue d’ensemble' ? 'À SURVEILLER' : 'V2.1'}</span><span class="avatar">CP</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Analyse des issues' ? 'active' : ''}" href="issues.html"><span>▤</span>Analyse des issues</a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
-  <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script src="assets/issues.js"></script>' : ''}
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">PILOTAGE</p><nav class="side-nav"><a class="${title === 'Vue d’ensemble' ? 'active' : ''}" href="index.html"><span>◈</span>Vue d’ensemble</a><a class="${title === 'Anomalies' ? 'active' : ''}" href="anomalies.html"><span>!</span>Anomalies<span class="nav-count">${snapshotCountForPage(snapshot, title)}</span></a><a class="${title === 'Analyse des issues' ? 'active' : ''}" href="issues.html"><span>▤</span>Analyse des issues</a><a class="${title === 'Analyse des composants' ? 'active' : ''}" href="components.html"><span>▦</span>Analyse des composants</a><a class="${title === 'Cartographie' ? 'active' : ''}" href="graph.html"><span>⌘</span>Cartographie</a><a class="${title === 'Audits et composants' ? 'active' : ''}" href="audits.html"><span>◇</span>Composants</a><a class="${title === 'Historique' ? 'active' : ''}" href="history.html"><span>↗</span>Historique</a></nav><p class="sidebar-label">RÉFÉRENTIELS</p><nav class="side-nav"><a href="audits.html"><span>▦</span>Audits</a><a href="anomalies.html#quality"><span>◌</span>Qualité des données</a></nav><div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.1</p><h1>${title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${content}</main></div>
+  <script>window.__SNAPSHOT__ = ${serializedSnapshot};</script><script src="assets/app.js"></script>${title === 'Cartographie' ? '<script src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script src="assets/components.js"></script>' : ''}
 </body></html>`;
 }
 
@@ -471,7 +473,7 @@ function formatDateShort(value: string): string {
 
 
 /** Vue exhaustive des issues, indépendamment de leur classification en anomalies. */
-function issuesExplorerContent(snapshot: Snapshot, githubUrl?: string): string {
+function issuesExplorerContent(snapshot: Snapshot, githubUrl?: string, componentPrefix = 'Component:'): string {
   const anomalies = new Map(snapshot.normalizedData.anomalies.map((item) => [item.issueId, item]));
   const libraries = new Map(snapshot.normalizedData.libraries.map((item) => [item.libraryId, item.repository]));
   const repositories = new Map(snapshot.rawData.repositories.map((item) => [item.id, item]));
@@ -487,30 +489,87 @@ function issuesExplorerContent(snapshot: Snapshot, githubUrl?: string): string {
     const valid = done && Number.isFinite(delay) && delay >= 0;
     const source = !valid ? 'unavailable' : anomaly?.correctionDateSource === 'issue_closed' || (!anomaly && issue.closedAt === correctionDate) ? 'estimated' : 'done';
     const repoName = repository ? `${repository.owner}/${repository.name}` : libraries.get(issue.libraryId) ?? issue.repositoryId;
-    const url = issue.url && /^https:\/\/github\.com\//.test(issue.url) ? issue.url : repository && githubUrl && /^https:\/\/github\.com$/.test(githubUrl.replace(/\/+$/, '')) ? `${githubUrl.replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${issue.number}` : '';
+    const url = issue.url && /^https:\/\/[^\s]+$/.test(issue.url) ? issue.url : repository ? `${(githubUrl ?? 'https://github.com').replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${issue.number}` : ''; 
     return { key: `${repoName}#${issue.number}`, repo: repoName, number: issue.number, title: issue.title, url, labels: issue.labels, type: issue.rawIssueType || issue.issueType || 'Non renseigné', status: state, githubState: issue.state, prs: [...new Set(issue.linkedPullRequestIds)], createdAt: issue.createdAt, delay: valid ? delay : null, source };
   });
-  const payload = JSON.stringify(items).replace(/</g, '\\u003c');
+  const payload = JSON.stringify({ items, componentPrefix }).replace(/</g, '\\u003c');
   return `<section class="issues-explorer" data-issues-explorer>
     <div class="issue-kpis" aria-live="polite">${[['global', 'KPI officiel · Global', 'Done + clôtures estimées'], ['done', 'Sans estimation', 'Dernière transition Done'], ['estimated', 'Estimations seules', 'Clôtures GitHub']].map(([name, title, description]) => `<article class="issue-kpi"><span>${title}</span><div class="issue-kpi-stats">${[['average', 'Moyenne'], ['median', 'Médiane'], ['p90', 'P90']].map(([stat, label]) => `<div><small>${label}</small><strong data-issue-kpi="${name}-${stat}">—</strong></div>`).join('')}</div><small data-issue-count="${name}">${description}</small></article>`).join('')}</div>
     <section class="panel issue-filters" aria-label="Filtres des issues"><div class="panel-heading"><h2>Filtres et recherche</h2><button class="reset-button" type="button" data-issue-reset>Réinitialiser</button></div>
-    <div class="issue-filter-grid"><label>Recherche globale<input class="search" data-issue-search placeholder="Numéro, titre, label…"></label><label>Repository<select data-issue-filter="repo"><option value="">Tous</option></select></label><label>Label<select data-issue-filter="label"><option value="">Tous</option></select></label><label>Issue type<select data-issue-filter="type"><option value="">Tous</option></select></label><label>Statut<select data-issue-filter="status"><option value="">Tous</option><option value="open">Ouvertes / en cours</option><option value="closed">Done / Closed</option><option value="cancelled">Cancelled</option></select></label><label>État GitHub<select data-issue-filter="githubState"><option value="">Tous</option><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select></label><label>Tri<select data-issue-sort><option value="repo">Repository</option><option value="number">Numéro</option><option value="age">Plus ancienne ouverte</option><option value="total">Nombre d'issues</option><option value="delay">Délai de correction</option></select></label></div>
-    <div class="issue-actions"><label><input type="checkbox" data-issue-components> Labels Component: uniquement</label><button class="reset-button" type="button" data-issue-dedupe aria-pressed="false">Dédoublonner par repo / issue</button><button class="reset-button" type="button" data-issue-clear-selection>Réinitialiser la sélection</button><button class="reset-button" type="button" data-issue-export>Exporter CSV</button></div>
+    <div class="issue-filter-grid"><label>Recherche globale<input class="search" data-issue-search placeholder="Numéro, titre, label…"></label><label>Repository<select data-issue-filter="repo"><option value="">Tous</option></select></label><label>Label<select data-issue-filter="label"><option value="">Tous</option></select></label><label>Issue type<select data-issue-filter="type"><option value="">Tous</option></select></label><label>Statut<select data-issue-filter="status"><option value="">Tous</option><option value="open">Ouvertes / en cours</option><option value="closed">Done / Closed</option><option value="cancelled">Cancelled</option></select></label><label>État GitHub<select data-issue-filter="githubState"><option value="">Tous</option><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select></label><label>Tri<select data-issue-sort><option value="repo">Repository</option><option value="number">Numéro</option><option value="age">Ancienneté ouverte</option><option value="delay">Délai de correction</option></select></label></div>
+    <div class="issue-actions"><label><input type="checkbox" data-issue-components> Labels du composant uniquement</label><button class="reset-button" type="button" data-issue-dedupe aria-pressed="false">Dédoublonner par repo / issue</button><button class="reset-button" type="button" data-issue-clear-selection>Réinitialiser la sélection</button><button class="reset-button" type="button" data-issue-export>Exporter CSV</button></div>
     <p class="muted" data-issue-summary></p></section>
-    <article class="panel table-panel"><div class="panel-heading"><h2>Issues par repository, label et type</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner les issues affichées"></th>${['Repository','Issue','Label','Issue type','Statut','État GitHub','Nb PR','Total','Ouvertes','Closed','Cancelled','Taux ouvert','Taux closed','Taux cancelled','Plus vieille ouverte','Âge ancienne','Délai issue'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div></article>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Issues par repository, label et type</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner les issues affichées"></th>${['Repository','Issue','Label','Issue type','Statut','État GitHub','Nb PR','Délai issue','Ancienneté ouverte'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div></article>
     <script type="application/json" id="issue-explorer-data">${payload}</script>
+  </section>`;
+}
+
+/** Synthèse consolidée par composant et repository. */
+function componentsExplorerContent(snapshot: Snapshot, githubUrl?: string, componentPrefix = 'Component:'): string {
+  const libraries = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library]));
+  const issues = snapshot.normalizedData.issues ?? [];  
+  const anomalies = new Map(snapshot.normalizedData.anomalies.map((anomaly) => [anomaly.issueId, anomaly]));
+  // Les labels des issues sont la source de vérité pour découvrir les composants.
+  // Le catalogue normalisé enrichit ces entrées, mais ne limite pas leur périmètre.
+  const prefix = componentPrefix.trim().toLocaleLowerCase('fr');
+  const discovered = new Map<string, { libraryId: string; name: string; componentId?: string }>();
+  for (const issue of issues) {
+    for (const label of issue.labels) {
+      if (!prefix || !label.toLocaleLowerCase('fr').startsWith(prefix)) continue;
+      const name = label.slice(componentPrefix.trim().length).trim();
+      if (!name) continue;
+      const key = `${issue.libraryId}::${name.toLocaleLowerCase('fr')}`;
+      if (!discovered.has(key)) discovered.set(key, { libraryId: issue.libraryId, name });
+    }
+  }
+  for (const component of snapshot.normalizedData.components) {
+    const key = `${component.libraryId}::${component.name.toLocaleLowerCase('fr')}`;
+    const found = discovered.get(key);
+    if (found) found.componentId = component.componentId;
+    else discovered.set(key, { libraryId: component.libraryId, name: component.name, componentId: component.componentId });
+  }
+  const rows = [...discovered.values()].map((component) => {
+    const library = libraries.get(component.libraryId);
+    const matchingLabel = `${componentPrefix.trim()}${component.name}`.toLocaleLowerCase('fr');
+    const related = issues.filter((issue) => issue.libraryId === component.libraryId &&
+      ((component.componentId && issue.componentIds.includes(component.componentId)) ||
+        issue.labels.some((label) => label.toLocaleLowerCase('fr') === matchingLabel)));
+    const audits = snapshot.normalizedData.audits.filter((audit) =>
+      (component.componentId && audit.componentId === component.componentId) ||
+      related.some((issue) => issue.issueId === audit.issueId));
+    const latest = [...audits].sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))[0];
+    const items = related.map((issue) => {
+      const anomaly = anomalies.get(issue.issueId);
+      const cancelled = anomaly?.cancelled === true || issue.projectContexts.some((context) => context.status === 'CANCELLED');
+      // Même convention que l'explorateur d'issues : dates métier prioritaires,
+      // puis clôture GitHub estimée si l'issue est effectivement terminée.
+      const statuses = issue.projectContexts.flatMap((context) => context.status ? [context.status] : []);
+      const done = !cancelled && (statuses.includes('DONE') || anomaly?.status === 'done' || (issue.state === 'CLOSED' && !statuses.length));
+      const correctionDate = anomaly?.effectiveCorrectedAt ?? anomaly?.correctedAt ?? (done ? issue.closedAt : undefined);
+      const delay = correctionDate ? (Date.parse(correctionDate) - Date.parse(issue.createdAt)) / 86400000 : NaN;
+      const treated = done;
+      const validDelay = done && Number.isFinite(delay) && delay >= 0;
+      const source = anomaly?.correctionDateSource === 'issue_closed' || (!anomaly && issue.closedAt === correctionDate) ? 'estimated' : 'done';
+      return { id: `${issue.libraryId}:${issue.issueId}`, number: issue.number, url: issue.url ?? '', createdAt: issue.createdAt, open: issue.state === 'OPEN', cancelled, treated, delay: validDelay ? delay : null, source, prs: issue.linkedPullRequestIds, type: issue.rawIssueType ?? issue.issueType ?? 'Non renseigné', labels: issue.labels };
+    });
+    return { id: `${component.libraryId}:${component.name.toLocaleLowerCase('fr')}`, repository: library?.repository ?? component.libraryId, name: component.name, audits: audits.length, version: latest?.version ?? '', auditStatus: latest?.status ?? 'non audité', conformity: latest?.objectiveAuditResult ?? 'non évalué', items };
+  });
+  const payload = JSON.stringify(rows).replace(/</g, '\\u003c');
+  return `<section class="issues-explorer" data-component-analysis>
+    <div class="issue-kpis" aria-live="polite">${[['global','Global · Officiel'],['done','Sans estimation'],['estimated','Estimations seules']].map(([key,title]) => `<article class="issue-kpi"><span>${title}</span><div class="issue-kpi-stats">${[['average','Moyenne'],['median','Médiane'],['p90','P90']].map(([stat,label]) => `<div><small>${label}</small><strong data-component-kpi="${key}-${stat}">—</strong></div>`).join('')}</div><small data-component-count="${key}">0 issue</small></article>`).join('')}</div>
+    <section class="panel issue-filters" aria-label="Filtres des composants"><div class="panel-heading"><h2>Filtres et recherche</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser</button></div><div class="issue-filter-grid"><label>Recherche<input class="search" data-component-search placeholder="Composant, repository…"></label><label>Repository<select data-component-filter="repository"><option value="">Tous</option></select></label><label>Composant<select data-component-filter="name"><option value="">Tous</option></select></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Conformité<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Version d'audit<select data-component-filter="version"><option value="">Toutes</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" data-component-summary></p></section>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository','Composant','Issues','Ouvertes','Traitées','Annulées','PR','Audits','Dernier audit','Conformité','Plus ancienne ouverte','Ancienneté maximale','Délai moyen'].map((label,i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article><script type="application/json" id="component-analysis-data">${payload}</script>
   </section>`;
 }
 
 /** Transforme une référence interne en lien GitHub lorsque l'URL est disponible. */
 function githubReference(snapshot: Snapshot, reference: string, githubUrl?: string): string {
-  if (!githubUrl) return escapeHtml(reference);
-  const baseUrl = githubUrl.replace(/\/+$/, '');
+  const baseUrl = (githubUrl ?? 'https://github.com').replace(/\/+$/, '');
   for (const repository of snapshot.rawData.repositories) {
     const issue = repository.issues.find((candidate) => candidate.id === reference);
-    if (issue) return `<a class="text-link" href="${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${issue.number}" target="_blank" rel="noreferrer">${escapeHtml(reference)}</a>`;
+    if (issue) return `<a class="text-link" href="${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${issue.number}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference)}</a>`;
     const pullRequest = repository.pullRequests.find((candidate) => candidate.id === reference);
-    if (pullRequest) return `<a class="text-link" href="${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/pull/${pullRequest.number}" target="_blank" rel="noreferrer">${escapeHtml(reference)}</a>`;
+    if (pullRequest) return `<a class="text-link" href="${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/pull/${pullRequest.number}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference)}</a>`;
   }
   return escapeHtml(reference);
 }
@@ -518,8 +577,8 @@ function githubReference(snapshot: Snapshot, reference: string, githubUrl?: stri
 /** Construit un lien vers un repository ou retourne son nom si GitHub est absent. */
 function repositoryReference(snapshot: Snapshot, repositoryName: string, githubUrl?: string): string {
   const repository = snapshot.rawData.repositories.find((candidate) => candidate.name === repositoryName);
-  if (!repository || !githubUrl) return escapeHtml(repositoryName);
-  return `<a class="text-link" href="${githubUrl.replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}" target="_blank" rel="noreferrer">${escapeHtml(repositoryName)}</a>`;
+  if (!repository) return escapeHtml(repositoryName);
+  return `<a class="text-link" href="${(githubUrl ?? 'https://github.com').replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}" target="_blank" rel="noopener noreferrer">${escapeHtml(repositoryName)}</a>`;
 }
 
 /** Ajoute à une alerte qualité la cible et sa source consultable. */

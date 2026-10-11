@@ -119,15 +119,37 @@ describe('I3 business dates', () => {
     expect(normalized.anomalies[0]?.effectiveCorrectedAt).toBe('2026-10-02T09:00:00Z');
   });
 
-  it('uses the latest DONE transition for an anomaly, without changing the Audit rule', () => {
+  it('uses the latest DONE transition for an anomaly and a completed Audit', () => {
     const repeatedDone = [
       { previousStatus: 'In progress', status: 'Done', transitionedAt: '2026-09-20T10:00:00Z' },
       { previousStatus: 'In review', status: 'Done', transitionedAt: '2026-10-01T10:00:00Z' }
     ];
     const normalized = normalizeGithub(dataset(repeatedDone, repeatedDone), rules, undefined, '4.2.1');
-    expect(normalized.audits[0]?.completedAt).toBeUndefined();
+    expect(normalized.audits[0]?.completedAt).toBe('2026-10-01T10:00:00Z');
     expect(normalized.anomalies[0]?.correctedAt).toBe('2026-10-01T10:00:00Z');
     expect(normalized.anomalies[0]?.correctionDateSource).toBe('last_done');
+  });
+
+  it('uses the latest transition after an audit is reopened and completed again', () => {
+    const history = [
+      { previousStatus: 'In review', status: 'Done', transitionedAt: '2026-09-17T13:56:23Z' },
+      { previousStatus: 'Done', status: 'Backlog', transitionedAt: '2026-09-18T07:32:55Z' },
+      { previousStatus: 'Backlog', status: 'Done', transitionedAt: '2026-09-18T07:33:37Z' }
+    ];
+    const normalized = normalizeGithub(dataset(history, history), rules, undefined, '4.2.1');
+    expect(normalized.audits[0]?.completedAt).toBe('2026-09-18T07:33:37Z');
+  });
+
+  it('does not complete an audit if the last transition reopens it', () => {
+    const history = [
+      { previousStatus: 'In review', status: 'Done', transitionedAt: '2026-09-17T13:56:23Z' },
+      { previousStatus: 'Done', status: 'Backlog', transitionedAt: '2026-09-18T07:32:55Z' }
+    ];
+    const normalized = normalizeGithub(dataset(history, history), rules, undefined, '4.2.1');
+    expect(normalized.audits[0]?.completedAt).toBeUndefined();
+    expect(normalized.issues?.find((issue) => issue.issueId === 'audit-1')?.projectContexts[0]?.status).toBe(
+      'BACKLOG'
+    );
   });
 
   it('reports DQ-011 when Done + Closed requires a business date but history is insufficient', () => {
@@ -153,9 +175,14 @@ describe('I3 business dates', () => {
     expect(quality.some((item) => item.ruleId === 'DQ-014' && item.entityType === 'audit')).toBe(true);
   });
 
-  it('does not complete an Audit that is not currently DONE', () => {
+  it('does not complete an Audit when its latest transition is not DONE', () => {
     const raw = dataset(doneOnce, doneOnce);
     raw.repositories[0]!.issues[0]!.projectStatuses[0]!.status = 'In progress';
+    raw.repositories[0]!.issues[0]!.projectStatuses[0]!.statusHistory!.push({
+      previousStatus: 'Done',
+      status: 'In progress',
+      transitionedAt: '2026-10-02T11:00:00Z'
+    });
     const normalized = normalizeGithub(raw, rules, undefined, '4.2.1');
     expect(normalized.audits[0]?.completedAt).toBeUndefined();
   });

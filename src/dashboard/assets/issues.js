@@ -2,7 +2,9 @@
 (() => {
   const root = document.querySelector('[data-issues-explorer]');
   if (!root) return;
-  const items = JSON.parse(document.getElementById('issue-explorer-data').textContent);
+  const payload = JSON.parse(document.getElementById('issue-explorer-data').textContent);
+  const items = Array.isArray(payload) ? payload : payload.items;
+  const componentPrefix = Array.isArray(payload) ? 'Component:' : payload.componentPrefix;
   const $ = (selector) => root.querySelector(selector);
   const unique = (values) => [...new Set(values)].sort((a, b) => String(a).localeCompare(String(b), 'fr'));
   const filters = Object.fromEntries(['repo', 'label', 'type', 'status', 'githubState'].map((key) => [key, $(`[data-issue-filter="${key}"]`)]));
@@ -24,6 +26,7 @@
   fill(filters.repo, unique(items.map((item) => item.repo)));
   fill(filters.label, unique(items.flatMap((item) => item.labels)));
   fill(filters.type, unique(items.map((item) => item.type)));
+  if (root.hasAttribute('data-components-explorer')) $('[data-issue-components]').checked = true;
   const columns = [...root.querySelectorAll('[data-issue-column]')];
   const key = (item) => item.key;
   const dayAge = (item) => Math.max(0, (Date.now() - Date.parse(item.createdAt)) / 86400000);
@@ -36,31 +39,27 @@
     const componentOnly = $('[data-issue-components]').checked;
     const filtered = items.filter((item) => {
       const labels = item.labels.length ? item.labels : ['Sans label'];
-      const eligible = labels.filter((label) => !filters.label.value || label === filters.label.value);
-      const hasComponent = item.labels.some((label) => /^component:/i.test(label));
+      const eligible = labels.filter((label) => (!filters.label.value || label === filters.label.value) && (!root.hasAttribute('data-components-explorer') || label.toLocaleLowerCase('fr').startsWith(componentPrefix.toLocaleLowerCase('fr'))));
+      const hasComponent = item.labels.some((label) => label.toLocaleLowerCase('fr').startsWith(componentPrefix.toLocaleLowerCase('fr')));
       return eligible.length && (!componentOnly || hasComponent) && (!filters.repo.value || item.repo === filters.repo.value) && (!filters.type.value || item.type === filters.type.value) && (!filters.status.value || item.status === filters.status.value) && (!filters.githubState.value || item.githubState === filters.githubState.value) && (!q || [item.repo, item.number, item.title, item.type, item.status, ...labels].join(' ').toLocaleLowerCase('fr').includes(q));
     });
     const groups = new Map();
     for (const item of filtered) {
-      const eligible = (item.labels.length ? item.labels : ['Sans label']).filter((label) => !filters.label.value || label === filters.label.value);
+      const eligible = (item.labels.length ? item.labels : ['Sans label']).filter((label) => (!filters.label.value || label === filters.label.value) && (!root.hasAttribute('data-components-explorer') || label.toLocaleLowerCase('fr').startsWith(componentPrefix.toLocaleLowerCase('fr'))));
       for (const row of rowsFor(item, eligible)) {
         const groupKey = [item.repo, row.label, item.type].join('\u0000');
         if (!groups.has(groupKey)) groups.set(groupKey, []);
         groups.get(groupKey).push(row);
       }
     }
-    const entries = [...groups.values()].flatMap((group) => {
-      const distinct = [...new Map(group.map((item) => [key(item), item])).values()];
-      const open = distinct.filter((item) => item.status === 'open');
-      const closed = distinct.filter((item) => item.status === 'closed');
-      const cancelled = distinct.filter((item) => item.status === 'cancelled');
-      const oldest = [...open].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))[0];
-      const rate = (count) => (100 * count / distinct.length).toFixed(1) + '%';
-      const prs = unique(distinct.flatMap((item) => item.prs)).length;
-      return group.map((item) => ({ item, values: [item.repo, item.number, item.label, item.type, item.status, item.githubState, prs, distinct.length, open.length, closed.length, cancelled.length, rate(open.length), rate(closed.length), rate(cancelled.length), oldest ? `#${oldest.number}` : '—', oldest ? dayAge(oldest).toFixed(1) + ' j' : '—', item.delay === null ? '—' : number(item.delay)], oldest }));
-    });
+    const entries = [...groups.values()].flatMap((group) => group.map((item) => ({
+      item,
+      values: [item.repo, item.number, item.label, item.type, item.status, item.githubState,
+        item.prs.length, item.delay === null ? '—' : number(item.delay),
+        item.githubState === 'OPEN' ? number(dayAge(item)) : '—']
+    })));
     const visible = entries.filter(({ values }) => columns.every((control, index) => !control.value || String(values[index]).toLocaleLowerCase('fr').includes(control.value.toLocaleLowerCase('fr'))));
-    const sortIndex = columnSort >= 0 ? columnSort : ({ repo: 0, number: 1, age: 15, total: 7, delay: 16 })[$('[data-issue-sort]').value];
+    const sortIndex = columnSort >= 0 ? columnSort : ({ repo: 0, number: 1, age: 8, delay: 7 })[$('[data-issue-sort]').value];
     visible.sort((a, b) => {
       const av = a.values[sortIndex], bv = b.values[sortIndex];
       const na = parseFloat(av), nb = parseFloat(bv);
@@ -78,7 +77,7 @@
     }
     $('[data-issue-summary]').textContent = `${visible.length} lignes · ${displayed.length} issues distinctes · ${selectionActive ? relevant.length + ' issues sélectionnées' : 'KPI sur les issues filtrées'}`;
     $('[data-issue-select-all]').checked = displayed.length > 0 && displayed.every((id) => selection.has(id));
-    $('[data-issue-rows]').innerHTML = visible.map(({ item, values, oldest }) => `<tr><td><input type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${index === 1 && item.url ? `<a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>` : index === 14 && oldest?.url ? `<a href="${escape(oldest.url)}" target="_blank" rel="noopener noreferrer">${escape(value)} ↗</a>` : escape(value)}</td>`).join('')}</tr>`).join('');
+    $('[data-issue-rows]').innerHTML = visible.map(({ item, values }) => `<tr><td><input type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${index === 1 && item.url ? `<a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>` : escape(value)}</td>`).join('')}</tr>`).join('');
     return visible;
   }
   const redraw = () => { render(); };
@@ -89,6 +88,6 @@
   $('[data-issue-select-all]').addEventListener('change', (event) => { for (const { item } of render()) { if (event.target.checked) selection.add(key(item)); else selection.delete(key(item)); } selectionActive = true; redraw(); });
   $('[data-issue-rows]').addEventListener('change', (event) => { const id = event.target.dataset.issueCheck; if (!id) return; if (event.target.checked) selection.add(id); else selection.delete(id); selectionActive = true; redraw(); });
   root.querySelectorAll('[data-issue-column-sort]').forEach((button) => button.addEventListener('click', () => { const next = Number(button.dataset.issueColumnSort); descending = columnSort === next ? !descending : false; columnSort = next; redraw(); }));
-  $('[data-issue-export]').addEventListener('click', () => { const visible = render(); const rows = [['Repository','Issue','Label','Type','Statut','État GitHub','PR','Total','Ouvertes','Closed','Cancelled','Taux ouvert','Taux closed','Taux cancelled','Plus vieille ouverte','Âge','Délai'], ...visible.map(({ values }) => values)]; const csv = '\ufeff' + rows.map((row) => row.map((cell) => '"' + String(cell).replace(/"/g, '""') + '"').join(';')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = 'analyse-issues.csv'; link.click(); URL.revokeObjectURL(url); });
+  $('[data-issue-export]').addEventListener('click', () => { const visible = render(); const rows = [['Repository','Issue','Label','Type','Statut','État GitHub','PR','Délai issue','Ancienneté ouverte'], ...visible.map(({ values }) => values)]; const csv = '\ufeff' + rows.map((row) => row.map((cell) => '"' + String(cell).replace(/"/g, '""') + '"').join(';')).join('\r\n'); const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); const link = document.createElement('a'); link.href = url; link.download = root.hasAttribute('data-components-explorer') ? 'analyse-composants.csv' : 'analyse-issues.csv'; link.click(); URL.revokeObjectURL(url); });
   redraw();
 })();
