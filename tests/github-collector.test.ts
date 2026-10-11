@@ -13,6 +13,7 @@ afterEach(() => {
 describe('collecteur GitHub', () => {
   // Vérifie pagination, séparation issue/PR et liens détectés par les mots-clés.
   it('pagine les issues, sépare les PR et conserve les relations', async () => {
+    const output = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
     const requests: string[] = [];
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
@@ -129,6 +130,9 @@ describe('collecteur GitHub', () => {
       apiUrl: 'https://api.github.com',
       rules: config.github
     });
+    expect(output.mock.calls.map(([text]) => String(text)).join('')).toContain(
+      'terminée : 1/1 repositories | 2/2'
+    );
     expect(dataset.repositories).toHaveLength(1);
     expect(dataset.repositories[0]?.issues).toHaveLength(2);
     expect(dataset.repositories[0]?.pullRequests[0]?.state).toBe('MERGED');
@@ -333,4 +337,20 @@ describe('catalogue historique GitHub', () => {
       { tagName: '1.1.0', status: 'missing', componentNames: [] }
     ]);
   });
+});
+
+// Vérifie que l’échec de collecte clôt la ligne avant de remonter l’erreur d’origine.
+it('clôt la progression quand GitHub refuse la requête', async () => {
+  const output = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  globalThis.fetch = vi.fn(async () => new Response('', { status: 401 })) as typeof fetch;
+  const config = await loadConfig('fixture');
+  await expect(
+    collectGithub({
+      token: 'test-token',
+      owner: 'acme',
+      repositories: ['design-system'],
+      rules: config.github
+    })
+  ).rejects.toThrow('GitHub API request failed (401)');
+  expect(output.mock.calls.map(([text]) => String(text)).join('')).toContain('interrompue : 0/1');
 });

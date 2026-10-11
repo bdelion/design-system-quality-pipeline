@@ -1,5 +1,10 @@
 # Changelog
 
+## Progression console GitHub — non publiée
+
+- Ligne de progression actualisée en terminal, avec repositories, issues et quota GraphQL.
+- Sortie sobre en CI/redirection et clôture propre en cas d’échec.
+
 ## Refonte visuelle du dashboard — non publiée
 
 - Répartitions graphiques rétablies dans Accessibilité, filtrées et accompagnées de détails accessibles.

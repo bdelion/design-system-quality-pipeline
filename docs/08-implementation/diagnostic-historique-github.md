@@ -59,3 +59,9 @@ Sous `data/diagnostics/` :
 
 - `scripts/diagnose-history.mjs` : outil officiel de diagnostic, couvert par `tests/diagnose-history.test.ts`.
 - `scripts/clean.mjs` : nettoyage des seuls répertoires générés `dist` et `data/runs` (commande `npm.cmd run clean`).
+
+## Progression de la collecte GitHub
+
+En mode `--source github`, stderr affiche une ligne actualisée dans un terminal interactif : barre des repositories terminés, issues traitées sur les issues découvertes et dernier quota GraphQL reçu. Le nombre d’issues découvertes peut augmenter pendant la collecte ; le quota n’est pas un pourcentage d’avancement.
+
+En CI ou lorsque stderr est redirigé, seuls le démarrage, le bilan et les avertissements sont écrits, sans séquences ANSI. Une erreur clôt la progression avec un bilan « interrompue ». Les avertissements restent sur des lignes séparées. La collecte et les données produites ne sont pas modifiées.

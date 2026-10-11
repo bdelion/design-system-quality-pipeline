@@ -5,6 +5,7 @@
  */
 
 import pLimit from 'p-limit';
+import { CollectionProgress } from '../lib/collection-progress.js';
 import type {
   RawDataset,
   RawGitTag,
@@ -115,22 +116,35 @@ export interface GithubCollectorOptions {
   rules: GithubProcessingConfig;
 }
 
+type CollectionOptions = GithubCollectorOptions & { progress: CollectionProgress };
+
 const apiVersion = '2022-11-28';
 
 /** Collecte les repositories configurés sans modifier les données GitHub. */
 export async function collectGithub(options: GithubCollectorOptions): Promise<RawDataset> {
   const apiUrl = options.apiUrl ?? 'https://api.github.com';
   const collectedAt = new Date().toISOString();
-  const repositories = await Promise.all(
-    options.repositories.map((repository) => collectRepository(repository, options, apiUrl))
-  );
-  return { collectedAt, repositories, catalogueComponents: [], nexusAvailable: false };
+  const progress = new CollectionProgress(options.repositories.length);
+  let success = false;
+  try {
+    const repositories = await Promise.all(
+      options.repositories.map(async (repository) => {
+        const result = await collectRepository(repository, { ...options, progress }, apiUrl);
+        progress.repositoryCompleted();
+        return result;
+      })
+    );
+    success = true;
+    return { collectedAt, repositories, catalogueComponents: [], nexusAvailable: false };
+  } finally {
+    progress.finish(success);
+  }
 }
 
 /** Collecte un repository et transforme ses issues et PR en données RAW. */
 async function collectRepository(
   repositoryName: string,
-  options: GithubCollectorOptions,
+  options: CollectionOptions,
   apiUrl: string
 ): Promise<RawRepository> {
   const repository = await githubGet<GithubRepository>(
@@ -162,6 +176,7 @@ async function collectRepository(
   // Les pull requests apparaissent aussi dans l'endpoint des issues : elles sont écartées ici.
   const limit = pLimit(5);
 
+  options.progress.addIssues(issues.filter((issue) => !issue.pull_request).length);
   const rawIssues = await Promise.all(
     issues
       .filter((issue) => !issue.pull_request)
@@ -193,7 +208,7 @@ async function collectRepository(
             options
           );
 
-          return toRawIssue(
+          const result = toRawIssue(
             issue,
             repository.full_name,
             pullRequestByNumber,
@@ -202,6 +217,8 @@ async function collectRepository(
             graphqlData.pullRequests,
             [...restProjectStatuses, ...graphqlData.projectStatuses]
           );
+          options.progress.issueCompleted();
+          return result;
         })
       )
   );
@@ -221,7 +238,7 @@ async function collectRepository(
 async function collectGitTags(
   apiUrl: string,
   repository: string,
-  options: GithubCollectorOptions
+  options: CollectionOptions
 ): Promise<RawGitTag[]> {
   const refs = await githubGetAll<GithubGitRef>(
     apiUrl,
@@ -247,7 +264,7 @@ async function collectHistoricalCatalogues(
   apiUrl: string,
   repository: string,
   gitTags: RawGitTag[],
-  options: GithubCollectorOptions
+  options: CollectionOptions
 ): Promise<RawHistoricalCatalogue[]> {
   const prodTags = gitTags
     .map((tag) => tag.name)
@@ -343,7 +360,7 @@ function toRawIssue(
 /** Récupère en une seule requête GraphQL les PR liées et les statuts Projects v2. */
 async function issueDataFromGraphql(
   graphqlUrl: string,
-  options: GithubCollectorOptions,
+  options: CollectionOptions,
   owner: string,
   repository: string,
   issueNumber: number
@@ -520,7 +537,7 @@ async function issueDataFromGraphql(
   );
 
   if (rateLimitExceeded) {
-    console.warn(`GraphQL rate limit exceeded for issue #${issueNumber}`);
+    options.progress.warn(`GraphQL rate limit exceeded for issue #${issueNumber}`);
 
     return {
       pullRequests: [],
@@ -616,9 +633,7 @@ async function issueDataFromGraphql(
     }) ?? [];
 
   if (payload.data?.rateLimit) {
-    console.debug(
-      `GraphQL rate limit: remaining=${payload.data.rateLimit.remaining}, cost=${payload.data.rateLimit.cost}`
-    );
+    options.progress.updateQuota(payload.data.rateLimit.remaining, payload.data.rateLimit.cost);
   }
 
   return {
@@ -659,7 +674,7 @@ function statusHistoryFromTimelineNodes(
 /** Pagine la timeline Project V2 afin de ne perdre aucune transition de statut. */
 async function collectRemainingProjectStatusHistory(
   graphqlUrl: string,
-  options: GithubCollectorOptions,
+  options: CollectionOptions,
   owner: string,
   repository: string,
   issueNumber: number,
@@ -735,7 +750,7 @@ async function projectStatusesFromRest(
   apiUrl: string,
   repository: string,
   issueNumber: number,
-  options: GithubCollectorOptions
+  options: CollectionOptions
 ): Promise<GithubProjectStatus[]> {
   try {
     const cards = await githubGetAll<GithubProjectCard>(
@@ -837,7 +852,7 @@ function escapeRegExp(value: string): string {
 }
 
 /** Récupère toutes les pages d'un endpoint GitHub. */
-async function githubGetAll<T>(apiUrl: string, path: string, options: GithubCollectorOptions): Promise<T[]> {
+async function githubGetAll<T>(apiUrl: string, path: string, options: CollectionOptions): Promise<T[]> {
   // Suit les liens de pagination fournis par GitHub jusqu'à la dernière page.
   const values: T[] = [];
   let nextUrl: string | undefined = `${apiUrl}${path}`;
@@ -850,14 +865,14 @@ async function githubGetAll<T>(apiUrl: string, path: string, options: GithubColl
 }
 
 /** Exécute une requête simple et retourne uniquement sa charge utile. */
-async function githubGet<T>(apiUrl: string, path: string, options: GithubCollectorOptions): Promise<T> {
+async function githubGet<T>(apiUrl: string, path: string, options: CollectionOptions): Promise<T> {
   return (await githubRequest<T>(`${apiUrl}${path}`, options)).data;
 }
 
 /** Effectue une requête HTTP GitHub avec retries limités et contrôlés. */
 async function githubRequest<T>(
   url: string,
-  options: GithubCollectorOptions
+  options: CollectionOptions
 ): Promise<{ data: T; headers: Headers }> {
   const maxRetries = options.maxRetries ?? 3;
 
@@ -901,7 +916,7 @@ async function githubRequest<T>(
         throw error;
       }
 
-      console.warn(`Retry ${attempt + 1}/${maxRetries} after network error`);
+      options.progress.warn(`Retry ${attempt + 1}/${maxRetries} after network error`);
 
       await delay(1000 * Math.pow(2, attempt));
     }
