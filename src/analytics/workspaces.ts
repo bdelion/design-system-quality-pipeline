@@ -209,6 +209,20 @@ export function workspaceAnalytics(
         byComponent[component] = (byComponent[component] ?? 0) + 1;
     }
     const relevantIds = new Set([
+      ...data.libraries
+        .filter(
+          (library) =>
+            (!context.repository || library.repository === context.repository) &&
+            (!context.component ||
+              components.some((component) => component.libraryId === library.libraryId)) &&
+            (!context.version ||
+              (data.versions ?? []).some(
+                (version) =>
+                  version.libraryId === library.libraryId &&
+                  (version.versionId === context.version || version.number === context.version)
+              ))
+        )
+        .map((library) => library.libraryId),
       ...selected.map((row) => row.id),
       ...selected.flatMap((row) => row.anomalyIds),
       ...relations.map((relation) => relation.componentVersionId)

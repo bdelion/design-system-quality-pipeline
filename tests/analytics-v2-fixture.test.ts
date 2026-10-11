@@ -36,7 +36,11 @@ describe('V2 fixture analytical contract', () => {
     expect(typeof metrics['anomaly.correctionDelay.p90']?.value).toBe('number');
     expect(metrics['anomaly.backlog.oldestAge']?.value).toBe(29);
     expect(metrics['anomaly.criticalityCoverage']?.value).toBe(85.7);
-    expect(metrics['audit.conformityRate']?.reliability.status).toBe('reliable');
+    // L'ancien RAW ne contient pas la borne package : le chiffre est conservé avec réserve explicite.
+    expect(metrics['audit.conformityRate']?.reliability.status).toBe('partial');
+    expect(metrics['audit.conformityRate']?.reliability.issueIds).toEqual(
+      expect.arrayContaining(issues.filter((issue) => issue.ruleId === 'DQ-033').map((issue) => issue.id))
+    );
     expect(metrics['portfolio.auditCoverage']?.reliability.status).toBe('partial');
     expect(metrics['anomaly.byCategory.focus']?.value).toBe(2);
     expect(metrics['anomaly.byCategory.name']?.value).toBe(2);

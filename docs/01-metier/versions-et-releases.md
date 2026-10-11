@@ -201,3 +201,7 @@ Version.releasedAt = GitTag(M.m.r).createdAt
 ```
 
 Cette date constitue l'instant de référence pour déterminer ce qui était connu au moment de la Release. La date de publication Nexus ou l'exécution Jenkins ne se substitue pas à cette référence métier.
+
+## Borne des analyses par version déclarée
+
+L’[issue #39](https://github.com/bdelion/design-system-quality-pipeline/issues/39) borne les versions analysées à la version nominale du package du repository. Les issues des milestones futures restent dans l’activité des équipes, conformément à l’arbitrage utilisateur du 11 octobre 2026. La déclaration du package ne constitue pas une preuve de publication ou de présence des composants. Voir le [contrat implémenté, les réserves et les tests](../08-implementation/perimetre-versions.md).

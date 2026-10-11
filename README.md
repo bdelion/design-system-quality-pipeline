@@ -34,6 +34,8 @@ GitHub / Fixture
  Dashboard statique
 ```
 
+Le périmètre des versions et milestones est borné par le `package.json` de chaque repository. Les issues futures restent dans l’activité des équipes ; voir [Périmètre des versions et compatibilité des fixtures](docs/08-implementation/perimetre-versions.md).
+
 Principes structurants :
 
 - collecte GitHub en lecture seule ;

@@ -57,3 +57,10 @@ Les identifiants, sévérités, actions et messages sont définis dans [`config/
 | [DQ-032](quality-rules/DQ-032.md) | Date de traitement invalide ou négative              | WARNING  | exclude des délais uniquement  |
 
 Les stocks conservent une issue dont le délai est exclu. L'inconnue et l'estimation ne deviennent jamais une preuve de terminaison.
+
+## Périmètre des versions (#39)
+
+| Règle                             | Objet                                       | Sévérité | Action                              |
+| --------------------------------- | ------------------------------------------- | -------- | ----------------------------------- |
+| [DQ-033](quality-rules/DQ-033.md) | Borne package absente ou invalide           | WARNING  | include / fiabilité partielle       |
+| [DQ-034](quality-rules/DQ-034.md) | Versions futures exclues de l’accessibilité | INFO     | include pour l’activité des équipes |

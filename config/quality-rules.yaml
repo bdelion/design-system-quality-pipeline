@@ -128,3 +128,11 @@ rules:
     severity: WARNING
     action: exclude
     message: "Date de traitement invalide ou antérieure à la création ; délai exclu."
+  - id: DQ-033
+    severity: WARNING
+    action: include
+    message: "Version du package.json racine absente ou invalide ; borne des versions indéterminée."
+  - id: DQ-034
+    severity: INFO
+    action: include
+    message: "Versions futures exclues des analyses accessibilité et conformité ; activité des issues conservée."

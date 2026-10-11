@@ -1,3 +1,4 @@
+import { isFutureVersion, milestoneVersionNumber, nominalVersion } from '../domain/version-scope.js';
 import { currentProjectStatus, issueBusinessState, lastDoneAt } from '../domain/business.js';
 import { METRIC_CONTRACTS } from '../analytics/catalog.js';
 /**
@@ -179,7 +180,7 @@ export function evaluateDataQuality(
       }
     }
 
-    if (issue.issueType === 'AUDIT') {
+    if (issue.issueType === 'AUDIT' && !issue.futureVersion) {
       if (issue.componentIds.length === 0) {
         add(
           'DQ-023',
@@ -248,7 +249,7 @@ export function evaluateDataQuality(
   }
 
   for (const issue of data.issues ?? []) {
-    if (issue.issueType !== 'FEATURE') continue;
+    if (issue.issueType !== 'FEATURE' || issue.futureVersion) continue;
     const rawIssue = rawIssueById.get(issue.issueId);
     const parentIds = rawIssue?.parents ?? [];
     if (parentIds.length === 0) continue;
@@ -463,6 +464,37 @@ export function evaluateDataQuality(
   for (const repository of raw.repositories) {
     const library = libraryByRepository.get(`${repository.owner}/${repository.name}`);
     if (!library) continue;
+    if (
+      repository.packageManifest?.status !== 'available' ||
+      !nominalVersion(repository.packageManifest.version)
+    ) {
+      add(
+        'DQ-033',
+        'WARNING',
+        'include',
+        'library',
+        library.libraryId,
+        'Version du package.json racine absente ou invalide sur la branche par défaut : borne des versions indéterminée ; données conservées.'
+      );
+    } else {
+      const futureVersions = new Set(
+        [
+          ...(repository.gitTags ?? []).map((tag) => tag.name),
+          ...repository.issues.map((issue) => milestoneVersionNumber(issue.milestone?.title, rules))
+        ].filter(
+          (version): version is string => isFutureVersion(version, repository.packageManifest) === true
+        )
+      );
+      if (futureVersions.size)
+        add(
+          'DQ-034',
+          'INFO',
+          'include',
+          'library',
+          library.libraryId,
+          `Versions au-delà du package.json ${repository.packageManifest.version} exclues des analyses accessibilité et conformité : ${[...futureVersions].sort().join(', ')}. Issues et PR conservées dans l'activité des équipes.`
+        );
+    }
     for (const catalogue of repository.historicalCatalogues ?? []) {
       if (catalogue.status === 'available') continue;
       const version = versionByLibraryAndNumber.get(`${library.libraryId}:${catalogue.tagName}`);

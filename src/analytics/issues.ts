@@ -105,8 +105,9 @@ export function projectIssueFacts(
       labels: issue.labels,
       type: issue.rawIssueType ?? issue.issueType ?? 'Non renseigné',
       family: issueClassification(issue, data),
-      familyLabel:
-        anomalies.length && qualification.status === 'qualified' && anomalies[0]?.origin !== 'AUDIT'
+      familyLabel: issue.futureVersion
+        ? 'Version future · activité conservée, hors analyses accessibilité'
+        : anomalies.length && qualification.status === 'qualified' && anomalies[0]?.origin !== 'AUDIT'
           ? 'Anomalie d’accessibilité qualifiée · origine ' + anomalies[0]?.origin
           : (
               {

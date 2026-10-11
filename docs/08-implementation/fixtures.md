@@ -183,3 +183,7 @@ Le 11 octobre 2026, la liste de 71 composants fournie explicitement par l’util
 Le catalogue YAML courant associé reste vide : cette liste historique ne prouve pas la composition de la version courante ni les métadonnées des composants. Le normaliseur construit les composants et leurs présences en 1.7.1 depuis la preuve historique. Le test `full-dataset-catalogue.test.ts` vérifie les 71 relations et le verdict de LinkButton en 1.7.1.
 
 Validation de cet ajout : `npm run check` réussit (186 tests, 39 fichiers). Le pipeline fixture est rejoué et matérialise 71 relations, avec LinkButton `CONFORME` en 1.7.1 ; son statut global reste `PARTIAL`. `fixture:validate` détecte zéro chaîne suspecte et une référence PR vers une issue absente. La même erreur existe dans la fixture versionnée avant cet ajout (`pr-53e244c7` → `issue-4d76bdad`) ; elle est conservée pour diagnostic, sans suppression ni invention d’issue.
+
+## Borne des versions du package
+
+Les nouvelles collectes conservent `repositories[].packageManifest`. L’anonymisation et la préparation des références préservent cette borne ; les anciennes fixtures sans ce champ restent compatibles avec réserve DQ-033. Voir [Périmètre des versions](perimetre-versions.md) pour la structure RAW et la régénération nécessaire des snapshots.
