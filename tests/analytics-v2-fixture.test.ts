@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { collectFixture } from '../src/collectors/fixture.js';
+import { collectFixture } from './support/fixtures.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
-import { loadConfig } from '../src/config.js';
+import { loadConfig } from './support/fixtures.js';
 
 describe('V2 fixture analytical contract', () => {
   it('produces the expected self-explaining metrics', async () => {
@@ -15,9 +15,9 @@ describe('V2 fixture analytical contract', () => {
 
     expect(metrics['portfolio.repositories']?.value).toBe(3);
     expect(metrics['portfolio.libraries']?.value).toBe(3);
-    expect(metrics['portfolio.components']?.value).toBe(8);
-    expect(metrics['portfolio.componentsAudited']?.value).toBe(1);
-    expect(metrics['portfolio.auditCoverage']?.value).toBe(12.5);
+    expect(metrics['portfolio.components']?.value).toBe('unknown');
+    expect(metrics['portfolio.componentsAudited']?.value).toBe('unknown');
+    expect(metrics['portfolio.auditCoverage']?.value).toBe('unknown');
     expect(metrics['audit.completed']?.value).toBe(1);
     expect(metrics['audit.conformityRate']?.value).toBe(100);
     expect(metrics['anomaly.total']?.value).toBe(7);
@@ -41,7 +41,7 @@ describe('V2 fixture analytical contract', () => {
     expect(metrics['audit.conformityRate']?.reliability.issueIds).toEqual(
       expect.arrayContaining(issues.filter((issue) => issue.ruleId === 'DQ-033').map((issue) => issue.id))
     );
-    expect(metrics['portfolio.auditCoverage']?.reliability.status).toBe('partial');
+    expect(metrics['portfolio.auditCoverage']?.reliability.status).toBe('unknown');
     expect(metrics['anomaly.byCategory.focus']?.value).toBe(2);
     expect(metrics['anomaly.byCategory.name']?.value).toBe(2);
     expect(metrics['anomaly.byCategory.structure']?.value).toBe(1);

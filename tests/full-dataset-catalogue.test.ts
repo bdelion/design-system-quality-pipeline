@@ -1,13 +1,13 @@
 import { expect, it } from 'vitest';
-import { collectFixture } from '../src/collectors/fixture.js';
-import { loadConfig } from '../src/config.js';
-import { loadCatalogue } from '../src/catalogue.js';
+import { collectFixture } from './support/fixtures.js';
+import { loadConfig } from './support/fixtures.js';
+import { loadCatalogue } from './support/fixtures.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { applyComponentVersionVerdicts } from '../src/analytics/component-versions.js';
 
 /** Vérifie la preuve historique fournie sans l’étendre aux versions dont le catalogue demeure inconnu. */
 it('matérialise les 71 composants demo-react en 1.7.1 et le verdict conforme de LinkButton', async () => {
-  const path = 'fixtures/full-dataset-anonymized.json';
+  const path = 'tests/fixtures/full-dataset-anonymized.json';
   const raw = await collectFixture(path);
   const config = await loadConfig('fixture', path);
   const catalogue = await loadCatalogue('fixture', path);

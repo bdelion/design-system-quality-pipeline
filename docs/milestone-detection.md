@@ -1,6 +1,6 @@
 # Reconnaissance configurable des milestones
 
-Dans `config/system.yaml`, la section `github.milestoneDetection` permet de reconnaître les versions associées aux milestones GitHub.
+Dans `config/profiles/dsq.json`, la section `github.milestoneDetection` permet de reconnaître les versions associées aux milestones GitHub.
 
 ```yaml
 github:

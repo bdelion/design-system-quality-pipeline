@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { collectFixture } from '../src/collectors/fixture.js';
+import { collectFixture } from './support/fixtures.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
-import { loadConfig } from '../src/config.js';
-import { loadCatalogue, validateCatalogue } from '../src/catalogue.js';
+import { loadConfig } from './support/fixtures.js';
+import { loadCatalogue, validateCatalogue } from './support/fixtures.js';
 
 const raw = await collectFixture();
 const config = await loadConfig('fixture');
@@ -179,8 +179,8 @@ it('builds self-explaining V2 metrics with metric-scoped DQ impacts', () => {
 
   expect(metrics['portfolio.auditCoverage']).toMatchObject({
     unit: 'percentage',
-    numerator: expect.any(Number),
-    denominator: expect.any(Number)
+    numerator: 'unknown',
+    denominator: 'unknown'
   });
   expect(metrics['portfolio.auditCoverage']?.definition).toContain('Composants actifs');
   expect(metrics['anomaly.byCriticality.major']?.unit).toBe('count');

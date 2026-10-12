@@ -1,13 +1,13 @@
 ---
 name: dsq-fixture
-description: 'Diagnostiquer une fixture DSQ, son anonymisation, ses alias, ses références manquantes ou son échec pipeline. Utiliser pour les datasets et configurations associés ; pas pour collecter GitHub sans demande.'
+description: 'Diagnostiquer un dataset DSQ, son anonymisation, ses alias, ses références manquantes ou son échec pipeline ; ne pas collecter GitHub sans demande.'
 ---
 
 # dsq-fixture
 
-1. Lire `src/anonymization/AGENTS.md` et les seules sections utiles de `docs/08-implementation/anonymisation-v2.md` et `docs/08-implementation/fixtures.md`.
-2. Identifier le triplet fixture/system/catalogue, sa seed et ses alias ; inspecter `src/lib/paths.ts` pour la résolution effective. Lire `.env.example`, jamais afficher les valeurs secrètes de `.env`.
-3. Exécuter `npm run fixture:validate -- --input <fixture>` ; isoler l’objet et la relation fautive avec un petit extrait anonymisé.
-4. Pour un repository manquant, comparer les noms RAW/anonymisés/configurés. Pour un catalogue vide, vérifier la collecte et la source du catalogue avant d’en inventer un.
-5. Si la régénération est demandée, relire les options de `src/cli.ts`, produire un nouveau triplet cohérent sans écraser le RAW, puis valider et rejouer `npm run pipeline -- --source fixture --fixture <fixture>`.
-6. En cas de correction du code, ajouter les tests associés et appliquer la gate `npm run check`. Distinguer validation confidentialité, intégrité et exécution pipeline.
+1. Lire `src/anonymization/AGENTS.md` et les sections utiles de `docs/08-implementation/datasets.md`.
+2. Identifier le dossier autonome, son `dataset.json`, son manifeste, la provenance du profil et les alias ; lire `src/datasets.ts`. Ne jamais afficher les secrets de `.env`.
+3. Exécuter `npm run fixture:validate -- --dataset <dossier>` ; isoler les références fautives avec un extrait anonymisé minimal.
+4. Comparer les noms RAW, anonymisés et le périmètre embarqué. Un catalogue absent ne prouve pas l’absence de composants ; ne pas inventer de métadonnées.
+5. Si une régénération est demandée, utiliser `fixture:prepare --input <raw> --output <nouveau-dossier>` puis `pipeline --dataset <dossier> --output <sorties>`. Conserver le RAW et les jeux existants. Les scénarios de tests et la démonstration ne sont pas des destinations de collecte personnelle.
+6. Pour une correction de code, ajouter les tests et appliquer `npm run check`, ou `npm run check:dashboard` pour le rendu. Distinguer intégrité, anonymisation, réserves DQ et preuve métier.

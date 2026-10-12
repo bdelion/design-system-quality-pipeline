@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { GithubRequests } from '../src/collectors/github-requests.js';
 import { CollectionProgress } from '../src/lib/collection-progress.js';
-import { runPipeline } from '../src/pipeline.js';
+import { collectRepositories } from '../src/datasets.js';
 import { writeJson } from '../src/lib/files.js';
 import { generateDashboard } from '../src/dashboard/generate.js';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -116,7 +116,9 @@ it('ne produit ni snapshot ni dashboard lorsque le pré-check interrompt le pipe
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
   const api = vi.fn(async () => quotas(0));
   vi.stubGlobal('fetch', api);
-  await expect(runPipeline('github')).rejects.toThrow(/Quota REST : réserve de sécurité atteinte/);
+  await expect(collectRepositories(['example/ui'], 'data/local/never-quota-output.json')).rejects.toThrow(
+    /Quota REST : réserve de sécurité atteinte/
+  );
   expect(api).toHaveBeenCalledTimes(1);
   expect(writeJson).not.toHaveBeenCalled();
   expect(generateDashboard).not.toHaveBeenCalled();

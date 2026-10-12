@@ -1,13 +1,13 @@
 import { expect, it } from 'vitest';
 import { readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { collectFixture } from '../src/collectors/fixture.js';
+import { collectFixture } from './support/fixtures.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
 import { buildSnapshot } from '../src/snapshots/snapshot.js';
 import { generateDashboard } from '../src/dashboard/generate.js';
-import { loadConfig } from '../src/config.js';
+import { loadConfig } from './support/fixtures.js';
 
 // Vérifie le contrat HTML public du dashboard sans dépendre d'un navigateur.
 it('generates static dashboard pages from the snapshot contract', async () => {
@@ -74,6 +74,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('href="issues.html"');
   const graphHtml = await readFile(resolve(output, 'dashboard/graph.html'), 'utf8');
   expect(graphHtml).toContain('Issues (tous types)');
+  expect(graphHtml.includes('npm run dashboard:serve -- chemin/du/dashboard')).toBe(true);
   expect(graphHtml).toContain('data-map-kind="issue"');
   expect(graphHtml).toContain('href="https://github.com/example/design-system-react/issues/204"');
   const historyHtml = await readFile(resolve(output, 'dashboard/history.html'), 'utf8');

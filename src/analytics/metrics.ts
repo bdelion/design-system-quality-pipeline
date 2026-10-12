@@ -123,8 +123,12 @@ function delayDays(createdAt: string, firstDoneAt: string): number {
   return (Date.parse(firstDoneAt) - Date.parse(createdAt)) / 86_400_000;
 }
 
-/** Construit les métriques V2 sans supprimer les données du snapshot. */
-export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssue[]): Record<string, Metric> {
+/** Construit les métriques ; sans catalogue ou avec un cycle de vie inconnu, le patrimoine actif reste indéterminé. */
+export function calculateMetrics(
+  data: NormalizedData,
+  dqIssues: DataQualityIssue[],
+  catalogueAvailable = true
+): Record<string, Metric> {
   const metricIds = METRIC_CONTRACTS.map((contract) => contract.id);
   assertMetricContract(metricIds);
   const issues = applyMetricImpacts(dqIssues, metricIds);
@@ -516,6 +520,28 @@ export function calculateMetrics(data: NormalizedData, dqIssues: DataQualityIssu
       population.map((audit) => audit.auditId),
       issues
     );
+  }
+  if (!catalogueAvailable || data.components.some((component) => component.status === 'unknown')) {
+    for (const id of ['portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage']) {
+      const result = m[id];
+      if (result) {
+        result.value = 'unknown';
+        result.numerator = 'unknown';
+        result.denominator = 'unknown';
+        result.reliability.status = 'unknown';
+        result.definition += catalogueAvailable
+          ? ' Cycle de vie inconnu pour certains composants observés.'
+          : ' Catalogue de référence non fourni.';
+        result.sourceEntityIds = [
+          ...new Set([
+            ...result.sourceEntityIds,
+            ...data.components
+              .filter((component) => component.status === 'unknown')
+              .map((component) => component.componentId)
+          ])
+        ];
+      }
+    }
   }
   return { ...m, ...calculateIssueMetrics(data, dqIssues) };
 }

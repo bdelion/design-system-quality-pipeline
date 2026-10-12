@@ -4,11 +4,6 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
-import { assertConfigSelection, type ConfigSelection } from './config.js';
-import { readFile } from 'node:fs/promises';
-import { parse } from 'yaml';
-import { cataloguePath, resolveFixtureConfigPaths } from './lib/paths.js';
-
 /** Statut de cycle de vie déclaré dans le catalogue de référence. */
 export type CatalogueStatus = 'stable' | 'experimental' | 'deprecated' | 'removed';
 
@@ -42,20 +37,6 @@ export interface Catalogue {
 
 const catalogueStatuses = new Set<CatalogueStatus>(['stable', 'experimental', 'deprecated', 'removed']);
 const auditFrequencies = new Set<CatalogueAudit['frequency']>(['monthly', 'quarterly', 'yearly']);
-
-/** Charge puis valide le catalogue avant de le rendre disponible au pipeline. */
-export async function loadCatalogue(
-  source: 'fixture' | 'github' = 'github',
-  fixtureFile?: string,
-  selection: ConfigSelection = {}
-): Promise<Catalogue> {
-  assertConfigSelection(selection);
-  const path =
-    selection.catalogueConfig ??
-    (source === 'fixture' ? (await resolveFixtureConfigPaths(fixtureFile)).catalogue : cataloguePath);
-  const yaml = await readFile(path, 'utf8');
-  return validateCatalogue(parse(yaml));
-}
 
 /** Refuse les brouillons, puis vérifie la structure métier du catalogue et l’unicité de ses composants. */
 export function validateCatalogue(value: unknown): Catalogue {

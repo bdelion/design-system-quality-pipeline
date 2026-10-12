@@ -2,9 +2,9 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { collectFixture } from '../src/collectors/fixture.js';
-import { loadConfig } from '../src/config.js';
-import { loadCatalogue } from '../src/catalogue.js';
+import { collectFixture } from './support/fixtures.js';
+import { loadConfig } from './support/fixtures.js';
+import { loadCatalogue } from './support/fixtures.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { applyComponentVersionVerdicts } from '../src/analytics/component-versions.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
@@ -13,7 +13,7 @@ import { buildVersionHistoricalStates } from '../src/snapshots/history.js';
 import { buildSnapshot } from '../src/snapshots/snapshot.js';
 import { generateDashboard } from '../src/dashboard/generate.js';
 
-const fixture = 'fixtures/v1-reference.json';
+const fixture = 'tests/fixtures/v1-reference.json';
 
 describe('I9 V1 reference scenario', () => {
   it('covers the V1 contract end to end without network access', async () => {

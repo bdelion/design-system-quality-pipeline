@@ -11,7 +11,7 @@ Labels métier explicitement identifiés :
 
 ## Configuration actuelle
 
-`config/system.yaml` configure les préfixes et les valeurs de criticité :
+`config/profiles/dsq.json` configure les préfixes et les valeurs de criticité :
 
 - `bloquante` → `blocking`
 - `majeure` → `major`

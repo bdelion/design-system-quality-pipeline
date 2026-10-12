@@ -1,41 +1,44 @@
-import { execFile } from 'node:child_process';
+﻿import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
-
 const execute = promisify(execFile);
-
-/** Vérifie le contrat CLI sans lancer de collecte réseau. */
-it('refuse toutes les collectes sans sortie avant de lire la configuration', async () => {
-  for (const source of ['fixture', 'github']) {
-    await expect(
-      execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'collect', '--source', source])
-    ).rejects.toMatchObject({ stderr: expect.stringContaining("required option '--output <path>'") });
-  }
-}, 20_000);
-
-/** Vérifie l'écriture effective du RAW dans un dossier imbriqué absent. */
-it('crée le dossier de sortie et annonce le fichier RAW enregistré', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'dsq-collect-'));
-  const output = join(directory, 'nested', 'raw', 'dataset.json');
+/** Refuse les entrées absentes et les noms mal structurés avant tout accès réseau. */
+it('exige la liste et la sortie et refuse un owner non explicite', async () => {
+  await expect(
+    execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'collect', '--repositories', 'unused.json'])
+  ).rejects.toMatchObject({ stderr: expect.stringContaining("required option '--output <file>'") });
+  const directory = await mkdtemp(join(tmpdir(), 'dsq-cli-list-'));
   try {
-    const result = await execute(process.execPath, [
-      '--import',
-      'tsx',
-      'src/cli.ts',
-      'collect',
-      '--source',
-      'fixture',
-      '--output',
-      output
-    ]);
-    const raw = JSON.parse(await readFile(output, 'utf8'));
-    expect(raw.repositories.length).toBeGreaterThan(0);
-    expect(result.stdout).toContain(`Fichier RAW : ${output}`);
-    expect(result.stdout).toContain(`Collecte terminée : ${raw.repositories.length} repositories`);
+    const input = join(directory, 'repositories.json');
+    await writeFile(input, JSON.stringify(['ui']));
+    await expect(
+      execute(process.execPath, [
+        '--import',
+        'tsx',
+        'src/cli.ts',
+        'collect',
+        '--repositories',
+        input,
+        '--output',
+        join(directory, 'raw.json')
+      ])
+    ).rejects.toMatchObject({ stderr: expect.stringContaining('owner/repository') });
+    const result = await execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', '--help']);
+    expect(result.stdout).toContain('fixture:prepare');
+    expect(result.stdout).toContain('fixture:validate');
+    for (const command of [
+      'fixture:anonymize',
+      'reference:prepare',
+      'catalogue:generate',
+      'system:generate',
+      'analyze',
+      'snapshot'
+    ])
+      expect(result.stdout).not.toContain(command);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
-}, 20_000);
+}, 20000);

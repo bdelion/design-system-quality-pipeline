@@ -143,14 +143,14 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 
 ## Configurations et tests
 
+- [Datasets autonomes, commandes et migration](08-implementation/datasets.md)
+
+- [Analyse du démarrage local et proposition de refonte des datasets](08-implementation/analyse-parcours-local.md)
+
 - [Première utilisation et scripts, pas à pas](08-implementation/guide-utilisation.md)
-- [Générer un brouillon de catalogue depuis un RAW local](08-implementation/generation-catalogue.md)
-- [Générer un brouillon système depuis un RAW local](08-implementation/generation-systeme.md)
 - [Quotas GitHub, arrêt, décompte et reprise en mémoire](08-implementation/quotas-github.md)
 
 - [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)
-
-- [Préparer les références GitHub/fixture et proposition de ménage](08-implementation/preparation-references.md)
 
 ## Refonte du dashboard par besoins
 

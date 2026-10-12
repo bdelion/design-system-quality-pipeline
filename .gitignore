@@ -607,3 +607,6 @@ $RECYCLE.BIN/
 /config/local/
 
 /data/dashboard-refactor-preview/
+/data/local/
+/data/output/
+/datasets/

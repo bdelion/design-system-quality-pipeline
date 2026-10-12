@@ -4,64 +4,45 @@
  * @remarks Documentation des contrats et responsabilités du module.
  */
 
-import { collectFixture } from './collectors/fixture.js';
-import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
-import type { GithubQuotaOptions } from './collectors/github-requests.js';
-import { loadConfig, type ConfigSelection } from './config.js';
+import { loadDataset } from './datasets.js';
+import { resolve, dirname, relative, isAbsolute, sep } from 'node:path';
 import { calculateKpis } from './analytics/kpis.js';
 import { readJson, writeJson } from './lib/files.js';
-import { currentPath, dashboardPath, fixturePath, runPath } from './lib/paths.js';
 import { generateDashboard } from './dashboard/generate.js';
 import { normalizeGithub } from './normalizers/github.js';
 import { evaluateDataQuality, summarizeQuality } from './quality/rules.js';
 import { buildSnapshot } from './snapshots/snapshot.js';
-import type { RawDataset, Snapshot } from './domain/types.js';
-import { loadCatalogue } from './catalogue.js';
+import type { Snapshot } from './domain/types.js';
 import { calculateFlowMetrics } from './analytics/flows.js';
 import { applyComponentVersionVerdicts } from './analytics/component-versions.js';
 import { diffSnapshots } from './snapshots/diff.js';
 import { latestComparableSnapshot } from './snapshots/history.js';
-import { readdir } from 'node:fs/promises';
+import { readdir, lstat } from 'node:fs/promises';
 
-/**
- * Définit le type « CollectionSource » utilisé dans les contrats du pipeline.
- */
-export type CollectionSource = 'fixture' | 'github';
-
-/** Exécute la collecte, la normalisation, les contrôles, les KPI et les sorties. */
-export async function runPipeline(
-  source: CollectionSource = 'fixture',
-  selectedFixturePath: string = fixturePath,
-  selection: ConfigSelection & GithubQuotaOptions = {}
-): Promise<Snapshot> {
-  const config = await loadConfig(source, source === 'fixture' ? selectedFixturePath : undefined, selection);
-  const catalogue = await loadCatalogue(
-    source,
-    source === 'fixture' ? selectedFixturePath : undefined,
-    selection
-  );
-  const raw =
-    source === 'github'
-      ? await collectGithub({
-          ...selection,
-          token: githubTokenFromEnvironment(),
-          owner: config.githubOwner,
-          repositories: config.repositories,
-          apiUrl: config.githubApiUrl,
-          graphqlUrl: config.githubGraphqlUrl,
-          rules: config.github
-        })
-      : await collectFixture(selectedFixturePath);
-
-  // Le catalogue est la référence utilisée pour classer les composants découverts.
-  raw.catalogueComponents = catalogue.components.map((component) => component.name);
-  validateRepositories(config.repositories, raw, source === 'fixture' ? selectedFixturePath : undefined);
-  const normalized = normalizeGithub(raw, config.github, catalogue, config.auditVersion);
+/** Rejoue un jeu autonome hors réseau et écrit uniquement dans sa destination explicite. */
+export async function runPipeline(datasetPath: string, outputPath: string): Promise<Snapshot> {
+  const { config, catalogue, rawData: raw } = await loadDataset(datasetPath);
+  const inputDirectory = (await lstat(datasetPath)).isDirectory()
+    ? resolve(datasetPath)
+    : dirname(resolve(datasetPath));
+  const outputRelative = relative(inputDirectory, resolve(outputPath));
+  if (
+    !outputRelative ||
+    (outputRelative !== '..' && !outputRelative.startsWith('..' + sep) && !isAbsolute(outputRelative))
+  )
+    throw new Error('Choisir un dossier de sorties distinct du dataset.');
+  const runPath = resolve(outputPath, 'runs');
+  const normalized = normalizeGithub(raw, config.github, catalogue ?? undefined, config.auditVersion);
   applyComponentVersionVerdicts(normalized);
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);
-  const analytics = calculateKpis(normalized, qualityIssues, config.github.accessibilityRecognition);
+  const analytics = calculateKpis(
+    normalized,
+    qualityIssues,
+    config.github.accessibilityRecognition,
+    catalogue !== null
+  );
   const capturedAt = new Date().toISOString();
-  const previousSnapshot = latestComparableSnapshot(await loadSnapshots(), {
+  const previousSnapshot = latestComparableSnapshot(await loadSnapshots(runPath), {
     scope: config.scope,
     modelVersion: config.modelVersion,
     ruleVersion: config.ruleVersion
@@ -79,8 +60,8 @@ export async function runPipeline(
   );
   completeSnapshotComparison(previousSnapshot, snapshot);
   await writeJson(`${runPath}/${snapshot.snapshotId}.json`, snapshot);
-  await writeJson(`${currentPath}/snapshot.json`, snapshot);
-  await generateDashboard(snapshot, dashboardPath, config.githubUrl, config.github.labels.componentPrefix);
+  await writeJson(resolve(outputPath, 'current/snapshot.json'), snapshot);
+  await generateDashboard(snapshot, outputPath, config.githubUrl, config.github.labels.componentPrefix);
   return snapshot;
 }
 
@@ -88,26 +69,13 @@ export async function runPipeline(
  * Charge snapshots dans le contexte du pipeline de qualité.
  * @returns Résultat du traitement.
  */
-async function loadSnapshots(): Promise<Snapshot[]> {
+async function loadSnapshots(runPath: string): Promise<Snapshot[]> {
   try {
     const files = (await readdir(runPath)).filter((file: string) => file.endsWith('.json'));
     return await Promise.all(files.map((file: string) => readJson<Snapshot>(`${runPath}/${file}`)));
   } catch {
     return [];
   }
-}
-
-/** Vérifie que la collecte couvre tous les repositories demandés par la configuration. */
-function validateRepositories(expected: string[], raw: RawDataset, fixtureFile?: string): void {
-  const actual = new Set(raw.repositories.map((repository) => repository.name));
-  const missing = expected.filter((repository) => !actual.has(repository));
-  if (missing.length === 0) return;
-
-  const sourceHint = fixtureFile ? ` Fixture: ${fixtureFile}.` : '';
-  const actualRepositories = [...actual].join(', ') || '(none)';
-  throw new Error(
-    `Missing configured repositories: ${missing.join(', ')}.${sourceHint} Collected repositories: ${actualRepositories}. Generate the fixture and its fixture-specific configuration together with npm run fixture:anonymize, or provide the matching fixture configuration.`
-  );
 }
 
 /** Détermine si le snapshot est complet ou s'il doit être présenté comme partiel. */
