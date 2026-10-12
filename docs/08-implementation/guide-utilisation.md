@@ -87,6 +87,8 @@ Elle produit aussi `data/dashboard-refactor-preview/accessibility-review.csv`, u
 
 ## 5. Collecter les données GitHub
 
+Si un RAW est déjà disponible, [générer un brouillon système](generation-systeme.md) permet d’extraire son périmètre et les valeurs observées avant de confirmer les conventions de traitement. Cette commande complète `catalogue:generate` ; les deux brouillons nécessitent une revue avant utilisation.
+
 Configurer d’abord le propriétaire, les repositories et les conventions dans `config/system.yaml`, puis les composants dans `config/catalogue.yaml`. Ces fichiers définissent ce qui sera lu et comment les données seront interprétées.
 
 Si un RAW est déjà disponible, `npm.cmd run catalogue:generate -- --input data/raw/collecte.json --output config/local/catalogue.brouillon.yaml` permet de préparer les noms de composants sans catalogue source. Compléter les métadonnées laissées à `null` avant utilisation ; voir [la génération du catalogue](generation-catalogue.md).

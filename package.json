@@ -12,6 +12,7 @@
     "clean": "node scripts/clean.mjs",
     "collect": "tsx src/cli.ts collect",
     "catalogue:generate": "tsx src/cli.ts catalogue:generate",
+    "system:generate": "tsx src/cli.ts system:generate",
     "validate": "tsx src/cli.ts validate",
     "analyze": "tsx src/cli.ts analyze",
     "snapshot": "tsx src/cli.ts snapshot",
