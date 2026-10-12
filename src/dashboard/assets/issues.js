@@ -52,6 +52,26 @@ import { matchesFact, currentContext, setContext } from './context.js';
   const columns = [...root.querySelectorAll('[data-issue-column]')];
   /** Retourne l’identité distincte d’une issue dans son repository. */
   const key = (item) => item.key;
+  /** Présente une valeur par Project et conserve les absences et les valeurs source nulles explicites. */
+  const projectValues = (item, field) => {
+    const contexts = item.projectContexts ?? [];
+    return contexts.length
+      ? contexts
+          .map((context) => {
+            const value =
+              field === 'status'
+                ? (context.rawStatus ?? context.status)
+                : field === 'iteration'
+                  ? context.iteration?.title
+                  : context.rawVelocity;
+            return (
+              (contexts.length > 1 ? `${context.projectName || context.projectId} : ` : '') +
+              (value ?? 'Non renseigné')
+            );
+          })
+          .join(' ; ')
+      : 'Non renseigné';
+  };
   /** Calcule l’ancienneté à la capture du snapshot, indépendamment de la date de consultation. */
   const dayAge = (item) =>
     Math.max(0, (Date.parse(window.__SNAPSHOT__.capturedAt) - Date.parse(item.createdAt)) / 86400000);
@@ -89,7 +109,18 @@ import { matchesFact, currentContext, setContext } from './context.js';
         (!filters.status.value || item.status === filters.status.value) &&
         (!filters.githubState.value || item.githubState === filters.githubState.value) &&
         (!q ||
-          [item.repo, item.number, item.title, item.type, item.status, ...labels]
+          [
+            item.repo,
+            item.number,
+            item.title,
+            item.type,
+            item.status,
+            ...(item.components ?? []),
+            projectValues(item, 'status'),
+            projectValues(item, 'iteration'),
+            projectValues(item, 'velocity'),
+            ...labels
+          ]
             .join(' ')
             .toLocaleLowerCase('fr')
             .includes(q))
@@ -121,7 +152,11 @@ import { matchesFact, currentContext, setContext } from './context.js';
           item.githubState,
           item.prs.length,
           item.delay === null ? '—' : number(item.delay),
-          item.githubState === 'OPEN' ? number(dayAge(item)) : '—'
+          item.githubState === 'OPEN' ? number(dayAge(item)) : '—',
+          item.components?.join(', ') || 'Non renseigné',
+          projectValues(item, 'status'),
+          projectValues(item, 'iteration'),
+          projectValues(item, 'velocity')
         ]
       }))
     );
@@ -259,7 +294,11 @@ import { matchesFact, currentContext, setContext } from './context.js';
         'État GitHub',
         'PR',
         'Délai issue',
-        'Ancienneté ouverte'
+        'Ancienneté ouverte',
+        'Composants',
+        'Statut Project',
+        'Itération',
+        'Velocity source'
       ],
       ...visible.map(({ values }) => values)
     ];

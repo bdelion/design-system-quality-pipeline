@@ -51,11 +51,18 @@ import { matchesFact, currentContext, setContext } from './context.js';
         matchesFact(item, context) &&
         (!version || item.versions.includes(version) || item.versionIds.includes(version))
     );
+    const latestAudit = version
+      ? (row.auditSources.find((audit) => summary?.auditIds.includes(audit.id)) ??
+        row.auditSources.find((audit) => audit.version === summary?.version))
+      : row.auditSources.find((audit) => audit.id === row.latestAuditId);
     return {
       ...row,
       version: summary?.version ?? row.version,
       conformity: summary?.conformity ?? 'NON_COUVERT',
       auditIds: summary?.auditIds ?? [],
+      latestAuditUrl: latestAudit?.url ?? '',
+      latestAuditVersion: latestAudit?.version ?? '',
+      auditStatus: latestAudit?.status ?? 'non audité',
       items,
       matches:
         matchesFact(
@@ -72,6 +79,44 @@ import { matchesFact, currentContext, setContext } from './context.js';
         ) &&
         (!['issue', 'audit', 'anomaly', 'family'].some((key) => context.get(key)) || items.length > 0)
     };
+  }
+  /** Rend uniquement les URL HTTPS résolues, avec ouverture externe explicite. */
+  function externalLink(url, value, title) {
+    return /^https:\/\/[^\s]+$/.test(url ?? '')
+      ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer"${title ? ` title="${escape(title)}"` : ''}>${escape(value)} ↗</a>`
+      : escape(value);
+  }
+  /** Associe les recherches GitHub et les audits justificatifs aux colonnes correspondantes. */
+  function linkedValue(row, oldest, value, index) {
+    const field = { 2: 'issues', 3: 'open', 4: 'treated', 5: 'cancelled', 6: 'prs', 7: 'audits' }[index];
+    if (index === 6 && row.githubLinks?.prSearches.length > 1) {
+      return (
+        externalLink(row.githubLinks.prs, value, 'PR par références d’issues ; première recherche.') +
+        '<small>' +
+        row.githubLinks.prSearches
+          .slice(1)
+          .map((url, i) => externalLink(url, `Recherche PR ${i + 2}`))
+          .join('<br>') +
+        '</small>'
+      );
+    }
+    if (field)
+      return externalLink(
+        row.githubLinks?.[field],
+        value,
+        'Recherche GitHub actuelle ; population approchée, voir les explications au-dessus du tableau.'
+      );
+    if (index === 8) return externalLink(row.latestAuditUrl, value);
+    if (index === 9) {
+      const audits = row.auditSources.filter(
+        (audit) => row.auditIds.includes(audit.id) && /^https:\/\/[^\s]+$/.test(audit.url)
+      );
+      return audits.length
+        ? audits.map((audit, i) => externalLink(audit.url, i === 0 ? value : audit.id)).join('<br>')
+        : escape(value);
+    }
+    if (index === 10 && oldest) return externalLink(oldest.url, value);
+    return escape(value);
   }
   /** Filtre les composants et agrège les mêmes faits Analytics distincts que l'explorateur d'issues. */
   function render() {
@@ -116,7 +161,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
             row.items.filter((item) => item.cancelled).length,
             prs.size,
             row.audits,
-            `${row.version} ${row.auditStatus}`.trim(),
+            `${row.latestAuditVersion} ${row.auditStatus}`.trim(),
             row.conformity,
             oldest ? `#${oldest.number}` : '—',
             fmt(age),
@@ -158,7 +203,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     $('[data-component-rows]').innerHTML = visible
       .map(
         ({ row, oldest, values }) =>
-          `<tr><td><input type="checkbox" data-component-check="${escape(row.id)}" aria-label="Sélectionner ${escape(row.name)}" ${selected.has(row.id) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${index === 10 && oldest && /^https:\/\/[^\s]+$/.test(oldest.url) ? `<a href="${escape(oldest.url)}" target="_blank" rel="noopener noreferrer">${escape(value)} ↗</a>` : escape(value)}</td>`).join('')}</tr>`
+          `<tr><td><input type="checkbox" data-component-check="${escape(row.id)}" aria-label="Sélectionner ${escape(row.name)}" ${selected.has(row.id) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${linkedValue(row, oldest, value, index)}</td>`).join('')}</tr>`
       )
       .join('');
     return visible;

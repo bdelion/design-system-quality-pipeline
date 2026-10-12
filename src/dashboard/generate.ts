@@ -10,6 +10,8 @@ import {
 } from './workspaces.js';
 import { issueFacts, resetDashboardReadModel } from './read-model.js';
 import { durationStatistics } from '../analytics/statistics.js';
+import { teamActivitySummary } from '../analytics/team-activity.js';
+import { componentGithubLinks } from './component-links.js';
 import { latestComponentVersion } from '../analytics/component-versions.js';
 import {
   contextAttribute,
@@ -72,10 +74,10 @@ export async function generateDashboard(
       page(
         snapshot,
         'Vue d’ensemble',
-        '<section class="panel overview-intro"><h2>Qualité du Design System</h2><p>Tous les repositories · versions PROD courantes pour la conformité. Audits, anomalies accessibilité et activité des équipes restent distincts.</p><a href="accessibility.html">Voir tous les indicateurs accessibilité</a></section>' +
-          '<h2 class="section-title">Accessibilité · versions PROD courantes</h2>' +
-          workspaceCards(snapshot, true) +
-          globalOverviewCards(snapshot),
+        '<div data-overview-global>' +
+          repositoryComparisonTables(snapshot, githubUrl) +
+          globalOverviewCards(snapshot) +
+          '</div>',
         serializedSnapshot
       ),
       'utf8'
@@ -152,7 +154,7 @@ export async function generateDashboard(
         snapshot,
         'Qualité des données',
         '<section class="panel"><h2>Alertes et fiabilité du snapshot</h2><p>Les alertes Data Quality sont des problèmes de données, pas des anomalies d’accessibilité.</p></section>' +
-          dataQualityContent(snapshot) +
+          dataQualityContent(snapshot, githubUrl) +
           '<details class="panel" data-global-only><summary>Indicateurs historiques du snapshot complet</summary>' +
           overviewContent(snapshot, githubUrl) +
           '</details>' +
@@ -197,7 +199,7 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
 <section class="panel" data-file-warning hidden role="alert"><h2>Ouvrir le dashboard sur HTTP</h2><p>Les filtres et graphiques interactifs nécessitent un serveur local. Exécuter <code>npm run dashboard:serve</code> puis ouvrir <a href="http://127.0.0.1:4174/">http://127.0.0.1:4174/</a>.</p></section>
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Design System Quality</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${qualityLabel(snapshot.reliability)}</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${title === 'Qualité des données' ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined)}${content}${workspacePayload(snapshot)}</main></div>
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${['Qualité des données', 'Vue d’ensemble'].includes(title) ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined)}${content}${workspacePayload(snapshot)}</main></div>
   <script>window.__SNAPSHOT__ = ${serializedSnapshot}; if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script>${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
 </body></html>`
     .replace(/class="active" href=/g, 'class="active" aria-current="page" href=')
@@ -243,7 +245,7 @@ function globalOverviewCards(snapshot: Snapshot): string {
     ['anomaly.correctionDelay.p90', 'P90 des délais des défauts', 'anomalies.html']
   ];
   return (
-    '<section data-global-only aria-label="Synthèse globale du snapshot"><div class="section-heading"><h2>Patrimoine et activité globale</h2></div><p>Snapshot complet, tous repositories et toutes versions. Les défauts normalisés correspondent aux BUG configurés ; ils ne sont pas tous des anomalies d’accessibilité. Ces cartes sont masquées lorsqu’un filtre est appliqué.</p><section class="kpi-grid">' +
+    '<section aria-label="Synthèse globale du snapshot"><div class="section-heading"><h2>Patrimoine et activité globale</h2></div><p>Snapshot complet, tous repositories et toutes versions. Les défauts normalisés correspondent aux BUG configurés ; ils ne sont pas tous des anomalies d’accessibilité.</p><section class="kpi-grid">' +
     cards
       .map(([id, label, link]) => {
         const metric = metricOrUnknown(snapshot.analytics.metrics, id);
@@ -257,6 +259,29 @@ function globalOverviewCards(snapshot: Snapshot): string {
       .join('') +
     '</section><p><a href="issues.html">Explorer les issues et leurs métriques de sélection</a> · <a href="quality.html">Consulter les diagnostics et les autres indicateurs</a></p></section>'
   );
+}
+
+/** Restitue les deux comparaisons globales par repository, sans filtre de navigation. */
+function repositoryComparisonTables(snapshot: Snapshot, githubUrl?: string): string {
+  return `<article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison des sources</p><h2>Qualité par repository</h2></div><span class="badge">${snapshot.normalizedData.libraries.length} repositories</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Qualité par repository"><table><thead><tr><th scope="col">Repository</th><th scope="col">Composants</th><th scope="col">Anomalies</th><th scope="col">Ouvertes</th><th scope="col">PR fusionnées</th><th scope="col">Fiabilité</th></tr></thead><tbody>${repositoryRows(snapshot, githubUrl)}</tbody></table></div></article>
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Délais de traitement</p><h2>Temps de traitement des issues par repository</h2></div><span class="badge">Jours calendaires</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Temps de traitement par repository"><table><thead><tr><th scope="col">Repository</th><th scope="col">Issues avec délai mesurable</th><th scope="col">Délai moyen</th><th scope="col">Délai médian</th><th scope="col">Plus long délai</th></tr></thead><tbody>${delayRows(snapshot)}</tbody></table></div></article>`;
+}
+
+/** Restitue les effectifs d'activité calculés dans Analytics pour le snapshot complet. */
+function teamActivityContent(snapshot: Snapshot): string {
+  const summary = snapshot.analytics.teamActivity ?? teamActivitySummary(snapshot.normalizedData);
+  const counts: Array<[string, number | 'unknown', string]> = [
+    ['Issues du snapshot', summary.issues, 'issues'],
+    ['Avec contexte Project', summary.withProject, 'projects'],
+    ['Avec itération', summary.withIteration, 'iterations'],
+    ['Avec transition datée', summary.datedTransitions, 'transitions'],
+    ['PR du snapshot', summary.pullRequests, 'prs'],
+    ['PR ouvertes', summary.openPullRequests, 'open-prs'],
+    ['PR fusionnées', summary.mergedPullRequests, 'merged-prs'],
+    ['PR fermées sans fusion', summary.closedPullRequests, 'closed-prs'],
+    ['PR reliées à une issue', summary.linkedPullRequests, 'linked-prs']
+  ];
+  return `<section data-global-only aria-label="Synthèse de l’activité des équipes"><div class="section-heading"><h2>Le travail suivi dans les Projects, les issues et les PR</h2><span class="badge">${qualityLabel(summary.quality)}</span></div><p>Snapshot complet, tous repositories et toutes versions. Effectifs distincts observés ; cette synthèse est masquée lorsqu’un filtre est appliqué. Les états des PR sont exclusifs ; les PR reliées sont une sous-population.</p><section class="kpi-grid">${counts.map(([label, value, key]) => `<article class="kpi-card"><span class="kpi-label">${label}</span><strong data-team-count="${key}">${value === 'unknown' ? 'Indisponible' : value}</strong></article>`).join('')}</section><div class="content-grid"><article class="panel"><h3>Ce qui est observable</h3><p>Les statuts, itérations et Velocity sont ceux de chaque Project source. Une Velocity absente reste non renseignée ; aucune performance de sprint n’est déduite. Une transition datée désigne un événement Project connu, sans estimer les événements absents.</p></article><article class="panel"><h3>Réserves Data Quality</h3><p>Les données manquantes et incohérentes restent signalées. Consulter les alertes avant toute comparaison.</p><a href="quality.html">Voir les alertes →</a></article></div></section>`;
 }
 
 /** Construit le contenu de la page de synthèse des KPI et alertes. */
@@ -314,8 +339,7 @@ function overviewContent(snapshot: Snapshot, githubUrl?: string): string {
   <section class="section-heading"><div><p class="eyebrow">Qualité des données</p><h2>Pourquoi certains chiffres sont partiels</h2></div><span class="alert-count">${dataQuality.issues.length}</span></section>
   <section class="content-grid synthesis-two"><article class="panel alert-panel"><div class="severity-row"><span><i class="dot error"></i>Erreurs</span><strong>${dataQuality.summary.ERROR}</strong></div><div class="severity-row"><span><i class="dot warning"></i>Avertissements</span><strong>${dataQuality.summary.WARNING}</strong></div><div class="severity-row"><span><i class="dot info"></i>Informations</span><strong>${dataQuality.summary.INFO}</strong></div><a class="text-link" href="anomalies.html#quality">Voir les alertes et leurs cibles →</a></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">Lecture</p><h2>Fiabilité par métrique</h2></div></div>${reliabilityRows(metrics)}</article></section>
 
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison des sources</p><h2>Qualité par repository</h2></div><span class="badge">${snapshot.normalizedData.libraries.length} repositories</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Tableau défilant"><table><thead><tr><th>Repository</th><th>Composants</th><th>Anomalies</th><th>Ouvertes</th><th>PR fusionnées</th><th>Fiabilité</th></tr></thead><tbody>${repositoryRows(snapshot, githubUrl)}</tbody></table></div></article>
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Délais de traitement</p><h2>Temps de traitement des issues par repository</h2></div><span class="badge">Jours calendaires</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Issues avec délai mesurable</th><th>Délai moyen</th><th>Délai médian</th><th>Plus long délai</th></tr></thead><tbody>${delayRows(snapshot)}</tbody></table></div></article>`;
+  ${repositoryComparisonTables(snapshot, githubUrl)}`;
 }
 
 /**
@@ -785,7 +809,7 @@ function issuesExplorerContent(
     return { ...fact, url };
   });
   const payload = JSON.stringify({ items, componentPrefix }).replace(/</g, '\\u003c');
-  return `<section class="issues-explorer" data-issues-explorer><h2>Analyse des issues · activité Squad / PO / AM</h2>
+  return `${teamActivityContent(snapshot)}<section class="issues-explorer" data-issues-explorer><h2>Analyse des issues · activité Squad / PO / AM</h2>
     <div class="issue-kpis" aria-live="polite">${[
       ['global', 'Issues · périmètre filtré', 'Done + Closed, dates réelles ou estimées'],
       ['done', 'Sans estimation', 'Dernière transition Done'],
@@ -809,7 +833,7 @@ function issuesExplorerContent(
     <div class="issue-filter-grid"><label>Recherche globale<input class="search" data-issue-search placeholder="Numéro, titre, label…"></label><label>Repository<select data-issue-filter="repo"><option value="">Tous</option></select></label><label>Label<select data-issue-filter="label"><option value="">Tous</option></select></label><label>Issue type<select data-issue-filter="type"><option value="">Tous</option></select></label><label>Famille métier<select data-issue-filter="family"><option value="">Toutes</option><option value="audit">Audit</option><option value="audit_anomaly">Anomalie d’audit</option><option value="anomaly">Défaut hors audit ou origine non résolue</option><option value="improvement">Improvement</option><option value="other">Autre issue / bug non qualifié</option></select></label><label>Statut<select data-issue-filter="status"><option value="">Tous</option><option value="open">Ouvertes / en cours</option><option value="closed">Done ET Closed</option><option value="cancelled">Cancelled</option></select></label><label>État GitHub<select data-issue-filter="githubState"><option value="">Tous</option><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select></label><label>Tri<select data-issue-sort><option value="repo">Repository</option><option value="number">Numéro</option><option value="age">Ancienneté ouverte</option><option value="delay">Délai de traitement</option></select></label></div>
     <div class="issue-actions"><label><input type="checkbox" data-issue-components> Labels du composant uniquement</label><button class="reset-button" type="button" data-issue-dedupe aria-pressed="false">Dédoublonner par repo / issue</button><button class="reset-button" type="button" data-issue-clear-selection>Réinitialiser la sélection</button><button class="reset-button" type="button" data-issue-export>Exporter CSV</button></div>
     <p class="muted" data-issue-summary></p></section>
-    <article class="panel table-panel"><div class="panel-heading"><h2>Issues GitHub · audits, anomalies et autres issues</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap" tabindex="0" role="region" aria-label="Tableau défilant"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner les issues affichées"></th>${['Repository', 'Issue', 'Label', 'Issue type', 'Statut', 'État GitHub', 'Nb PR', 'Délai issue', 'Ancienneté ouverte'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div></article>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Issues GitHub · audits, anomalies et autres issues</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap" tabindex="0" role="region" aria-label="Tableau défilant"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner les issues affichées"></th>${['Repository', 'Issue', 'Label', 'Issue type', 'Statut', 'État GitHub', 'Nb PR', 'Délai issue', 'Ancienneté ouverte', 'Composants', 'Statut Project', 'Itération', 'Velocity source'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div></article>
     <script type="application/json" id="issue-explorer-data">${payload}</script>
   </section>`;
 }
@@ -885,6 +909,16 @@ function componentsExplorerContent(
       }))
       .sort((a, b) => a.version.localeCompare(b.version, undefined, { numeric: true }));
     const current = versionSummaries.at(-1);
+    const facts = issueFacts(snapshot);
+    const auditSources = audits
+      .map((audit) => ({
+        id: audit.auditId,
+        url: facts.find((fact) => fact.id === audit.issueId)?.url ?? '',
+        version: auditVersionLabel(audit, snapshot),
+        status: audit.lifecycle ?? audit.status,
+        completedAt: audit.completedAt ?? ''
+      }))
+      .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
     return {
       id: `${component.libraryId}:${component.name.toLocaleLowerCase('fr')}`,
       componentId: component.componentId,
@@ -895,11 +929,22 @@ function componentsExplorerContent(
       auditStatus: latest?.lifecycle ?? latest?.status ?? 'non audité',
       conformity: current?.conformity ?? 'NON_COUVERT',
       versionSummaries,
+      githubLinks: componentGithubLinks(
+        snapshot,
+        component.libraryId,
+        component.name,
+        componentPrefix,
+        related,
+        githubUrl
+      ),
+      latestAuditUrl: facts.find((fact) => fact.id === latest?.issueId)?.url ?? '',
+      latestAuditId: latest?.auditId ?? '',
+      auditSources,
       items
     };
   });
   const payload = JSON.stringify(rows).replace(/</g, '\\u003c');
-  return `<section class="issues-explorer" data-component-analysis>
+  return `<section class="issues-explorer" data-component-analysis><p class="panel">Les liens chiffrés ouvrent une recherche GitHub sur les données actuelles du repository. Recherches approchées : « Ouvertes » utilise l’état GitHub ; « Traitées » utilise Closed avec motif completed, sans vérifier Done dans Project ; « Annulées » utilise le motif not planned, distinct de Cancelled dans Project. Les PR sont recherchées par références d’issues dans leur description : les liens manuels seuls peuvent manquer. Les grandes listes de PR proposent plusieurs recherches courtes pour conserver toutes les références. Les compteurs restent ceux du snapshot. Dernier audit et conformité ouvrent leurs audits justificatifs.</p>
     <div class="issue-kpis" aria-live="polite">${[
       ['global', 'Global · Officiel'],
       ['done', 'Sans estimation'],

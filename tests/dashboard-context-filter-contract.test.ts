@@ -38,6 +38,12 @@ describe('filtres contextuels du dashboard', () => {
     expect(target.hash).toBe('#component-versions');
   });
   it('efface le périmètre ajouté sans conserver des paramètres périmés', () => {
+    expect(
+      contextualHref('index.html', new URLSearchParams('repository=acme%2Freact&component=Button'))
+    ).toBe('index.html');
+    expect(contextualHref('index.html?component=Button#global', new URLSearchParams('version=1.1.0'))).toBe(
+      'index.html#global'
+    );
     const original = 'anomalies.html?status=open';
     expect(contextualHref(original, new URLSearchParams('repository=acme%2Freact'))).toContain('repository=');
     expect(contextualHref(original, new URLSearchParams())).toBe(original);

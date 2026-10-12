@@ -127,7 +127,7 @@ Les petites fixtures synthétiques restent adaptées aux tests unitaires ciblés
 ### Étapes disponibles
 
 ```bash
-npm run collect
+npm run collect -- --output data/raw/fixture.json
 npm run validate
 npm run analyze
 npm run snapshot
@@ -140,6 +140,8 @@ Le pipeline produit un statut `COMPLETE` ou `PARTIAL`. `PARTIAL` signifie que l'
 ## Collecte GitHub
 
 Le collecteur GitHub est en lecture seule. Le token est fourni uniquement par l'environnement :
+
+La commande `collect` exige `--output <path>` pour toutes les sources, avant de commencer la collecte. Elle crée le dossier parent si nécessaire et affiche le chemin du fichier RAW enregistré. Une erreur d’écriture fait échouer la commande.
 
 ```powershell
 $env:GITHUB_TOKEN = "..."
@@ -330,6 +332,8 @@ la proposition de ménage. La référence synthétique V1 reste conservée.
 ## Dashboard organisé par besoins
 
 Six espaces servent en priorité les responsables des audits d’accessibilité, puis la Squad. Voir la [matrice de refonte et ses populations](docs/08-implementation/dashboard-role-refactor.md). La commande `npm run dashboard:preview` génère une prévisualisation isolée et une liste CSV des issues accessibilité à examiner, sans réécrire le snapshot courant.
+
+La Vue d’ensemble reste globale : deux tableaux par repository puis huit cartes de patrimoine et d’activité, sans filtre. Activité des équipes ajoute une synthèse issues/PR et les colonnes Composants, Statut Project, Itération et Velocity source, également exportables. Les liens GitHub ouvrent un nouvel onglet ; les recherches approchées des composants sont expliquées au-dessus du tableau, tandis que conformité et dernier audit renvoient aux audits justificatifs.
 
 ### Consulter les filtres du dashboard
 

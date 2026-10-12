@@ -187,7 +187,11 @@ describe('I9 V1 reference scenario', () => {
     try {
       await generateDashboard(snapshot, output, 'https://github.test');
       const html = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
-      expect(html).toContain('Couverture des composants');
+      expect(html).toContain('Qualité par repository');
+      expect(html).toContain('Patrimoine et activité globale');
+      expect(await readFile(resolve(output, 'dashboard/accessibility.html'), 'utf8')).toContain(
+        'Couverture des composants'
+      );
       expect(await readFile(resolve(output, 'dashboard/quality.html'), 'utf8')).toContain(
         'Fiabilité par métrique'
       );

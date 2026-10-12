@@ -190,7 +190,7 @@ function renderWorkspace() {
   // Un lien d'espace remet les dimensions d'un objet ciblé à zéro ; ses filtres métier restent explicites.
   document.querySelectorAll('[data-workspace-nav]').forEach((link) => {
     const target = new URL(link.href);
-    const keep = target.pathname.endsWith('quality.html')
+    const keep = /\/(?:quality|index)\.html$/.test(target.pathname)
       ? []
       : target.pathname.endsWith('history.html')
         ? ['repository']

@@ -1,4 +1,5 @@
 import { workspaceAnalytics } from './workspaces.js';
+import { teamActivitySummary } from './team-activity.js';
 import type { AccessibilityRecognition } from '../domain/accessibility.js';
 /**
  * @module analytics.kpis
@@ -56,6 +57,7 @@ export function calculateKpis(
   };
 
   return {
+    teamActivity: teamActivitySummary(data),
     workspaces: workspaceAnalytics(data, dqIssues, recognition),
     anomaliesDeclared: asLegacy('anomaly.total'),
     anomaliesCorrected: asLegacy('anomaly.correctedEver'),
