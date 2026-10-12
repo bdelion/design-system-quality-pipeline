@@ -6,6 +6,10 @@ export interface ProgressOutput {
 }
 /** Affiche la collecte sur stderr sans confondre quota GitHub et progression. */
 export class CollectionProgress {
+  /** Indique si le terminal accepte un décompte rafraîchi chaque seconde. */
+  get interactive(): boolean {
+    return this.output.isTTY === true;
+  }
   private completed = 0;
   private issues = 0;
   private discovered = 0;

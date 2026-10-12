@@ -4,7 +4,7 @@
 
 Le repository utilise actuellement notamment :
 
-- Node.js \>= 20 ;
+- Node.js \>= 22.15.0 (référence `.nvmrc` : 22.23.3) ;
 - TypeScript ;
 - ESM ;
 - Commander ;

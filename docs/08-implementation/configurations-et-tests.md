@@ -2,6 +2,8 @@
 
 ## État implémenté et fichiers nécessaires
 
+Pour une première exécution, suivre le [guide pas à pas](guide-utilisation.md). La console affiche une synthèse française avec compteurs, réserves et chemins, sans dump JSON ; les fichiers détaillés restent enregistrés. Les commandes GitHub appliquent le [pré-check et la gestion des quotas](quotas-github.md) avant toute nouvelle sortie.
+
 Les commandes se lancent depuis la racine du repository, après `npm ci`.
 Sous PowerShell, utiliser `npm.cmd` à la place de `npm` si nécessaire.
 

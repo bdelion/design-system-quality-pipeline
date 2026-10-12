@@ -17,6 +17,13 @@ describe('collecteur GitHub', () => {
     const requests: string[] = [];
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
+      if (url.endsWith('/rate_limit'))
+        return Response.json({
+          resources: {
+            core: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 },
+            graphql: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 }
+          }
+        });
       if (url.includes('/contents/package.json?')) return new Response('', { status: 404 });
       requests.push(url);
       if (url.endsWith('/repos/acme/design-system')) {
@@ -153,6 +160,13 @@ describe('collecteur GitHub', () => {
   it('récupère une PR liée manuellement via GraphQL sans mot-clé de fermeture', async () => {
     globalThis.fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
+      if (url.endsWith('/rate_limit'))
+        return Response.json({
+          resources: {
+            core: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 },
+            graphql: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 }
+          }
+        });
       if (url.includes('/contents/package.json?')) return new Response('', { status: 404 });
       if (url === 'https://api.github.com/graphql') {
         return new Response(
@@ -292,6 +306,13 @@ describe('catalogue historique GitHub', () => {
   it('lit le catalogue au tag PROD exact et conserve les indisponibilités sans fallback', async () => {
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
+      if (url.endsWith('/rate_limit'))
+        return Response.json({
+          resources: {
+            core: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 },
+            graphql: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 }
+          }
+        });
       if (url.includes('/contents/package.json?')) return new Response('', { status: 404 });
       if (url.endsWith('/repos/acme/design-system')) {
         return new Response(

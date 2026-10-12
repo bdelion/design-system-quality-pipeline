@@ -6,6 +6,7 @@
 
 import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
+import type { GithubQuotaOptions } from './collectors/github-requests.js';
 import { loadConfig, type ConfigSelection } from './config.js';
 import { calculateKpis } from './analytics/kpis.js';
 import { readJson, writeJson } from './lib/files.js';
@@ -31,7 +32,7 @@ export type CollectionSource = 'fixture' | 'github';
 export async function runPipeline(
   source: CollectionSource = 'fixture',
   selectedFixturePath: string = fixturePath,
-  selection: ConfigSelection = {}
+  selection: ConfigSelection & GithubQuotaOptions = {}
 ): Promise<Snapshot> {
   const config = await loadConfig(source, source === 'fixture' ? selectedFixturePath : undefined, selection);
   const catalogue = await loadCatalogue(
@@ -42,6 +43,7 @@ export async function runPipeline(
   const raw =
     source === 'github'
       ? await collectGithub({
+          ...selection,
           token: githubTokenFromEnvironment(),
           owner: config.githubOwner,
           repositories: config.repositories,

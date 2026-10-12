@@ -5,7 +5,9 @@
  */
 
 import { prepareReferences } from './anonymization/prepare.js';
-import { Command } from 'commander';
+import { Command, InvalidArgumentError } from 'commander';
+import { validateGithubQuotaOptions, type GithubQuotaOptions } from './collectors/github-requests.js';
+import { pipelineSummary } from './lib/cli-output.js';
 import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
 import { loadConfig, assertConfigSelection, type ConfigSelection } from './config.js';
@@ -20,7 +22,6 @@ import { DEFAULT_ANONYMIZATION_OPTIONS, type AnonymizationOptions } from './anon
 import { anonymizeDataset, createAnonymizationMapper } from './anonymization/anonymizer.js';
 import { anonymizePipelineConfig, anonymizeCatalogue } from './anonymization/config.js';
 import { fixturePath, fixtureConfigPaths } from './lib/paths.js';
-import { formatAnonymizationReport } from './anonymization/report.js';
 import {
   assertRelationalIntegrity,
   inspectRelationalIntegrity,
@@ -33,18 +34,34 @@ import type { RawDataset } from './domain/types.js';
 /** Interface CLI des commandes de collecte, analyse et génération. */
 const program = new Command()
   .name('design-system-quality')
-  .description('GitHub-first Design System quality pipeline')
+  .description('Pipeline de qualité du Design System, en lecture seule sur GitHub')
   .version('0.1.0')
   .hook('preAction', (_parent, command) => {
     assertConfigSelection(command.opts<ConfigSelection>());
+    validateGithubQuotaOptions(command.opts<GithubQuotaOptions>());
   });
+
+/** Analyse un entier de quota sans accepter une valeur tronquée ni négative. */
+function quotaInteger(value: string): number {
+  if (!/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)))
+    throw new InvalidArgumentError('Un entier positif ou nul est requis.');
+  return Number(value);
+}
+/** Ajoute les options de quota uniquement aux commandes qui peuvent collecter GitHub. */
+function quotaOptions(command: Command): void {
+  command
+    .option('--wait-for-quota', 'attendre automatiquement le reset du quota avec un décompte')
+    .option('--rest-quota-reserve <points>', 'réserve de sécurité REST', quotaInteger, 100)
+    .option('--graphql-quota-reserve <points>', 'réserve de sécurité GraphQL', quotaInteger, 100)
+    .option('--quota-max-wait <seconds>', 'attente cumulée maximale en secondes', quotaInteger, 7200);
+}
 
 // La collecte reste volontairement en lecture seule : elle produit un RAW sans modifier GitHub.
 
 program
   .command('fixture:anonymize')
   .alias('fixture:prepare')
-  .description('Create a deterministic anonymized fixture from a RawDataset JSON file')
+  .description('Anonymiser un RAW local et générer ses profils')
   .requiredOption('--input <path>', 'input RawDataset JSON file')
   .requiredOption('--output <path>', 'output anonymized fixture JSON file')
   .option('--config-output <path>', 'output anonymized pipeline configuration', '')
@@ -110,12 +127,17 @@ program
         const tracePath = options.traceOutput || `${options.output}.trace.json`;
         const trace = buildTraceManifest(input, result.dataset, options.input);
         await writeFile(tracePath, `${JSON.stringify(trace, null, 2)}\n`, 'utf8');
-        console.log(`TRACE ${tracePath}`);
+        console.log(`Trace locale : ${tracePath}`);
       }
-      console.log(formatAnonymizationReport(result.report));
-      console.log(`OUTPUT ${options.output}`);
-      console.log(`CONFIG ${options.configOutput}`);
-      console.log(`CATALOGUE ${options.catalogueOutput}`);
+      console.log(
+        `Anonymisation terminée : ${result.report.repositories} repositories ; ${result.report.issues} issues ; ${result.report.pullRequests} PR.`
+      );
+      console.log(
+        `Contrôles : ${result.report.suspiciousStrings} valeur(s) suspecte(s) ; ${result.report.warnings.length} réserve(s). Consulter le manifeste généré avant partage.`
+      );
+      console.log(`Fixture anonymisée : ${options.output}`);
+      console.log(`Configuration : ${options.configOutput}`);
+      console.log(`Catalogue : ${options.catalogueOutput}`);
       const manifestPath = `${options.output}.manifest.json`;
       /** Calcule une empreinte SHA-256 pour vérifier les artefacts sans exposer leurs identités sources. */
       const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -132,7 +154,7 @@ program
         // Ne jamais écrire la graine ni les identités source dans le manifeste.
       };
       await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
-      console.log(`MANIFEST ${manifestPath}`);
+      console.log(`Manifeste : ${manifestPath}`);
       if (!validation.valid || integrityErrors.length)
         throw new Error(
           `Anonymized fixture validation failed (${validation.findings.length} suspicious strings, ${integrityErrors.length} integrity errors)`
@@ -159,24 +181,27 @@ program
       buildValidationReport(dataset, validation, integrityDetails, options.input, trace),
       'utf8'
     );
-    console.log(`REPORT ${reportPath}`);
+    console.log(`Rapport : ${reportPath}`);
     if (!validation.valid || integrityErrors.length)
       throw new Error(
         `INVALID fixture: ${validation.findings.length} suspicious strings, ${integrityErrors.length} integrity errors`
       );
-    console.log(`VALID anonymized fixture: ${dataset.repositories.length} repositories`);
+    console.log(`Fixture anonymisée valide : ${dataset.repositories.length} repositories.`);
   });
 
 program
   .command('collect')
-  .description('Collect read-only data from a fixture or GitHub')
-  .option('--source <source>', 'fixture or github', 'fixture')
-  .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .option('--system-config <path>', 'explicit system YAML profile')
-  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
-  .requiredOption('--output <path>', 'write the RawDataset JSON to this file')
+  .description('Collecter une fixture ou GitHub en lecture seule')
+  .option('--source <source>', 'source fixture ou github', 'fixture')
+  .option('--fixture <path>', 'fichier JSON local pour la source fixture', fixturePath)
+  .option('--system-config <path>', 'profil YAML system explicite')
+  .option('--catalogue-config <path>', 'profil YAML catalogue explicite')
+  .requiredOption('--output <path>', 'enregistrer le RAW dans ce fichier (obligatoire)')
   .action(
-    async (options: ConfigSelection & { source: CollectionSource; fixture: string; output: string }) => {
+    async (
+      options: ConfigSelection &
+        GithubQuotaOptions & { source: CollectionSource; fixture: string; output: string }
+    ) => {
       const config = await loadConfig(
         options.source,
         options.source === 'fixture' ? options.fixture : undefined,
@@ -186,6 +211,7 @@ program
       const raw =
         options.source === 'github'
           ? await collectGithub({
+              ...options,
               token: githubTokenFromEnvironment(),
               owner: config.githubOwner,
               repositories: config.repositories,
@@ -197,7 +223,7 @@ program
       await mkdir(dirname(options.output), { recursive: true });
       await writeFile(options.output, `${JSON.stringify(raw, null, 2)}\n`, 'utf8');
       console.log(
-        `COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt} -> ${options.output}`
+        `Collecte terminée : ${raw.repositories.length} repositories ; ${raw.repositories.reduce((total, repository) => total + repository.issues.length, 0)} issues.\nFichier RAW : ${options.output}`
       );
     }
   );
@@ -205,10 +231,10 @@ program
 // Cette commande vérifie le périmètre configuré sans lancer les étapes coûteuses du pipeline.
 program
   .command('validate')
-  .description('Validate configuration and source scope')
+  .description('Vérifier les configurations et le périmètre de la fixture')
   .option('--fixture <path>', 'fixture JSON file', fixturePath)
-  .option('--system-config <path>', 'explicit system YAML profile')
-  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
+  .option('--system-config <path>', 'profil YAML system explicite')
+  .option('--catalogue-config <path>', 'profil YAML catalogue explicite')
   .action(async (options: ConfigSelection & { fixture: string }) => {
     const config = await loadConfig('fixture', options.fixture, options);
     await loadCatalogue('fixture', options.fixture, options);
@@ -219,60 +245,65 @@ program
       throw new Error(
         `Missing configured repositories: ${missing.join(', ')}. Fixture: ${options.fixture}. Collected repositories: ${[...actual].join(', ') || '(none)'}. Ensure the fixture and system.fixture.yaml were generated from the same dataset/seed.`
       );
-    console.log(`VALID ${config.repositories.length} configured repositories`);
+    console.log(`Configuration valide : ${config.repositories.length} repositories configurés.`);
   });
 
 program
   .command('analyze')
-  .description('Run normalization, Data Quality and KPI calculations')
-  .option('--source <source>', 'fixture or github', 'fixture')
-  .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .option('--system-config <path>', 'explicit system YAML profile')
-  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
-  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture, options);
-    console.log(
-      `ANALYZED ${snapshot.normalizedData.anomalies.length} anomalies; ${snapshot.dataQuality.issues.length} DQ issues`
-    );
-  });
+  .description('Analyser les données en rejouant le pipeline complet')
+  .option('--source <source>', 'source fixture ou github', 'fixture')
+  .option('--fixture <path>', 'fichier JSON local pour la source fixture', fixturePath)
+  .option('--system-config <path>', 'profil YAML system explicite')
+  .option('--catalogue-config <path>', 'profil YAML catalogue explicite')
+  .action(
+    async (options: ConfigSelection & GithubQuotaOptions & { source: CollectionSource; fixture: string }) => {
+      const snapshot = await runPipeline(options.source, options.fixture, options);
+      console.log(pipelineSummary(snapshot, 'Analyse', pipelineStatus(snapshot)));
+    }
+  );
 
 program
   .command('snapshot')
-  .description('Build and persist an immutable snapshot and dashboard')
-  .option('--source <source>', 'fixture or github', 'fixture')
-  .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .option('--system-config <path>', 'explicit system YAML profile')
-  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
-  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture, options);
-    console.log(`SNAPSHOT ${snapshot.snapshotId}`);
-  });
+  .description('Enregistrer un snapshot et le dashboard en rejouant le pipeline')
+  .option('--source <source>', 'source fixture ou github', 'fixture')
+  .option('--fixture <path>', 'fichier JSON local pour la source fixture', fixturePath)
+  .option('--system-config <path>', 'profil YAML system explicite')
+  .option('--catalogue-config <path>', 'profil YAML catalogue explicite')
+  .action(
+    async (options: ConfigSelection & GithubQuotaOptions & { source: CollectionSource; fixture: string }) => {
+      const snapshot = await runPipeline(options.source, options.fixture, options);
+      console.log(pipelineSummary(snapshot, 'Snapshot', pipelineStatus(snapshot)));
+    }
+  );
 
 program
   .command('dashboard')
-  .description('Generate static dashboard pages from the current pipeline snapshot')
-  .option('--source <source>', 'fixture or github', 'fixture')
-  .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .option('--system-config <path>', 'explicit system YAML profile')
-  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
-  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture, options);
-    console.log(`DASHBOARD data/dashboard/index.html (${snapshot.snapshotId})`);
-  });
+  .description('Générer le dashboard en rejouant le pipeline complet')
+  .option('--source <source>', 'source fixture ou github', 'fixture')
+  .option('--fixture <path>', 'fichier JSON local pour la source fixture', fixturePath)
+  .option('--system-config <path>', 'profil YAML system explicite')
+  .option('--catalogue-config <path>', 'profil YAML catalogue explicite')
+  .action(
+    async (options: ConfigSelection & GithubQuotaOptions & { source: CollectionSource; fixture: string }) => {
+      const snapshot = await runPipeline(options.source, options.fixture, options);
+      console.log(pipelineSummary(snapshot, 'Dashboard', pipelineStatus(snapshot)));
+    }
+  );
 
 // La commande complète retourne un statut exploitable par un job CI.
 program
   .command('pipeline')
-  .description('Run the complete fixture or GitHub pipeline')
-  .option('--source <source>', 'fixture or github', 'fixture')
-  .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
-  .option('--system-config <path>', 'explicit system YAML profile')
-  .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
-  .action(async (options: ConfigSelection & { source: CollectionSource; fixture: string }) => {
-    const snapshot = await runPipeline(options.source, options.fixture, options);
-    console.log(`${pipelineStatus(snapshot)} ${snapshot.snapshotId}`);
-    console.log(JSON.stringify(snapshot.analytics, null, 2));
-  });
+  .description('Exécuter le pipeline complet depuis une fixture ou GitHub')
+  .option('--source <source>', 'source fixture ou github', 'fixture')
+  .option('--fixture <path>', 'fichier JSON local pour la source fixture', fixturePath)
+  .option('--system-config <path>', 'profil YAML system explicite')
+  .option('--catalogue-config <path>', 'profil YAML catalogue explicite')
+  .action(
+    async (options: ConfigSelection & GithubQuotaOptions & { source: CollectionSource; fixture: string }) => {
+      const snapshot = await runPipeline(options.source, options.fixture, options);
+      console.log(pipelineSummary(snapshot, 'Pipeline', pipelineStatus(snapshot)));
+    }
+  );
 
 program
   .command('reference:prepare')
@@ -295,8 +326,15 @@ program
       force: Boolean(options.force),
       selection: options
     });
-    for (const file of files) console.log('GENERATED ' + file);
+    for (const file of files) console.log('Fichier généré : ' + file);
     console.log('Référence préparée ; revue des champs métier conservés requise avant partage.');
   });
 
-await program.parseAsync();
+for (const command of program.commands) {
+  if (['collect', 'analyze', 'snapshot', 'dashboard', 'pipeline'].includes(command.name()))
+    quotaOptions(command);
+}
+await program.parseAsync().catch((error: unknown) => {
+  console.error('Erreur : ' + (error instanceof Error ? error.message : 'traitement interrompu.'));
+  process.exitCode = 1;
+});

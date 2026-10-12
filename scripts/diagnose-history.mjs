@@ -402,6 +402,11 @@ export async function diagnose(options) {
   return summary;
 }
 
+/** Présente les agrégats du diagnostic sans afficher sa charge utile JSON. */
+export function formatDiagnosticSummary(summary, output) {
+  return `Diagnostic terminé (${summary.mode === 'offline' ? 'hors réseau' : 'échantillon API'}) : ${summary.raw.issues} issues ; ${summary.live.checked} cas API vérifiés.\nRapports : ${resolve(output)}\nDétails : history-summary.json et history-report.md.`;
+}
+
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
     const options = parseArgs(process.argv.slice(2));
@@ -409,7 +414,10 @@ if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
       console.log(
         'npm run diagnose:history -- --raw <local-raw.json> [--fixture <anonymized.json>] [--live --sample 20 --collected-at 2026-10-09T08:00:00+02:00] [--output data/diagnostics]'
       );
-    else console.log(JSON.stringify(await diagnose(options), null, 2));
+    else {
+      const summary = await diagnose(options);
+      console.log(formatDiagnosticSummary(summary, options.output));
+    }
   } catch (error) {
     console.error(`Diagnosis failed: ${error.message}`);
     process.exitCode = 1;

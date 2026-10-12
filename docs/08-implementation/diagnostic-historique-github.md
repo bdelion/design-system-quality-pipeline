@@ -4,6 +4,8 @@ La commande `diagnose:history` effectue un diagnostic en lecture seule. Elle ne 
 
 ## Prérequis
 
+La commande affiche une synthèse française du mode, du nombre d’issues et du dossier de sortie. Les agrégats JSON détaillés restent dans `history-summary.json` ; ils ne sont plus affichés sur stdout. Le mode `--live` de ce diagnostic possède ses propres requêtes et n’utilise pas le contrôleur de quota du collecteur principal : limiter l’échantillon et consulter les erreurs du rapport.
+
 Exécuter les commandes depuis la racine du repository avec Node.js compatible et les dépendances installées (`npm.cmd ci` sous PowerShell).
 
 ## 1. Analyse locale du RAW (aucun appel GitHub)
