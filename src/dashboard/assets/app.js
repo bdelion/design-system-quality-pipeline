@@ -92,7 +92,7 @@ function synchronizeContext() {
     if (control) control.value = params.get(key) || '';
   }
   for (const [link, original] of links) {
-    const dimensions = original.startsWith('quality.html')
+    const dimensions = /^(?:quality|index)\.html/.test(original)
       ? []
       : original.startsWith('history.html')
         ? ['repository']

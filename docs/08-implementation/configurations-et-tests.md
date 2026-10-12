@@ -90,7 +90,7 @@ GitHub nouvelle, un défaut non couvert ou une évolution de schéma le justifie
 Une revue périodique est possible ; aucun calendrier ni accès GitHub automatique
 n'est ajouté. Le renouvellement suit ce processus :
 
-1. Créer le dossier local `data/raw/` (ignoré par Git), puis collecter explicitement un RAW local : `npm run collect -- --source github --output data/raw/refresh.json`.
+1. Collecter explicitement un RAW local : `npm run collect -- --source github --output data/raw/refresh.json`. `--output` est obligatoire pour toutes les sources ; son dossier parent, ici `data/raw/` (ignoré par Git), est créé automatiquement. Le chemin du fichier enregistré est affiché après l’écriture réussie.
 2. Préparer le dataset et ses deux profils avec la même graine locale : `npm run fixture:prepare -- --input data/raw/refresh.json --output fixtures/refresh-anonymized.json --anonymize-components`.
 3. Vérifier : `npm run fixture:validate -- --input fixtures/refresh-anonymized.json` puis `npm run validate -- --fixture fixtures/refresh-anonymized.json`.
 4. Examiner le JSON, les deux YAML et le manifeste généré ; valider les relations,

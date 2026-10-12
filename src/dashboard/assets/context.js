@@ -44,6 +44,8 @@ export function matchesRow(row, context, fields = contextKeys) {
  * @returns {string} Lien enrichi, ou lien externe inchangé.
  */
 export function contextualHref(href, context) {
+  if (/^index\.html(?:[?#]|$)/.test(href))
+    return 'index.html' + (href.includes('#') ? '#' + href.split('#')[1] : '');
   if (
     !/^(?:index|accessibility|quality|issues|anomalies|components|audits|graph|history)\.html(?:[?#]|$)/.test(
       href
@@ -63,8 +65,9 @@ export function contextualHref(href, context) {
   return pathname + (target.size ? '?' + target.toString() : '') + (hash ? '#' + hash : '');
 }
 
-/** Lit le périmètre courant après toute modification de filtre ou navigation arrière. */
+/** Lit le périmètre courant après navigation ; l'accueil global ignore les paramètres hérités. */
 export function currentContext() {
+  if (document.querySelector('[data-overview-global]')) return new URLSearchParams();
   return new URLSearchParams(window.location.search);
 }
 

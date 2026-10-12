@@ -1,6 +1,7 @@
 import { workspaceAnalytics } from '../../src/analytics/workspaces.js';
 import { consolidationSnapshot } from '../support/consolidation.js';
 import { resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import type { Server } from 'node:http';
 import { startDashboardTestServer } from '../../scripts/serve-dashboard-tests.js';
@@ -8,6 +9,38 @@ import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 let server: Server | undefined;
+/** Vérifie les stocks et les trois cohortes des tableaux globaux, avec leurs destinations GitHub. */
+test('vue d’ensemble : stocks cliquables et délais Ensemble, Done et closedAt', async ({ page }) => {
+  await page.goto('/index.html');
+  const inventory = page.getByRole('region', { name: 'Patrimoine et activité par repository' });
+  await expect(inventory.locator('thead')).not.toContainText('Fiabilité');
+  const row = inventory.locator('tbody tr').first();
+  await expect(row.locator('td').nth(4)).toHaveText('8 ↗');
+  await expect(row.locator('td').nth(5)).toHaveText('2 ↗');
+  await expect(row.locator('td').nth(6)).toHaveText('1 ↗');
+  for (const link of await row.locator('td:not(:first-child) a').all()) {
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  }
+  expect(
+    new URL((await row.locator('td').nth(5).locator('a').getAttribute('href'))!).searchParams.get('q')
+  ).toBe('is:issue is:open');
+  expect(
+    new URL((await row.locator('td').nth(6).locator('a').getAttribute('href'))!).searchParams.get('q')
+  ).toBe('is:pr');
+  const delays = page.getByRole('region', { name: 'Temps de traitement par repository' });
+  await expect(delays.locator('thead tr').first().locator('th')).toHaveText([
+    'Repository',
+    'Ensemble (Done + closedAt)',
+    'Sans estimation (Done)',
+    'Avec estimation (closedAt)'
+  ]);
+  await expect(delays.locator('thead tr').nth(1).locator('th')).toHaveText(
+    Array.from({ length: 3 }, () => ['Issues mesurables', 'Moyenne', 'Médiane', 'P90']).flat()
+  );
+  await expect(delays.locator('tbody tr').first().locator('td')).toHaveCount(13);
+  await expect(delays).not.toContainText('Plus long délai');
+});
 test.beforeAll(async () => {
   server = await startDashboardTestServer();
 });
@@ -113,6 +146,83 @@ test('KPI distincts cohérents entre explorateurs, sélection et CSV', async ({ 
   await expect(page.locator('[data-component-summary]')).toContainText('2 issues distinctes');
 });
 
+/** Vérifie les colonnes source, leurs filtres et leur export sans fusion de plusieurs Projects. */
+test('activité : contextes Project multiples, Velocity source et CSV', async ({ page }) => {
+  await page.route('**/issues.html', async (route) => {
+    const response = await route.fetch();
+    const original = await response.text();
+    const match = original.match(/id="issue-explorer-data">([^<]+)<\/script>/)!;
+    const data = JSON.parse(match[1]!);
+    data.items[0].projectContexts = [
+      {
+        projectId: 'a',
+        projectName: 'Squad A',
+        rawStatus: 'Done',
+        iteration: { title: 'Sprint 23' },
+        rawVelocity: 0
+      },
+      { projectId: 'b', projectName: 'Squad B', rawStatus: 'À qualifier', rawVelocity: 'à estimer' }
+    ];
+    await route.fulfill({
+      response,
+      body: original.replace(match[1]!, JSON.stringify(data).replace(/</g, '\\u003c'))
+    });
+  });
+  await page.goto('/issues.html');
+  await expect(page.locator('[data-team-count="issues"]')).toHaveText('8');
+  await expect(page.locator('[data-team-count="merged-prs"]')).toHaveText('1');
+  await page.locator('[data-issue-column="10"]').fill('Squad B : À qualifier');
+  const row = page.locator('[data-issue-rows] tr').first();
+  await expect(row).toContainText('Squad A : Sprint 23 ; Squad B : Non renseigné');
+  await expect(row).toContainText('Squad A : 0 ; Squad B : à estimer');
+  await expect(row.locator('td').nth(10)).toContainText('Button');
+  await page.locator('[data-issue-column-sort="12"]').click();
+  await expect(page.locator('[data-issue-column-sort="12"]').locator('..')).toHaveAttribute(
+    'aria-sort',
+    'ascending'
+  );
+  const downloadPromise = page.waitForEvent('download');
+  await page.locator('[data-issue-export]').click();
+  const download = await downloadPromise;
+  const csv = await readFile((await download.path())!, 'utf8');
+  expect(csv).toContain('"Statut Project";"Itération";"Velocity source"');
+  expect(csv).toContain('Squad A : 0 ; Squad B : à estimer');
+});
+
+/** Vérifie les huit destinations des composants et les sources externes des autres espaces. */
+test('composants, accessibilité et DQ : liens GitHub dans un nouvel onglet', async ({ page }) => {
+  await page.goto('/components.html');
+  const row = page.locator('[data-component-rows] tr').filter({ hasText: 'Button' });
+  for (const index of [3, 4, 5, 6, 7, 8, 9, 10]) {
+    const link = row.locator('td').nth(index).locator('a').first();
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    await expect(link).toHaveAttribute('href', /^https:\/\/github.com\/acme\/ds-react\//);
+  }
+  const treated = new URL((await row.locator('td').nth(5).locator('a').getAttribute('href'))!);
+  expect(treated.searchParams.get('q')).toContain('reason:completed');
+  await expect(row.locator('td').nth(9).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
+  await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
+  await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
+  await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
+  await page.goto('/accessibility.html');
+  for (const table of ['population', 'review']) {
+    const link = page.locator(`#${table} tbody td:first-child a`).first();
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveText(/#\d+ ↗/);
+  }
+  await page.goto('/quality.html');
+  await expect(page.locator('[data-quality-row] td:nth-child(5) a[target="_blank"]').first()).toHaveAttribute(
+    'href',
+    /^https:\/\/github.com\//
+  );
+  await page.goto('/components.html?component=Button');
+  await expect(page.locator('[data-workspace-nav][href^="index.html"]')).toHaveAttribute(
+    'href',
+    'index.html'
+  );
+});
+
 test('anomalie exacte, annulations, traçabilité et journal observé', async ({ page }) => {
   await page.goto('/graph.html?issue=anomaly-a');
   await expect(page.locator('[data-trace-row]:visible')).toHaveCount(1);
@@ -148,8 +258,9 @@ test('six espaces, explication proche du chiffre et absence des anciens cartouch
   await expect(page.locator('nav[aria-label="Navigation principale"] a')).toHaveCount(6);
   await expect(page.getByRole('heading', { name: 'Périmètre de navigation' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Preuves des métriques Analytics' })).toHaveCount(0);
+  await page.goto('/accessibility.html');
   await page.locator('.metric-info-button').first().click();
-  await expect(page.getByText('Composants couverts / composants présents', { exact: false })).toBeVisible();
+  await expect(page.locator('#metric-info-declared')).toBeVisible();
   await page.goto('/quality.html');
   await expect(page.locator('[data-context-filter]')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Alertes de qualité des données' })).toBeVisible();
@@ -191,27 +302,35 @@ test('un ancien filtre de catégorie masque les agrégats non calculés pour ce 
   await expect(page.locator('#population [data-workspace-row]:visible')).toHaveCount(0);
 });
 
-/** Vérifie la visibilité des métriques globales et leur séparation du contexte filtré. */
-test('la synthèse globale reste visible à l’accueil et disparaît en périmètre filtré', async ({ page }) => {
+/** Vérifie que l'accueil global ignore les filtres conservés dans une ancienne URL. */
+test('la synthèse globale reste visible à l’accueil même avec un ancien filtre', async ({ page }) => {
   await page.goto('/index.html');
   await expect(page.getByRole('heading', { name: 'Patrimoine et activité globale' })).toBeVisible();
   await expect(page.getByText('Défauts normalisés déclarés', { exact: true })).toBeVisible();
   await page.goto('/index.html?component=Modal');
-  await expect(page.locator('[data-global-only]')).toBeHidden();
-  await expect(page.locator('[data-workspace-unavailable="conformity"]')).toContainText('dénominateur');
+  await expect(page.getByRole('heading', { name: 'Patrimoine et activité globale' })).toBeVisible();
+  await expect(page.locator('[data-context-filter]')).toHaveCount(0);
+  await expect(page.locator('.kpi-card')).toHaveCount(8);
+  await expect(page.locator('[data-metric-id="portfolio.components"]')).toHaveAttribute(
+    'href',
+    'components.html'
+  );
+  await expect(page.getByRole('heading', { name: 'Patrimoine et activité par repository' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Temps de traitement des issues par repository' })
+  ).toBeVisible();
 });
 
 /** Vérifie les filtres repository et de diagnostic, les compteurs et leur réinitialisation. */
 test('repository et tableau de qualité répondent aux changements de filtres', async ({ page }) => {
-  await page.goto('/index.html');
+  await page.goto('/accessibility.html');
   const repo = page.locator('[data-context-filter="repository"]');
   await repo.selectOption('acme/ds-react');
   await repo.dispatchEvent('change');
   expect(new URL(page.url()).searchParams.get('repository')).toBe('acme/ds-react');
   await expect(page.locator('[data-filter-feedback]')).toContainText('acme/ds-react');
-  await expect(page.locator('[data-global-only]')).toBeHidden();
   await page.locator('[data-clear-context]').click();
-  await expect(page.locator('[data-global-only]')).toBeVisible();
+  await expect(page.locator('[data-context-filter="repository"]')).toHaveValue('');
   await page.goto('/quality.html');
   const total = await page.locator('[data-quality-row]').count();
   expect(total).toBeGreaterThan(0);
@@ -233,6 +352,9 @@ test('repository et tableau de qualité répondent aux changements de filtres', 
 /** Signale le mode fichier avant tout chargement des modules JavaScript. */
 test('le mode fichier explique les filtres désactivés', async ({ page }) => {
   await page.goto(pathToFileURL(resolve('data/browser-consolidation/dashboard/index.html')).href);
+  await expect(page.locator('[data-file-warning]')).toBeVisible();
+  await expect(page.locator('[data-context-filter]')).toHaveCount(0);
+  await page.goto(pathToFileURL(resolve('data/browser-consolidation/dashboard/accessibility.html')).href);
   await expect(page.locator('[data-file-warning]')).toBeVisible();
   await expect(page.locator('[data-context-filter="repository"]')).toBeDisabled();
 });

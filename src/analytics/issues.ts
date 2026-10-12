@@ -15,6 +15,7 @@ export interface IssueFact {
   url: string;
   labels: string[];
   type: string;
+  projectContexts: Issue['projectContexts'];
   family: ReturnType<typeof issueClassification>;
   familyLabel: string;
   status: 'open' | 'closed' | 'cancelled';
@@ -104,6 +105,7 @@ export function projectIssueFacts(
       url: issue.url,
       labels: issue.labels,
       type: issue.rawIssueType ?? issue.issueType ?? 'Non renseigné',
+      projectContexts: issue.projectContexts,
       family: issueClassification(issue, data),
       familyLabel: issue.futureVersion
         ? 'Version future · activité conservée, hors analyses accessibilité'

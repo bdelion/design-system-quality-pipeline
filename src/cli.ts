@@ -174,9 +174,9 @@ program
   .option('--fixture <path>', 'fixture JSON file when source=fixture', fixturePath)
   .option('--system-config <path>', 'explicit system YAML profile')
   .option('--catalogue-config <path>', 'explicit catalogue YAML profile')
-  .option('--output <path>', 'write the RawDataset JSON to this file')
+  .requiredOption('--output <path>', 'write the RawDataset JSON to this file')
   .action(
-    async (options: ConfigSelection & { source: CollectionSource; fixture: string; output?: string }) => {
+    async (options: ConfigSelection & { source: CollectionSource; fixture: string; output: string }) => {
       const config = await loadConfig(
         options.source,
         options.source === 'fixture' ? options.fixture : undefined,
@@ -194,9 +194,10 @@ program
               rules: config.github
             })
           : await collectFixture(options.fixture);
-      if (options.output) await writeFile(options.output, `${JSON.stringify(raw, null, 2)}\n`, 'utf8');
+      await mkdir(dirname(options.output), { recursive: true });
+      await writeFile(options.output, `${JSON.stringify(raw, null, 2)}\n`, 'utf8');
       console.log(
-        `COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt}${options.output ? ` -> ${options.output}` : ''}`
+        `COLLECTED ${raw.repositories.length} repositories at ${raw.collectedAt} -> ${options.output}`
       );
     }
   );

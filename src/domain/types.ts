@@ -1,4 +1,6 @@
 import type { WorkspaceAnalytics } from '../analytics/workspaces.js';
+import type { TeamActivitySummary } from '../analytics/team-activity.js';
+import type { RepositoryActivity } from '../analytics/repository-activity.js';
 /**
  * @module domain.types
  * Centralise les contrats RAW, les entités normalisées, les métriques et les snapshots V1.
@@ -456,6 +458,10 @@ export interface BusinessTransition {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  /** Stocks et délais par repository ; projection des anciens snapshots si absent. */
+  repositoryActivity?: RepositoryActivity[];
+  /** Synthèse additive de l'activité ; absente des anciens snapshots. */
+  teamActivity?: TeamActivitySummary;
   /** Contrat additif des espaces métier, absent des anciens snapshots. */
   workspaces?: WorkspaceAnalytics;
   /** V2 contract: all dashboard analytics must consume this map. */

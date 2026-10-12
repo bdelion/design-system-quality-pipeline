@@ -12,6 +12,12 @@ function html(value: unknown): string {
   );
 }
 const models = new WeakMap<Snapshot, WorkspaceAnalytics>();
+/** Ouvre une issue source HTTPS dans un nouvel onglet ; une URL inconnue reste du texte. */
+function githubIssueLink(url: string, number: number): string {
+  return /^https:\/\/[^\s"<>]+$/.test(url)
+    ? `<a href="${html(url)}" target="_blank" rel="noopener noreferrer">#${number} ↗</a>`
+    : `#${number} · source non résolue`;
+}
 /** Invalide la projection lors d'une nouvelle génération sur un objet de développement modifié. */
 export function resetWorkspaceModel(snapshot: Snapshot): void {
   models.delete(snapshot);
@@ -139,7 +145,7 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
 export function accessibilityPopulation(snapshot: Snapshot, review = false): string {
   const model = workspaceModel(snapshot);
   const rows = review ? model.review : model.rows.filter((row) => row.qualification.status !== 'unqualified');
-  return `<article class="panel table-panel" id="${review ? 'review' : 'population'}"><h2>${review ? 'Issues sans label Audit + RGAA à examiner' : 'Population des anomalies d’accessibilité'}</h2><p>${review ? 'Signaux a11y ou RGAA sans label combiné : revue au cas par cas. Une relation d’audit existante reste explicite ; aucun lien n’est inventé.' : 'Qualification prouvée et présomption sont distinguées. Les bugs sans signal accessibilité restent dans l’activité des équipes.'}</p><button type="button" data-accessibility-export="${review ? 'review' : 'population'}">Exporter cette liste en CSV</button><div class="table-wrap" tabindex="0" role="region" aria-label="Liste des issues accessibilité"><table><caption>${review ? 'Cas à examiner' : 'Défauts distincts et preuves de qualification'}</caption><thead><tr>${['Issue GitHub', 'Titre', 'Repository', 'Labels', 'Qualification et motif', 'Criticité / catégories', 'Composants', 'Audit explicitement relié', 'État métier'].map((label) => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr data-workspace-row data-review="${review}" ${contextAttribute(row)}><td><a href="${/^https:\/\//.test(row.url) ? html(row.url) : '#'}" rel="noopener noreferrer">#${row.number}</a></td><td>${html(row.title)}</td><td>${html(row.repo)}</td><td>${html(row.labels.join(', '))}</td><td>${html({ qualified: 'Accessibilité qualifiée', presumed: 'Accessibilité présumée', unqualified: 'Non qualifiée' }[row.qualification.status])}<small>${html(row.qualification.reasons.join(', '))}</small></td><td>${html(row.criticality)} / ${html(row.categories.join(', ') || 'inconnues')}</td><td>${html(row.components.join(', ') || 'non déterminés')}</td><td>${row.auditIds.length ? row.auditIds.map((id) => `<a href="audits.html?audit=${encodeURIComponent(id)}">${html(id)}</a>`).join(', ') : html(row.origin) + ' · aucun audit relié'}</td><td>${html(row.status === 'closed' ? 'Done ET Closed' : row.status === 'cancelled' ? 'Annulée' : 'Ouverte / en cours')}</td></tr>`).join('')}</tbody></table></div><p data-workspace-count="${review ? 'review' : 'population'}"></p></article>`;
+  return `<article class="panel table-panel" id="${review ? 'review' : 'population'}"><h2>${review ? 'Issues sans label Audit + RGAA à examiner' : 'Population des anomalies d’accessibilité'}</h2><p>${review ? 'Signaux a11y ou RGAA sans label combiné : revue au cas par cas. Une relation d’audit existante reste explicite ; aucun lien n’est inventé.' : 'Qualification prouvée et présomption sont distinguées. Les bugs sans signal accessibilité restent dans l’activité des équipes.'}</p><button type="button" data-accessibility-export="${review ? 'review' : 'population'}">Exporter cette liste en CSV</button><div class="table-wrap" tabindex="0" role="region" aria-label="Liste des issues accessibilité"><table><caption>${review ? 'Cas à examiner' : 'Défauts distincts et preuves de qualification'}</caption><thead><tr>${['Issue GitHub', 'Titre', 'Repository', 'Labels', 'Qualification et motif', 'Criticité / catégories', 'Composants', 'Audit explicitement relié', 'État métier'].map((label) => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr data-workspace-row data-review="${review}" ${contextAttribute(row)}><td>${githubIssueLink(row.url, row.number)}</td><td>${html(row.title)}</td><td>${html(row.repo)}</td><td>${html(row.labels.join(', '))}</td><td>${html({ qualified: 'Accessibilité qualifiée', presumed: 'Accessibilité présumée', unqualified: 'Non qualifiée' }[row.qualification.status])}<small>${html(row.qualification.reasons.join(', '))}</small></td><td>${html(row.criticality)} / ${html(row.categories.join(', ') || 'inconnues')}</td><td>${html(row.components.join(', ') || 'non déterminés')}</td><td>${row.auditIds.length ? row.auditIds.map((id) => `<a href="audits.html?audit=${encodeURIComponent(id)}">${html(id)}</a>`).join(', ') : html(row.origin) + ' · aucun audit relié'}</td><td>${html(row.status === 'closed' ? 'Done ET Closed' : row.status === 'cancelled' ? 'Annulée' : 'Ouverte / en cours')}</td></tr>`).join('')}</tbody></table></div><p data-workspace-count="${review ? 'review' : 'population'}"></p></article>`;
 }
 /** Assemble tous les besoins des responsables d'audit, en explicitant les sources indisponibles. */
 export function accessibilityContent(snapshot: Snapshot): string {
@@ -151,7 +157,7 @@ export function workspacePayload(snapshot: Snapshot): string {
 }
 
 /** Présente les réserves DQ avec leurs relations explicites et des filtres de diagnostic. */
-export function dataQualityContent(snapshot: Snapshot): string {
+export function dataQualityContent(snapshot: Snapshot, githubUrl?: string): string {
   const repositories = new Map<string, Set<string>>();
   /** Associe une identité explicite à un repository sans déduire une origine du texte du diagnostic. */
   function associate(id: string, repo: string): void {
@@ -171,6 +177,33 @@ export function dataQualityContent(snapshot: Snapshot): string {
     ])
       associate(id, fact.repo);
   const data = snapshot.normalizedData;
+  const sources = new Map<string, string>();
+  const baseUrl = (githubUrl ?? 'https://github.com').replace(/\/+$/, '');
+  for (const repository of snapshot.rawData.repositories) {
+    const repoUrl = `${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}`;
+    for (const issue of repository.issues) sources.set(issue.id, `${repoUrl}/issues/${issue.number}`);
+    for (const pr of repository.pullRequests) sources.set(pr.id, `${repoUrl}/pull/${pr.number}`);
+  }
+  for (const issue of data.issues ?? []) {
+    const url = sources.get(issue.provenance.sourceId ?? issue.issueId) ?? issue.url;
+    if (/^https:\/\/[^\s]+$/.test(url)) sources.set(issue.issueId, url);
+  }
+  for (const entity of [...data.anomalies, ...data.audits]) {
+    const url = sources.get(entity.issueId) ?? sources.get(entity.provenance.sourceId ?? '');
+    if (url) sources.set('auditId' in entity ? entity.auditId : entity.anomalyId, url);
+  }
+  for (const entity of [...data.components, ...(data.versions ?? []), ...data.pullRequests]) {
+    const url = sources.get(entity.provenance.sourceId ?? '');
+    if (url)
+      sources.set(
+        'componentId' in entity
+          ? entity.componentId
+          : 'versionId' in entity
+            ? entity.versionId
+            : entity.pullRequestId,
+        url
+      );
+  }
   for (const library of data.libraries) {
     associate(library.libraryId, library.repository);
     for (const entity of [...data.components, ...(data.versions ?? [])].filter(
@@ -270,7 +303,9 @@ export function dataQualityContent(snapshot: Snapshot): string {
           '</td><td>' +
           html(item.entityType) +
           '</td><td>' +
-          html(item.entityId) +
+          (/^https:\/\/[^\s"<>]+$/.test(sources.get(item.entityId) ?? '')
+            ? `<a href="${html(sources.get(item.entityId))}" target="_blank" rel="noopener noreferrer">${html(item.entityId)} ↗</a>`
+            : html(item.entityId)) +
           (fact
             ? '<br><a href="graph.html?issue=' +
               encodeURIComponent(fact.id) +
