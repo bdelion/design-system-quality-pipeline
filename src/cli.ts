@@ -12,6 +12,8 @@ import { collectFixture } from './collectors/fixture.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
 import { loadConfig, assertConfigSelection, type ConfigSelection } from './config.js';
 import { loadCatalogue } from './catalogue.js';
+import { generateCatalogueDraft } from './catalogue-draft.js';
+import { generateSystemDraft } from './system-draft.js';
 import { runPipeline, pipelineStatus, type CollectionSource } from './pipeline.js';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -328,6 +330,31 @@ program
     });
     for (const file of files) console.log('Fichier généré : ' + file);
     console.log('Référence préparée ; revue des champs métier conservés requise avant partage.');
+  });
+
+program
+  .command('catalogue:generate')
+  .description('Produire un brouillon de catalogue depuis un RAW local, sans inventer les métadonnées')
+  .requiredOption('--input <path>', 'fichier RAW JSON local')
+  .requiredOption('--output <path>', 'nouveau fichier YAML de brouillon')
+  .option('--component-prefix <prefix>', 'préfixe des labels de composant', 'Component:')
+  .action(async (options: { input: string; output: string; componentPrefix: string }) => {
+    const draft = await generateCatalogueDraft(options.input, options.output, options.componentPrefix);
+    console.log(`Brouillon généré : ${draft.components.length} composants détectés.`);
+    console.log(`Catalogue : ${options.output}`);
+    console.log('Métadonnées à compléter et associations aux repositories à vérifier avant utilisation.');
+  });
+
+program
+  .command('system:generate')
+  .description('Produire un brouillon système et un inventaire des valeurs observées dans un RAW local')
+  .requiredOption('--input <path>', 'fichier RAW JSON local')
+  .requiredOption('--output <path>', 'nouveau fichier YAML de brouillon')
+  .action(async (options: { input: string; output: string }) => {
+    const draft = await generateSystemDraft(options.input, options.output);
+    console.log(`Brouillon système généré : ${draft.inventory.length} repositories observés.`);
+    console.log(`Configuration : ${options.output}`);
+    console.log('Règles métier à confirmer ; un seul owner GitHub est nécessaire à la configuration finale.');
   });
 
 for (const command of program.commands) {

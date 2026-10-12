@@ -24,6 +24,7 @@ Le RAW doit contenir un unique owner, au moins un repository, une date de collec
 valide et les tableaux conformes au contrat RAW. Le catalogue source doit fournir
 les composants présents : leurs métadonnées ne sont pas déduites arbitrairement.
 Les noms de référence contiennent uniquement des minuscules, chiffres et tirets.
+Si le catalogue source n’existe pas encore, [générer un brouillon depuis le RAW](generation-catalogue.md), puis compléter et vérifier ses métadonnées métier avant de préparer les références.
 Le nom `v1` est réservé ; même `--force` ne permet pas d'écraser la référence V1.
 
 ## Fichiers produits

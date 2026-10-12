@@ -66,7 +66,7 @@ export function assertConfigSelection(selection: ConfigSelection): void {
     throw new Error('Fournir ensemble --system-config et --catalogue-config.');
 }
 
-/** Charge la configuration YAML et complète les URLs avec l'environnement. */
+/** Refuse les brouillons, charge la configuration YAML et complète les URLs avec l’environnement. */
 export async function loadConfig(
   source: 'fixture' | 'github' = 'github',
   fixtureFile?: string,
@@ -80,6 +80,15 @@ export async function loadConfig(
       : `${configPath}/system.yaml`);
   const content = await readFile(path, 'utf8');
   const systemConfig = parse(content) as PipelineConfig;
+  if (
+    typeof systemConfig === 'object' &&
+    systemConfig !== null &&
+    'draft' in systemConfig &&
+    systemConfig.draft === true
+  )
+    throw new Error(
+      'Configuration système : brouillon à compléter et à revoir avant utilisation ; retirer draft après validation métier.'
+    );
   validateMilestoneDetection(systemConfig.github.milestoneDetection);
   validateAccessibilityRecognition(systemConfig.github.accessibilityRecognition);
   return {

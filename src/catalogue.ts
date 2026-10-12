@@ -57,8 +57,13 @@ export async function loadCatalogue(
   return validateCatalogue(parse(yaml));
 }
 
-/** Vérifie la structure métier du catalogue et l'unicité de ses composants. */
+/** Refuse les brouillons, puis vérifie la structure métier du catalogue et l’unicité de ses composants. */
 export function validateCatalogue(value: unknown): Catalogue {
+  if (isRecord(value) && value.draft === true) {
+    throw new Error(
+      'Invalid catalogue: brouillon à compléter et à revoir avant utilisation ; retirer draft après validation métier.'
+    );
+  }
   if (!isRecord(value) || typeof value.version !== 'string' || !Array.isArray(value.components)) {
     throw new Error('Invalid catalogue: expected a version and a components array.');
   }
