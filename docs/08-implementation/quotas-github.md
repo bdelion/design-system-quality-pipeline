@@ -27,6 +27,12 @@ Les repositories, pages et relations déjà collectés restent **en mémoire**. 
 
 Un terminal interactif affiche le décompte chaque seconde. Les logs non interactifs affichent le début, puis le temps restant chaque minute, et la reprise. Cette attente ne bloque pas la boucle d’événements Node.js.
 
+`--quota-max-wait 14400` autorise **quatre heures d’attente cumulée**. Le programme convertit ces secondes en millisecondes pour les temporisations : une attente de 2 349 secondes reste donc inférieure à ce plafond. Pendant la pause, aucune nouvelle requête n’est envoyée ; le quota est relu avant la reprise, avec le même token.
+
+**CORRIGÉ — #55.** Certains appels GraphQL et de catalogues fournissaient déjà `Authorization` ; le contrôleur ajoutait le même en-tête sous une autre casse. `fetch` fusionnait les deux valeurs, produisant une authentification invalide, même avec un token valide. Le contrôleur utilise désormais `Headers.set` pour envoyer une seule valeur d’authentification et préserver les formats `Accept` et `Content-Type` demandés.
+
+Un HTTP **401** signale un [refus d’authentification](https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api), pas un quota épuisé. Si ce refus persiste après correction, vérifier localement que `GITHUB_TOKEN` est valide, non expiré et non révoqué, sans le copier dans les logs ou une issue. Attendre le reset ne renouvelle pas le token ; un 401 interrompt la collecte sans retry, avec un message explicite. La pause seule ne fait aucune requête HTTP.
+
 ## Priorité des délais et erreurs transitoires
 
 1. `Retry-After`, en secondes ou date HTTP, s’il est présent.

@@ -4,6 +4,11 @@ import { CollectionProgress } from '../src/lib/collection-progress.js';
 import { runPipeline } from '../src/pipeline.js';
 import { writeJson } from '../src/lib/files.js';
 import { generateDashboard } from '../src/dashboard/generate.js';
+import { setTimeout as sleep } from 'node:timers/promises';
+vi.mock('node:timers/promises', async (importOriginal) => {
+  const original = await importOriginal<typeof import('node:timers/promises')>();
+  return { ...original, setTimeout: vi.fn(original.setTimeout) };
+});
 vi.mock('../src/lib/files.js', () => ({ readJson: vi.fn(), writeJson: vi.fn() }));
 vi.mock('../src/dashboard/generate.js', () => ({ generateDashboard: vi.fn() }));
 
@@ -22,6 +27,7 @@ function requests(options = {}): GithubRequests {
   return new GithubRequests('test-token', 'https://api.test', new CollectionProgress(1, output), options);
 }
 afterEach(() => {
+  vi.mocked(sleep).mockReset();
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -30,14 +36,88 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+it('attend un reset lointain sans requête pendant la pause puis reprend avec le même token', async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-10-12T10:00:00Z'));
+  const started = Date.now();
+  let checks = 0;
+  const api = vi.fn(async (url) => {
+    if (!String(url).endsWith('/rate_limit')) return Response.json({ ok: true });
+    if (++checks > 1) return quotas();
+    return Response.json({
+      resources: {
+        core: { remaining: 0, reset: started / 1000 + 2348 },
+        graphql: { remaining: 5000, reset: started / 1000 + 2348 }
+      }
+    });
+  });
+  vi.stubGlobal('fetch', api);
+  vi.mocked(sleep).mockImplementation(async (delay) => {
+    expect(api).toHaveBeenCalledTimes(1);
+    vi.setSystemTime(Date.now() + Number(delay));
+  });
+  const client = requests({ waitForQuota: true, quotaMaxWait: 14400 });
+  await client.initialize();
+  expect(Date.now() - started).toBe(2349000);
+  expect(checks).toBe(2);
+  expect((await client.request('https://api.test/issues', {}, 'rest')).status).toBe(200);
+  for (const call of api.mock.calls) {
+    const init = (call as unknown as [string, RequestInit])[1];
+    expect(new Headers(init.headers).get('authorization')).toBe('Bearer test-token');
+  }
+});
+
+it('envoie une seule authentification même lorsque l’appelant fournit des en-têtes de casse différente', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => quotas())
+  );
+  const client = requests();
+  await client.initialize();
+  for (const name of ['Authorization', 'authorization', 'AUTHORIZATION']) {
+    await client.request(
+      'https://api.test/graphql',
+      {
+        method: 'POST',
+        headers: {
+          [name]: 'Bearer test-token',
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      },
+      'graphql'
+    );
+    const init = vi.mocked(fetch).mock.calls.at(-1)?.[1];
+    expect(new Headers(init?.headers).get('authorization')).toBe('Bearer test-token');
+    expect(new Headers(init?.headers).get('accept')).toBe('application/json');
+    expect(new Headers(init?.headers).get('content-type')).toBe('application/json');
+  }
+});
+
+it('explique un 401 après le reset et arrête la file sans retry ni fuite du token', async () => {
+  vi.useFakeTimers();
+  let checks = 0;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => (++checks === 1 ? quotas(0) : new Response('', { status: 401 })))
+  );
+  vi.mocked(sleep).mockImplementation(async (delay) => {
+    vi.setSystemTime(Date.now() + Number(delay));
+  });
+  const client = requests({ waitForQuota: true });
+  await expect(client.initialize()).rejects.toThrow(/authentification refusée \(HTTP 401\)/);
+  await expect(client.request('https://api.test/issues', {}, 'rest')).rejects.toThrow(/authentification/);
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(output.write.mock.calls.join('')).not.toContain('test-token');
+});
+
 it('ne produit ni snapshot ni dashboard lorsque le pré-check interrompt le pipeline', async () => {
   vi.stubEnv('GITHUB_TOKEN', 'test-token');
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => quotas(0))
-  );
-  await expect(runPipeline('github')).rejects.toThrow(/quota REST/i);
+  const api = vi.fn(async () => quotas(0));
+  vi.stubGlobal('fetch', api);
+  await expect(runPipeline('github')).rejects.toThrow(/Quota REST : réserve de sécurité atteinte/);
+  expect(api).toHaveBeenCalledTimes(1);
   expect(writeJson).not.toHaveBeenCalled();
   expect(generateDashboard).not.toHaveBeenCalled();
 });
