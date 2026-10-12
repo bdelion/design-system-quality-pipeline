@@ -97,9 +97,17 @@ describe('collecteur GitHub', () => {
               id: 900,
               number: 42,
               title: 'Fixes #12',
-              body: 'Fixes #12',
+              body: 'Fixes #12. Fix #291. Fixes other/repo#12. Resolves https://github.com/other/repo/issues/13. Fixes #999',
               state: 'closed',
               merged_at: '2026-09-02T12:00:00Z'
+            },
+            {
+              id: 901,
+              number: 291,
+              title: 'PR abandonnée',
+              body: null,
+              state: 'closed',
+              merged_at: null
             }
           ]),
           { status: 200 }
@@ -151,8 +159,16 @@ describe('collecteur GitHub', () => {
     });
     expect(dataset.repositories[0]?.issues[1]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
     expect(dataset.repositories[0]?.pullRequests[0]?.relatedIssueIds).toEqual([
-      'acme/design-system:issue:12'
+      'acme/design-system:issue:12',
+      'other/repo:issue:12',
+      'other/repo:issue:13',
+      'acme/design-system:issue:999'
     ]);
+    // Régression #61 : Fix #291 référence une PR fermée sans merge, pas une issue.
+    expect(dataset.repositories[0]?.pullRequests[1]?.state).toBe('CLOSED');
+    expect(dataset.repositories[0]?.pullRequests[0]?.relatedIssueIds).not.toContain(
+      'acme/design-system:issue:291'
+    );
     expect(requests.some((url) => url.includes('page=2'))).toBe(true);
   });
 

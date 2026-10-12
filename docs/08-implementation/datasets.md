@@ -15,6 +15,8 @@ Le périmètre doit avoir un owner unique. Les doublons et noms incomplets sont 
 
 ### Diagnostic des relations manquantes
 
+Correction liée à l’issue #61 : les références de clôture vers une PR connue du dépôt (même fermée sans merge) ne sont pas enregistrées comme des relations vers une issue. Le dépôt explicite d’une référence `owner/repository#123` ou d’une URL d’issue est conservé. Une référence dont la cible n’est pas connue reste présente pour diagnostic ; elle n’est pas supprimée pour rendre la fixture artificiellement valide. Les anciennes captures doivent être recollectées pour bénéficier de cette correction.
+
 Si `fixture:prepare` détecte une relation invalide, la console indique le chemin d’un rapport `fixture-diagnostics-…/relations.json`, créé à côté du RAW source. Ouvrir ce fichier dans l’éditeur : chaque entrée précise le dépôt, le type et le numéro de l’issue ou PR source, le type et l’identifiant de l’élément référencé, ainsi que son chemin JSON. Le rapport distingue un élément absent du RAW d’un élément présent dans un autre dépôt.
 
 Vérifier la relation dans GitHub, le périmètre de collecte et les accès du token, puis refaire une collecte si nécessaire. Une relation entre dépôts peut nécessiter une adaptation du traitement ; ne pas effacer la relation pour contourner le contrôle. Aucun dataset n’est publié lors de cet échec, et le RAW reste inchangé. Le rapport contient des identités réelles : le conserver privé et le relire avant partage. Il ne contient ni token, ni graine, ni copie des textes du RAW.

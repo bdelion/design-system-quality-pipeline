@@ -178,10 +178,10 @@ async function collectRepository(
     gitTags,
     options
   );
-  const rawPullRequests = pullRequests.map((pullRequest) =>
-    toRawPullRequest(pullRequest, repository.full_name, options.rules)
-  );
   const pullRequestByNumber = new Map(pullRequests.map((pullRequest) => [pullRequest.number, pullRequest]));
+  const rawPullRequests = pullRequests.map((pullRequest) =>
+    toRawPullRequest(pullRequest, repository.full_name, options.rules, pullRequestByNumber)
+  );
   // Les pull requests apparaissent aussi dans l'endpoint des issues : elles sont écartées ici.
   const limit = pLimit(5);
 
@@ -360,8 +360,12 @@ function toRawIssue(
   const issueType = issue.type?.name?.toUpperCase() ?? inferIssueType(labels, issue.title, rules);
   const linkedPullRequestNumbers = [
     ...new Set([
-      ...extractClosingReferences(issue.body, rules.closingKeywords),
-      ...extractClosingReferences(issue.title, rules.closingKeywords),
+      ...extractClosingReferences(issue.body, rules.closingKeywords, repository)
+        .filter((reference) => reference.repository === repository)
+        .map((reference) => reference.number),
+      ...extractClosingReferences(issue.title, rules.closingKeywords, repository)
+        .filter((reference) => reference.repository === repository)
+        .map((reference) => reference.number),
       ...extractTimelinePullRequestNumbers(timeline, pullRequestByNumber),
       ...graphqlPullRequests.map((pullRequest) => pullRequest.number)
     ])
@@ -839,11 +843,12 @@ function collectPullRequestNumbers(
   return [];
 }
 
-/** Convertit une PR GitHub et ses références de clôture en modèle RAW. */
+/** Convertit une PR et conserve les références d’issues sans confondre les PR connues avec des issues. */
 function toRawPullRequest(
   pullRequest: GithubPullRequest,
   repository: string,
-  rules: GithubProcessingConfig
+  rules: GithubProcessingConfig,
+  pullRequestByNumber: Map<number, GithubPullRequest>
 ): RawPullRequest {
   return {
     id: `${repository}:pr:${pullRequest.id}`,
@@ -851,11 +856,17 @@ function toRawPullRequest(
     state: pullRequest.merged_at ? 'MERGED' : (pullRequest.state.toUpperCase() as RawPullRequest['state']),
     ...(pullRequest.merged_at ? { mergedAt: pullRequest.merged_at } : {}),
     relatedIssueIds: [
-      ...new Set([
-        ...extractClosingReferences(pullRequest.body, rules.closingKeywords),
-        ...extractClosingReferences(pullRequest.title, rules.closingKeywords)
-      ])
-    ].map((number) => `${repository}:issue:${number}`)
+      ...new Set(
+        [
+          ...extractClosingReferences(pullRequest.body, rules.closingKeywords, repository),
+          ...extractClosingReferences(pullRequest.title, rules.closingKeywords, repository)
+        ]
+          .filter(
+            (reference) => reference.repository !== repository || !pullRequestByNumber.has(reference.number)
+          )
+          .map((reference) => `${reference.repository}:issue:${reference.number}`)
+      )
+    ]
   };
 }
 
@@ -873,17 +884,22 @@ function inferIssueType(
   return 'UNKNOWN';
 }
 
-/** Extrait les références `Closes`, `Fixes` et `Resolves` d'un texte GitHub. */
-function extractClosingReferences(value: string | null | undefined, closingKeywords: string[]): number[] {
+/** Extrait les références de clôture en conservant leur dépôt explicite ou celui du texte source. */
+function extractClosingReferences(
+  value: string | null | undefined,
+  closingKeywords: string[],
+  repository: string
+): { repository: string; number: number }[] {
   if (!value) return [];
-  const references: number[] = [];
+  const references: { repository: string; number: number }[] = [];
   const expression = new RegExp(
-    `(?:${closingKeywords.map((keyword) => escapeRegExp(keyword)).join('|')})\\s+(?:(?:[\\w.-]+\\/[\\w.-]+)|(?:https?:\\/\\/[^\\s]+\\/issues))?#(\\d+)`,
+    `\\b(?:${closingKeywords.map((keyword) => escapeRegExp(keyword)).join('|')})\\s+(?:https?:\\/\\/[^\\s/]+\\/([\\w.-]+\\/[\\w.-]+)\\/issues\\/(\\d+)|(?:([\\w.-]+\\/[\\w.-]+))?#(\\d+))`,
     'gi'
   );
   for (const match of value.matchAll(expression)) {
-    const number = Number(match[1]);
-    if (Number.isInteger(number)) references.push(number);
+    const number = Number(match[2] ?? match[4]);
+    if (Number.isSafeInteger(number) && number > 0)
+      references.push({ repository: match[1] ?? match[3] ?? repository, number });
   }
   return references;
 }
