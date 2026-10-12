@@ -40,7 +40,7 @@ Les commandes de collecte acceptent aussi `--system-config` et `--catalogue-conf
 
 ## Résultats et limites
 
-La console affiche une synthèse en français : statut, compteurs, réserves de qualité et chemins des fichiers. Les données détaillées sont enregistrées dans `data/current/snapshot.json`, l’historique dans `data/runs/` et les pages dans `data/dashboard/`.
+La console affiche une synthèse en français : statut, compteurs, réserves de qualité et chemins des fichiers. La collecte GitHub utilise une concurrence limitée par quota et affiche une estimation indicative du temps de traitement des issues restantes lorsque leur total est connu. Les données détaillées sont enregistrées dans `data/current/snapshot.json`, l’historique dans `data/runs/` et les pages dans `data/dashboard/`.
 
 Un statut **partiel** signifie que le traitement a terminé avec des réserves Data Quality. Un échec de collecte, notamment un quota insuffisant, produit un code de sortie non nul et ne génère pas de nouveau snapshot. Les sorties précédentes restent présentes : consulter le résultat de la commande avant de les considérer comme une nouvelle collecte. Un HTTP 401 indique une authentification refusée ; l’attente du quota ne le corrige pas. Voir le [diagnostic des quotas et de l’authentification](docs/08-implementation/quotas-github.md).
 

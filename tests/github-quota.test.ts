@@ -290,5 +290,107 @@ it('stoppe toutes les requêtes en file au premier quota épuisé', async () => 
     client.request('https://api.test/b', {}, 'rest')
   ]);
   expect(results.every((result) => result.status === 'rejected')).toBe(true);
-  expect(fetch).toHaveBeenCalledTimes(2);
+  const calls = vi.mocked(fetch).mock.calls.length;
+  expect(calls).toBeLessThanOrEqual(3);
+  await expect(client.request('https://api.test/c', {}, 'rest')).rejects.toThrow(/quota/i);
+  expect(fetch).toHaveBeenCalledTimes(calls);
+});
+
+it('borne la concurrence REST à cinq sans sérialiser les appels réseau', async () => {
+  const releases: Array<() => void> = [];
+  let active = 0;
+  let maximum = 0;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url) => {
+      if (String(url).endsWith('/rate_limit')) return quotas();
+      active++;
+      maximum = Math.max(maximum, active);
+      await new Promise<void>((resolve) => releases.push(resolve));
+      active--;
+      return Response.json({});
+    })
+  );
+  const client = requests();
+  await client.initialize();
+  const tasks = Array.from({ length: 8 }, (_, i) => client.request(`https://api.test/${i}`, {}, 'rest'));
+  await vi.waitFor(() => expect(releases).toHaveLength(5));
+  for (const release of releases.splice(0)) release();
+  await vi.waitFor(() => expect(releases).toHaveLength(3));
+  for (const release of releases) release();
+  await Promise.all(tasks);
+  expect(maximum).toBe(5);
+});
+
+it('réserve atomiquement les points et ne réutilise pas un compteur ancien reçu hors ordre', async () => {
+  const releases: Array<(remaining: number) => void> = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url) => {
+      if (String(url).endsWith('/rate_limit')) return quotas(102);
+      return new Promise<Response>((resolve) =>
+        releases.push((remaining) =>
+          resolve(
+            Response.json(
+              {},
+              {
+                headers: { 'x-ratelimit-remaining': String(remaining) }
+              }
+            )
+          )
+        )
+      );
+    })
+  );
+  const client = requests();
+  await client.initialize();
+  const first = client.request('https://api.test/a', {}, 'rest');
+  const second = client.request('https://api.test/b', {}, 'rest');
+  await vi.waitFor(() => expect(releases).toHaveLength(2));
+  releases[1]!(100);
+  await second;
+  releases[0]!(101);
+  await first;
+  await expect(client.request('https://api.test/c', {}, 'rest')).rejects.toThrow(/quota REST/i);
+  expect(releases).toHaveLength(2);
+});
+
+it('mutualise une pause REST et laisse GraphQL avancer pendant Retry-After', async () => {
+  let rest = 0;
+  let resumed = false;
+  let releasePause: (() => void) | undefined;
+  vi.mocked(sleep).mockImplementation(async () => {
+    await new Promise<void>((resolve) => {
+      releasePause = resolve;
+    });
+  });
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url) => {
+      if (String(url).endsWith('/rate_limit')) return quotas();
+      if (String(url).endsWith('/graphql')) return Response.json({ data: {} });
+      rest++;
+      return resumed
+        ? Response.json({})
+        : Response.json(
+            { message: 'secondary rate limit' },
+            { status: 429, headers: { 'retry-after': '1' } }
+          );
+    })
+  );
+  const client = requests({ waitForQuota: true });
+  await client.initialize();
+  const tasks = [
+    client.request('https://api.test/a', {}, 'rest'),
+    client.request('https://api.test/b', {}, 'rest')
+  ];
+  await vi.waitFor(() => expect(releasePause).toBeDefined());
+  expect((await client.request('https://api.test/graphql', {}, 'graphql')).ok).toBe(true);
+  expect(vi.mocked(sleep)).toHaveBeenCalledTimes(1);
+  resumed = true;
+  vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 3000);
+  releasePause!();
+  await Promise.all(tasks);
+  expect(rest).toBe(4);
+  expect(vi.mocked(sleep)).toHaveBeenCalledTimes(1);
 });

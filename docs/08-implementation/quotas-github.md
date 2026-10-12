@@ -39,7 +39,17 @@ Un HTTP **401** signale un [refus d’authentification](https://docs.github.com/
 2. Reset du quota primaire (`x-ratelimit-reset` ou `rateLimit.resetAt`) lorsqu’il est connu.
 3. Pour une limite secondaire sans instruction exploitable, au moins une minute, puis une attente exponentielle bornée par la durée cumulée autorisée.
 
-Les erreurs réseau et HTTP 502/503/504 ont des retries limités (3 par défaut), avec backoff exponentiel et jitter. Un refus de permission HTTP 403 avec quota restant n’est pas assimilé à une limite sur la seule présence de `x-ratelimit-reset`. Les requêtes de toute la collecte sont sérialisées pour éviter que plusieurs tâches consomment le quota simultanément ; la durée de collecte peut augmenter.
+Les erreurs réseau et HTTP 502/503/504 ont des retries limités (3 par défaut), avec backoff exponentiel et jitter. Un refus de permission HTTP 403 avec quota restant n’est pas assimilé à une limite sur la seule présence de `x-ratelimit-reset`.
+
+Les lectures utilisent désormais **cinq requêtes REST et cinq requêtes GraphQL simultanées au maximum**, partagées entre tous les repositories. Seule la réservation des points est sérialisée par famille ; les appels réseau restent concurrents. Le coût connu est débité avant chaque tentative. Les compteurs restent conservateurs face aux requêtes en vol et aux réponses reçues hors ordre ; une réponse tardive ne recrédite pas le budget. Le coût GraphQL le plus élevé observé est conservé pour les réservations suivantes ; un coût futur plus élevé ou d’autres consommateurs du token peuvent encore épuiser le quota.
+
+Après le pré-check initial des deux quotas, les pauses sont mutualisées par famille : un refus REST suspend les nouveaux appels REST, tandis que GraphQL peut avancer, et réciproquement. Les appels déjà en vol peuvent terminer. Une limite secondaire reste susceptible de concerner plusieurs familles ; si GitHub refuse aussi l’autre famille, celle-ci entre à son tour en pause. Une erreur fatale arrête toute la collecte. `--quota-max-wait` borne la somme des pauses de quota : les pauses REST et GraphQL simultanées sont comptées séparément, mais les tâches partageant une même pause ne la comptent qu’une fois.
+
+## Estimation du temps restant
+
+La progression affiche `reste ≈ … (issues)` lorsque tous les repositories ont communiqué leur nombre d’issues et qu’au moins trois issues ont été entièrement traitées dans l’échantillon courant. Le calcul utilise le débit observé et le nombre d’issues encore à traiter. Avant cela, l’estimation est **indisponible**. Lorsque toutes les issues sont traitées, la console indique la finalisation plutôt qu’un temps total nul.
+
+Une pause de quota masque cette estimation et conserve le décompte avant reprise. À la reprise, un nouvel échantillon évite d’intégrer l’attente passée au débit. Les pauses futures et la finalisation ne sont pas prédites ; la durée varie selon le nombre de pages et de relations de chaque issue. L’estimation est indicative, pas une heure de fin garantie. En terminal, elle est actualisée avec les compteurs ; dans les logs non interactifs, un point de progression est écrit au plus une fois par minute, lorsqu’un événement de collecte arrive.
 
 Ces règles suivent les documentations GitHub sur les [quotas REST](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api), les [quotas GraphQL](https://docs.github.com/en/graphql/overview/rate-limits-and-query-limits-for-the-graphql-api) et les [bonnes pratiques REST](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api).
 

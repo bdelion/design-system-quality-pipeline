@@ -1,4 +1,5 @@
 import { setTimeout as sleep } from 'node:timers/promises';
+import pLimit from 'p-limit';
 import type { CollectionProgress } from '../lib/collection-progress.js';
 
 /** Options communes aux commandes qui effectuent une collecte GitHub. */
@@ -53,13 +54,19 @@ export function validateGithubQuotaOptions(options: GithubQuotaOptions): void {
 
 /** Coordonne toutes les requêtes d'une collecte, ses réserves et ses interruptions. */
 export class GithubRequests {
-  private queue: Promise<unknown> = Promise.resolve();
+  private readonly limits = { rest: pLimit(5), graphql: pLimit(5) };
+  private readonly admissions: Record<Resource, Promise<unknown>> = {
+    rest: Promise.resolve(),
+    graphql: Promise.resolve()
+  };
+  private readonly pauses: Partial<Record<Resource, Promise<void>>> = {};
+  private readonly outstanding: Record<Resource, number> = { rest: 0, graphql: 0 };
   private failure: Error | undefined;
   private readonly aborter = new AbortController();
   private readonly quotas: Partial<Record<Resource, Quota>> = {};
   private waited = 0;
 
-  /** Initialise un contrôleur partagé ; les requêtes sont sérialisées pour éviter les courses au quota. */
+  /** Initialise un contrôleur partagé avec cinq requêtes au plus par famille de quota. */
   constructor(
     private readonly token: string,
     private readonly apiUrl: string,
@@ -87,24 +94,66 @@ export class GithubRequests {
     this.aborter.abort(this.failure);
   }
 
-  /** Place une lecture REST ou GraphQL dans la file commune sans mutation distante. */
+  /** Limite les lectures par famille ; une pause REST laisse progresser GraphQL et réciproquement. */
   request(url: string, init: RequestInit, resource: Resource): Promise<Response> {
-    const task = this.queue.then(async () => {
+    return this.limits[resource](async () => {
       if (this.failure) throw this.failure;
       try {
-        await this.ensureBudget(resource);
         return await this.execute(url, init, resource);
       } catch (error) {
         this.abort(error);
         throw error;
       }
     });
-    this.queue = task.catch(() => undefined);
+  }
+
+  /** Réserve le coût avant l’envoi dans une section sérialisée courte, sans sérialiser le réseau. */
+  private reserve(resource: Resource): Promise<number> {
+    const task = this.admissions[resource].then(async () => {
+      for (;;) {
+        if (this.failure) throw this.failure;
+        await this.pauses[resource];
+        await this.ensureBudget(resource);
+        if (this.failure) throw this.failure;
+        if (this.pauses[resource]) continue;
+        const quota = this.quotas[resource];
+        const cost = quota?.cost ?? 1;
+        const reserve =
+          resource === 'rest'
+            ? (this.options.restQuotaReserve ?? 100)
+            : (this.options.graphqlQuotaReserve ?? 100);
+        if (quota && quota.remaining < reserve + cost) continue;
+        if (quota) quota.remaining -= cost;
+        this.outstanding[resource] += cost;
+        return cost;
+      }
+    });
+    this.admissions[resource] = task.catch(() => undefined);
     return task;
   }
 
+  /** Mutualise l’attente et la relecture du quota d’une famille, même après plusieurs refus simultanés. */
+  private async recover(resource: Resource, resumeAt: number | undefined, reason: string): Promise<void> {
+    const existing = this.pauses[resource];
+    if (existing) {
+      await existing;
+      if (resumeAt !== undefined && resumeAt > Date.now()) await this.recover(resource, resumeAt, reason);
+      return;
+    }
+    const task = (async () => {
+      await this.pause(resource, resumeAt, reason);
+      await this.refresh(resource);
+    })();
+    this.pauses[resource] = task;
+    try {
+      await task;
+    } finally {
+      delete this.pauses[resource];
+    }
+  }
+
   /** Relit les quotas officiels ; ce endpoint ne consomme pas le quota primaire REST. */
-  private async refresh(): Promise<void> {
+  private async refresh(selected?: Resource): Promise<void> {
     if (this.failure) throw this.failure;
     const response = await this.execute(`${this.apiUrl.replace(/\/+$/, '')}/rate_limit`, {}, 'rest');
     if (!response.ok) throw new Error(`GitHub API request failed (${response.status})`);
@@ -115,10 +164,26 @@ export class GithubRequests {
       ['rest', data.resources?.core],
       ['graphql', data.resources?.graphql]
     ] as const) {
+      if (selected && resource !== selected) continue;
       if (typeof quota?.remaining !== 'number' || !Number.isFinite(quota.remaining) || quota.remaining < 0)
         continue;
+      const previous = this.quotas[resource];
+      const remaining = Math.max(
+        0,
+        (resource === 'rest' ? (restRemaining ?? quota.remaining) : quota.remaining) -
+          this.outstanding[resource]
+      );
+      const resetAt =
+        resource === 'rest' && restReset !== undefined && restReset > 0
+          ? restReset * 1000
+          : typeof quota.reset === 'number' && quota.reset > 0
+            ? quota.reset * 1000
+            : undefined;
       this.quotas[resource] = {
-        remaining: resource === 'rest' ? (restRemaining ?? quota.remaining) : quota.remaining,
+        remaining:
+          previous && (resetAt === undefined || resetAt === previous.resetAt)
+            ? Math.min(previous.remaining, remaining)
+            : remaining,
         cost: this.quotas[resource]?.cost ?? 1,
         ...(resource === 'rest' && restReset !== undefined && restReset > 0
           ? { resetAt: restReset * 1000 }
@@ -139,8 +204,7 @@ export class GithubRequests {
         ? (this.options.restQuotaReserve ?? 100)
         : (this.options.graphqlQuotaReserve ?? 100);
     while (quota && quota.remaining < reserve + quota.cost) {
-      await this.pause(resource, quota.resetAt, 'réserve de sécurité atteinte');
-      await this.refresh();
+      await this.recover(resource, quota.resetAt, 'réserve de sécurité atteinte');
       quota = this.quotas[resource];
     }
   }
@@ -166,7 +230,17 @@ export class GithubRequests {
             ? observedCost
             : (this.quotas[resource]?.cost ?? 1)
           : 1;
-      this.quotas[resource] = { remaining, cost, ...(resetAt !== undefined ? { resetAt } : {}) };
+      const previous = this.quotas[resource];
+      if (previous?.resetAt !== undefined && resetAt !== undefined && resetAt < previous.resetAt) return;
+      const windowReset = previous?.resetAt ?? resetAt;
+      this.quotas[resource] = {
+        remaining: Math.min(
+          previous?.remaining ?? remaining,
+          Math.max(0, remaining - this.outstanding[resource])
+        ),
+        cost: Math.max(previous?.cost ?? 1, cost),
+        ...(windowReset !== undefined ? { resetAt: windowReset } : {})
+      };
       if (resource === 'graphql') this.progress.updateQuota(remaining, cost);
     }
   }
@@ -189,16 +263,21 @@ export class GithubRequests {
     if (this.waited + milliseconds > (this.options.quotaMaxWait ?? 7200) * 1000)
       throw new Error(`Quota ${name} : durée maximale d’attente dépassée. Reset/reprise : ${date}.`);
     this.waited += milliseconds;
+    this.progress.setQuotaPaused(resource, true);
     this.progress.warn(`Quota ${name} : ${reason}. Reprise prévue : ${date}.`);
     const until = Date.now() + milliseconds;
     let tick = 0;
-    while (Date.now() < until) {
-      if (this.failure) throw this.failure;
-      const seconds = Math.ceil((until - Date.now()) / 1000);
-      if (this.progress.interactive || tick % 60 === 0)
-        this.progress.warn(`Quota ${name} : ${seconds} s restantes avant reprise.`);
-      await sleep(Math.min(1000, until - Date.now()), undefined, { signal: this.aborter.signal });
-      tick++;
+    try {
+      while (Date.now() < until) {
+        if (this.failure) throw this.failure;
+        const seconds = Math.ceil((until - Date.now()) / 1000);
+        if (this.progress.interactive || tick % 60 === 0)
+          this.progress.warn(`Quota ${name} : ${seconds} s restantes avant reprise.`);
+        await sleep(Math.min(1000, until - Date.now()), undefined, { signal: this.aborter.signal });
+        tick++;
+      }
+    } finally {
+      this.progress.setQuotaPaused(resource, false);
     }
     this.progress.warn(`Quota ${name} : vérification avant reprise.`);
   }
@@ -208,7 +287,7 @@ export class GithubRequests {
     const maxRetries = this.options.maxRetries ?? 3;
     for (let attempt = 0; ; attempt++) {
       if (this.failure) throw this.failure;
-      if (!url.endsWith('/rate_limit')) await this.ensureBudget(resource);
+      const cost = !url.endsWith('/rate_limit') ? await this.reserve(resource) : 0;
       let response: Response;
       try {
         const headers = new Headers({
@@ -218,20 +297,21 @@ export class GithubRequests {
         });
         new Headers(init.headers).forEach((value, name) => headers.set(name, value));
         headers.set('Authorization', `Bearer ${this.token}`);
-        if (!url.endsWith('/rate_limit') && this.quotas[resource])
-          this.quotas[resource]!.remaining -= this.quotas[resource]!.cost;
         response = await fetch(url, {
           ...init,
           signal: this.aborter.signal,
           headers
         });
       } catch {
+        this.outstanding[resource] -= cost;
         if (this.failure) throw this.failure;
         if (attempt >= maxRetries)
           throw new Error('GitHub : erreur réseau persistante, collecte interrompue.');
         await this.backoff(attempt);
         continue;
       }
+      this.outstanding[resource] -= cost;
+      if (this.failure) throw this.failure;
       let payload: QuotaPayload | undefined;
       if (resource === 'graphql' || response.status === 403 || response.status === 429) {
         try {
@@ -240,7 +320,7 @@ export class GithubRequests {
           /* Une réponse sans JSON ne prouve pas un quota disponible. */
         }
       }
-      this.observe(response.headers, resource, payload);
+      if (!url.endsWith('/rate_limit')) this.observe(response.headers, resource, payload);
       if (response.status === 401)
         throw new Error(
           'GitHub : authentification refusée (HTTP 401). Vérifiez que GITHUB_TOKEN est valide, non expiré et non révoqué. L’attente du quota ne corrige pas une erreur d’authentification.'
@@ -275,15 +355,12 @@ export class GithubRequests {
           (primary || (graphqlLimit && !graphqlSecondary)
             ? resetAt || undefined
             : Date.now() + 60000 * 2 ** Math.min(attempt, 4));
-        await this.pause(
+        const wait = url.endsWith('/rate_limit') ? this.pause.bind(this) : this.recover.bind(this);
+        await wait(
           resource,
           resumeAt,
           primary || (graphqlLimit && !graphqlSecondary) ? 'limite atteinte' : 'limite secondaire atteinte'
         );
-        if (!url.endsWith('/rate_limit')) {
-          await this.refresh();
-          await this.ensureBudget(resource);
-        }
         continue;
       }
       if (payload?.errors?.length)
