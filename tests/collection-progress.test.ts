@@ -1,7 +1,30 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CollectionProgress } from '../src/lib/collection-progress.js';
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('progression de collecte GitHub', () => {
+  it('attend le total connu puis estime les issues restantes et réinitialise le débit après une pause', () => {
+    vi.useFakeTimers();
+    const write = vi.fn();
+    const progress = new CollectionProgress(2, { isTTY: true, columns: 200, write });
+    progress.addIssues(6);
+    vi.advanceTimersByTime(3000);
+    for (let i = 0; i < 3; i++) progress.issueCompleted();
+    expect(write.mock.calls.at(-1)?.[0]).toContain('reste : indisponible');
+    progress.addIssues(6);
+    expect(write.mock.calls.at(-1)?.[0]).toContain('reste ≈ 9 s');
+    progress.setQuotaPaused('rest', true);
+    progress.setQuotaPaused('graphql', true);
+    vi.advanceTimersByTime(3600000);
+    progress.setQuotaPaused('rest', false);
+    expect(write.mock.calls.at(-1)?.[0]).toContain('reste : indisponible');
+    progress.setQuotaPaused('graphql', false);
+    vi.advanceTimersByTime(3000);
+    for (let i = 0; i < 3; i++) progress.issueCompleted();
+    expect(write.mock.calls.at(-1)?.[0]).toContain('reste ≈ 6 s');
+  });
   it('actualise une seule ligne et termine avec une nouvelle ligne', () => {
     const write = vi.fn();
     const progress = new CollectionProgress(2, { isTTY: true, columns: 140, write });
