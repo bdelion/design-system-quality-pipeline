@@ -33,8 +33,8 @@ it('crée le dossier de sortie et annonce le fichier RAW enregistré', async () 
     ]);
     const raw = JSON.parse(await readFile(output, 'utf8'));
     expect(raw.repositories.length).toBeGreaterThan(0);
-    expect(result.stdout).toContain(` -> ${output}`);
-    expect(result.stdout).toContain(`COLLECTED ${raw.repositories.length} repositories`);
+    expect(result.stdout).toContain(`Fichier RAW : ${output}`);
+    expect(result.stdout).toContain(`Collecte terminée : ${raw.repositories.length} repositories`);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

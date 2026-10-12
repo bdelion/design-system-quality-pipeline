@@ -3,10 +3,21 @@ import {
   classify,
   compareTransitions,
   classifyExtraTransitions,
-  parseArgs
+  parseArgs,
+  formatDiagnosticSummary
 } from '../scripts/diagnose-history.mjs';
 
 describe('local history diagnostic', () => {
+  it('présente une synthèse française sans exporter le JSON sur stdout', () => {
+    const summary = formatDiagnosticSummary(
+      { mode: 'offline', raw: { issues: 12 }, live: { checked: 0 } },
+      'data/diagnostics'
+    );
+    expect(summary).toContain('hors réseau');
+    expect(summary).toContain('12 issues');
+    expect(summary).toContain('history-summary.json');
+    expect(summary).not.toContain('{');
+  });
   it('distinguishes absent history, repeated Done and PR without Done', () => {
     expect(
       classify({

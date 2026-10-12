@@ -29,13 +29,26 @@ export interface DiagnosticOptions {
   help?: boolean;
 }
 
-export function transitionKey(projectId: string | null | undefined, status: string | null | undefined, at: string | null | undefined): string;
-export function compareTransitions(raw: HistoryTransition[], api: HistoryTransition[], key: Uint8Array): {
+export function transitionKey(
+  projectId: string | null | undefined,
+  status: string | null | undefined,
+  at: string | null | undefined
+): string;
+export function compareTransitions(
+  raw: HistoryTransition[],
+  api: HistoryTransition[],
+  key: Uint8Array
+): {
   apiOnly: number;
   rawOnly: number;
   exactMatch: boolean;
 };
-export function classifyExtraTransitions(raw: HistoryTransition[], api: HistoryTransition[], key: Uint8Array, collectedAt: string): {
+export function classifyExtraTransitions(
+  raw: HistoryTransition[],
+  api: HistoryTransition[],
+  key: Uint8Array,
+  collectedAt: string
+): {
   beforeOrAtCollection: number;
   afterCollection: number;
   unknownTime: number;
@@ -52,3 +65,8 @@ export function classify(issue: DiagnosticIssue): {
   case: 'NO_PROJECT_STATUS' | 'NO_HISTORY' | 'MULTIPLE_DONE' | 'ONE_DONE' | 'HISTORY_WITHOUT_DONE';
 };
 export function diagnose(options: DiagnosticOptions): Promise<unknown>;
+/** Présente les compteurs du diagnostic et ses fichiers sans exporter le JSON sur stdout. */
+export function formatDiagnosticSummary(
+  summary: { mode: string; raw: { issues: number }; live: { checked: number } },
+  output: string
+): string;

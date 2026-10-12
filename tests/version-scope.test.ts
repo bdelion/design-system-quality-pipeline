@@ -364,6 +364,13 @@ describe('collecte du package déclaré', () => {
     const requests: string[] = [];
     globalThis.fetch = vi.fn(async (input: string | URL | Request) => {
       const url = String(input);
+      if (url.endsWith('/rate_limit'))
+        return Response.json({
+          resources: {
+            core: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 },
+            graphql: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 }
+          }
+        });
       requests.push(url);
       if (url.endsWith('/repos/acme/demo'))
         return Response.json({
@@ -395,15 +402,22 @@ describe('collecte du package déclaré', () => {
   it('ne masque pas un refus API comme un package absent', async () => {
     vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
     globalThis.fetch = vi.fn(async (input: string | URL | Request) =>
-      String(input).includes('/contents/package.json')
-        ? new Response('', { status: 403 })
-        : Response.json({
-            id: 1,
-            name: 'demo',
-            full_name: 'acme/demo',
-            owner: { login: 'acme' },
-            default_branch: 'main'
+      String(input).endsWith('/rate_limit')
+        ? Response.json({
+            resources: {
+              core: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 },
+              graphql: { remaining: 5000, reset: Math.floor(Date.now() / 1000) + 3600 }
+            }
           })
+        : String(input).includes('/contents/package.json')
+          ? new Response('', { status: 403 })
+          : Response.json({
+              id: 1,
+              name: 'demo',
+              full_name: 'acme/demo',
+              owner: { login: 'acme' },
+              default_branch: 'main'
+            })
     ) as typeof fetch;
     await expect(
       collectGithub({ token: 'test', owner: 'acme', repositories: ['demo'], rules: config.github })

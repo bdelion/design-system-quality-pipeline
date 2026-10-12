@@ -7,6 +7,7 @@
 import { nominalVersion } from '../domain/version-scope.js';
 import pLimit from 'p-limit';
 import { CollectionProgress } from '../lib/collection-progress.js';
+import { GithubRequests, type GithubQuotaOptions } from './github-requests.js';
 import type {
   RawDataset,
   RawPackageManifest,
@@ -108,7 +109,7 @@ interface GithubRepository {
  *
  * @inline
  */
-export interface GithubCollectorOptions {
+export interface GithubCollectorOptions extends GithubQuotaOptions {
   token: string;
   owner: string;
   repositories: string[];
@@ -118,7 +119,7 @@ export interface GithubCollectorOptions {
   rules: GithubProcessingConfig;
 }
 
-type CollectionOptions = GithubCollectorOptions & { progress: CollectionProgress };
+type CollectionOptions = GithubCollectorOptions & { progress: CollectionProgress; requests: GithubRequests };
 
 const apiVersion = '2022-11-28';
 
@@ -127,17 +128,22 @@ export async function collectGithub(options: GithubCollectorOptions): Promise<Ra
   const apiUrl = options.apiUrl ?? 'https://api.github.com';
   const collectedAt = new Date().toISOString();
   const progress = new CollectionProgress(options.repositories.length);
+  const requests = new GithubRequests(options.token, apiUrl, progress, options);
   let success = false;
   try {
+    if (options.repositories.length) await requests.initialize();
     const repositories = await Promise.all(
       options.repositories.map(async (repository) => {
-        const result = await collectRepository(repository, { ...options, progress }, apiUrl);
+        const result = await collectRepository(repository, { ...options, progress, requests }, apiUrl);
         progress.repositoryCompleted();
         return result;
       })
     );
     success = true;
     return { collectedAt, repositories, catalogueComponents: [], nexusAvailable: false };
+  } catch (error) {
+    requests.abort(error);
+    throw error;
   } finally {
     progress.finish(success);
   }
@@ -309,14 +315,18 @@ async function collectHistoricalCatalogues(
   return Promise.all(
     prodTags.map(async (tagName) => {
       const url = `${apiUrl}/repos/${repository}/contents/config/catalogue.yaml?ref=${encodeURIComponent(tagName)}`;
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/vnd.github.raw+json',
-          Authorization: `Bearer ${options.token}`,
-          'X-GitHub-Api-Version': apiVersion,
-          'User-Agent': 'eventail-ds-quality-board'
-        }
-      });
+      const response = await options.requests.request(
+        url,
+        {
+          headers: {
+            Accept: 'application/vnd.github.raw+json',
+            Authorization: `Bearer ${options.token}`,
+            'X-GitHub-Api-Version': apiVersion,
+            'User-Agent': 'eventail-ds-quality-board'
+          }
+        },
+        'rest'
+      );
       if (response.status === 404) return { tagName, status: 'missing', componentNames: [] };
       if (!response.ok) throw new Error(`GitHub API request failed (${response.status})`);
       try {
@@ -401,15 +411,17 @@ async function issueDataFromGraphql(
   repository: string,
   issueNumber: number
 ): Promise<GithubGraphqlIssueData> {
-  const response = await fetch(graphqlUrl, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Bearer ${options.token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      query: `
+  const response = await options.requests.request(
+    graphqlUrl,
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${options.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: `
         query(
           $owner: String!,
           $repository: String!,
@@ -504,13 +516,15 @@ async function issueDataFromGraphql(
           }
         }
       `,
-      variables: {
-        owner,
-        repository,
-        issueNumber
-      }
-    })
-  });
+        variables: {
+          owner,
+          repository,
+          issueNumber
+        }
+      })
+    },
+    'graphql'
+  );
 
   if (!response.ok) {
     throw new Error(`GitHub GraphQL request failed (${response.status}).`);
@@ -567,19 +581,6 @@ async function issueDataFromGraphql(
       message?: string;
     }>;
   };
-
-  const rateLimitExceeded = payload.errors?.some((error) =>
-    error.message?.toLowerCase().includes('rate limit')
-  );
-
-  if (rateLimitExceeded) {
-    options.progress.warn(`GraphQL rate limit exceeded for issue #${issueNumber}`);
-
-    return {
-      pullRequests: [],
-      projectStatuses: []
-    };
-  }
 
   if (payload.errors?.length) {
     throw new Error(
@@ -720,16 +721,19 @@ async function collectRemainingProjectStatusHistory(
   let cursor: string | null = initialCursor;
 
   while (cursor) {
-    const response = await fetch(graphqlUrl, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${options.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        query: `
+    const response = await options.requests.request(
+      graphqlUrl,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${options.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query: `
           query($owner: String!, $repository: String!, $issueNumber: Int!, $after: String!) {
+            rateLimit { cost remaining resetAt }
             repository(owner: $owner, name: $repository) {
               issue(number: $issueNumber) {
                 timelineItems(first: 100, after: $after, itemTypes: [PROJECT_V2_ITEM_STATUS_CHANGED_EVENT]) {
@@ -747,9 +751,11 @@ async function collectRemainingProjectStatusHistory(
             }
           }
         `,
-        variables: { owner, repository, issueNumber, after: cursor }
-      })
-    });
+          variables: { owner, repository, issueNumber, after: cursor }
+        })
+      },
+      'graphql'
+    );
     if (!response.ok) throw new Error(`GitHub GraphQL request failed (${response.status}).`);
     const payload = (await response.json()) as {
       data?: {
@@ -910,55 +916,9 @@ async function githubRequest<T>(
   url: string,
   options: CollectionOptions
 ): Promise<{ data: T; headers: Headers }> {
-  const maxRetries = options.maxRetries ?? 3;
-
-  // Les erreurs API et réseau transitoires sont réessayées ; les erreurs permanentes échouent immédiatement.
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${options.token}`,
-          'X-GitHub-Api-Version': apiVersion,
-          'User-Agent': 'eventail-ds-quality-board'
-        }
-      });
-
-      if (response.ok) {
-        return {
-          data: (await response.json()) as T,
-          headers: response.headers
-        };
-      }
-
-      const retryable =
-        response.status === 429 ||
-        response.status === 502 ||
-        response.status === 503 ||
-        response.status === 504 ||
-        (response.status === 403 && response.headers.has('x-ratelimit-reset'));
-
-      if (!retryable || attempt === maxRetries) {
-        throw new Error(`GitHub API request failed (${response.status})`);
-      }
-
-      await delay(retryAfterMs(response.headers, attempt));
-    } catch (error) {
-      const retryable =
-        error instanceof Error &&
-        (error.message.includes('fetch failed') || error.message.includes('timeout'));
-
-      if (!retryable || attempt === maxRetries) {
-        throw error;
-      }
-
-      options.progress.warn(`Retry ${attempt + 1}/${maxRetries} after network error`);
-
-      await delay(1000 * Math.pow(2, attempt));
-    }
-  }
-
-  throw new Error('GitHub API request failed after retries.');
+  const response = await options.requests.request(url, {}, 'rest');
+  if (!response.ok) throw new Error(`GitHub API request failed (${response.status})`);
+  return { data: (await response.json()) as T, headers: response.headers };
 }
 
 /** Extrait le lien de page suivante depuis l'en-tête Link. */
@@ -966,20 +926,6 @@ function nextLink(linkHeader: string | null): string | undefined {
   /** Récupère l'URL `next` dans l'en-tête de pagination GitHub. */
   const next = linkHeader?.split(',').find((part) => part.includes('rel="next"'));
   return next?.match(/<([^>]+)>/)?.[1];
-}
-
-/** Calcule l'attente selon les indications GitHub ou un backoff exponentiel. */
-function retryAfterMs(headers: Headers, attempt: number): number {
-  const retryAfter = Number(headers.get('retry-after'));
-  if (Number.isFinite(retryAfter) && retryAfter > 0) return retryAfter * 1000;
-  const reset = Number(headers.get('x-ratelimit-reset'));
-  if (Number.isFinite(reset) && reset > 0) return Math.max(1000, reset * 1000 - Date.now());
-  return 500 * 2 ** attempt;
-}
-
-/** Attend sans bloquer la boucle d'événements pendant un retry. */
-function delay(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 /** Récupère le token uniquement depuis l'environnement local d'exécution. */
