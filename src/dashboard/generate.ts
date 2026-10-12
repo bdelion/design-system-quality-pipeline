@@ -9,8 +9,8 @@ import {
   resetWorkspaceModel
 } from './workspaces.js';
 import { issueFacts, resetDashboardReadModel } from './read-model.js';
-import { durationStatistics } from '../analytics/statistics.js';
 import { teamActivitySummary } from '../analytics/team-activity.js';
+import { repositoryActivity } from '../analytics/repository-activity.js';
 import { componentGithubLinks } from './component-links.js';
 import { latestComponentVersion } from '../analytics/component-versions.js';
 import {
@@ -75,7 +75,7 @@ export async function generateDashboard(
         snapshot,
         'Vue d’ensemble',
         '<div data-overview-global>' +
-          repositoryComparisonTables(snapshot, githubUrl) +
+          repositoryComparisonTables(snapshot, githubUrl, componentPrefix) +
           globalOverviewCards(snapshot) +
           '</div>',
         serializedSnapshot
@@ -262,9 +262,18 @@ function globalOverviewCards(snapshot: Snapshot): string {
 }
 
 /** Restitue les deux comparaisons globales par repository, sans filtre de navigation. */
-function repositoryComparisonTables(snapshot: Snapshot, githubUrl?: string): string {
-  return `<article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison des sources</p><h2>Qualité par repository</h2></div><span class="badge">${snapshot.normalizedData.libraries.length} repositories</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Qualité par repository"><table><thead><tr><th scope="col">Repository</th><th scope="col">Composants</th><th scope="col">Anomalies</th><th scope="col">Ouvertes</th><th scope="col">PR fusionnées</th><th scope="col">Fiabilité</th></tr></thead><tbody>${repositoryRows(snapshot, githubUrl)}</tbody></table></div></article>
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Délais de traitement</p><h2>Temps de traitement des issues par repository</h2></div><span class="badge">Jours calendaires</span></div><div class="table-wrap" tabindex="0" role="region" aria-label="Temps de traitement par repository"><table><thead><tr><th scope="col">Repository</th><th scope="col">Issues avec délai mesurable</th><th scope="col">Délai moyen</th><th scope="col">Délai médian</th><th scope="col">Plus long délai</th></tr></thead><tbody>${delayRows(snapshot)}</tbody></table></div></article>`;
+function repositoryComparisonTables(
+  snapshot: Snapshot,
+  githubUrl?: string,
+  componentPrefix = 'Component:'
+): string {
+  const groups = [
+    ['global', 'Ensemble (Done + closedAt)'],
+    ['done', 'Sans estimation (Done)'],
+    ['estimated', 'Avec estimation (closedAt)']
+  ];
+  return `<article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison des sources</p><h2>Patrimoine et activité par repository</h2></div><span class="badge">${snapshot.normalizedData.libraries.length} repositories</span></div><p>Stocks du snapshot. Les liens ouvrent les listes GitHub actuelles : composants via leurs labels, anomalies via leurs Issue Types. Les anomalies ouvertes selon le pipeline peuvent différer des issues ouvertes dans GitHub.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Patrimoine et activité par repository"><table><thead><tr>${['Repository', 'Composants', 'Anomalies', 'Anomalies ouvertes', 'Issues', 'Issues ouvertes', 'PR', 'PR fusionnées'].map((label) => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${repositoryRows(snapshot, githubUrl, componentPrefix)}</tbody></table></div></article>
+  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Délais de traitement</p><h2>Temps de traitement des issues par repository</h2></div><span class="badge">Jours calendaires</span></div><p>Issues distinctes Done ET Closed, dates calculables et exclusions Data Quality appliquées. Done : dernière transition datée. closedAt : estimation admise uniquement si Done est prouvé et sa date absente. Les annulations sont exclues.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Temps de traitement par repository"><table><thead><tr><th scope="col" rowspan="2">Repository</th>${groups.map(([, label]) => `<th scope="colgroup" colspan="4">${label}</th>`).join('')}</tr><tr>${groups.map(() => ['Issues mesurables', 'Moyenne', 'Médiane', 'P90'].map((label) => `<th scope="col">${label}</th>`).join('')).join('')}</tr></thead><tbody>${delayRows(snapshot)}</tbody></table></div></article>`;
 }
 
 /** Restitue les effectifs d'activité calculés dans Analytics pour le snapshot complet. */
@@ -1402,41 +1411,85 @@ function componentAuditRow(
 /** Rend les barres de répartition par criticité avec leurs filtres. */
 /** Rend les barres de répartition par catégorie d'accessibilité. */
 /** Construit la comparaison des repositories dans la page d'accueil. */
-function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
-  return snapshot.normalizedData.libraries
-    .map((library) => {
-      const components = snapshot.normalizedData.components.filter(
-        (component) => component.libraryId === library.libraryId
+function repositoryRows(snapshot: Snapshot, githubUrl?: string, componentPrefix = 'Component:'): string {
+  const rows =
+    snapshot.analytics.repositoryActivity ??
+    repositoryActivity(snapshot.normalizedData, snapshot.dataQuality.issues);
+  return rows
+    .map((row) => {
+      const source = snapshot.rawData.repositories.find(
+        (item) => `${item.owner}/${item.name}` === row.repository
       );
-      const componentIds = new Set(components.map((component) => component.componentId));
-      const anomalies = snapshot.normalizedData.anomalies.filter((anomaly) =>
-        anomaly.componentId ? componentIds.has(anomaly.componentId) : false
+      const base = source
+        ? `${(githubUrl ?? 'https://github.com').replace(/\/+$/, '')}/${encodeURIComponent(source.owner)}/${encodeURIComponent(source.name)}`
+        : '';
+      const issues = (snapshot.normalizedData.issues ?? []).filter(
+        (item) => item.libraryId === row.libraryId
       );
-      const pullRequests = snapshot.normalizedData.pullRequests.filter(
-        (pullRequest) => pullRequest.repository === library.name
-      );
-      const open = anomalies.filter(
-        (anomaly) => anomaly.status === 'open' || anomaly.status === 'reopened'
-      ).length;
-      const reliability = components.some((component) => component.dataQualityStatus !== 'reliable')
-        ? 'partielle'
-        : 'fiable';
-      return `<tr><td>${repositoryReference(snapshot, library.name, githubUrl)}<small>${escapeHtml(library.repository)}</small></td><td>${components.length}</td><td>${anomalies.length}</td><td>${open}</td><td>${pullRequests.filter((pullRequest) => pullRequest.state === 'merged').length}</td><td><span class="tag tag-${reliability === 'fiable' ? 'reliable' : 'warning'}">${reliability}</span></td></tr>`;
+      const componentLabels = [
+        ...new Set(
+          issues
+            .flatMap((item) => item.labels)
+            .filter((label) =>
+              label.toLocaleLowerCase('fr').startsWith(componentPrefix.toLocaleLowerCase('fr'))
+            )
+        )
+      ];
+      const anomalyIds = new Set(snapshot.normalizedData.anomalies.map((item) => item.issueId));
+      const types = [
+        ...new Set(
+          issues
+            .filter((item) => anomalyIds.has(item.issueId))
+            .map((item) => item.rawIssueType ?? item.issueType)
+            .filter((type): type is string => Boolean(type))
+        )
+      ];
+      /** Protège un littéral de recherche GitHub. */
+      const quote = (value: string): string => `"${value.replace(/["\\]/g, '\\$&')}"`;
+      const componentQuery =
+        'is:issue (' +
+        (componentLabels.length ? componentLabels : [componentPrefix])
+          .map((label) => 'label:' + quote(label))
+          .join(' OR ') +
+        ')';
+      const anomalyQuery =
+        'is:issue (' +
+        (types.length ? types : ['Bug']).map((type) => 'type:' + quote(type)).join(' OR ') +
+        ')';
+      /** Restitue un effectif connu avec sa recherche externe ; une inconnue reste sans lien. */
+      const countLink = (value: number | 'unknown', query: string, kind = 'issues'): string =>
+        value === 'unknown'
+          ? 'Indisponible'
+          : /^https:\/\/[^\s]+$/.test(base)
+            ? `<a href="${escapeHtml(base + '/' + kind + '?q=' + encodeURIComponent(query))}" target="_blank" rel="noopener noreferrer">${value} ↗</a>`
+            : String(value);
+      return `<tr><td>${repositoryReference(snapshot, row.name, githubUrl)}<small>${escapeHtml(row.repository)}</small></td><td>${countLink(row.components, componentQuery)}</td><td>${countLink(row.anomalies, anomalyQuery)}</td><td>${countLink(row.openAnomalies, anomalyQuery + ' is:open')}</td><td>${countLink(row.issues, 'is:issue')}</td><td>${countLink(row.openIssues, 'is:issue is:open')}</td><td>${countLink(row.pullRequests, 'is:pr', 'pulls')}</td><td>${countLink(row.mergedPullRequests, 'is:pr is:merged', 'pulls')}</td></tr>`;
     })
     .join('');
 }
-/** Agrège les mêmes délais de traitement que les deux explorateurs, par repository. */
+/** Restitue les cohortes de délais précalculées par repository, sans inventer une durée pour une population vide. */
 function delayRows(snapshot: Snapshot): string {
-  return snapshot.normalizedData.libraries
-    .map((library) => {
-      const statistics = durationStatistics(
-        issueFacts(snapshot).filter((fact) => fact.repo === library.repository)
-      ).global;
-      const delays = { length: statistics.count };
-      const average = statistics.average === null ? 'inconnu' : `${statistics.average.toFixed(1)} j`;
-      const median = statistics.median === null ? 'inconnu' : `${statistics.median.toFixed(1)} j`;
-      const longest = statistics.maximum === null ? 'inconnu' : `${statistics.maximum.toFixed(1)} j`;
-      return `<tr><td><strong>${escapeHtml(library.name)}</strong></td><td>${delays.length}</td><td>${average}</td><td>${median}</td><td>${longest}</td></tr>`;
+  const rows =
+    snapshot.analytics.repositoryActivity ??
+    repositoryActivity(snapshot.normalizedData, snapshot.dataQuality.issues);
+  return rows
+    .map((row) => {
+      const cells = (['global', 'done', 'estimated'] as const)
+        .map((cohort) => {
+          const stats = row.delays[cohort];
+          return `<td>${row.issues === 'unknown' ? 'Indisponible' : (stats?.count ?? 'Indisponible')}</td>${[
+            'average',
+            'median',
+            'p90'
+          ]
+            .map((key) => {
+              const value = stats?.[key as 'average' | 'median' | 'p90'];
+              return `<td>${typeof value === 'number' ? value.toFixed(1) + ' j' : 'inconnu'}</td>`;
+            })
+            .join('')}`;
+        })
+        .join('');
+      return `<tr><td><strong>${escapeHtml(row.name)}</strong></td>${cells}</tr>`;
     })
     .join('');
 }

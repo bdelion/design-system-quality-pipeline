@@ -65,6 +65,7 @@ it('ouvre les sources GitHub explicites et conserve les diagnostics sans source'
 it('génère deux tableaux puis huit cartes et restitue les nouvelles informations d’activité', async () => {
   const snapshot = consolidationSnapshot();
   delete snapshot.analytics.teamActivity;
+  delete snapshot.analytics.repositoryActivity;
   const output = await mkdtemp(join(tmpdir(), 'dsq-dashboard-issues-'));
   try {
     await generateDashboard(snapshot, output);
@@ -72,7 +73,7 @@ it('génère deux tableaux puis huit cartes et restitue les nouvelles informatio
     expect(overview).not.toContain('data-context-filter');
     expect(overview).not.toContain('data-workspace-cards');
     expect(overview).not.toContain('data-global-only');
-    expect(overview.indexOf('<h2>Qualité par repository')).toBeLessThan(
+    expect(overview.indexOf('<h2>Patrimoine et activité par repository')).toBeLessThan(
       overview.indexOf('<h2>Temps de traitement')
     );
     expect(overview.indexOf('<h2>Temps de traitement')).toBeLessThan(

@@ -9,6 +9,38 @@ import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 let server: Server | undefined;
+/** Vérifie les stocks et les trois cohortes des tableaux globaux, avec leurs destinations GitHub. */
+test('vue d’ensemble : stocks cliquables et délais Ensemble, Done et closedAt', async ({ page }) => {
+  await page.goto('/index.html');
+  const inventory = page.getByRole('region', { name: 'Patrimoine et activité par repository' });
+  await expect(inventory.locator('thead')).not.toContainText('Fiabilité');
+  const row = inventory.locator('tbody tr').first();
+  await expect(row.locator('td').nth(4)).toHaveText('8 ↗');
+  await expect(row.locator('td').nth(5)).toHaveText('2 ↗');
+  await expect(row.locator('td').nth(6)).toHaveText('1 ↗');
+  for (const link of await row.locator('td:not(:first-child) a').all()) {
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  }
+  expect(
+    new URL((await row.locator('td').nth(5).locator('a').getAttribute('href'))!).searchParams.get('q')
+  ).toBe('is:issue is:open');
+  expect(
+    new URL((await row.locator('td').nth(6).locator('a').getAttribute('href'))!).searchParams.get('q')
+  ).toBe('is:pr');
+  const delays = page.getByRole('region', { name: 'Temps de traitement par repository' });
+  await expect(delays.locator('thead tr').first().locator('th')).toHaveText([
+    'Repository',
+    'Ensemble (Done + closedAt)',
+    'Sans estimation (Done)',
+    'Avec estimation (closedAt)'
+  ]);
+  await expect(delays.locator('thead tr').nth(1).locator('th')).toHaveText(
+    Array.from({ length: 3 }, () => ['Issues mesurables', 'Moyenne', 'Médiane', 'P90']).flat()
+  );
+  await expect(delays.locator('tbody tr').first().locator('td')).toHaveCount(13);
+  await expect(delays).not.toContainText('Plus long délai');
+});
 test.beforeAll(async () => {
   server = await startDashboardTestServer();
 });
@@ -283,7 +315,7 @@ test('la synthèse globale reste visible à l’accueil même avec un ancien fil
     'href',
     'components.html'
   );
-  await expect(page.getByRole('heading', { name: 'Qualité par repository' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Patrimoine et activité par repository' })).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Temps de traitement des issues par repository' })
   ).toBeVisible();

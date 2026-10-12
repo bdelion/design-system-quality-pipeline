@@ -335,6 +335,8 @@ Six espaces servent en priorité les responsables des audits d’accessibilité,
 
 La Vue d’ensemble reste globale : deux tableaux par repository puis huit cartes de patrimoine et d’activité, sans filtre. Activité des équipes ajoute une synthèse issues/PR et les colonnes Composants, Statut Project, Itération et Velocity source, également exportables. Les liens GitHub ouvrent un nouvel onglet ; les recherches approchées des composants sont expliquées au-dessus du tableau, tandis que conformité et dernier audit renvoient aux audits justificatifs.
 
+« Patrimoine et activité par repository » présente les composants, anomalies, issues et PR, avec des compteurs ouvrant leurs listes GitHub. Le tableau des délais présente Ensemble, Sans estimation (Done) et Avec estimation (closedAt), chacun avec effectif mesurable, moyenne, médiane et P90, calculés dans le pipeline.
+
 ### Consulter les filtres du dashboard
 
 Après génération, exécuter `npm run dashboard:serve` puis ouvrir http://127.0.0.1:4174/. L’ouverture directe en `file:///` bloque les modules JavaScript ; un message l’explique et désactive les contrôles inactifs. Pour la prévisualisation isolée : `npm run dashboard:preview`, puis `npm run dashboard:serve -- data/dashboard-refactor-preview/dashboard`. Arrêter le serveur avec Ctrl+C.
