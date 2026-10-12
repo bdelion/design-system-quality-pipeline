@@ -203,7 +203,7 @@ export class GithubRequests {
     this.progress.warn(`Quota ${name} : vérification avant reprise.`);
   }
 
-  /** Exécute les retries HTTP/réseau et détecte aussi les erreurs GraphQL retournées avec HTTP 200. */
+  /** Exécute les retries HTTP/réseau, explique les refus d’authentification et détecte les erreurs GraphQL HTTP 200. */
   private async execute(url: string, init: RequestInit, resource: Resource): Promise<Response> {
     const maxRetries = this.options.maxRetries ?? 3;
     for (let attempt = 0; ; attempt++) {
@@ -211,18 +211,19 @@ export class GithubRequests {
       if (!url.endsWith('/rate_limit')) await this.ensureBudget(resource);
       let response: Response;
       try {
+        const headers = new Headers({
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'User-Agent': 'design-system-quality-pipeline'
+        });
+        new Headers(init.headers).forEach((value, name) => headers.set(name, value));
+        headers.set('Authorization', `Bearer ${this.token}`);
         if (!url.endsWith('/rate_limit') && this.quotas[resource])
           this.quotas[resource]!.remaining -= this.quotas[resource]!.cost;
         response = await fetch(url, {
           ...init,
           signal: this.aborter.signal,
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            Accept: 'application/vnd.github+json',
-            'X-GitHub-Api-Version': '2022-11-28',
-            'User-Agent': 'design-system-quality-pipeline',
-            ...Object.fromEntries(new Headers(init.headers))
-          }
+          headers
         });
       } catch {
         if (this.failure) throw this.failure;
@@ -240,6 +241,10 @@ export class GithubRequests {
         }
       }
       this.observe(response.headers, resource, payload);
+      if (response.status === 401)
+        throw new Error(
+          'GitHub : authentification refusée (HTTP 401). Vérifiez que GITHUB_TOKEN est valide, non expiré et non révoqué. L’attente du quota ne corrige pas une erreur d’authentification.'
+        );
       const graphqlLimit = payload?.errors?.some(
         (error) =>
           [error.type, error.extensions?.type, error.extensions?.code].includes('RATE_LIMITED') ||

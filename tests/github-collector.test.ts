@@ -375,6 +375,6 @@ it('clôt la progression quand GitHub refuse la requête', async () => {
       repositories: ['design-system'],
       rules: config.github
     })
-  ).rejects.toThrow('GitHub API request failed (401)');
+  ).rejects.toThrow('authentification refusée (HTTP 401)');
   expect(output.mock.calls.map(([text]) => String(text)).join('')).toContain('interrompue : 0/1');
 });

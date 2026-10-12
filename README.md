@@ -42,7 +42,7 @@ Les commandes de collecte acceptent aussi `--system-config` et `--catalogue-conf
 
 La console affiche une synthèse en français : statut, compteurs, réserves de qualité et chemins des fichiers. Les données détaillées sont enregistrées dans `data/current/snapshot.json`, l’historique dans `data/runs/` et les pages dans `data/dashboard/`.
 
-Un statut **partiel** signifie que le traitement a terminé avec des réserves Data Quality. Un échec de collecte, notamment un quota insuffisant, produit un code de sortie non nul et ne génère pas de nouveau snapshot. Les sorties précédentes restent présentes : consulter le résultat de la commande avant de les considérer comme une nouvelle collecte.
+Un statut **partiel** signifie que le traitement a terminé avec des réserves Data Quality. Un échec de collecte, notamment un quota insuffisant, produit un code de sortie non nul et ne génère pas de nouveau snapshot. Les sorties précédentes restent présentes : consulter le résultat de la commande avant de les considérer comme une nouvelle collecte. Un HTTP 401 indique une authentification refusée ; l’attente du quota ne le corrige pas. Voir le [diagnostic des quotas et de l’authentification](docs/08-implementation/quotas-github.md).
 
 Le dashboard comprend six espaces : Vue d’ensemble, Accessibilité, Activité des équipes, Composants et versions, Historique et Qualité des données. Les calculs sont faits dans le pipeline. Les bugs normalisés ne sont pas tous des anomalies d’accessibilité ; les données inconnues et les recherches GitHub approchées restent explicites. Voir les [populations et comportements des vues](docs/08-implementation/dashboard-role-refactor.md) et la [cohérence des statuts et délais](docs/08-implementation/dashboard-coherence.md).
 
