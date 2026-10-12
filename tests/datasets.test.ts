@@ -148,13 +148,59 @@ it('refuse les données incohérentes avant publication et les destinations exis
   value.repositories[0]!.issues[0]!.linkedPullRequestIds = ['missing'];
   await writeFile(input, JSON.stringify(value));
   await expect(prepareDataset(input, join(root, 'dataset'), 'test-seed')).rejects.toThrow('relations');
-  expect(await readdir(root)).toEqual(['raw.json']);
+  const entries = await readdir(root);
+  expect(entries).not.toContain('dataset');
+  const diagnostics = entries.find((name) => name.startsWith('fixture-diagnostics-'))!;
+  const report = JSON.parse(await readFile(join(root, diagnostics, 'relations.json'), 'utf8'));
+  expect(report.relations[0]).toMatchObject({
+    sourceType: 'issue',
+    sourceNumber: value.repositories[0]!.issues[0]!.number,
+    missingType: 'PR',
+    referenceId: 'missing'
+  });
+  expect(report).not.toHaveProperty('rawData');
   await writeFile(input, JSON.stringify(await raw()));
   await prepareDataset(input, join(root, 'dataset'), 'test-seed');
   await expect(prepareDataset(input, join(root, 'dataset'), 'test-seed')).rejects.toThrow(
     'Destination existante'
   );
   await expect(prepareDataset(input, join(root, 'other'), '')).rejects.toThrow('ANONYMIZATION_SEED');
+});
+
+it('diagnostique une PR avant anonymisation sans exposer son identité en console', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const value = await raw();
+  value.repositories[0]!.pullRequests.push({
+    id: 'private-pr-id',
+    number: 42,
+    state: 'OPEN',
+    relatedIssueIds: ['private-missing-issue-id']
+  });
+  const original = JSON.stringify(value);
+  await writeFile(input, original);
+  let message = '';
+  try {
+    await prepareDataset(input, join(root, 'dataset'), 'private-seed');
+  } catch (error) {
+    message = (error as Error).message;
+  }
+  expect(message).toContain('Ouvrir le rapport local');
+  expect(message).toContain('Aucun dataset publié');
+  expect(message).not.toMatch(/private-pr-id|private-missing-issue-id|private-seed|example\/ui/);
+  const diagnostics = (await readdir(root)).find((name) => name.startsWith('fixture-diagnostics-'))!;
+  const reportText = await readFile(join(root, diagnostics, 'relations.json'), 'utf8');
+  expect(JSON.parse(reportText).relations[0]).toMatchObject({
+    repository: 'example/ui',
+    sourceType: 'PR',
+    sourceNumber: 42,
+    missingType: 'issue',
+    referenceId: 'private-missing-issue-id',
+    reason: 'Élément absent du RAW pour ce dépôt.'
+  });
+  expect(reportText).not.toMatch(/Texte privé|private-seed/);
+  expect(await readFile(input, 'utf8')).toBe(original);
+  expect(await readdir(root)).not.toContain('dataset');
 });
 
 it('vérifie le manifeste et refuse un profil ou périmètre corrompu sans repli implicite', async () => {

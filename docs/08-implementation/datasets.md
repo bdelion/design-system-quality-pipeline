@@ -13,6 +13,12 @@
 
 Le périmètre doit avoir un owner unique. Les doublons et noms incomplets sont refusés. Les destinations de capture et de préparation existantes sont refusées, y compris un RAW proposé comme sortie. Une préparation invalide ne publie pas de dossier utilisable. Le programme ne supprime pas vos anciens jeux.
 
+### Diagnostic des relations manquantes
+
+Si `fixture:prepare` détecte une relation invalide, la console indique le chemin d’un rapport `fixture-diagnostics-…/relations.json`, créé à côté du RAW source. Ouvrir ce fichier dans l’éditeur : chaque entrée précise le dépôt, le type et le numéro de l’issue ou PR source, le type et l’identifiant de l’élément référencé, ainsi que son chemin JSON. Le rapport distingue un élément absent du RAW d’un élément présent dans un autre dépôt.
+
+Vérifier la relation dans GitHub, le périmètre de collecte et les accès du token, puis refaire une collecte si nécessaire. Une relation entre dépôts peut nécessiter une adaptation du traitement ; ne pas effacer la relation pour contourner le contrôle. Aucun dataset n’est publié lors de cet échec, et le RAW reste inchangé. Le rapport contient des identités réelles : le conserver privé et le relire avant partage. Il ne contient ni token, ni graine, ni copie des textes du RAW.
+
 ## Format du dataset
 
 Une capture récente peut aussi être rejouée directement avec `pipeline --dataset data/local/mon-jeu/raw.json --output data/output/mon-jeu-local`. Le contexte enregistré fournit ses conventions et son périmètre, sans autre profil. Ce mode `local` conserve les identités réelles et les liens GitHub, ne fait aucun appel réseau et exclut la graine de la capture des sorties. Ses fichiers restent privés ; il ne remplace pas la préparation anonymisée avant partage. Un ancien RAW sans contexte doit d’abord être préparé.

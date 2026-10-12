@@ -376,7 +376,10 @@ export async function loadDataset(path: string): Promise<Dataset> {
   return value;
 }
 
-/** Anonymise puis publie atomiquement un nouveau jeu ; aucun fichier V1 ni catalogue source n’est obligatoire. */
+/**
+ * Anonymise puis publie atomiquement un nouveau jeu, sans référence V1 ni catalogue obligatoire.
+ * En cas de relation invalide, écrit un diagnostic privé à côté du RAW sans publier de dataset.
+ */
 export async function prepareDataset(
   input: string,
   output: string,
@@ -420,6 +423,43 @@ export async function prepareDataset(
     )
   )
     throw new Error('Capture : profil et périmètre incohérents.');
+  const relations = inspectRelationalIntegrity(raw);
+  if (relations.length) {
+    const diagnosticDirectory = await mkdtemp(join(dirname(resolve(input)), 'fixture-diagnostics-'));
+    const reportPath = join(diagnosticDirectory, 'relations.json');
+    await writeFile(
+      reportPath,
+      JSON.stringify(
+        {
+          explanation:
+            'Une relation pointe vers un élément absent du même dépôt dans le RAW. Cela peut provenir d’une collecte incomplète, d’un accès insuffisant ou d’une relation entre dépôts. Vérifier le périmètre et les accès, puis refaire la collecte ; ne pas supprimer la relation pour masquer le problème.',
+          privacy: 'Rapport local non anonymisé : ne pas partager sans revue.',
+          input: resolve(input),
+          relations: relations.map((finding) => {
+            const source = finding.source as { number: number };
+            return {
+              repository: `${config.githubOwner}/${finding.repository}`,
+              sourceType: finding.type === 'missing-issue' ? 'PR' : 'issue',
+              sourceNumber: source.number,
+              missingType: finding.type === 'missing-issue' ? 'issue' : 'PR',
+              referenceId: finding.referenceId,
+              sourcePath: finding.sourcePath,
+              reason:
+                finding.scope === 'cross-repository'
+                  ? 'Élément trouvé dans un autre dépôt du RAW ; relation entre dépôts.'
+                  : 'Élément absent du RAW pour ce dépôt.'
+            };
+          })
+        },
+        null,
+        2
+      ),
+      { mode: 0o600 }
+    );
+    throw new Error(
+      `Préparation interrompue : ${relations.length} relations manquantes. Ouvrir le rapport local ${reportPath} pour identifier les issues/PR et les références concernées. Aucun dataset publié. Rapport non anonymisé, à conserver privé.`
+    );
+  }
   const catalogue = catalogueInput
     ? validateCatalogue(parse(await readFile(catalogueInput, 'utf8')))
     : { version: '1.0', components: [] };
