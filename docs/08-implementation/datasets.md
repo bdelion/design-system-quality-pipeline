@@ -35,6 +35,18 @@ Une capture ancienne sans `collectionContext` peut être préparée avec le prof
 
 ## Enrichissements facultatifs
 
+Sans `--catalogue`, `fixture:prepare` génère aussi un brouillon privé nommé `<chemin-du-RAW>.catalogue.draft.yaml`, à côté du RAW. Un fichier existant est conservé sans écrasement. Ce brouillon utilise les noms d’origine même avec `--anonymize-components` ; il reste hors du dataset anonymisé et ne doit pas être partagé avec lui.
+
+Les noms proviennent des composants déclarés dans le RAW et des labels utilisant le préfixe du profil capturé (ou du profil DSQ livré pour un ancien RAW). Les noms sont dédupliqués ; le dépôt est renseigné lorsqu’il est unique. `observedRepositories` conserve les dépôts observés lorsqu’une attribution reste à vérifier. Les champs `owner`, `squad` et `stream` portent « À remplacer » ; `status` et `rgaaLevel` sont `null`, sans audit inventé. Le fichier est marqué `draft: true` et refusé par `--catalogue` avant revue.
+
+Compléter les métadonnées vérifiées, choisir le dépôt si nécessaire, puis retirer `draft: true`. Les noms doivent rester uniques. Utiliser ensuite le catalogue approuvé pour préparer un nouveau dossier :
+
+```powershell
+npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output datasets/mon-jeu
+# Compléter data/local/mon-jeu/raw.json.catalogue.draft.yaml et retirer draft après revue.
+npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output datasets/mon-jeu-enrichi --catalogue data/local/mon-jeu/raw.json.catalogue.draft.yaml
+```
+
 Le catalogue absent (`catalogue: null`) du parcours minimal signifie qu’aucun enrichissement de référence n’est fourni ; il ne prouve pas l’absence de composants. Les labels et faits GitHub restent visibles. Les métadonnées d’équipe, stream, niveau RGAA et cycle de vie ne sont pas fabriquées. Un composant observé sans cycle de vie démontré possède le statut normalisé `unknown`, reste visible dans la cartographie et rend indéterminés les indicateurs exigeant un patrimoine actif complet.
 
 Pour ajouter un catalogue vérifié :

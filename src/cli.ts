@@ -60,7 +60,7 @@ program
         options.anonymizeComponents ?? false
       );
       console.log(
-        `Dataset préparé : ${dataset.rawData.repositories.length} repositories.\nDataset : ${options.output}\nAnonymisation automatique contrôlée ; revue humaine requise avant partage.`
+        `Dataset préparé : ${dataset.rawData.repositories.length} repositories.\nDataset : ${options.output}\n${options.catalogue ? '' : `Brouillon de catalogue (créé ou conservé) : ${options.input}.catalogue.draft.yaml\nBrouillon privé à compléter ; refusé tant que draft: true.\n`}Anonymisation automatique contrôlée ; revue humaine requise avant partage.`
       );
     }
   );

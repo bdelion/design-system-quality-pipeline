@@ -18,6 +18,8 @@ import {
 } from '../src/datasets.js';
 import { runPipeline } from '../src/pipeline.js';
 import type { RawDataset } from '../src/domain/types.js';
+import { parse, stringify } from 'yaml';
+import { validateCatalogue } from '../src/catalogue.js';
 
 const execute = promisify(execFile);
 const directories: string[] = [];
@@ -139,6 +141,49 @@ it('prépare sans catalogue et rejoue après déplacement sans modifier les fait
     expect.arrayContaining(['current', 'runs', 'dashboard'])
   );
   expect(JSON.stringify(dataset)).not.toContain('Texte privé');
+});
+
+it('génère un brouillon privé complétable sans inventer de métadonnées ni écraser une revue', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const value = await raw();
+  const config = await dsqConfig(['example/ui']);
+  config.github.labels.componentPrefix = 'DSQ:';
+  value.repositories[0]!.issues[0]!.labels = ['DSQ: Button', 'dsq: Button', 'DSQ: Modal'];
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...value,
+      collectionContext: { profileId: 'dsq', config, anonymizationSeed: 'private-seed' }
+    })
+  );
+  await prepareDataset(input, join(root, 'dataset'), '', undefined, true);
+  const path = `${input}.catalogue.draft.yaml`;
+  const content = await readFile(path, 'utf8');
+  const draft = parse(content);
+  expect(draft.draft).toBe(true);
+  expect(draft.components.map((item: { name: string }) => item.name)).toEqual(['Button', 'Modal']);
+  expect(draft.components[0]).toMatchObject({ repository: 'ui', status: null, rgaaLevel: null });
+  expect(content).not.toContain('private-seed');
+  expect(await readdir(join(root, 'dataset'))).not.toContain('catalogue.draft.yaml');
+  expect(() => validateCatalogue(draft)).toThrow('brouillon');
+  await expect(prepareDataset(input, join(root, 'rejected'), '', path)).rejects.toThrow('brouillon');
+  delete draft.draft;
+  for (const item of draft.components) {
+    Object.assign(item, {
+      owner: 'Équipe',
+      squad: 'Interface',
+      stream: 'React',
+      status: 'stable',
+      rgaaLevel: 'AA'
+    });
+  }
+  const approved = stringify(draft);
+  await writeFile(path, approved);
+  await prepareDataset(input, join(root, 'second'));
+  expect(await readFile(path, 'utf8')).toBe(approved);
+  const enriched = await prepareDataset(input, join(root, 'enriched'), '', path);
+  expect(enriched.catalogue?.components.map((item) => item.name)).toEqual(['Button', 'Modal']);
 });
 
 it('refuse les données incohérentes avant publication et les destinations existantes', async () => {

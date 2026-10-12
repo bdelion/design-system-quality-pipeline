@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rename, rm, writeFile, lstat } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { parse } from 'yaml';
+import { parse, stringify } from 'yaml';
 import type { RawDataset } from './domain/types.js';
 import type { PipelineConfig } from './config.js';
 import { validateMilestoneDetection } from './config.js';
@@ -376,8 +376,53 @@ export async function loadDataset(path: string): Promise<Dataset> {
   return value;
 }
 
+/** Construit un brouillon privé depuis les faits et le préfixe du profil, sans inventer de métadonnées métier. */
+function catalogueDraft(raw: RawDataset, config: PipelineConfig): string {
+  const components = new Map<string, Set<string>>();
+  for (const name of raw.catalogueComponents) components.set(name, new Set());
+  const prefix = config.github.labels.componentPrefix;
+  for (const repo of raw.repositories) {
+    for (const issue of repo.issues) {
+      const names = [
+        ...(issue.component ? [issue.component] : []),
+        ...issue.labels
+          .filter((label) => label.toLowerCase().startsWith(prefix.toLowerCase()))
+          .map((label) => label.slice(prefix.length).trim())
+      ];
+      for (const name of names.filter(Boolean)) {
+        const repositories = components.get(name) ?? new Set<string>();
+        repositories.add(repo.name);
+        components.set(name, repositories);
+      }
+    }
+  }
+  return (
+    '# Brouillon privé : noms réels. Compléter les valeurs nulles et « À remplacer », puis retirer draft après revue métier.\n' +
+    '# status : stable, experimental, deprecated ou removed. rgaaLevel : niveau métier vérifié.\n' +
+    '# Plusieurs observedRepositories : vérifier le périmètre avant de choisir repository ; noms uniques requis.\n' +
+    stringify({
+      version: '1.0',
+      draft: true,
+      components: [...components.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([name, repositories]) => ({
+          name,
+          ...(repositories.size === 1 ? { repository: [...repositories][0] } : {}),
+          observedRepositories: [...repositories].sort(),
+          stream: 'À remplacer',
+          owner: 'À remplacer',
+          squad: 'À remplacer',
+          status: null,
+          rgaaLevel: null,
+          tags: []
+        }))
+    })
+  );
+}
+
 /**
  * Anonymise puis publie atomiquement un nouveau jeu, sans référence V1 ni catalogue obligatoire.
+ * Sans catalogue fourni, crée à côté du RAW un brouillon privé sans écraser un fichier existant.
  * En cas de relation invalide, écrit un diagnostic privé à côté du RAW sans publier de dataset.
  */
 export async function prepareDataset(
@@ -538,6 +583,8 @@ export async function prepareDataset(
   }
   await mkdir(dirname(target), { recursive: true });
   const temporary = await mkdtemp(join(dirname(target), '.dsq-prepare-'));
+  const draftPath = `${resolve(input)}.catalogue.draft.yaml`;
+  let draftCreated = false;
   try {
     const content = JSON.stringify(dataset, null, 2) + '\n';
     await writeFile(join(temporary, 'dataset.json'), content, 'utf8');
@@ -556,7 +603,18 @@ export async function prepareDataset(
       ) + '\n',
       'utf8'
     );
+    if (!catalogueInput) {
+      try {
+        await writeFile(draftPath, catalogueDraft(raw, config), { flag: 'wx', mode: 0o600 });
+        draftCreated = true;
+      } catch (error) {
+        if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) throw error;
+      }
+    }
     await rename(temporary, target);
+  } catch (error) {
+    if (draftCreated) await rm(draftPath, { force: true });
+    throw error;
   } finally {
     await rm(temporary, { recursive: true, force: true });
   }
