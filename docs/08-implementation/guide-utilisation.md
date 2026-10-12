@@ -89,6 +89,8 @@ Elle produit aussi `data/dashboard-refactor-preview/accessibility-review.csv`, u
 
 Configurer d’abord le propriétaire, les repositories et les conventions dans `config/system.yaml`, puis les composants dans `config/catalogue.yaml`. Ces fichiers définissent ce qui sera lu et comment les données seront interprétées.
 
+Si un RAW est déjà disponible, `npm.cmd run catalogue:generate -- --input data/raw/collecte.json --output config/local/catalogue.brouillon.yaml` permet de préparer les noms de composants sans catalogue source. Compléter les métadonnées laissées à `null` avant utilisation ; voir [la génération du catalogue](generation-catalogue.md).
+
 Créer un token GitHub autorisé à lire les repositories, contenus, issues, PR et Projects nécessaires. Les permissions exactes dépendent du type de token et du propriétaire des Projects ; voir [la documentation des tokens GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). Le programme ne fait aucune mutation GitHub.
 
 Copier `.env.example` vers `.env`, puis renseigner localement `GITHUB_TOKEN` dans un éditeur. `.env` ne doit jamais être committé. Pour GitHub Enterprise, les variables facultatives sont `GITHUB_API_URL`, `GITHUB_GRAPHQL_URL` et `GITHUB_URL`. Si les variables sont déjà fournies par le shell ou la CI, `.env` n’est pas nécessaire.

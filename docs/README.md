@@ -144,6 +144,7 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 ## Configurations et tests
 
 - [Première utilisation et scripts, pas à pas](08-implementation/guide-utilisation.md)
+- [Générer un brouillon de catalogue depuis un RAW local](08-implementation/generation-catalogue.md)
 - [Quotas GitHub, arrêt, décompte et reprise en mémoire](08-implementation/quotas-github.md)
 
 - [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)
