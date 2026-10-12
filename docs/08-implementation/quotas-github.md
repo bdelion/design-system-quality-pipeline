@@ -1,6 +1,6 @@
 # Quotas GitHub et reprise de collecte
 
-**IMPLÉMENTÉ — #51.** Les commandes `collect`, `analyze`, `snapshot`, `dashboard` et `pipeline`, avec `--source github`, partagent la même gestion des requêtes. Elles restent en lecture seule.
+**IMPLÉMENTÉ — #51.** La commande `collect` applique le pré-check et la coordination des quotas. La préparation et le rejeu des datasets ne font aucun appel GitHub.
 
 ## Comportement par défaut
 
@@ -13,7 +13,7 @@ Un quota épuisé en GraphQL, même avec HTTP 200, est une erreur de collecte : 
 ## Attendre automatiquement
 
 ```powershell
-npm.cmd run collect -- --source github --output data/raw/collecte.json --wait-for-quota
+npm.cmd run collect -- --repositories repositories.json --output data/local/mon-jeu/raw.json --wait-for-quota
 ```
 
 Les repositories, pages et relations déjà collectés restent **en mémoire**. Le programme reprend sa requête après attente et vérification du quota. Il n’y a pas de cache persistant : fermer le programme ou utiliser `Ctrl+C` impose de recommencer la collecte.

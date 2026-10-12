@@ -23,14 +23,17 @@ import { calculateMetrics } from './metrics.js';
  *
  * @param data - Modèle métier normalisé.
  * @param dqIssues - Diagnostics de qualité qui influencent la fiabilité.
+ * @param recognition - Conventions de qualification accessibilité.
+ * @param catalogueAvailable - Présence d’un catalogue de référence fourni, distinct d’un inventaire absent.
  * @returns Métriques de référence et projections de compatibilité legacy.
  */
 export function calculateKpis(
   data: NormalizedData,
   dqIssues: DataQualityIssue[],
-  recognition: AccessibilityRecognition = {}
+  recognition: AccessibilityRecognition = {},
+  catalogueAvailable = true
 ): Analytics {
-  const metrics = calculateMetrics(data, dqIssues);
+  const metrics = calculateMetrics(data, dqIssues, catalogueAvailable);
   /**
    * Réalise le traitement « metric » dans le pipeline de qualité.
    *

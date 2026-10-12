@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { nominalVersion, isFutureVersion } from '../src/domain/version-scope.js';
 import { collectGithub } from '../src/collectors/github.js';
-import { loadConfig } from '../src/config.js';
+import { loadConfig } from './support/fixtures.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
@@ -294,7 +294,9 @@ describe('issue #39 : borne package et activité des équipes', () => {
       'system.my-real-dataset-anonymized.yaml',
       'system.20261007-my-real-dataset-anonymized.yaml'
     ]) {
-      const system = parse(await readFile(join('config', profile), 'utf8')) as { ruleVersion: string };
+      const system = parse(await readFile(join('tests/fixtures', profile), 'utf8')) as {
+        ruleVersion: string;
+      };
       expect(system.ruleVersion).toBe('dq-2026.10-version-scope');
     }
     const raw = dataset();

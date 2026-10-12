@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { collectGithub } from '../src/collectors/github.js';
-import { loadConfig } from '../src/config.js';
+import { loadConfig } from './support/fixtures.js';
 
 const originalFetch = globalThis.fetch;
 

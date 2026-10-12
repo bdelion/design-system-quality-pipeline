@@ -11,12 +11,6 @@
     "build": "tsc -p tsconfig.json",
     "clean": "node scripts/clean.mjs",
     "collect": "tsx src/cli.ts collect",
-    "catalogue:generate": "tsx src/cli.ts catalogue:generate",
-    "system:generate": "tsx src/cli.ts system:generate",
-    "validate": "tsx src/cli.ts validate",
-    "analyze": "tsx src/cli.ts analyze",
-    "snapshot": "tsx src/cli.ts snapshot",
-    "dashboard": "tsx src/cli.ts dashboard",
     "dashboard:preview": "tsx scripts/preview-dashboard.ts",
     "pipeline": "tsx src/cli.ts pipeline",
     "test": "vitest run",
@@ -24,7 +18,6 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "check": "npm run check:ai && npm run typecheck && npm run lint && npm run check:tsdoc && npm test && npm run build",
-    "fixture:anonymize": "tsx src/cli.ts fixture:anonymize",
     "fixture:prepare": "tsx src/cli.ts fixture:prepare",
     "fixture:validate": "tsx src/cli.ts fixture:validate",
     "format": "prettier --write \"{src,tests,scripts,config,docs,.github,.vscode,.agents}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
@@ -36,7 +29,6 @@
     "check:tsdoc": "node scripts/check-tsdoc.mjs",
     "check:ai": "node scripts/check-ai-config.mjs",
     "ai:index:update": "node scripts/update-ai-decisions-index.mjs",
-    "reference:prepare": "tsx src/cli.ts reference:prepare",
     "dashboard:serve": "tsx scripts/serve-dashboard.ts"
   },
   "dependencies": {

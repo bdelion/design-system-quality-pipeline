@@ -10,5 +10,5 @@
 | `src/analytics/catalog.ts`                              | Code                          | Catalogue métriques V2                 | Source technique               |
 | `src/quality/rules.ts`                                  | Code                          | Conditions DQ actuelles                | Source technique               |
 | `src/lib/metric-impacts.ts`                             | Code                          | Impacts DQ → métriques                 | Source technique               |
-| `config/system.yaml`                                    | Configuration                 | Paramètres actifs                      | Source technique/configuration |
+| `config/profiles/dsq.json`                              | Configuration                 | Paramètres actifs                      | Source technique/configuration |
 | `config/quality-rules.yaml`                             | Configuration                 | Métadonnées des DQ                     | Source technique/configuration |

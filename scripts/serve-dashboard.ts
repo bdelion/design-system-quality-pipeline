@@ -45,6 +45,6 @@ export async function startDashboardServer(directory: string, port = 4174): Prom
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  await startDashboardServer(process.argv[2] ?? 'data/dashboard');
+  await startDashboardServer(process.argv[2] ?? 'data/output/demo/dashboard');
   console.log('Dashboard : http://127.0.0.1:4174/ — arrêt avec Ctrl+C');
 }

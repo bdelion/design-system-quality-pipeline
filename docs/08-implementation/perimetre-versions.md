@@ -19,7 +19,7 @@ Avec `package.json.version = 1.8.0`, les versions et milestones reconnues en 1.9
 
 ## Fixtures, références et snapshots
 
-Une nouvelle collecte GitHub alimente automatiquement ce champ. `fixture:anonymize` et `reference:prepare` le préservent avec les versions et relations existantes : la borne ne contient aucune identité. Les anciens fichiers ne sont pas enrichis avec une version supposée. Pour une fixture ancienne, recollecter puis régénérer les références, ou ajouter la version uniquement à partir d'une preuve vérifiée du package sur la branche concernée.
+Une nouvelle collecte GitHub alimente automatiquement ce champ. `fixture:prepare` le préservent avec les versions et relations existantes : la borne ne contient aucune identité. Les anciens fichiers ne sont pas enrichis avec une version supposée. Pour une fixture ancienne, recollecter puis régénérer les références, ou ajouter la version uniquement à partir d'une preuve vérifiée du package sur la branche concernée.
 
 ```json
 {

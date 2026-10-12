@@ -196,7 +196,7 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<section class="panel" data-file-warning hidden role="alert"><h2>Ouvrir le dashboard sur HTTP</h2><p>Les filtres et graphiques interactifs nécessitent un serveur local. Exécuter <code>npm run dashboard:serve</code> puis ouvrir <a href="http://127.0.0.1:4174/">http://127.0.0.1:4174/</a>.</p></section>
+<section class="panel" data-file-warning hidden role="alert"><h2>Ouvrir le dashboard sur HTTP</h2><p>Les filtres et graphiques interactifs nécessitent un serveur local. Pour la démonstration, exécuter <code>npm run dashboard:serve</code>. Pour votre dataset, préciser son dossier avec <code>npm run dashboard:serve -- chemin/du/dashboard</code>, puis ouvrir <a href="http://127.0.0.1:4174/">http://127.0.0.1:4174/</a>.</p></section>
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Design System Quality</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${qualityLabel(snapshot.reliability)}</span></div></header>
   <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${['Qualité des données', 'Vue d’ensemble'].includes(title) ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined)}${content}${workspacePayload(snapshot)}</main></div>
@@ -1085,12 +1085,14 @@ function qualityMessage(issue: Snapshot['dataQuality']['issues'][number]): strin
   );
 }
 
-/** Construit la cartographie V2 repository → composant → audit → anomalie → PR. */
+/** Construit la cartographie, y compris les composants observés dont le cycle de vie reste inconnu. */
 function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   const { metrics } = snapshot.analytics;
   const libraries = snapshot.normalizedData.libraries;
   const componentsByLibrary = new Map<string, Component[]>();
-  for (const component of snapshot.normalizedData.components.filter((item) => item.status === 'active')) {
+  for (const component of snapshot.normalizedData.components.filter(
+    (item) => item.status === 'active' || item.status === 'unknown'
+  )) {
     const list = componentsByLibrary.get(component.libraryId) ?? [];
     list.push(component);
     componentsByLibrary.set(component.libraryId, list);

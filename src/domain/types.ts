@@ -193,7 +193,7 @@ export interface Component {
   componentId: string;
   name: string;
   libraryId: string;
-  status: 'active' | 'deprecated' | 'experimental' | 'removed';
+  status: 'active' | 'deprecated' | 'experimental' | 'removed' | 'unknown';
   aliases: string[];
   discoverySource: 'catalogue' | 'github' | 'suggested';
   stream?: string;

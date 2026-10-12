@@ -219,7 +219,7 @@ export function normalizeGithub(
               componentId,
               name,
               libraryId: library.libraryId,
-              status: 'active',
+              status: 'unknown',
               aliases: [],
               discoverySource: 'catalogue',
               tags: [],
@@ -423,7 +423,11 @@ export function normalizeGithub(
           componentId: currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames),
           name,
           libraryId: library.libraryId,
-          status: 'active',
+          status: catalogueComponent
+            ? catalogueComponent.status === 'stable'
+              ? 'active'
+              : catalogueComponent.status
+            : 'unknown',
           aliases: [],
           discoverySource: inCatalogue ? 'catalogue' : 'suggested',
           tags: catalogueComponent?.tags ?? [],

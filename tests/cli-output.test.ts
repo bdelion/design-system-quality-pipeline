@@ -12,7 +12,7 @@ it('présente les compteurs, réserves et fichiers sans JSON ni identifiant tech
   expect(summary).toContain('Statut : partiel');
   expect(summary).toContain('8 issues ; 1 PR');
   expect(summary).toContain('Qualité des données');
-  expect(summary).toContain('data/current/snapshot.json');
+  expect(summary).toContain('data/output/demo/current/snapshot.json');
   expect(summary).not.toContain(snapshot.snapshotId);
   expect(summary).not.toContain('anomaly-a');
   expect(summary).not.toContain('{');
@@ -22,12 +22,23 @@ it('présente les compteurs, réserves et fichiers sans JSON ni identifiant tech
 
 /** Vérifie l'interface CLI en lecture seule et les options avant toute collecte ou écriture. */
 it('la CLI propose une synthèse française et refuse les seuils invalides', async () => {
-  const result = await execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'validate']);
-  expect(result.stdout).toContain('Configuration valide :');
+  const result = await execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'collect', '--help']);
+  expect(result.stdout).toContain('--repositories');
   expect(result.stdout).not.toContain('"metrics"');
   expect(result.stderr).not.toContain('test-token');
   await expect(
-    execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'pipeline', '--rest-quota-reserve', '-1'])
+    execute(process.execPath, [
+      '--import',
+      'tsx',
+      'src/cli.ts',
+      'collect',
+      '--repositories',
+      'unused.json',
+      '--output',
+      'unused.json',
+      '--rest-quota-reserve',
+      '-1'
+    ])
   ).rejects.toMatchObject({ stderr: expect.stringContaining('entier positif ou nul') });
   const help = await execute(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'collect', '--help']);
   expect(help.stdout).toContain('--wait-for-quota');

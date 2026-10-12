@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import fixture from '../fixtures/my-real-dataset-anonymized.json' with { type: 'json' };
+import fixture from './fixtures/my-real-dataset-anonymized.json' with { type: 'json' };
 import { anonymizeDataset } from '../src/anonymization/anonymizer.js';
 import {
   assertRelationalIntegrity,

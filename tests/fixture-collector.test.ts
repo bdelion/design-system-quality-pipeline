@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { collectFixture } from '../src/collectors/fixture.js';
+import { readDatasetJson as collectFixture } from '../src/datasets.js';
 
 describe('fixture collector', () => {
   it('loads an explicitly selected fixture instead of always using fixtures/github.json', async () => {
