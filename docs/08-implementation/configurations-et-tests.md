@@ -12,6 +12,8 @@
 
 Les tests ne nécessitent pas de collecte préalable. Les références de tests ne sont pas remplacées par vos jeux personnels ; une collecte réelle ne contient pas forcément les scénarios exigés par des assertions métier. La référence V1 et les jeux de réalisme font partie des sources versionnées de tests, indépendantes de la démonstration.
 
+`tests/fixtures/` conserve uniquement dix fichiers effectivement utilisés : les trois couples RAW/configuration/catalogue des scénarios principal (`github.json`), V1 et catalogue complet, ainsi que `my-real-dataset-anonymized.json` pour les tests d’anonymisation. Les anciens profils génériques, catalogues sans consommateur et la collecte datée inutilisée ont été supprimés. Le contrôle du profil livré porte désormais directement sur `config/profiles/dsq.json`.
+
 `fixture:validate --dataset <dossier>` vérifie votre jeu et exécute le pipeline dans un dossier temporaire. Un résultat DQ partiel n’équivaut pas à une incohérence du format. Les tests du logiciel restent exécutés avec `npm test`, `npm run check` et `npm run check:dashboard`.
 
 Aucun profil n’est choisi selon le nom du fichier de votre fixture. Le manifeste et le dataset voyagent ensemble ; une entrée absente ou incompatible est refusée sans repli vers la démonstration. Les helpers de tests chargent exclusivement leurs scénarios versionnés, sans accéder aux configurations personnelles ni aux variables de token.

@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { parse } from 'yaml';
 import { latestComparableSnapshot } from '../src/snapshots/history.js';
 import { diffSnapshots } from '../src/snapshots/diff.js';
 import { join } from 'node:path';
@@ -285,20 +284,10 @@ describe('issue #39 : borne package et activité des équipes', () => {
     expect(analyze(result.dataset).data.versions?.map((item) => item.number)).toEqual(['1.7.0', '1.8.0']);
   });
   it('versionne les profils et empêche de comparer les populations avant et après la nouvelle règle', async () => {
-    for (const profile of [
-      'system.yaml',
-      'system.github.yaml',
-      'system.fixture.yaml',
-      'system.v1-reference.yaml',
-      'system.full-dataset-anonymized.yaml',
-      'system.my-real-dataset-anonymized.yaml',
-      'system.20261007-my-real-dataset-anonymized.yaml'
-    ]) {
-      const system = parse(await readFile(join('tests/fixtures', profile), 'utf8')) as {
-        ruleVersion: string;
-      };
-      expect(system.ruleVersion).toBe('dq-2026.10-version-scope');
-    }
+    const profile = JSON.parse(await readFile('config/profiles/dsq.json', 'utf8')) as {
+      ruleVersion: string;
+    };
+    expect(profile.ruleVersion).toBe('dq-2026.10-dataset-workflow');
     const raw = dataset();
     const { data, quality, analytics } = analyze(raw);
     const previous = buildSnapshot(
