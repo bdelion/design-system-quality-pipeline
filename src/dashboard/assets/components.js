@@ -118,7 +118,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     if (index === 10 && oldest) return externalLink(oldest.url, value);
     return escape(value);
   }
-  /** Filtre les composants et agrège les mêmes faits Analytics distincts que l'explorateur d'issues. */
+  /** Filtre et trie par repository puis composant par défaut, en agrégeant les faits Analytics distincts. */
   function render() {
     const query = $('[data-component-search]').value.toLocaleLowerCase('fr');
     const visible = rows
@@ -181,10 +181,13 @@ import { matchesFact, currentContext, setContext } from './context.js';
         y = b.values[sort];
       const nx = parseFloat(x),
         ny = parseFloat(y);
-      const cmp =
+      const primary =
         Number.isFinite(nx) && Number.isFinite(ny)
           ? nx - ny
           : String(x).localeCompare(String(y), 'fr', { numeric: true });
+      const cmp =
+        primary ||
+        (sort === 0 ? String(a.values[1]).localeCompare(String(b.values[1]), 'fr', { numeric: true }) : 0);
       return descending ? -cmp : cmp;
     });
     const chosen = visible.filter(({ row }) => !selecting || selected.has(row.id));

@@ -2,6 +2,19 @@
 /* global Blob, URL */
 const payload = document.getElementById('workspace-data');
 const model = payload ? JSON.parse(payload.textContent) : null;
+const distributionSorts = { category: 'label-asc', component: 'label-asc' };
+document.addEventListener('change', (event) => {
+  const control = event.target;
+  const dimension = control?.dataset?.distributionSort;
+  if (
+    !(dimension in distributionSorts) ||
+    !['label-asc', 'label-desc', 'count-asc', 'count-desc'].includes(control.value)
+  )
+    return;
+  distributionSorts[dimension] = control.value;
+  renderWorkspace();
+  document.querySelector(`[data-distribution-sort="${dimension}"]`)?.focus();
+});
 /** Échappe les textes des ventilations avant leur insertion dans le HTML. */
 function escape(value) {
   return String(value ?? '').replace(
@@ -15,6 +28,16 @@ function format(value) {
     ? value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })
     : 'Indisponible';
 }
+/** Trie chaque répartition selon son choix ; les égalités de nombre suivent l’intitulé croissant. */
+function sortedEntries(values, dimension) {
+  const mode = distributionSorts[dimension];
+  return Object.entries(values).sort(([left, leftCount], [right, rightCount]) => {
+    const label = left.localeCompare(right, 'fr', { numeric: true });
+    if (mode.startsWith('count-'))
+      return (mode === 'count-desc' ? rightCount - leftCount : leftCount - rightCount) || label;
+    return mode === 'label-desc' ? -label : label;
+  });
+}
 /** Résout les alias lisibles des anciennes URLs vers les identités du contrat Analytics. */
 function canonicalContext() {
   const params = currentContext();
@@ -24,7 +47,7 @@ function canonicalContext() {
     version: params.get('version') || ''
   };
 }
-/** Présente une ventilation pré-calculée en barres ; seule leur échelle visuelle est adaptée. */
+/** Présente une ventilation avec son choix de tri accessible, sans recalculer les dénombrements. */
 function distributionChart(title, entries, note, dimension) {
   const maximum = Math.max(0, ...entries.map(([, value]) => value));
   return (
@@ -32,7 +55,23 @@ function distributionChart(title, entries, note, dimension) {
     dimension +
     '"><figcaption>' +
     escape(title) +
-    '</figcaption><ul class="distribution-bars">' +
+    '</figcaption>' +
+    (dimension in distributionSorts
+      ? `<label>Trier par <select data-distribution-sort="${dimension}" aria-label="Tri : ${escape(title)}">${Object.entries(
+          {
+            'label-asc': 'Intitulé croissant',
+            'label-desc': 'Intitulé décroissant',
+            'count-asc': 'Nombre croissant',
+            'count-desc': 'Nombre décroissant'
+          }
+        )
+          .map(
+            ([value, label]) =>
+              `<option value="${value}"${distributionSorts[dimension] === value ? ' selected' : ''}>${label}</option>`
+          )
+          .join('')}</select></label>`
+      : '') +
+    '<ul class="distribution-bars">' +
     (entries.length
       ? entries
           .map(
@@ -52,7 +91,7 @@ function distributionChart(title, entries, note, dimension) {
     '</p></figure>'
   );
 }
-/** Restitue les résultats Analytics du périmètre choisi et les mêmes sources dans les tableaux. */
+/** Restitue les résultats du périmètre avec critères et composants triés, en conservant l’ordre des criticités. */
 function renderWorkspace() {
   if (!model) return;
   renderQuality();
@@ -127,13 +166,13 @@ function renderWorkspace() {
         ) +
         distributionChart(
           'Critères d’accessibilité',
-          Object.entries(summary.categories),
+          sortedEntries(summary.categories, 'category'),
           'Multi-étiquettes : une anomalie peut appartenir à plusieurs catégories. Une catégorie absente ne vaut pas zéro.',
           'category'
         ) +
         distributionChart(
           'Répartition par composant',
-          Object.entries(summary.byComponent),
+          sortedEntries(summary.byComponent, 'component'),
           'Relations explicites uniquement ; une anomalie peut concerner plusieurs composants.',
           'component'
         ) +
@@ -146,11 +185,11 @@ function renderWorkspace() {
               `<tr><td>${escape({ blocking: 'Bloquante', major: 'Majeure', minor: 'Mineure', unknown: 'Inconnue' }[key])}</td><td>${item.declared}</td><td>${item.treated}</td><td>${format(item.average)} j</td><td>${item.count}</td></tr>`
           )
           .join('')}</tbody></table></div><h3>Par catégorie</h3><ul>${
-          Object.entries(summary.categories)
+          sortedEntries(summary.categories, 'category')
             .map(([key, count]) => `<li>${escape(key)} : ${count}</li>`)
             .join('') || '<li>Aucune catégorie reconnue</li>'
         }</ul><h3>Par composant</h3><ul>${
-          Object.entries(summary.byComponent)
+          sortedEntries(summary.byComponent, 'component')
             .map(([key, count]) => `<li>${escape(key)} : ${count}</li>`)
             .join('') || '<li>Aucun composant explicitement relié</li>'
         }</ul></details>`
