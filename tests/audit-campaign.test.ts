@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { dsqConfig } from '../src/datasets.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { workspaceAnalytics } from '../src/analytics/workspaces.js';
+import { auditCampaigns } from '../src/analytics/audit-campaigns.js';
 import { anonymizeDataset } from '../src/anonymization/anonymizer.js';
 import type { RawDataset, RawIssue } from '../src/domain/types.js';
 
@@ -77,6 +78,33 @@ it('issue #49 : stratégies explicites, bugs parentés et améliorations restent
   expect(summary.qualified).toBe(1);
   expect(summary.criticalities.unknown?.declared).toBe(1);
   expect(summary.byComponent.Button).toBe(1);
+  const outside = issue(6, 'Bug', 'Button');
+  const withOutside = normalizeGithub(
+    {
+      ...raw,
+      repositories: [{ ...raw.repositories[0]!, issues: [...raw.repositories[0]!.issues, outside] }]
+    },
+    config.github,
+    undefined,
+    '1.7.1'
+  );
+  const campaign = auditCampaigns(withOutside)[0]!;
+  expect(campaign).toMatchObject({
+    components: 2,
+    audits: 2,
+    progress: { completed: 2, ongoing: 0, pending: 0, cancelled: 0 },
+    results: { conform: 1, non_conform: 1 },
+    anomalies: 1,
+    openAnomalies: 0,
+    improvements: 1
+  });
+  expect(campaign.publication).toBe('prod');
+  withOutside.audits[0]!.dataQualityStatus = 'partial';
+  expect(auditCampaigns(withOutside)[0]!.quality).toBe('partial');
+  withOutside.audits[0]!.lifecycle = 'ongoing';
+  const sourceAudit = withOutside.issues!.find((item) => item.issueId === withOutside.audits[0]!.issueId)!;
+  sourceAudit.state = 'OPEN';
+  expect(auditCampaigns(withOutside)[0]!.results.non_conform).toBe(0);
   const legacyRules = structuredClone(config.github);
   delete legacyRules.auditDetection!.allowLegacyIssueTypes;
   expect(normalizeGithub(raw, legacyRules, undefined, '1.7.1').audits).toHaveLength(3);

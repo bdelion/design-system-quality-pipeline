@@ -469,6 +469,22 @@ test('issue #49 : résultat par version auditée sans catalogue historique ni h�
   await expect(rows).toContainText('conforme · 1.7.1');
 });
 
+test('issue #49 : comparaison des audits par version cible et non couverture héritée', async ({ page }) => {
+  await page.goto('/audits.html');
+  const summary = page.locator('[data-audit-campaign-summary]');
+  await expect(summary).toContainText('Résultats d’audit par repository et version cible');
+  await expect(summary).toContainText('Anomalies liées');
+  await expect(summary.locator('[data-audit-campaign]')).toHaveCount(2);
+  const current = summary.locator('[data-audit-campaign]').filter({ hasText: '2.0.0' });
+  await expect(current.locator('td').nth(4)).toHaveText('0');
+  await expect(current.locator('td').nth(5)).toHaveText('1');
+  await expect(current.locator('td').nth(8)).toHaveText('0');
+  await expect(current.locator('td').nth(9)).toHaveText('0');
+  await expect(
+    page.getByRole('heading', { name: 'Couverture des dernières versions PROD par repository' })
+  ).toHaveCount(0);
+});
+
 test('tris indépendants des répartitions : intitulés, nombres, égalités et conservation au filtrage', async ({
   page
 }) => {

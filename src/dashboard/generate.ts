@@ -1249,24 +1249,6 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
     list.push(anomaly);
     anomaliesByComponent.set(anomaly.componentId, list);
   }
-  const repositoriesWithComponents = libraries.map((library) => {
-    const components = activeComponents.filter((component) => component.libraryId === library.libraryId);
-    const audited = components.filter((component) => {
-      const relation = latestComponentVersion(snapshot.normalizedData, component.componentId);
-      return relation && relation.verdict !== 'NON_COUVERT';
-    }).length;
-    const conform = components.filter(
-      (component) =>
-        latestComponentVersion(snapshot.normalizedData, component.componentId)?.verdict === 'CONFORME'
-    ).length;
-    const anomalies = components.flatMap(
-      (component) => anomaliesByComponent.get(component.componentId) ?? []
-    );
-    const open = anomalies.filter((anomaly) =>
-      ['open', 'reopened', 'in_progress'].includes(anomaly.status)
-    ).length;
-    return { library, components, audited, conform, anomalies: anomalies.length, open };
-  });
 
   const coverage = preferredMetric(metrics, 'componentVersion.auditCoverage', 'portfolio.auditCoverage');
   const componentsMetric = metricOrUnknown(metrics, 'portfolio.components');
@@ -1320,10 +1302,48 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
     })
     .join('');
 
-  const repositoryRowsV2 = repositoriesWithComponents
-    .map(({ library, components, audited, conform, anomalies, open }) => {
-      const repositoryCoverage = components.length ? `${audited}/${components.length}` : '0/0';
-      return `<tr><td>${repositoryReference(snapshot, library.name, githubUrl)}<small>${escapeHtml(library.repository)}</small></td><td>${components.length}</td><td>${repositoryCoverage}</td><td>${conform}/${audited || 0}</td><td>${anomalies}</td><td>${open}</td><td><span class="tag tag-${library.dataQualityStatus}">${qualityLabel(library.dataQualityStatus)}</span></td></tr>`;
+  const campaignRows = (snapshot.analytics.auditCampaigns ?? [])
+    .map((row) => {
+      const library = libraries.find((item) => item.libraryId === row.libraryId);
+      const other =
+        'Conditionnels : ' +
+        row.results.conditional +
+        ' ; critiques : ' +
+        row.results.critical +
+        ' ; indéterminés : ' +
+        row.results.unknown;
+      return (
+        '<tr data-audit-campaign><td>' +
+        repositoryReference(snapshot, library?.name ?? row.libraryId, githubUrl) +
+        '</td><td>' +
+        escapeHtml(row.version) +
+        '<small>' +
+        (row.publication === 'prod' ? 'PROD' : 'publication non prouvée') +
+        '</small></td>' +
+        [
+          row.components,
+          row.audits,
+          row.progress.completed,
+          row.progress.ongoing,
+          row.progress.pending,
+          row.progress.cancelled,
+          row.results.conform,
+          row.results.non_conform
+        ]
+          .map((value) => '<td>' + value + '</td>')
+          .join('') +
+        '<td>' +
+        other +
+        '</td><td>' +
+        row.anomalies +
+        '</td><td>' +
+        (row.openAnomalies === 'unknown' ? 'Indéterminé' : row.openAnomalies) +
+        '</td><td>' +
+        row.improvements +
+        '</td><td>' +
+        qualityLabel(row.quality) +
+        '</td></tr>'
+      );
     })
     .join('');
 
@@ -1377,7 +1397,7 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
 
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Audits réalisés</p><h2>Traçabilité de chaque audit, par version</h2></div><span class="badge">${snapshot.normalizedData.audits.length} audits · ${ongoingAudits.length} en cours</span></div><p class="panel-note">Seules les anomalies rattachées explicitement à chaque audit sont comptées. Les anomalies du même composant sans lien prouvé sont signalées, mais non attribuées à cet audit.</p><div class="filter-bar"><label>Cycle de vie<select data-audit-progress-filter><option value="">Tous</option><option value="pending">Non évalués</option><option value="ongoing">En cours</option><option value="completed">Terminés</option><option value="cancelled">Annulés</option></select></label><label>Résultat des audits terminés<select data-audit-result-filter><option value="">Tous</option><option value="conform">Conforme</option><option value="non_conform">Non conforme</option><option value="conditional">Conditionnel</option><option value="critical">Critique</option></select></label><button type="button" data-reset-audit-filters>Effacer les filtres d'audit</button></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composant / source</th><th>État de l’audit</th><th>Version cible / artefact audité</th><th>Anomalies liées à l’audit</th><th>Ouvertes / en cours liées à l’audit</th><th>Qualité</th></tr></thead><tbody>${auditRows || '<tr><td colspan="7">Aucun audit dans ce snapshot.</td></tr>'}</tbody></table></div></article>
 
-  <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison</p><h2>Couverture des dernières versions PROD par repository</h2></div><span class="badge">${repositoriesWithComponents.length} repositories</span></div><div class="table-wrap"><table><thead><tr><th>Repository</th><th>Composants actifs</th><th>Audités</th><th>Conformes</th><th>Anomalies</th><th>Ouvertes / en cours</th><th>Qualité</th></tr></thead><tbody>${repositoryRowsV2}</tbody></table></div></article>
+  <article class="panel table-panel" data-audit-campaign-summary><div class="panel-heading"><div><p class="eyebrow">Comparaison</p><h2>Résultats d’audit par repository et version cible</h2></div></div><p>Audits reconnus sur leur version cible, sans héritage ni hypothèse de couverture PROD. Seuls les audits terminés ont un résultat définitif. Les anomalies et améliorations comptées sont explicitement rattachées à ces audits. Les repositories sans audit reconnu ne sont pas représentés. La qualité concerne ces preuves, pas celle du repository seul.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Synthèse des audits par version cible"><table><thead><tr>${['Repository', 'Version cible', 'Composants avec audit', 'Audits', 'Terminés', 'En cours', 'À faire', 'Annulés', 'Conformes', 'Non conformes', 'Autres résultats terminés', 'Anomalies liées', 'Ouvertes / en cours', 'Améliorations', 'Qualité'].map((label) => '<th scope="col">' + label + '</th>').join('')}</tr></thead><tbody>${campaignRows || '<tr><td colspan="15">' + (snapshot.analytics.auditCampaigns ? 'Aucun audit reconnu.' : 'Synthèse indisponible dans cet ancien snapshot : relancer le pipeline.') + '</td></tr>'}</tbody></table></div></article>
 
   <article class="panel" id="quality"><div class="panel-heading"><div><p class="eyebrow">Qualité des données</p><h2>Réserves qui affectent les audits ou leur périmètre</h2></div><span class="badge">${snapshot.dataQuality.issues.length} alertes</span></div><ul class="issue-list">${snapshot.dataQuality.issues.map((issue) => `<li><div><strong>${escapeHtml(issue.ruleId)} · ${escapeHtml(issue.message)}</strong><p>${escapeHtml(issue.entityType)} · ${escapeHtml(issue.entityId)} · ${severityLabel(issue.severity)}</p></div><span class="tag tag-${issue.severity === 'ERROR' ? 'error' : 'warning'}">${qualityLabel(issue.action === 'exclude' ? 'partial' : 'reliable')}</span></li>`).join('') || '<li><div><strong>Aucune alerte</strong><p>Les audits et leur périmètre ne présentent aucune réserve DQ.</p></div></li>'}</ul></article>`;
 }

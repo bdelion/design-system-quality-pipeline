@@ -1,6 +1,7 @@
 import type { WorkspaceAnalytics } from '../analytics/workspaces.js';
 import type { TeamActivitySummary } from '../analytics/team-activity.js';
 import type { RepositoryActivity } from '../analytics/repository-activity.js';
+import type { AuditCampaignSummary } from '../analytics/audit-campaigns.js';
 /**
  * @module domain.types
  * Centralise les contrats RAW, les entités normalisées, les métriques et les snapshots V1.
@@ -458,6 +459,8 @@ export interface BusinessTransition {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  /** Synthèse des audits par version cible ; absente des anciens snapshots. */
+  auditCampaigns?: AuditCampaignSummary[];
   /** Stocks et délais par repository ; projection des anciens snapshots si absent. */
   repositoryActivity?: RepositoryActivity[];
   /** Synthèse additive de l'activité ; absente des anciens snapshots. */

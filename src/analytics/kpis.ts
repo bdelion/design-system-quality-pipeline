@@ -1,4 +1,5 @@
 import { workspaceAnalytics } from './workspaces.js';
+import { auditCampaigns } from './audit-campaigns.js';
 import { teamActivitySummary } from './team-activity.js';
 import { repositoryActivity } from './repository-activity.js';
 import type { AccessibilityRecognition } from '../domain/accessibility.js';
@@ -61,6 +62,7 @@ export function calculateKpis(
   };
 
   return {
+    auditCampaigns: auditCampaigns(data, dqIssues),
     teamActivity: teamActivitySummary(data),
     repositoryActivity: repositoryActivity(data, dqIssues),
     workspaces: workspaceAnalytics(data, dqIssues, recognition),
