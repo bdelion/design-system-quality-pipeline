@@ -481,6 +481,9 @@ export function normalizeGithub(
         createdAt: issue.createdAt,
         ...(issue.closedAt ? { closedAt: issue.closedAt } : {}),
         labels: [...issue.labels],
+        ...(issue.descriptionIssueIds !== undefined
+          ? { descriptionIssueIds: [...issue.descriptionIssueIds] }
+          : {}),
         ...(issue.milestone ? { milestoneId: String(issue.milestone.id) } : {}),
         ...(issue.rawIssueType ? { rawIssueType: issue.rawIssueType } : {}),
         ...(issueTypeRecognition.issueType ? { issueType: issueTypeRecognition.issueType } : {}),

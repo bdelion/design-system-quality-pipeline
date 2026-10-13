@@ -124,6 +124,8 @@ export interface RawIssue {
   component?: string;
   criticities: string[];
   parents: string[];
+  /** Mentions dans la description ; absent si l'ancienne collecte ne les capturait pas. */
+  descriptionIssueIds?: string[];
   createdAt: string;
   closedAt?: string;
   firstDoneAt?: string;
@@ -266,6 +268,8 @@ export interface Issue {
   accessibilityCategories: string[];
   parentIssueId?: string;
   subIssueIds: string[];
+  /** Références explicites du corps, indépendantes des relations parent/enfant. */
+  descriptionIssueIds?: string[];
   linkedPullRequestIds: string[];
   projectContexts: IssueProjectContext[];
   provenance: Provenance;
@@ -461,6 +465,7 @@ export interface BusinessTransition {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  epicActivity?: import('../analytics/epic-activity.js').EpicActivity;
   /** Synthèse des audits par version cible ; absente des anciens snapshots. */
   auditCampaigns?: AuditCampaignSummary[];
   /** Stocks et délais par repository ; projection des anciens snapshots si absent. */

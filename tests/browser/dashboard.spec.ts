@@ -9,6 +9,77 @@ import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 let server: Server | undefined;
+
+/** Vérifie sélection d'Epic, inconnues, zéro, liens externes et export CSV du modèle calculé. */
+test('issue #69 : suivi des Epics et export CSV accessibles', async ({ page }) => {
+  await page.route('**/epics.html', async (route) => {
+    const response = await route.fetch();
+    const model = {
+      version: 1,
+      epics: [
+        {
+          id: 'epic-test',
+          number: 69,
+          repository: 'acme/ui',
+          title: 'Migration',
+          referencesCaptured: true,
+          rows: [
+            {
+              issueId: 'i1',
+              number: 12,
+              url: 'https://github.test/acme/ui/issues/12',
+              component: 'Tag',
+              velocity: 0,
+              velocityReason: '',
+              startedAt: '2026-01-01T00:00:00Z',
+              finishedAt: '2026-01-04T00:00:00Z',
+              elapsedHours: 72,
+              reason: ''
+            },
+            {
+              issueId: 'i2',
+              number: 13,
+              url: '',
+              component: '=FORMULA()',
+              velocity: null,
+              velocityReason: 'Vélocité absente',
+              startedAt: null,
+              finishedAt: null,
+              elapsedHours: null,
+              reason: 'Historique Project absent'
+            }
+          ]
+        }
+      ]
+    };
+    const html = (await response.text()).replace(
+      /(<script type="application\/json" id="epic-activity-data">)[\s\S]*?(<\/script>)/,
+      (_, start, end) => start + JSON.stringify(model) + end
+    );
+    await route.fulfill({ response, body: html });
+  });
+  await page.goto('/epics.html');
+  await page.getByLabel('Epic', { exact: true }).selectOption('epic-test');
+  await expect(page.locator('[data-epic-summary]')).toContainText('2 issue(s) distincte(s)');
+  const first = page.locator('[data-epic-rows] tr').first();
+  await expect(first.locator('td').nth(2)).toHaveText('0');
+  await expect(first.locator('td').last()).toHaveText('72');
+  await expect(first.locator('a')).toHaveAttribute('target', '_blank');
+  await expect(page.locator('[data-epic-rows]')).toContainText('Historique Project absent');
+  await expect(page.locator('[data-epic-rows]')).toContainText('Vélocité absente');
+  const waiting = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Exporter CSV', exact: true }).click();
+  const download = await waiting;
+  const csv = await readFile((await download.path())!, 'utf8');
+  expect(csv).toContain('"Temps passé (h)"');
+  expect(csv).toContain('"72"');
+  expect(csv).toContain('"\'=FORMULA()"');
+  expect(csv).toContain('Historique Project absent');
+  expect(
+    (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze())
+      .violations
+  ).toEqual([]);
+});
 /** Vérifie les stocks et les trois cohortes des tableaux globaux, avec leurs destinations GitHub. */
 test('vue d’ensemble : stocks cliquables et délais Ensemble, Done et closedAt', async ({ page }) => {
   await page.goto('/index.html');
