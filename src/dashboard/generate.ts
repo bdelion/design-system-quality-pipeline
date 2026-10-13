@@ -847,7 +847,7 @@ function issuesExplorerContent(
   </section>`;
 }
 
-/** Synthèse consolidée par composant et repository. */
+/** Synthèse par composant : restitue les résultats d’audits par version cible sans inventer d’héritage. */
 function componentsExplorerContent(
   snapshot: Snapshot,
   githubUrl?: string,
@@ -913,7 +913,7 @@ function componentsExplorerContent(
           snapshot.normalizedData.versions?.find((version) => version.versionId === relation.versionId)
             ?.number ?? '',
         versionId: relation.versionId,
-        conformity: relation.verdict ?? 'NON_COUVERT',
+        conformity: relation.verdict ?? 'INDETERMINE',
         auditIds: relation.applicableAuditIds ?? []
       }))
       .sort((a, b) => a.version.localeCompare(b.version, undefined, { numeric: true }));
@@ -924,7 +924,16 @@ function componentsExplorerContent(
         id: audit.auditId,
         url: facts.find((fact) => fact.id === audit.issueId)?.url ?? '',
         version: auditVersionLabel(audit, snapshot),
+        versionId: audit.versionId ?? '',
+        publication: snapshot.normalizedData.versions?.find(
+          (version) => version.versionId === audit.versionId
+        )?.prodTag
+          ? 'PROD'
+          : 'publication non prouvée',
         status: audit.lifecycle ?? audit.status,
+        result: isCompletedAudit(audit, snapshot.normalizedData.issues ?? [])
+          ? auditStatusLabel(audit.status)
+          : '',
         completedAt: audit.completedAt ?? ''
       }))
       .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
@@ -936,7 +945,10 @@ function componentsExplorerContent(
       audits: audits.length,
       version: current?.version ?? '',
       auditStatus: latest?.lifecycle ?? latest?.status ?? 'non audité',
-      conformity: current?.conformity ?? 'NON_COUVERT',
+      conformity:
+        latest && isCompletedAudit(latest, snapshot.normalizedData.issues ?? [])
+          ? auditStatusLabel(latest.status)
+          : 'Aucun résultat définitif',
       versionSummaries,
       githubLinks: componentGithubLinks(
         snapshot,
@@ -953,7 +965,7 @@ function componentsExplorerContent(
     };
   });
   const payload = JSON.stringify(rows).replace(/</g, '\\u003c');
-  return `<section class="issues-explorer" data-component-analysis><p class="panel">Les liens chiffrés ouvrent une recherche GitHub sur les données actuelles du repository. Recherches approchées : « Ouvertes » utilise l’état GitHub ; « Traitées » utilise Closed avec motif completed, sans vérifier Done dans Project ; « Annulées » utilise le motif not planned, distinct de Cancelled dans Project. Les PR sont recherchées par références d’issues dans leur description : les liens manuels seuls peuvent manquer. Les grandes listes de PR proposent plusieurs recherches courtes pour conserver toutes les références. Les compteurs restent ceux du snapshot. Dernier audit et conformité ouvrent leurs audits justificatifs.</p>
+  return `<section class="issues-explorer" data-component-analysis><p class="panel">Les liens chiffrés ouvrent une recherche GitHub sur les données actuelles du repository. Recherches approchées : « Ouvertes » utilise l’état GitHub ; « Traitées » utilise Closed avec motif completed, sans vérifier Done dans Project ; « Annulées » utilise le motif not planned, distinct de Cancelled dans Project. Les PR sont recherchées par références d’issues dans leur description : les liens manuels seuls peuvent manquer. Les grandes listes de PR proposent plusieurs recherches courtes pour conserver toutes les références. Les compteurs restent ceux du snapshot. Le résultat affiché porte sur la version cible de l’audit, sans propagation aux autres versions. Un audit en cours n’a pas de résultat définitif. La publication de cette version reste distincte de sa milestone. Dernier audit et résultat ouvrent leur audit justificatif.</p>
     <div class="issue-kpis" aria-live="polite">${[
       ['global', 'Global · Officiel'],
       ['done', 'Sans estimation'],
@@ -973,8 +985,8 @@ function componentsExplorerContent(
             .join('')}</div><small data-component-count="${key}">0 issue</small></article>`
       )
       .join('')}</div>
-    <section class="panel issue-filters" aria-label="Filtres des composants"><div class="panel-heading"><h2>Filtres et recherche</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser</button></div><div class="issue-filter-grid"><label>Recherche<input class="search" data-component-search placeholder="Composant, repository…"></label><label>Repository<select data-component-filter="repository"><option value="">Tous</option></select></label><label>Composant<select data-component-filter="name"><option value="">Tous</option></select></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Conformité<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Version d'audit<select data-component-filter="version"><option value="">Toutes</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" data-component-summary></p></section>
-    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Conformité', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article><script type="application/json" id="component-analysis-data">${payload}</script>
+    <section class="panel issue-filters" aria-label="Filtres des composants"><div class="panel-heading"><h2>Filtres et recherche</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser</button></div><div class="issue-filter-grid"><label>Recherche<input class="search" data-component-search placeholder="Composant, repository…"></label><label>Repository<select data-component-filter="repository"><option value="">Tous</option></select></label><label>Composant<select data-component-filter="name"><option value="">Tous</option></select></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Résultat de l’audit<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Version d'audit<select data-component-filter="version"><option value="">Toutes</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" data-component-summary></p></section>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Résultat de l’audit · version cible', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article><script type="application/json" id="component-analysis-data">${payload}</script>
   </section>`;
 }
 

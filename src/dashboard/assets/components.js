@@ -26,7 +26,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
       ...new Set(
         rows
           .flatMap((row) =>
-            field === 'version' ? row.versionSummaries.map((summary) => summary.version) : [row[field]]
+            field === 'version' ? row.auditSources.map((audit) => audit.version) : [row[field]]
           )
           .filter(Boolean)
       )
@@ -39,29 +39,27 @@ import { matchesFact, currentContext, setContext } from './context.js';
     }
   }
   const columns = [...root.querySelectorAll('[data-component-column]')];
-  /** Projette la version demandée sans recalculer son verdict Analytics. */
+  /** Projette le résultat de l’audit sur sa version cible, sans héritage vers une autre version. */
   function projectRow(row) {
     const context = currentContext();
     const version = context.get('version') || $('[data-component-filter="version"]').value;
-    const summary = version
-      ? row.versionSummaries.find((item) => item.version === version || item.versionId === version)
-      : row.versionSummaries.at(-1);
     const items = row.items.filter(
       (item) =>
         matchesFact(item, context) &&
         (!version || item.versions.includes(version) || item.versionIds.includes(version))
     );
     const latestAudit = version
-      ? (row.auditSources.find((audit) => summary?.auditIds.includes(audit.id)) ??
-        row.auditSources.find((audit) => audit.version === summary?.version))
+      ? row.auditSources.find((audit) => audit.version === version || audit.versionId === version)
       : row.auditSources.find((audit) => audit.id === row.latestAuditId);
     return {
       ...row,
-      version: summary?.version ?? row.version,
-      conformity: summary?.conformity ?? 'NON_COUVERT',
-      auditIds: summary?.auditIds ?? [],
+      version: latestAudit?.version ?? '',
+      conformity: latestAudit?.result || 'Aucun résultat définitif',
+      auditIds: latestAudit ? [latestAudit.id] : [],
       latestAuditUrl: latestAudit?.url ?? '',
       latestAuditVersion: latestAudit?.version ?? '',
+      latestAuditResult: latestAudit?.result ?? '',
+      latestAuditPublication: latestAudit?.publication ?? '',
       auditStatus: latestAudit?.status ?? 'non audité',
       items,
       matches:
@@ -70,8 +68,8 @@ import { matchesFact, currentContext, setContext } from './context.js';
             repository: row.repository,
             components: [row.name],
             componentIds: [row.componentId],
-            versions: row.versionSummaries.map((item) => item.version),
-            versionIds: row.versionSummaries.map((item) => item.versionId)
+            versions: row.auditSources.map((item) => item.version),
+            versionIds: row.auditSources.map((item) => item.versionId)
           },
           new URLSearchParams(
             [...context].filter(([key]) => ['repository', 'component', 'version'].includes(key))
@@ -161,8 +159,8 @@ import { matchesFact, currentContext, setContext } from './context.js';
             row.items.filter((item) => item.cancelled).length,
             prs.size,
             row.audits,
-            `${row.latestAuditVersion} ${row.auditStatus}`.trim(),
-            row.conformity,
+            `${row.latestAuditVersion} ${row.auditStatus} ${row.latestAuditResult}`.trim(),
+            `${row.conformity}${row.latestAuditVersion ? ' · ' + row.latestAuditVersion : ''}${row.latestAuditPublication ? ' (' + row.latestAuditPublication + ')' : ''}`,
             oldest ? `#${oldest.number}` : '—',
             fmt(age),
             fmt(stats.average)
@@ -281,7 +279,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
         'PR',
         'Audits',
         'Dernier audit',
-        'Conformité',
+        'Résultat de l’audit · version cible',
         'Plus ancienne ouverte',
         'Ancienneté maximale',
         'Délai moyen'

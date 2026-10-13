@@ -145,6 +145,7 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 
 - [Datasets autonomes, commandes et migration](08-implementation/datasets.md)
 - [Diagnostic local des calculs d’audit (#49)](08-implementation/issue-49-audit-diagnostic.md)
+- [Préparer les données anonymisées et les attendus pour un diagnostic](08-implementation/preparer-donnees-anonymisees-diagnostic.md)
 
 - [Analyse du démarrage local et proposition de refonte des datasets](08-implementation/analyse-parcours-local.md)
 

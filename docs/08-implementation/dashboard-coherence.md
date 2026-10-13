@@ -4,6 +4,8 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+Dans « Composants par repository », le résultat affiché porte sur l’audit de la version cible, déterminée par la milestone. Un audit terminé restitue son résultat calculé par le pipeline ; une amélioration n’altère pas sa conformité. Les audits incomplets n’ont pas de résultat définitif. Les versions sont filtrables même sans catalogue historique ; aucun résultat n’est propagé vers une autre version. La publication PROD est indiquée seulement lorsqu’un tag PROD est connu, sinon elle reste non prouvée. Les métriques et verdicts historiques Component × Version restent distincts et exigent leurs preuves de présence.
+
 Les répartitions de critères et de composants sur la page Accessibilité sont triées par défaut par intitulé croissant (locale française, nombres naturels). Chacune propose un choix indépendant : intitulé ou nombre, croissant ou décroissant. Les égalités de nombre sont départagées par intitulé croissant. Le choix reste conservé après filtrage et s’applique aussi aux détails ; l’ordre métier des criticités reste conservé. Le tableau « Composants par repository » s’ouvre trié par repository, puis composant, indépendamment de l’ordre des données (#65). Les tris manuels restent disponibles.
 
 - `src/domain/business.ts` définit la classification exclusive, le statut Project effectif, le traitement `Done ET Closed` et le cycle de vie des audits.

@@ -142,8 +142,10 @@ test('KPI distincts cohérents entre explorateurs, sélection et CSV', async ({ 
   await expect(page.locator('[data-component-kpi="global-average"]')).toHaveText(average!);
   await expect(page.locator('[data-component-kpi="global-median"]')).toHaveText(median!);
   await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
-  await expect(page.locator('[data-component-rows]')).toContainText('NON_CONFORME');
+  await expect(page.locator('[data-component-rows]')).toContainText('Aucun résultat définitif');
   await expect(page.locator('[data-component-summary]')).toContainText('2 issues distinctes');
+  await page.locator('[data-component-filter="version"]').selectOption('1.0.0');
+  await expect(page.locator('[data-component-rows]')).toContainText('non conforme');
 });
 
 /** Vérifie les colonnes source, leurs filtres et leur export sans fusion de plusieurs Projects. */
@@ -204,7 +206,8 @@ test('composants, accessibilité et DQ : liens GitHub dans un nouvel onglet', as
   await expect(row.locator('td').nth(9).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
   await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
   await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
-  await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
+  await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/3$/);
+  await expect(row).toContainText('Aucun résultat définitif');
   await page.goto('/accessibility.html');
   for (const table of ['population', 'review']) {
     const link = page.locator(`#${table} tbody td:first-child a`).first();
@@ -417,6 +420,53 @@ test('les graphiques accessibilité restituent les agrégats et suivent les filt
   await page.goto('/accessibility.html?category=unknown');
   await expect(page.locator('[data-distribution]')).toHaveCount(0);
   await expect(page.locator('[data-workspace-breakdowns]')).toContainText('indisponibles');
+});
+
+test('issue #49 : résultat par version auditée sans catalogue historique ni héritage implicite', async ({
+  page
+}) => {
+  await page.route('**/components.html', async (route) => {
+    const response = await route.fetch();
+    const html = (await response.text()).replace(
+      /(<script type="application\/json" id="component-analysis-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => {
+        const row = JSON.parse(content)[0];
+        row.name = 'Tag';
+        row.versionSummaries = [];
+        row.latestAuditId = 'audit-tag';
+        row.conformity = 'conforme';
+        row.auditSources = [
+          {
+            id: 'audit-tag',
+            version: '1.7.1',
+            versionId: 'v171',
+            status: 'completed',
+            result: 'conforme',
+            url: 'https://github.test/audit/1'
+          },
+          {
+            id: 'audit-dev',
+            version: '1.8.0',
+            versionId: 'v180',
+            status: 'ongoing',
+            result: '',
+            url: 'https://github.test/audit/2'
+          }
+        ];
+        return start + JSON.stringify([row]) + end;
+      }
+    );
+    await route.fulfill({ response, body: html });
+  });
+  await page.goto('/components.html');
+  const rows = page.locator('[data-component-rows]');
+  await expect(rows).toContainText('conforme · 1.7.1');
+  await expect(rows).not.toContainText('NON_COUVERT');
+  await page.locator('[data-component-filter="version"]').selectOption('1.8.0');
+  await expect(rows).toContainText('Aucun résultat définitif · 1.8.0');
+  await expect(rows).not.toContainText('conforme · 1.8.0');
+  await page.locator('[data-component-filter="version"]').selectOption('1.7.1');
+  await expect(rows).toContainText('conforme · 1.7.1');
 });
 
 test('tris indépendants des répartitions : intitulés, nombres, égalités et conservation au filtrage', async ({
