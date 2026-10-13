@@ -503,13 +503,18 @@ export function evaluateDataQuality(
       if (reportedCatalogueEvidence.has(key)) continue;
       reportedCatalogueEvidence.add(key);
       if (catalogue.status === 'missing') {
+        const localPresence = (data.componentVersions ?? []).filter(
+          (relation) =>
+            relation.versionId === version.versionId &&
+            relation.provenance.sourceId?.startsWith('local-history:')
+        ).length;
         add(
           'DQ-015',
           'WARNING',
           'include',
           'version',
           version.versionId,
-          `Historical catalogue is missing at PROD tag ${catalogue.tagName}.`
+          `Historical catalogue is missing at PROD tag ${catalogue.tagName}.${localPresence ? ` Présence démontrée par le référentiel local pour ${localPresence} composant(s) ; le catalogue GitHub et le périmètre hors sélection restent inconnus.` : ''}`
         );
       } else {
         add(

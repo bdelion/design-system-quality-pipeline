@@ -30,6 +30,8 @@ Les 8 composants conformes et 9 non conformes cités dans l’issue incluent un 
 
 ## Parcours de vérification
 
+Le diagnostic ci-dessus conserve les constats du premier jeu `20261013`. Pour le jeu anonymisé plus récent `datasets/issue-49` et son référentiel Excel désormais intégré, suivre le [parcours concret de préparation et de consultation](datasets.md#cas-concret--le-dataset-de-lissue-49). Il utilise `datasets/issue-49-historique` et une destination dédiée, sans réécrire les données de ce diagnostic initial.
+
 Effectuer une nouvelle collecte avec GraphQL et le profil DSQ mis à jour, puis préparer un nouveau dataset et une nouvelle destination de pipeline. Les nouveaux parents ne sont pas récupérables en rejouant le RAW actuel. Les configurations capturées sont figées : modifier le profil livré ne réécrit pas les anciens datasets. Le nouveau profil porte modèle `2.4` / règle `dq-2026.10-audit-relations` pour distinguer les runs.
 
 Vérifier ensuite les relations Audit → Bug/Enhancement et les milestones réellement présentes. Le catalogue courant peut enrichir les métadonnées ; il ne remplace pas les preuves historiques de présence par version. Les tests synthétiques de `tests/audit-campaign.test.ts` couvrent ces frontières sans versionner les données personnelles.

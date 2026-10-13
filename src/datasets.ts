@@ -14,6 +14,12 @@ import { anonymizePipelineConfig } from './anonymization/config.js';
 import { inspectRelationalIntegrity, validateAnonymizedDataset } from './anonymization/validator.js';
 import { collectGithub, githubTokenFromEnvironment } from './collectors/github.js';
 import type { GithubQuotaOptions } from './collectors/github-requests.js';
+import {
+  validateHistoricalComponents,
+  historicalRepository,
+  anonymizeHistoricalComponents,
+  type HistoricalComponentCatalogue
+} from './historical-components.js';
 
 /** Jeu autonome : faits, conventions et enrichissements sont transportés ensemble. */
 export interface Dataset {
@@ -23,11 +29,24 @@ export interface Dataset {
   config: PipelineConfig;
   catalogue: Catalogue | null;
   rawData: RawDataset;
+  historicalComponents?: HistoricalComponentCatalogue[];
 }
 
 /** Reconnaît un objet JSON sans tableau ni valeur nulle. */
 function object(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Produit une identité stable en lettres pour éviter qu'une empreinte soit prise pour un téléphone. */
+function historicalIdentity(name: string, scope: string): string {
+  if (/^history-[a-p]{64}$/.test(name)) return name;
+  return (
+    'history-' +
+    createHash('sha256')
+      .update(`history:${scope}:${name}`)
+      .digest('hex')
+      .replace(/\d/g, (digit) => String.fromCharCode(103 + Number(digit)))
+  );
 }
 
 /** Lit du JSON sans divulguer un extrait du RAW dans une erreur de parsing. */
@@ -312,6 +331,17 @@ export function validateDataset(value: unknown): asserts value is Dataset {
     throw new Error('Dataset : schéma ou provenance invalide.');
   validateRaw(value.rawData);
   validateDatasetConfig(value.config);
+  if (value.historicalComponents !== undefined) {
+    if (!Array.isArray(value.historicalComponents)) throw new Error('Dataset : historiques invalides.');
+    const repositories = new Set<string>();
+    for (const entry of value.historicalComponents) {
+      const history = validateHistoricalComponents(entry);
+      const repository = historicalRepository(history, value.rawData);
+      if (repositories.has(repository))
+        throw new Error('Dataset : plusieurs historiques pour le même dépôt.');
+      repositories.add(repository);
+    }
+  }
   if (value.catalogue !== null) validateCatalogue(value.catalogue);
   const raw = value.rawData;
   const config = value.config;
@@ -423,7 +453,7 @@ function catalogueDraft(raw: RawDataset, config: PipelineConfig): string {
 }
 
 /**
- * Anonymise puis publie atomiquement un nouveau jeu, sans référence V1 ni catalogue obligatoire.
+ * Anonymise un RAW ou enrichit une fixture existante, puis publie atomiquement un nouveau jeu.
  * Sans catalogue fourni, crée à côté du RAW un brouillon privé sans écraser un fichier existant.
  * En cas de relation invalide, écrit un diagnostic privé à côté du RAW sans publier de dataset.
  */
@@ -432,7 +462,8 @@ export async function prepareDataset(
   output: string,
   seed = '',
   catalogueInput?: string,
-  anonymizeComponents = false
+  anonymizeComponents = false,
+  historicalInputs: string[] = []
 ): Promise<Dataset> {
   const rawContent = await readFile(input, 'utf8');
   let raw: unknown;
@@ -441,7 +472,42 @@ export async function prepareDataset(
   } catch {
     throw new Error('Fichier JSON invalide.');
   }
+  if (object(raw) && raw.schemaVersion === 1 && raw.kind === 'fixture') {
+    if (catalogueInput || anonymizeComponents)
+      throw new Error(
+        'Fixture existante : conserver son catalogue et son anonymisation ; ces options s’appliquent uniquement à un RAW.'
+      );
+    const source = await loadDataset(input);
+    const references = await Promise.all(
+      historicalInputs.map(async (path) => validateHistoricalComponents(parse(await readFile(path, 'utf8'))))
+    );
+    const additions = references.map((history) =>
+      anonymizeHistoricalComponents(
+        history,
+        historicalRepository(history, source.rawData),
+        (name) => name,
+        (name) => historicalIdentity(name, source.config.scope)
+      )
+    );
+    if (new Set(additions.map((h) => h.repository)).size !== additions.length)
+      throw new Error('Préparation : plusieurs historiques pour le même dépôt.');
+    source.historicalComponents = [
+      ...(source.historicalComponents ?? []).filter(
+        (h) => !additions.some((a) => a.repository === h.repository)
+      ),
+      ...additions
+    ];
+    validateDataset(source);
+    await publishEnrichedDataset(source, output, rawContent);
+    return source;
+  }
   validateRaw(raw);
+  const histories = await Promise.all(
+    historicalInputs.map(async (path) => validateHistoricalComponents(parse(await readFile(path, 'utf8'))))
+  );
+  const historyRepositories = histories.map((history) => historicalRepository(history, raw));
+  if (new Set(historyRepositories).size !== histories.length)
+    throw new Error('Préparation : plusieurs historiques pour le même dépôt.');
   const context = object(raw) ? raw.collectionContext : undefined;
   if (
     context !== undefined &&
@@ -573,7 +639,19 @@ export async function prepareDataset(
     profileId: object(context) && typeof context.profileId === 'string' ? context.profileId : 'dsq',
     config: fixtureConfig,
     catalogue: catalogueInput ? mappedCatalogue : null,
-    rawData: result.dataset
+    rawData: result.dataset,
+    ...(histories.length
+      ? {
+          historicalComponents: histories.map((history, index) =>
+            anonymizeHistoricalComponents(
+              history,
+              map('repository', historyRepositories[index]!, 'repo'),
+              (name) => (anonymizeComponents ? map('component', name, 'component') : name),
+              (name) => historicalIdentity(name, fixtureConfig.scope)
+            )
+          )
+        }
+      : {})
   };
   validateDataset(dataset);
   const target = resolve(output);
@@ -621,6 +699,45 @@ export async function prepareDataset(
     await rm(temporary, { recursive: true, force: true });
   }
   return dataset;
+}
+
+/** Publie une fixture enrichie avec un nouveau manifeste, sans modifier ni réanonymiser sa source. */
+async function publishEnrichedDataset(
+  dataset: Dataset,
+  output: string,
+  sourceContent: string
+): Promise<void> {
+  const target = resolve(output);
+  try {
+    await lstat(target);
+    throw new Error('Destination existante : choisir un nouveau dossier de dataset.');
+  } catch (error) {
+    if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
+  }
+  await mkdir(dirname(target), { recursive: true });
+  const temporary = await mkdtemp(join(dirname(target), '.dsq-prepare-'));
+  try {
+    const content = JSON.stringify(dataset, null, 2) + '\n';
+    await writeFile(join(temporary, 'dataset.json'), content, 'utf8');
+    await writeFile(
+      join(temporary, 'manifest.json'),
+      JSON.stringify(
+        {
+          schemaVersion: 1,
+          datasetSha256: createHash('sha256').update(content).digest('hex'),
+          sourceDatasetSha256: createHash('sha256').update(sourceContent).digest('hex'),
+          transformation: 'historical-components-enrichment',
+          review: 'required'
+        },
+        null,
+        2
+      ) + '\n',
+      'utf8'
+    );
+    await rename(temporary, target);
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
 }
 
 /** Collecte depuis la liste seule, conserve le profil DSQ appliqué et refuse tout écrasement du RAW. */

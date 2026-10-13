@@ -38,7 +38,7 @@ export function contextToolbar(
     .filter(([key]) => dimensions.includes(key))
     .map(
       ([key, values]) =>
-        `<label>${({ repository: 'Repository', component: 'Composant', version: 'Version PROD' } as Record<string, string>)[key]}<select data-context-filter="${key}"><option value="">${key === 'version' ? 'Versions courantes / stock complet' : 'Tous'}</option>${[
+        `<label>${({ repository: 'Repository', component: 'Composant', version: 'Version cible' } as Record<string, string>)[key]}<select data-context-filter="${key}"><option value="">${key === 'version' ? 'Versions courantes / stock complet' : 'Tous'}</option>${[
           ...new Set(values)
         ]
           .sort()

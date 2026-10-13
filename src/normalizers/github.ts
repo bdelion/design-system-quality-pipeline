@@ -9,6 +9,11 @@ import { stableId } from '../lib/ids.js';
 import { validateMilestoneDetection, type GithubProcessingConfig } from '../config.js';
 import { issueBusinessState, currentProjectStatus, lastDoneAt } from '../domain/business.js';
 import type { Catalogue, CatalogueComponent } from '../catalogue.js';
+import {
+  historicalRepository,
+  validateHistoricalComponents,
+  type HistoricalComponentCatalogue
+} from '../historical-components.js';
 import type {
   Anomaly,
   Audit,
@@ -44,6 +49,7 @@ const collectedStatus: DataQualityStatus = 'reliable';
  * @param catalogue - Catalogue de composants éventuellement fourni.
  * @param auditVersion - Version des règles d'audit utilisée pour la provenance.
  * @param githubUrl - Base web capturée, utilisée uniquement en l’absence d’une URL source.
+ * @param historicalComponents - Preuves locales de présence et d'identité, sans publication implicite.
  * @returns Données métier normalisées, prêtes pour les contrôles et les KPI.
  */
 export function normalizeGithub(
@@ -51,9 +57,18 @@ export function normalizeGithub(
   rules: GithubProcessingConfig,
   catalogue?: Catalogue,
   auditVersion?: string,
-  githubUrl = 'https://github.com'
+  githubUrl = 'https://github.com',
+  historicalComponents: HistoricalComponentCatalogue[] = []
 ): NormalizedData {
   validateMilestoneDetection(rules.milestoneDetection);
+  const localHistories = new Map(
+    historicalComponents.map((input) => {
+      const history = validateHistoricalComponents(input);
+      return [historicalRepository(history, raw), history] as const;
+    })
+  );
+  if (localHistories.size !== historicalComponents.length)
+    throw new Error('Plusieurs historiques pour le même dépôt.');
   const libraries: Library[] = raw.repositories.map((repository) => ({
     libraryId: stableId('lib', repository.name),
     name: repository.name,
@@ -191,7 +206,11 @@ export function normalizeGithub(
     const activeComponentIdByName = new Map<string, string>();
     for (const { snapshot, number } of snapshots) {
       const version = versionByLibraryAndNumber.get(`${library.libraryId}:${number}`)!;
-      const names = new Set(snapshot.componentNames);
+      const localHistory = localHistories.get(repository.name);
+      const localNames = new Set(
+        localHistory?.components.flatMap((c) => [c.name, ...c.history.map((h) => h.historicalName)]) ?? []
+      );
+      const names = new Set(snapshot.componentNames.filter((name) => !localNames.has(name)));
 
       // An absence in an available catalogue is positive evidence that the
       // previous identity ended. Unknown snapshots never execute this branch.
@@ -255,12 +274,120 @@ export function normalizeGithub(
     }
   }
 
+  // Les preuves locales complètent les faits GitHub ; elles ne créent jamais de tag PROD.
+  for (const [repositoryName, history] of localHistories) {
+    const library = libraryByRepository.get(repositoryName)!;
+    for (const component of history.components) {
+      const latest = component.history
+        .filter((h) => !isFutureVersion(h.version, library.packageManifest))
+        .at(-1);
+      for (const observation of component.history) {
+        if (
+          !observation.present ||
+          !observation.identity ||
+          isFutureVersion(observation.version, library.packageManifest)
+        )
+          continue;
+        const componentId = stableId('component', `${library.libraryId}:historical:${observation.identity}`);
+        const key = `${library.libraryId}:${component.name}`;
+        historicalComponentNames.add(key);
+        if (latest?.present && latest.identity === observation.identity)
+          latestHistoricalComponentIdByName.set(key, componentId);
+        const provenance = {
+          source: 'catalogue' as const,
+          sourceId: `local-history:${observation.version}:${observation.evidence.map((e) => e.cell).join(',')}`,
+          collectedAt: raw.collectedAt
+        };
+        if (!historicalComponentsById.has(componentId))
+          historicalComponentsById.set(componentId, {
+            componentId,
+            libraryId: library.libraryId,
+            name: component.name,
+            status: latest?.present && latest.identity === observation.identity ? 'active' : 'removed',
+            aliases: [
+              ...new Set(
+                component.history
+                  .filter((h) => h.identity === observation.identity)
+                  .map((h) => h.historicalName)
+              )
+            ].filter((name) => name !== component.name),
+            discoverySource: 'catalogue',
+            tags: [],
+            provenance,
+            dataQualityStatus: 'reliable'
+          });
+        let version = versionByLibraryAndNumber.get(`${library.libraryId}:${observation.version}`);
+        if (!version) {
+          version = {
+            versionId: stableId('version', `${library.libraryId}:${observation.version}`),
+            libraryId: library.libraryId,
+            number: observation.version,
+            channel: observation.channel,
+            provenance,
+            dataQualityStatus: 'partial'
+          };
+          versions.push(version);
+          versionByLibraryAndNumber.set(`${library.libraryId}:${observation.version}`, version);
+        }
+        version.channel = version.prodTag ? 'release' : observation.channel;
+        componentVersions.push({
+          componentVersionId: stableId('component-version', `${componentId}:${version.versionId}`),
+          componentId,
+          versionId: version.versionId,
+          provenance,
+          dataQualityStatus: 'reliable'
+        });
+      }
+    }
+  }
+
+  /** Résout un nom sur sa version cible ; l'ambiguïté ou l'absence ne devient pas l'identité courante. */
+  function resolveIssueComponent(repositoryName: string, name: string, issue: RawIssue): string | undefined {
+    const library = libraryByRepository.get(repositoryName)!;
+    const history = localHistories.get(repositoryName);
+    const candidates = history?.components.filter(
+      (c) => c.name === name || c.history.some((h) => h.historicalName === name)
+    );
+    if (!candidates?.length)
+      return currentComponentId(
+        `${library.libraryId}:${name}`,
+        latestHistoricalComponentIdByName,
+        historicalComponentNames
+      );
+    const repository = raw.repositories.find((r) => r.name === repositoryName)!;
+    const parent =
+      issue.parents.length === 1 ? repository.issues.find((i) => i.id === issue.parents[0]) : undefined;
+    const target =
+      milestoneVersionNumber(issue.milestone?.title, rules) ??
+      milestoneVersionNumber(parent?.milestone?.title, rules);
+    const observations = candidates.flatMap((c) =>
+      c.history.filter(
+        (h) =>
+          h.present &&
+          h.identity &&
+          !isFutureVersion(h.version, library.packageManifest) &&
+          (target ? h.version === target && (h.historicalName === name || c.name === name) : true)
+      )
+    );
+    const identities = [...new Set(observations.map((h) => h.identity!))];
+    return identities.length === 1
+      ? stableId('component', `${library.libraryId}:historical:${identities[0]!}`)
+      : undefined;
+  }
+
   // Le catalogue peut matérialiser un composant même lorsqu'aucune issue GitHub ne le mentionne.
   for (const catalogueComponent of catalogue?.components ?? []) {
     if (!catalogueComponent.repository) continue;
     const library = libraryByRepository.get(catalogueComponent.repository);
     if (!library) continue;
     const key = `${library.libraryId}:${catalogueComponent.name}`;
+    if (
+      localHistories
+        .get(catalogueComponent.repository)
+        ?.components.some((c) => c.name === catalogueComponent.name) &&
+      !latestHistoricalComponentIdByName.has(key)
+    )
+      continue;
     const componentId = currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames);
     componentsByName.set(key, {
       componentId,
@@ -306,12 +433,7 @@ export function normalizeGithub(
         ])
       ].filter((name) => !futureVersion || knownComponent(name));
       const componentName = componentNames[0] ?? '';
-      const componentKey = `${library.libraryId}:${componentName}`;
-      const componentId = currentComponentId(
-        componentKey,
-        latestHistoricalComponentIdByName,
-        historicalComponentNames
-      );
+      const componentId = resolveIssueComponent(repository.name, componentName, issue);
       const issueTypeRecognition = recognizeIssueType(issue.rawIssueType, rules);
       const recognizedComponentIds = issue.labels
         .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
@@ -319,9 +441,9 @@ export function normalizeGithub(
         .filter(Boolean)
         .filter((name) => !futureVersion || knownComponent(name))
         .map((name) => {
-          const key = `${library.libraryId}:${name}`;
-          return currentComponentId(key, latestHistoricalComponentIdByName, historicalComponentNames);
-        });
+          return resolveIssueComponent(repository.name, name, issue);
+        })
+        .filter((id): id is string => id !== undefined);
       // Transitional bridge for pre-I1 fixtures: legacy fixtures expose the
       // resolved component through RawIssue.component but do not yet carry the
       // native rawIssueType/complete I1 facts. Never use this fallback for new
@@ -331,7 +453,9 @@ export function normalizeGithub(
         recognizedComponentIds.length === 0 &&
         issue.component &&
         componentNames.length > 0
-          ? [componentId]
+          ? componentId
+            ? [componentId]
+            : []
           : recognizedComponentIds;
       const criticalities = issue.labels
         .filter((label) =>
@@ -423,6 +547,12 @@ export function normalizeGithub(
         dataQualityStatus: collectedStatus
       });
       for (const name of componentNames) {
+        if (
+          localHistories
+            .get(repository.name)
+            ?.components.some((c) => c.name === name || c.history.some((h) => h.historicalName === name))
+        )
+          continue;
         const key = `${library.libraryId}:${name}`;
         if (componentsByName.has(key)) continue;
         const catalogueComponent = catalogueByRepositoryAndName.get(`${repository.name}:${name}`);
@@ -691,7 +821,20 @@ function mergeComponents(
   currentByName: Map<string, Component>
 ): Component[] {
   const byId = new Map(historical);
-  for (const component of currentByName.values()) byId.set(component.componentId, component);
+  for (const component of currentByName.values()) {
+    const previous = historical.get(component.componentId);
+    byId.set(
+      component.componentId,
+      previous?.provenance.sourceId?.startsWith('local-history:')
+        ? {
+            ...component,
+            status: previous.status,
+            aliases: previous.aliases,
+            provenance: previous.provenance
+          }
+        : component
+    );
+  }
   return [...byId.values()].sort(
     (left, right) =>
       left.libraryId.localeCompare(right.libraryId) ||

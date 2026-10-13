@@ -469,6 +469,66 @@ test('issue #49 : résultat par version auditée sans catalogue historique ni h�
   await expect(rows).toContainText('conforme · 1.7.1');
 });
 
+test('historique : affiche les preuves et la conformité héritée sans inventer un audit de développement', async ({
+  page
+}) => {
+  await page.route('**/components.html', async (route) => {
+    const response = await route.fetch();
+    const html = (await response.text()).replace(
+      /(<script type="application\/json" id="component-analysis-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => {
+        const row = JSON.parse(content)[0];
+        row.name = 'Tag';
+        row.componentIds = [row.componentId];
+        row.latestAuditId = 'audit-tag';
+        row.auditSources = [
+          {
+            id: 'audit-tag',
+            version: '1.7.1',
+            versionId: 'v171',
+            status: 'completed',
+            result: 'conforme',
+            url: 'https://github.test/audit/1'
+          }
+        ];
+        row.versionSummaries = [
+          {
+            version: '1.7.1',
+            versionId: 'v171',
+            channel: 'release',
+            publication: 'PROD',
+            conformity: 'CONFORME',
+            provenance: 'local-history:1.7.1:AS484',
+            auditSources: [{ id: 'audit-tag', url: 'https://github.test/audit/1' }]
+          },
+          {
+            version: '1.8.0',
+            versionId: 'v180',
+            channel: 'development',
+            conformity: 'CONFORME',
+            provenance: 'local-history:1.8.0:AT484',
+            auditSources: [{ id: 'audit-tag', url: 'https://github.test/audit/1' }]
+          }
+        ];
+        return start + JSON.stringify([row]) + end;
+      }
+    );
+    await route.fulfill({ response, body: html });
+  });
+  await page.goto('/components.html');
+  await page.locator('[data-component-filter="version"]').selectOption('1.8.0');
+  const history = page.locator('[data-component-history]');
+  await history.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(history).toContainText('Développement');
+  await expect(history).toContainText('Conforme');
+  await expect(history).toContainText('AT484');
+  await expect(history.locator('a')).toHaveAttribute('href', 'https://github.test/audit/1');
+  await expect(history.locator('a')).toHaveAttribute('target', '_blank');
+  await expect(page.locator('[data-component-rows]')).toContainText('Aucun résultat définitif');
+  await expect(page.locator('[data-component-rows]')).not.toContainText('conforme · 1.8.0');
+});
+
 test('issue #49 : comparaison des audits par version cible et non couverture héritée', async ({ page }) => {
   await page.goto('/audits.html');
   const summary = page.locator('[data-audit-campaign-summary]');
