@@ -6,6 +6,7 @@
 
 import { loadDataset } from './datasets.js';
 import { loadHistoricalImport } from './historical-import.js';
+import { epicActivity } from './analytics/epic-activity.js';
 import { resolve, dirname, relative, isAbsolute, sep } from 'node:path';
 import { calculateKpis } from './analytics/kpis.js';
 import { readJson, writeJson } from './lib/files.js';
@@ -81,6 +82,7 @@ export async function runPipeline(
     catalogue !== null
   );
   const capturedAt = new Date().toISOString();
+  analytics.epicActivity = epicActivity(normalized, config.github.labels.componentPrefix);
   const previousSnapshot = latestComparableSnapshot(await loadSnapshots(runPath), {
     scope: config.scope,
     modelVersion: config.modelVersion,
