@@ -36,6 +36,8 @@ npm.cmd run collect -- --repositories repositories.json --output data/local/mon-
 
 La capture conserve les faits et le profil réellement appliqué. Pour attendre automatiquement le reset : ajouter `--wait-for-quota`. Voir [les quotas](quotas-github.md). Les URLs d’une instance GitHub Enterprise peuvent être fournies via `GITHUB_API_URL`, `GITHUB_GRAPHQL_URL` et `GITHUB_URL`.
 
+`GITHUB_URL` est la base web (par exemple `https://github.mon-organisation.fr`), distincte des endpoints REST et GraphQL. Elle est enregistrée lors de la collecte et utilisée au rejeu pour les liens construits vers les dépôts, issues et PR, y compris les preuves de traçabilité (#60). Une URL d’issue fournie par GitHub reste une preuve source et n’est pas remplacée. Modifier `.env` après la capture ne modifie pas son contexte : refaire une collecte pour changer la base. Sans base configurée, GitHub public reste la valeur par défaut ; les fixtures anonymisées ne conservent pas l’adresse de l’instance privée.
+
 ## 4. Préparer le dataset hors réseau
 
 La capture contient déjà une graine privée locale ; la préparation la réutilise sans autre saisie. Le token n’est plus nécessaire. Pour garder les mêmes alias entre plusieurs collectes, définir `ANONYMIZATION_SEED` avant la collecte. Un ancien RAW sans graine locale demande cette variable ou l’option `--seed`.
