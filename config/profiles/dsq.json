@@ -1,7 +1,7 @@
 {
   "profileId": "dsq",
-  "modelVersion": "2.3",
-  "ruleVersion": "dq-2026.10-dataset-workflow",
+  "modelVersion": "2.4",
+  "ruleVersion": "dq-2026.10-audit-relations",
   "auditVersion": "2026.09",
   "github": {
     "labels": {
@@ -21,7 +21,7 @@
         "AUDIT": ["audit"],
         "EPIC": ["epic"],
         "NEW_COMPONENT": ["new_component", "new component"],
-        "FEATURE": ["feature"],
+        "FEATURE": ["feature", "enhancement", "improvement"],
         "BUG": ["bug", "rgaa", "a11y"]
       }
     },
@@ -52,6 +52,7 @@
       ]
     },
     "auditDetection": {
+      "allowLegacyIssueTypes": false,
       "strategies": [
         {
           "issueTypes": ["Audit"],

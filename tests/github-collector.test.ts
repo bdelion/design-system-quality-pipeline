@@ -191,6 +191,7 @@ describe('collecteur GitHub', () => {
               repository: {
                 issue: {
                   closedByPullRequestsReferences: { nodes: [{ id: 900, number: 42 }] },
+                  parent: { number: 7, repository: { nameWithOwner: 'acme/other-repository' } },
                   projectItems: {
                     nodes: [
                       {
@@ -291,6 +292,7 @@ describe('collecteur GitHub', () => {
       rules: config.github
     });
     expect(dataset.repositories[0]?.issues[0]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
+    expect(dataset.repositories[0]?.issues[0]?.parents).toEqual(['acme/other-repository:issue:7']);
     expect(dataset.repositories[0]?.issues[0]?.projectStatuses).toEqual([
       {
         projectId: 'project-1',

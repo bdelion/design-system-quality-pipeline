@@ -221,6 +221,7 @@ function anonymizePullRequest(
 
 /**
  * Pseudonymise les données RAW tout en conservant leurs relations.
+ * Résout les parents avec les identités du jeu complet, même entre repositories.
  */
 export function anonymizeDataset(input: RawDataset, options: AnonymizationOptions): AnonymizationResult {
   const map = withAliases(createAnonymizationMapper(options.seed), options.aliases ?? {});
@@ -267,6 +268,22 @@ export function anonymizeDataset(input: RawDataset, options: AnonymizationOption
       : {})
   }));
 
+  // Résout les parents avec l’identité de leur repository source, y compris entre repositories.
+  const issueAliases = new Map(
+    input.repositories.flatMap((repository, repositoryIndex) =>
+      repository.issues.map(
+        (issue, issueIndex) => [issue.id, repositories[repositoryIndex]!.issues[issueIndex]!.id] as const
+      )
+    )
+  );
+  for (const [repositoryIndex, repository] of input.repositories.entries()) {
+    for (const [issueIndex, issue] of repository.issues.entries()) {
+      const anonymized = repositories[repositoryIndex]!.issues[issueIndex]!;
+      anonymized.parents = issue.parents.map(
+        (id, index) => issueAliases.get(id) ?? anonymized.parents[index]!
+      );
+    }
+  }
   const dataset: RawDataset = {
     collectedAt: shiftDate(input.collectedAt, options.dateOffsetDays, report)!,
     repositories,

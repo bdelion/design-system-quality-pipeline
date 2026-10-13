@@ -37,6 +37,7 @@ interface GithubIssue {
 }
 
 interface GithubGraphqlIssueData {
+  parents: string[];
   pullRequests: GithubGraphqlPullRequest[];
   projectStatuses: GithubProjectStatus[];
 }
@@ -206,6 +207,7 @@ async function collectRepository(
                 issue.number
               )
             : {
+                parents: [],
                 pullRequests: [],
                 projectStatuses: []
               };
@@ -226,6 +228,7 @@ async function collectRepository(
             graphqlData.pullRequests,
             [...restProjectStatuses, ...graphqlData.projectStatuses]
           );
+          result.parents = graphqlData.parents;
           options.progress.issueCompleted();
           return result;
         })
@@ -407,7 +410,7 @@ function toRawIssue(
   };
 }
 
-/** Récupère en une seule requête GraphQL les PR liées et les statuts Projects v2. */
+/** Récupère en une requête les parents explicites, PR liées et statuts Projects v2, sans inférer de parent par label. */
 async function issueDataFromGraphql(
   graphqlUrl: string,
   options: CollectionOptions,
@@ -442,6 +445,11 @@ async function issueDataFromGraphql(
             name: $repository
           ) {
             issue(number: $issueNumber) {
+
+              parent {
+                number
+                repository { nameWithOwner }
+              }
 
               closedByPullRequestsReferences(first: 100) {
                 nodes {
@@ -543,6 +551,7 @@ async function issueDataFromGraphql(
       };
       repository?: {
         issue?: {
+          parent?: { number: number; repository: { nameWithOwner: string } } | null;
           closedByPullRequestsReferences?: {
             nodes?: Array<GithubGraphqlPullRequest | null>;
           };
@@ -678,6 +687,7 @@ async function issueDataFromGraphql(
   }
 
   return {
+    parents: issue?.parent ? [`${issue.parent.repository.nameWithOwner}:issue:${issue.parent.number}`] : [],
     pullRequests,
     projectStatuses
   };

@@ -37,6 +37,7 @@ const collectedStatus: DataQualityStatus = 'reliable';
  * anomalies, sans masquer les informations manquantes : elles sont ensuite
  * évaluées par la couche Data Quality. Le package borne les versions et populations
  * accessibilité ; l’activité des issues futures reste conservée.
+ * Les stratégies d’audit explicites sont prioritaires sur les anciennes inférences de type.
  *
  * @param raw - Données collectées, incluant les repositories et leurs événements.
  * @param rules - Règles de correspondance et de spécialisation GitHub.
@@ -82,6 +83,7 @@ export function normalizeGithub(
   );
   const resolvedAuditVersion = auditVersion ?? catalogue?.version ?? 'unknown';
 
+  const allowLegacyAudit = rules.auditDetection?.allowLegacyIssueTypes !== false;
   const futureAuditIssueIds = new Set(
     raw.repositories.flatMap((repository) =>
       repository.issues
@@ -92,10 +94,12 @@ export function normalizeGithub(
               repository.packageManifest
             ) ||
               (issue.rawIssueType === undefined &&
+                allowLegacyAudit &&
                 issue.issueType === 'AUDIT' &&
                 isFutureVersion(resolvedAuditVersion, repository.packageManifest))) &&
-            (recognizeIssueType(issue.rawIssueType, rules).issueType === 'AUDIT' ||
-              (issue.rawIssueType === undefined && issue.issueType === 'AUDIT') ||
+            ((allowLegacyAudit &&
+              (recognizeIssueType(issue.rawIssueType, rules).issueType === 'AUDIT' ||
+                (issue.rawIssueType === undefined && issue.issueType === 'AUDIT'))) ||
               configuredAuditIssue(
                 issue,
                 rules,
@@ -480,7 +484,7 @@ export function normalizeGithub(
   for (const issue of issues) {
     if (issue.futureVersion) continue;
     const rawIssue = rawIssueById.get(issue.issueId);
-    const legacyAudit = specializationIssueType(issue, rawIssue) === 'AUDIT';
+    const legacyAudit = allowLegacyAudit && specializationIssueType(issue, rawIssue) === 'AUDIT';
     const configuredAudit = rawIssue
       ? configuredAuditIssue(rawIssue, rules, issue.componentIds.length)
       : false;

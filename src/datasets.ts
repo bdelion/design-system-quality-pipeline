@@ -248,6 +248,8 @@ export function validateDatasetConfig(value: unknown): asserts value is Pipeline
     const detection = config.github.auditDetection;
     if (
       !object(detection) ||
+      (detection.allowLegacyIssueTypes !== undefined &&
+        typeof detection.allowLegacyIssueTypes !== 'boolean') ||
       !Array.isArray(detection.strategies) ||
       detection.strategies.some(
         (strategy) =>

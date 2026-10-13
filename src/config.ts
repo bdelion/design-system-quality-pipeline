@@ -31,6 +31,8 @@ export interface GithubProcessingConfig {
     patterns: { id: string; regex: string; kind: 'release' | 'audit' }[];
   };
   auditDetection?: {
+    /** Autorise les anciens types inférés ; désactivé par le profil DSQ pour les nouvelles captures. */
+    allowLegacyIssueTypes?: boolean;
     strategies: { issueTypes: string[]; requiredLabels?: string[]; requireComponent?: boolean }[];
   };
   closingKeywords: string[];

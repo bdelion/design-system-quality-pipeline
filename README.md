@@ -4,6 +4,8 @@ Collecter des repositories GitHub, préparer un dataset autonome et rejouer son 
 
 ## Démarrer sans GitHub
 
+Le [diagnostic des calculs d’audit (#49)](docs/08-implementation/issue-49-audit-diagnostic.md) distingue la campagne courante, les relations parent collectées et les preuves historiques nécessaires aux verdicts par version.
+
 Les [conventions d’affichage du dashboard](docs/08-implementation/dashboard-coherence.md#référentiel-commun) précisent notamment les tris des tableaux et répartitions.
 
 Node.js >= 22.15.0, référence 22.23.3 dans `.nvmrc`.
