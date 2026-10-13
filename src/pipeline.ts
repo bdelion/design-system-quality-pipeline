@@ -5,6 +5,7 @@
  */
 
 import { loadDataset } from './datasets.js';
+import { loadHistoricalImport } from './historical-import.js';
 import { resolve, dirname, relative, isAbsolute, sep } from 'node:path';
 import { calculateKpis } from './analytics/kpis.js';
 import { readJson, writeJson } from './lib/files.js';
@@ -19,9 +20,40 @@ import { diffSnapshots } from './snapshots/diff.js';
 import { latestComparableSnapshot } from './snapshots/history.js';
 import { readdir, lstat } from 'node:fs/promises';
 
-/** Rejoue un jeu autonome hors réseau et écrit uniquement dans sa destination explicite. */
-export async function runPipeline(datasetPath: string, outputPath: string): Promise<Snapshot> {
-  const { config, catalogue, rawData: raw, historicalComponents } = await loadDataset(datasetPath);
+/**
+ * Rejoue un dataset ou un RAW contextualisé hors réseau, avec enrichissement historique facultatif.
+ * Les entrées et leurs configurations restent intactes ; les preuves locales sont vérifiées avant calcul.
+ * @param datasetPath - Dataset autonome ou fichier RAW produit par la collecte.
+ * @param outputPath - Destination des snapshots et du dashboard, distincte des entrées.
+ * @param historicalInputs - Référentiels de présence ou fichiers d'identités les désignant.
+ * @param historicalRepositoryOverride - Dépôt réel auquel affecter explicitement l'unique import.
+ */
+export async function runPipeline(
+  datasetPath: string,
+  outputPath: string,
+  historicalInputs: string[] = [],
+  historicalRepositoryOverride?: string
+): Promise<Snapshot> {
+  const { config, catalogue, rawData: raw, historicalComponents: embedded } = await loadDataset(datasetPath);
+  if (historicalRepositoryOverride !== undefined && historicalInputs.length !== 1)
+    throw new Error('--historical-repository exige exactement un fichier --historical-catalogue.');
+  const imported = await Promise.all(
+    historicalInputs.map((path) => loadHistoricalImport(path, raw, historicalRepositoryOverride))
+  );
+  const repositories = imported.map((history) =>
+    history.repository.includes('/') ? history.repository.split('/')[1]! : history.repository
+  );
+  if (new Set(repositories).size !== imported.length)
+    throw new Error('Plusieurs historiques pour le même dépôt.');
+  const historicalComponents = [
+    ...(embedded ?? []).filter(
+      (history) =>
+        !repositories.includes(
+          history.repository.includes('/') ? history.repository.split('/')[1]! : history.repository
+        )
+    ),
+    ...imported
+  ];
   const inputDirectory = (await lstat(datasetPath)).isDirectory()
     ? resolve(datasetPath)
     : dirname(resolve(datasetPath));

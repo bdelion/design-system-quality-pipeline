@@ -85,10 +85,27 @@ program
   .command('pipeline')
   .option('--dataset <path>', 'dataset autonome à rejouer', 'examples/demo/dataset.json')
   .option('--output <directory>', 'sorties isolées du dataset', 'data/output/demo')
-  .action(async (options: { dataset: string; output: string }) => {
-    const snapshot = await runPipeline(options.dataset, options.output);
-    console.log(pipelineSummary(snapshot, 'Pipeline', pipelineStatus(snapshot), options.output));
-  });
+  .option('--historical-catalogue <file...>', 'référentiels historiques ou fichiers d’identités locaux')
+  .option(
+    '--historical-repository <owner/repository>',
+    'affectation explicite du seul historique au dépôt réel du RAW'
+  )
+  .action(
+    async (options: {
+      dataset: string;
+      output: string;
+      historicalCatalogue?: string[];
+      historicalRepository?: string;
+    }) => {
+      const snapshot = await runPipeline(
+        options.dataset,
+        options.output,
+        options.historicalCatalogue ?? [],
+        options.historicalRepository
+      );
+      console.log(pipelineSummary(snapshot, 'Pipeline', pipelineStatus(snapshot), options.output));
+    }
+  );
 await program.parseAsync().catch((error: unknown) => {
   console.error('Erreur : ' + (error instanceof Error ? error.message : 'traitement interrompu.'));
   process.exitCode = 1;
