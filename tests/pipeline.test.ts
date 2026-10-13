@@ -8,6 +8,27 @@ import { loadCatalogue, validateCatalogue } from './support/fixtures.js';
 
 const raw = await collectFixture();
 const config = await loadConfig('fixture');
+
+it('utilise la base Enterprise pour les liens de secours sans remplacer une URL source (#60)', () => {
+  const source = structuredClone(raw);
+  const issue = source.repositories[0]!.issues[0]!;
+  delete issue.url;
+  const normalized = normalizeGithub(
+    source,
+    config.github,
+    undefined,
+    undefined,
+    'https://enterprise.test/github/'
+  );
+  const expected = `https://enterprise.test/github/${source.repositories[0]!.owner}/${source.repositories[0]!.name}/issues/${issue.number}`;
+  expect(normalized.issues?.find((item) => item.issueId === issue.id)?.url).toBe(expected);
+  issue.url = 'https://source.test/original';
+  expect(
+    normalizeGithub(source, config.github, undefined, undefined, 'https://enterprise.test').issues?.find(
+      (item) => item.issueId === issue.id
+    )?.url
+  ).toBe(issue.url);
+});
 const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
 const issues = evaluateDataQuality(raw, normalized, config.github);
 

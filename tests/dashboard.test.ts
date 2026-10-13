@@ -13,7 +13,13 @@ import { loadConfig } from './support/fixtures.js';
 it('generates static dashboard pages from the snapshot contract', async () => {
   const raw = await collectFixture();
   const config = await loadConfig('fixture');
-  const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
+  const normalized = normalizeGithub(
+    raw,
+    config.github,
+    undefined,
+    config.auditVersion,
+    'https://github.test/'
+  );
   const issues = evaluateDataQuality(raw, normalized, config.github);
   const snapshot = buildSnapshot(
     raw,
@@ -76,7 +82,9 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(graphHtml).toContain('Issues (tous types)');
   expect(graphHtml.includes('npm run dashboard:serve -- chemin/du/dashboard')).toBe(true);
   expect(graphHtml).toContain('data-map-kind="issue"');
-  expect(graphHtml).toContain('href="https://github.com/example/design-system-react/issues/204"');
+  expect(graphHtml).toContain('href="https://github.test/example/design-system-react/issues/204"');
+  expect(/href="https:\/\/github\.test\/[^" ]+\/pull\/\d+"/.test(graphHtml)).toBe(true);
+  expect(graphHtml.includes('href="https://github.com/')).toBe(false);
   const historyHtml = await readFile(resolve(output, 'dashboard/history.html'), 'utf8');
   expect(auditsHtml).toContain('Audits en cours');
   expect(auditsHtml).toContain('Audits non évalués');

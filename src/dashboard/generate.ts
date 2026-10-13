@@ -128,7 +128,7 @@ export async function generateDashboard(
       page(
         snapshot,
         'Cartographie',
-        graphContent(snapshot, githubUrl) + traceabilityContent(snapshot),
+        graphContent(snapshot, githubUrl) + traceabilityContent(snapshot, githubUrl),
         serializedSnapshot
       ),
       'utf8'

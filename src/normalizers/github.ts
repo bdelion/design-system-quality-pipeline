@@ -42,13 +42,15 @@ const collectedStatus: DataQualityStatus = 'reliable';
  * @param rules - Règles de correspondance et de spécialisation GitHub.
  * @param catalogue - Catalogue de composants éventuellement fourni.
  * @param auditVersion - Version des règles d'audit utilisée pour la provenance.
+ * @param githubUrl - Base web capturée, utilisée uniquement en l’absence d’une URL source.
  * @returns Données métier normalisées, prêtes pour les contrôles et les KPI.
  */
 export function normalizeGithub(
   raw: RawDataset,
   rules: GithubProcessingConfig,
   catalogue?: Catalogue,
-  auditVersion?: string
+  auditVersion?: string,
+  githubUrl = 'https://github.com'
 ): NormalizedData {
   validateMilestoneDetection(rules.milestoneDetection);
   const libraries: Library[] = raw.repositories.map((repository) => ({
@@ -344,7 +346,9 @@ export function normalizeGithub(
         libraryId: library.libraryId,
         number: issue.number,
         title: issue.title,
-        url: issue.url ?? `https://github.com/${repository.owner}/${repository.name}/issues/${issue.number}`,
+        url:
+          issue.url ??
+          `${githubUrl.replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${issue.number}`,
         state: issue.state,
         createdAt: issue.createdAt,
         ...(issue.closedAt ? { closedAt: issue.closedAt } : {}),

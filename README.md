@@ -24,6 +24,8 @@ Créer `repositories.json` :
 
 Fournir `GITHUB_TOKEN` dans le shell ou dans `.env`, puis :
 
+Pour GitHub Enterprise, consulter la [configuration des endpoints et des liens web](docs/08-implementation/guide-utilisation.md#3-collecter-vos-repositories) avant la collecte.
+
 ```powershell
 npm.cmd run collect -- --repositories repositories.json --output data/local/mon-jeu/raw.json
 npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output datasets/mon-jeu

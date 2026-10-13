@@ -32,7 +32,13 @@ export async function runPipeline(datasetPath: string, outputPath: string): Prom
   )
     throw new Error('Choisir un dossier de sorties distinct du dataset.');
   const runPath = resolve(outputPath, 'runs');
-  const normalized = normalizeGithub(raw, config.github, catalogue ?? undefined, config.auditVersion);
+  const normalized = normalizeGithub(
+    raw,
+    config.github,
+    catalogue ?? undefined,
+    config.auditVersion,
+    config.githubUrl
+  );
   applyComponentVersionVerdicts(normalized);
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);
   const analytics = calculateKpis(

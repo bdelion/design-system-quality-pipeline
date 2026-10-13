@@ -50,8 +50,8 @@ export function contextToolbar(
     )}<button type="button" class="reset-button" data-clear-context>Effacer les filtres</button></div><p role="status" aria-live="polite" data-filter-feedback></p></section>`;
 }
 
-/** Restitue toutes les issues, même transverses, avec les liens explicites et les ruptures de traçabilité. */
-export function traceabilityContent(snapshot: Snapshot): string {
+/** Restitue les preuves et les liens de PR avec la base GitHub capturée, y compris Enterprise. */
+export function traceabilityContent(snapshot: Snapshot, githubUrl = 'https://github.com'): string {
   const data = snapshot.normalizedData;
   const rows = issueFacts(snapshot)
     .map((fact) => {
@@ -85,7 +85,7 @@ export function traceabilityContent(snapshot: Snapshot): string {
             const rawPr = rawRepo?.pullRequests.find((item) => item.id === id);
             return sourceLink(
               rawRepo && rawPr
-                ? `https://github.com/${rawRepo.owner}/${rawRepo.name}/pull/${rawPr.number}`
+                ? `${githubUrl.replace(/\/+$/, '')}/${encodeURIComponent(rawRepo.owner)}/${encodeURIComponent(rawRepo.name)}/pull/${rawPr.number}`
                 : undefined,
               `${id}${pr ? ` (${pr.state})` : ''}`
             );
