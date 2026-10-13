@@ -26,7 +26,12 @@ import { matchesFact, currentContext, setContext } from './context.js';
       ...new Set(
         rows
           .flatMap((row) =>
-            field === 'version' ? row.auditSources.map((audit) => audit.version) : [row[field]]
+            field === 'version'
+              ? [
+                  ...row.auditSources.map((audit) => audit.version),
+                  ...(row.versionSummaries ?? []).map((item) => item.version)
+                ]
+              : [row[field]]
           )
           .filter(Boolean)
       )
@@ -53,7 +58,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
       : row.auditSources.find((audit) => audit.id === row.latestAuditId);
     return {
       ...row,
-      version: latestAudit?.version ?? '',
+      version: version || latestAudit?.version || '',
       conformity: latestAudit?.result || 'Aucun résultat définitif',
       auditIds: latestAudit ? [latestAudit.id] : [],
       latestAuditUrl: latestAudit?.url ?? '',
@@ -67,9 +72,9 @@ import { matchesFact, currentContext, setContext } from './context.js';
           {
             repository: row.repository,
             components: [row.name],
-            componentIds: [row.componentId],
-            versions: row.auditSources.map((item) => item.version),
-            versionIds: row.auditSources.map((item) => item.versionId)
+            componentIds: row.componentIds ?? [row.componentId],
+            versions: [...row.auditSources, ...(row.versionSummaries ?? [])].map((item) => item.version),
+            versionIds: [...row.auditSources, ...(row.versionSummaries ?? [])].map((item) => item.versionId)
           },
           new URLSearchParams(
             [...context].filter(([key]) => ['repository', 'component', 'version'].includes(key))
@@ -86,6 +91,17 @@ import { matchesFact, currentContext, setContext } from './context.js';
   }
   /** Associe les recherches GitHub et les audits justificatifs aux colonnes correspondantes. */
   function linkedValue(row, oldest, value, index) {
+    if (index === 1 && row.versionSummaries?.length) {
+      const context = currentContext();
+      const version = context.get('version') || $('[data-component-filter="version"]').value;
+      const history = row.versionSummaries.filter(
+        (item) => !version || item.version === version || item.versionId === version
+      );
+      return (
+        escape(value) +
+        `<details data-component-history><summary>Qualité par version (${history.length})</summary><dl>${history.map((item) => `<div><dt><strong>${escape(item.version)}</strong> · ${escape(item.channel === 'development' ? 'Développement' : item.publication)}</dt><dd>Conformité : ${escape({ CONFORME: 'Conforme', NON_CONFORME: 'Non conforme', NON_COUVERT: 'Non couvert' }[item.conformity] ?? 'Indéterminée')}<br>Audits justificatifs : ${(item.auditSources ?? []).map((audit) => externalLink(audit.url, audit.id)).join('<br>') || 'Aucun'}<br>Preuve de présence : ${escape(item.provenance)}</dd></div>`).join('')}</dl></details>`
+      );
+    }
     const field = { 2: 'issues', 3: 'open', 4: 'treated', 5: 'cancelled', 6: 'prs', 7: 'audits' }[index];
     if (index === 6 && row.githubLinks?.prSearches.length > 1) {
       return (

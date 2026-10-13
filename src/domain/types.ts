@@ -272,11 +272,13 @@ export interface Issue {
   dataQualityStatus: DataQualityStatus;
 }
 
-/** Version PROD canonique et faits Git associés. */
+/** Version cible et faits Git associés ; seul prodTag démontre une publication PROD. */
 export interface Version {
   versionId: string;
   libraryId: string;
   number: string;
+  /** Canal explicitement fourni par un historique local, sans inférence de publication. */
+  channel?: 'release' | 'development';
   releasedAt?: string;
   milestoneId?: string;
   prodTag?: { name: string; createdAt?: string };

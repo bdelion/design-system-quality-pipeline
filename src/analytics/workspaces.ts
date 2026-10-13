@@ -161,7 +161,7 @@ export function workspaceAnalytics(
     const stats = durationStatistics(treated);
     const components = data.components.filter(
       (component) =>
-        component.status !== 'removed' &&
+        (Boolean(context.version) || component.status !== 'removed') &&
         (!context.component ||
           component.componentId === context.component ||
           component.name === context.component) &&

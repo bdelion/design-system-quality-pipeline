@@ -47,13 +47,15 @@ Aucun `system.yaml`, `catalogue.yaml` ou fichier V1 n’est à fabriquer. La cap
 | Script                             | Fonction                                                                                                                                           |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `collect`                          | Capturer GitHub depuis une liste JSON de repositories, avec le profil DSQ livré et les [options de quota](docs/08-implementation/quotas-github.md) |
-| `fixture:prepare`                  | Préparer atomiquement le dataset depuis le RAW ; `--input`, `--output`, graine privée ; `--catalogue` facultatif                                   |
+| `fixture:prepare`                  | Préparer depuis un RAW ou enrichir une fixture ; `--input`, `--output`, `--catalogue`, `--historical-catalogue` facultatifs                        |
 | `fixture:validate`                 | Contrôler le dataset et exécuter son pipeline dans un dossier temporaire ; `--dataset`                                                             |
 | `pipeline`                         | Rejouer le dataset hors réseau ; `--dataset`, `--output` ; démonstration par défaut                                                                |
 | `dashboard:serve`                  | Consulter le dashboard local ; dossier facultatif après `--`                                                                                       |
 | `test`, `check`, `check:dashboard` | Vérifier le code avec des scénarios versionnés dans `tests/fixtures`, sans collecte préalable                                                      |
 
 `analyze`, `snapshot`, `dashboard`, `validate`, `fixture:anonymize`, `reference:prepare`, `catalogue:generate` et `system:generate` sont supprimés. Le [guide de migration et le contrat des datasets](docs/08-implementation/datasets.md) décrivent le nouveau parcours.
+
+Pour suivre la présence et la qualité des composants par version, `fixture:prepare --historical-catalogue <fichier.yaml>` embarque un référentiel historique. Une fixture existante peut être enrichie en fournissant son `dataset.json` avec `--input`, vers un nouveau dossier, sans réanonymiser ses faits. Voir le [parcours historique et ses règles d'identité](docs/08-implementation/datasets.md#historique-des-composants-par-version).
 
 ## Données et tests
 

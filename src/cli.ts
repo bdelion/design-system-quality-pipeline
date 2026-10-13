@@ -39,10 +39,11 @@ program
   });
 program
   .command('fixture:prepare')
-  .requiredOption('--input <file>', 'RAW local collecté')
+  .requiredOption('--input <file>', 'RAW local collecté ou dataset.json d’une fixture existante')
   .requiredOption('--output <directory>', 'nouveau dossier du dataset autonome')
   .option('--seed <seed>', 'remplacer la graine locale de la capture', process.env.ANONYMIZATION_SEED)
   .option('--catalogue <file>', 'enrichissement métier facultatif YAML')
+  .option('--historical-catalogue <file...>', 'référentiels historiques YAML, un par dépôt')
   .option('--anonymize-components', 'pseudonymiser aussi les composants et leurs labels préfixés')
   .action(
     async (options: {
@@ -50,6 +51,7 @@ program
       output: string;
       seed?: string;
       catalogue?: string;
+      historicalCatalogue?: string[];
       anonymizeComponents?: boolean;
     }) => {
       const dataset = await prepareDataset(
@@ -57,10 +59,11 @@ program
         options.output,
         options.seed ?? '',
         options.catalogue,
-        options.anonymizeComponents ?? false
+        options.anonymizeComponents ?? false,
+        options.historicalCatalogue ?? []
       );
       console.log(
-        `Dataset préparé : ${dataset.rawData.repositories.length} repositories.\nDataset : ${options.output}\n${options.catalogue ? '' : `Brouillon de catalogue (créé ou conservé) : ${options.input}.catalogue.draft.yaml\nBrouillon privé à compléter ; refusé tant que draft: true.\n`}Anonymisation automatique contrôlée ; revue humaine requise avant partage.`
+        `Dataset préparé : ${dataset.rawData.repositories.length} repositories.\nDataset : ${options.output}\n${dataset.historicalComponents?.length ? `Historiques embarqués : ${dataset.historicalComponents.length}.\n` : ''}${options.catalogue || options.input.endsWith('dataset.json') ? '' : `Brouillon de catalogue (créé ou conservé) : ${options.input}.catalogue.draft.yaml\nBrouillon privé à compléter ; refusé tant que draft: true.\n`}Revue humaine requise avant partage.`
       );
     }
   );

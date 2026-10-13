@@ -856,28 +856,39 @@ function componentsExplorerContent(
   const libraries = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library]));
   const issues = snapshot.normalizedData.issues ?? [];
   // Les labels des issues sont la source de vérité pour découvrir les composants.
+  const facts = issueFacts(snapshot);
+  const factById = new Map(facts.map((fact) => [fact.id, fact]));
   // Le catalogue normalisé enrichit ces entrées, mais ne limite pas leur périmètre.
   const prefix = componentPrefix.trim().toLocaleLowerCase('fr');
-  const discovered = new Map<string, { libraryId: string; name: string; componentId?: string }>();
+  const discovered = new Map<
+    string,
+    { libraryId: string; name: string; componentId?: string; componentIds: string[] }
+  >();
   for (const issue of issues) {
     for (const label of issue.labels) {
       if (!prefix || !label.toLocaleLowerCase('fr').startsWith(prefix)) continue;
-      const name = label.slice(componentPrefix.trim().length).trim();
+      const rawName = label.slice(componentPrefix.trim().length).trim();
+      const resolved = snapshot.normalizedData.components.filter((c) =>
+        issue.componentIds.includes(c.componentId)
+      );
+      const name = resolved.find((c) => c.name === rawName || c.aliases.includes(rawName))?.name ?? rawName;
       if (!name) continue;
       const key = `${issue.libraryId}::${name.toLocaleLowerCase('fr')}`;
-      if (!discovered.has(key)) discovered.set(key, { libraryId: issue.libraryId, name });
+      if (!discovered.has(key)) discovered.set(key, { libraryId: issue.libraryId, name, componentIds: [] });
     }
   }
   for (const component of snapshot.normalizedData.components) {
     const key = `${component.libraryId}::${component.name.toLocaleLowerCase('fr')}`;
     const found = discovered.get(key);
-    if (found && (!found.componentId || component.status === 'active'))
-      found.componentId = component.componentId;
-    else if (!found)
+    if (found) {
+      found.componentIds.push(component.componentId);
+      if (!found.componentId || component.status === 'active') found.componentId = component.componentId;
+    } else if (!found)
       discovered.set(key, {
         libraryId: component.libraryId,
         name: component.name,
-        componentId: component.componentId
+        componentId: component.componentId,
+        componentIds: [component.componentId]
       });
   }
   const rows = [...discovered.values()].map((component) => {
@@ -886,19 +897,20 @@ function componentsExplorerContent(
     const related = issues.filter(
       (issue) =>
         issue.libraryId === component.libraryId &&
-        ((component.componentId && issue.componentIds.includes(component.componentId)) ||
-          issue.labels.some((label) => label.toLocaleLowerCase('fr') === matchingLabel))
+        (issue.componentIds.some((id) => component.componentIds.includes(id)) ||
+          (!component.componentId &&
+            issue.labels.some((label) => label.toLocaleLowerCase('fr') === matchingLabel)))
     );
     const audits = snapshot.normalizedData.audits.filter(
       (audit) =>
-        (component.componentId && audit.componentId === component.componentId) ||
+        component.componentIds.includes(audit.componentId) ||
         related.some((issue) => issue.issueId === audit.issueId)
     );
     const latest =
       latestCompletedAudit(audits, snapshot.normalizedData.issues ?? []) ??
       audits.find((audit) => !isCompletedAudit(audit, snapshot.normalizedData.issues ?? []));
     const items = related.map((issue) => {
-      const fact = issueFacts(snapshot).find((item) => item.id === issue.issueId)!;
+      const fact = factById.get(issue.issueId)!;
       return {
         ...fact,
         open: fact.status === 'open',
@@ -907,18 +919,31 @@ function componentsExplorerContent(
       };
     });
     const versionSummaries = (snapshot.normalizedData.componentVersions ?? [])
-      .filter((relation) => relation.componentId === component.componentId)
+      .filter((relation) => component.componentIds.includes(relation.componentId))
       .map((relation) => ({
         version:
           snapshot.normalizedData.versions?.find((version) => version.versionId === relation.versionId)
             ?.number ?? '',
         versionId: relation.versionId,
+        componentId: relation.componentId,
+        channel:
+          snapshot.normalizedData.versions?.find((version) => version.versionId === relation.versionId)
+            ?.channel ?? '',
+        publication: snapshot.normalizedData.versions?.find(
+          (version) => version.versionId === relation.versionId
+        )?.prodTag
+          ? 'PROD'
+          : 'publication non prouvée',
+        provenance: relation.provenance.sourceId ?? '',
         conformity: relation.verdict ?? 'INDETERMINE',
-        auditIds: relation.applicableAuditIds ?? []
+        auditIds: relation.applicableAuditIds ?? [],
+        auditSources: (relation.applicableAuditIds ?? []).flatMap((id) => {
+          const audit = snapshot.normalizedData.audits.find((a) => a.auditId === id);
+          return audit ? [{ id, url: factById.get(audit.issueId)?.url ?? '' }] : [];
+        })
       }))
       .sort((a, b) => a.version.localeCompare(b.version, undefined, { numeric: true }));
     const current = versionSummaries.at(-1);
-    const facts = issueFacts(snapshot);
     const auditSources = audits
       .map((audit) => ({
         id: audit.auditId,
@@ -940,6 +965,7 @@ function componentsExplorerContent(
     return {
       id: `${component.libraryId}:${component.name.toLocaleLowerCase('fr')}`,
       componentId: component.componentId,
+      componentIds: component.componentIds,
       repository: library?.repository ?? component.libraryId,
       name: component.name,
       audits: audits.length,
@@ -985,7 +1011,7 @@ function componentsExplorerContent(
             .join('')}</div><small data-component-count="${key}">0 issue</small></article>`
       )
       .join('')}</div>
-    <section class="panel issue-filters" aria-label="Filtres des composants"><div class="panel-heading"><h2>Filtres et recherche</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser</button></div><div class="issue-filter-grid"><label>Recherche<input class="search" data-component-search placeholder="Composant, repository…"></label><label>Repository<select data-component-filter="repository"><option value="">Tous</option></select></label><label>Composant<select data-component-filter="name"><option value="">Tous</option></select></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Résultat de l’audit<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Version d'audit<select data-component-filter="version"><option value="">Toutes</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" data-component-summary></p></section>
+    <section class="panel issue-filters" aria-label="Filtres des composants"><div class="panel-heading"><h2>Filtres et recherche</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser</button></div><div class="issue-filter-grid"><label>Recherche<input class="search" data-component-search placeholder="Composant, repository…"></label><label>Repository<select data-component-filter="repository"><option value="">Tous</option></select></label><label>Composant<select data-component-filter="name"><option value="">Tous</option></select></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Résultat de l’audit<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Version cible<select data-component-filter="version"><option value="">Toutes</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" data-component-summary></p></section>
     <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Résultat de l’audit · version cible', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article><script type="application/json" id="component-analysis-data">${payload}</script>
   </section>`;
 }

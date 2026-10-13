@@ -25,7 +25,7 @@ Vérifier la relation dans GitHub, le périmètre de collecte et les accès du t
 
 Une capture récente peut aussi être rejouée directement avec `pipeline --dataset data/local/mon-jeu/raw.json --output data/output/mon-jeu-local`. Le contexte enregistré fournit ses conventions et son périmètre, sans autre profil. Ce mode `local` conserve les identités réelles et les liens GitHub, ne fait aucun appel réseau et exclut la graine de la capture des sorties. Ses fichiers restent privés ; il ne remplace pas la préparation anonymisée avant partage. Un ancien RAW sans contexte doit d’abord être préparé.
 
-`dataset.json` embarque `schemaVersion: 1`, `kind` (`fixture`, démonstration synthétique `demo`, ou rejeu privé `local`), `profileId`, `config`, `catalogue` et `rawData`. Le périmètre de `config` doit correspondre exactement aux faits. Les conventions sont vérifiées avant interprétation, puis conservées avec les données ; l’environnement ne remplace pas les règles durant le rejeu.
+`dataset.json` embarque `schemaVersion: 1`, `kind` (`fixture`, démonstration synthétique `demo`, ou rejeu privé `local`), `profileId`, `config`, `catalogue`, `rawData` et, facultativement, `historicalComponents`. Le périmètre de `config` doit correspondre exactement aux faits. Les conventions sont vérifiées avant interprétation, puis conservées avec les données ; l’environnement ne remplace pas les règles durant le rejeu.
 
 Le profil livré utilise le modèle `2.4` et les règles `dq-2026.10-audit-relations`, après le parcours autonome `2.3` / `dq-2026.10-dataset-workflow`. Il désactive les inférences historiques d’audit avec `auditDetection.allowLegacyIssueTypes: false` ; `Enhancement` et `Improvement` sont des variantes de `FEATURE`. Sans cette option, les anciens profils conservent leur compatibilité historique. Les références de tests et les anciens datasets gardent leurs versions de scénario. Voir le [diagnostic de l’issue #49](issue-49-audit-diagnostic.md) pour les limites de données et le parcours de vérification.
 
@@ -56,6 +56,73 @@ npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output data
 ```
 
 Les métadonnées suivent les correspondances d’anonymisation ; les URLs de documentation et Figma sont retirées, les dates d’audit suivent le décalage de dates. Les responsables, squads, streams et tags sont pseudonymisés. Un catalogue partiel est accepté : les composants observés sans enrichissement restent inconnus et signalés en Data Quality. Les entrées de repositories hors collecte sont écartées ; aucune métadonnée n’est inventée pour compléter le catalogue.
+
+## Historique des composants par version
+
+**IMPLÉMENTÉ.** `--historical-catalogue <file...>` embarque un ou plusieurs référentiels YAML, un par dépôt, en complément du catalogue métier courant. Le fichier local peut rester dans `config/local/` : il est lu lors de la préparation puis inclus dans `dataset.json`, protégé par son manifeste. Le pipeline ne dépend ensuite ni du classeur Excel ni des fichiers locaux.
+
+Depuis une collecte :
+
+```powershell
+npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output datasets/mon-jeu-historique --historical-catalogue config/local/demo-react-historique-composants.yaml
+```
+
+Depuis une fixture déjà anonymisée, sans modifier ses faits, ses dates, ses alias, sa configuration ou son catalogue :
+
+```powershell
+npm.cmd run fixture:prepare -- --input datasets/issue-49/dataset.json --output datasets/issue-49-historique --historical-catalogue config/local/demo-react-historique-composants.yaml
+npm.cmd run fixture:validate -- --dataset datasets/issue-49-historique
+npm.cmd run pipeline -- --dataset datasets/issue-49-historique --output data/output/issue-49-historique
+```
+
+Le manifeste source est vérifié. Choisir une nouvelle destination ; aucune édition de `dataset.json` ou recalcul manuel d'empreinte n'est nécessaire. Pour une fixture existante, les options `--catalogue` et `--anonymize-components` sont refusées : elles s'appliquent à la préparation depuis un RAW. Un historique fourni remplace uniquement l'historique du même dépôt dans la nouvelle fixture. Sans nouvel historique, ceux déjà embarqués sont conservés.
+
+Le schéma YAML `schemaVersion: 1` contient `repository` (nom exact ou `owner/nom` dans les faits d'entrée), `versions` et `components`. Chaque version comporte `version` au format `M.m.r`, `channel` (`release` ou `development`) et `sourceLabel`. Chaque composant possède `name` et une observation `history` pour **chaque** version, dans l'ordre numérique : `version`, `channel`, `present`, `change`, `identity`, `historicalName`, `evidence` (cellule, symbole et valeur). Les valeurs sont `+`, `~`, `=`, `-` ou vide. Une absence est explicite ; une observation manquante, une valeur inconnue ou une identité ambiguë sont refusées. Les cellules vides ne s'appliquent qu'au périmètre déclaré, pas aux composants exclus de la sélection.
+
+Les règles D-217 à D-219 conservent les identités lors d'un renommage déclaré et les séparent après suppression puis réapparition. La fusion Checkbox est représentée par une présence si au moins une ligne source est présente. L'ancien Table reste RMCTable ; le nouveau Table possède une autre identité à partir de 1.7.0. Le nom historique et la milestone cible attribuent les audits à leur identité. Sans version permettant de départager les identités, aucun choix courant n'est fabriqué. Pour une issue enfant sans milestone, celle de son parent dans le dépôt est utilisée.
+
+La présence démontrée permet les calculs et l'héritage de conformité existants (D-220 à D-228). Une modification technique `~` ne constitue pas à elle seule un audit ni une invalidation du verdict acquis. Les observations de développement ne créent ni tag PROD ni date de publication. Les versions au-delà de `package.json` restent exclues selon les règles existantes. Le dashboard propose « Qualité par version » dans la page Composants, avec verdict calculé, audits justificatifs et cellules de présence ; le résultat propre à l'audit reste distinct de cette conformité héritée.
+
+Les chemins privés du classeur et de la sélection ne sont pas embarqués. Les identités sont pseudonymisées ; `--anonymize-components` applique aussi les correspondances aux noms historiques lors de la préparation d'un RAW. Pour enrichir une fixture déjà pseudonymisée, fournir un historique utilisant **ses** noms et ses alias. La revue avant partage reste nécessaire. Les avertissements de catalogue GitHub absent restent factuels : un historique local ne prétend pas qu'un fichier existe dans le dépôt, ni qu'il décrit les composants hors de sa sélection.
+
+Les observations locales validées priment sur les catalogues GitHub pour les noms sélectionnés et leurs noms historiques ; les autres composants conservent leurs preuves GitHub. Le diagnostic de catalogue absent indique le nombre de présences démontrées localement lorsqu'elles existent. Si une nouvelle collecte possède un tag PROD pour une colonne encore décrite en développement, l'import demande d'actualiser le référentiel : le contenu d'une branche de mise au point ne prouve pas celui de sa publication finale.
+
+### Cas concret : le dataset de l'issue #49
+
+Les chemins suivants sont relatifs à la racine du projet. Ils correspondent au jeu local enrichi pendant l'intégration :
+
+| Élément                       | Chemin                                                                                    | Utilisation                                                                           |
+| ----------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Fixture source et manifeste   | `datasets/issue-49/dataset.json`, `datasets/issue-49/manifest.json`                       | Entrée conservée, déjà anonymisée ; configuration, catalogue et RAW embarqués         |
+| Historique à intégrer         | `config/local/demo-react-historique-composants.yaml`                                      | Référentiel des 83 éléments sélectionnés, avec les identités et présences par version |
+| Fixture enrichie et manifeste | `datasets/issue-49-historique/dataset.json`, `datasets/issue-49-historique/manifest.json` | Jeu autonome **déjà créé**, incluant `historicalComponents`                           |
+| Dashboard enrichi             | `data/output/issue-49-historique/dashboard/index.html`                                    | Résultat **déjà généré** depuis la fixture enrichie                                   |
+| Attendus métier               | `datasets/issue-49/attendus-issue-49.md`                                                  | Notes de vérification humaine ; non lues par le pipeline                              |
+
+**Pour utiliser le résultat maintenant**, il n'est pas nécessaire de refaire la préparation :
+
+```powershell
+npm.cmd run fixture:validate -- --dataset datasets/issue-49-historique
+npm.cmd run pipeline -- --dataset datasets/issue-49-historique --output data/output/issue-49-historique
+npm.cmd run dashboard:serve -- data/output/issue-49-historique/dashboard
+```
+
+Ouvrir **http://127.0.0.1:4174/**. Le serveur se ferme avec `Ctrl+C`. Dans la page **Composants**, rechercher **Tag** puis ouvrir **Qualité par version** : le jeu vérifié donne **Conforme** en **1.7.1** et en **1.8.0**, cette dernière indiquée **Développement**. Les liens affichent les audits justificatifs ; les références `AS484` et `AT484` identifient les cellules de présence du classeur. Le résultat propre à l'audit reste présenté dans sa colonne distincte.
+
+**Si le fichier historique change**, refaire la préparation vers une nouvelle destination : le pipeline lit l'historique embarqué dans le dataset, pas le YAML de `config/local/` à chaque exécution.
+
+```powershell
+npm.cmd run fixture:prepare -- --input datasets/issue-49/dataset.json --output datasets/issue-49-historique-v2 --historical-catalogue config/local/demo-react-historique-composants.yaml
+npm.cmd run fixture:validate -- --dataset datasets/issue-49-historique-v2
+npm.cmd run pipeline -- --dataset datasets/issue-49-historique-v2 --output data/output/issue-49-historique-v2
+npm.cmd run dashboard:serve -- data/output/issue-49-historique-v2/dashboard
+```
+
+Choisir un autre suffixe si `issue-49-historique-v2` existe déjà. Pour conserver d'autres historiques ajoutés depuis, utiliser plutôt `datasets/issue-49-historique/dataset.json` comme entrée : seul l'historique du dépôt fourni sera remplacé. Aucun `--seed`, `--catalogue` ou `--anonymize-components` n'est nécessaire pour enrichir cette fixture. Le catalogue courant et la configuration embarqués sont conservés. Les CSV de sélection, le fichier d'identités `.draft.yaml` et le classeur Excel ont servi à constituer le référentiel ; ils ne sont pas nécessaires à son import ni au rejeu.
+
+Ne pas copier manuellement `historicalComponents` dans la fixture source : cela invaliderait son manifeste. Rejouer `datasets/issue-49` ou consulter `data/output/issue-49` utilise toujours l'ancien jeu, sans cet enrichissement. Les notes d'attendus restent dans leur dossier source ; elles ne sont pas automatiquement copiées.
+
+L'historique ne modifie ni les milestones ni les relations GitHub. Ainsi, l'Epic dont la milestone est `1.9.0` reste une issue d'activité ; il ne devient pas un audit. Pour ce dépôt dont le package est `1.8.0`, les analyses de qualité et d'accessibilité des versions futures restent exclues selon le contrat existant. Les 247 erreurs et 2 781 avertissements Data Quality observés sur cette capture sont identiques avant et après enrichissement : il faut les examiner séparément, sans les confondre avec la conformité démontrée de Tag.
 
 ## Anonymisation
 

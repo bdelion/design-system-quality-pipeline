@@ -21,7 +21,7 @@ import { readdir, lstat } from 'node:fs/promises';
 
 /** Rejoue un jeu autonome hors réseau et écrit uniquement dans sa destination explicite. */
 export async function runPipeline(datasetPath: string, outputPath: string): Promise<Snapshot> {
-  const { config, catalogue, rawData: raw } = await loadDataset(datasetPath);
+  const { config, catalogue, rawData: raw, historicalComponents } = await loadDataset(datasetPath);
   const inputDirectory = (await lstat(datasetPath)).isDirectory()
     ? resolve(datasetPath)
     : dirname(resolve(datasetPath));
@@ -37,7 +37,8 @@ export async function runPipeline(datasetPath: string, outputPath: string): Prom
     config.github,
     catalogue ?? undefined,
     config.auditVersion,
-    config.githubUrl
+    config.githubUrl,
+    historicalComponents
   );
   applyComponentVersionVerdicts(normalized);
   const qualityIssues = evaluateDataQuality(raw, normalized, config.github);

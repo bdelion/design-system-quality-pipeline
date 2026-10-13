@@ -111,7 +111,13 @@ export function latestComponentVersion(
 ): ComponentVersion | undefined {
   const versions = new Map((data.versions ?? []).map((version) => [version.versionId, version]));
   return (data.componentVersions ?? [])
-    .filter((relation) => relation.componentId === componentId && versions.has(relation.versionId))
+    .filter(
+      (relation) =>
+        relation.componentId === componentId &&
+        versions.has(relation.versionId) &&
+        versions.get(relation.versionId)!.channel !== 'development' &&
+        (!versions.get(relation.versionId)!.channel || Boolean(versions.get(relation.versionId)!.prodTag))
+    )
     .sort((a, b) => compareProdVersions(versions.get(a.versionId)!.number, versions.get(b.versionId)!.number))
     .at(-1);
 }
