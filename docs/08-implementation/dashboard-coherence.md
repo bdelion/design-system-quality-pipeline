@@ -4,6 +4,8 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+Les répartitions de critères et de composants sur la page Accessibilité sont triées par défaut par intitulé croissant (locale française, nombres naturels). Chacune propose un choix indépendant : intitulé ou nombre, croissant ou décroissant. Les égalités de nombre sont départagées par intitulé croissant. Le choix reste conservé après filtrage et s’applique aussi aux détails ; l’ordre métier des criticités reste conservé. Le tableau « Composants par repository » s’ouvre trié par repository, puis composant, indépendamment de l’ordre des données (#65). Les tris manuels restent disponibles.
+
 - `src/domain/business.ts` définit la classification exclusive, le statut Project effectif, le traitement `Done ET Closed` et le cycle de vie des audits.
 - `src/analytics/issues.ts` projette les mêmes faits sur toutes les issues, indépendamment de leur type. Les labels multi-composants ne multiplient pas leur poids dans les KPI.
 - `src/analytics/statistics.js` est partagé sans duplication entre Analytics, le générateur et les deux explorateurs. Les populations réelles et estimées possèdent leurs propres effectifs. Une population vide donne une valeur inconnue, pas zéro.

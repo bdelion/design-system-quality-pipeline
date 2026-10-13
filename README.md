@@ -4,6 +4,8 @@ Collecter des repositories GitHub, préparer un dataset autonome et rejouer son 
 
 ## Démarrer sans GitHub
 
+Les [conventions d’affichage du dashboard](docs/08-implementation/dashboard-coherence.md#référentiel-commun) précisent notamment les tris des tableaux et répartitions.
+
 Node.js >= 22.15.0, référence 22.23.3 dans `.nvmrc`.
 
 ```powershell

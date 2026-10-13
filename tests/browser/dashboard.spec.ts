@@ -407,10 +407,85 @@ test('les graphiques accessibilité restituent les agrégats et suivent les filt
     await expect(page.locator('[data-distribution="category"] .distribution-row')).toHaveCount(
       Object.keys(summary.categories).length
     );
+    for (const dimension of ['category', 'component']) {
+      const values = await page
+        .locator(`[data-distribution="${dimension}"] .distribution-label`)
+        .allTextContents();
+      expect(values).toEqual([...values].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true })));
+    }
   }
   await page.goto('/accessibility.html?category=unknown');
   await expect(page.locator('[data-distribution]')).toHaveCount(0);
   await expect(page.locator('[data-workspace-breakdowns]')).toContainText('indisponibles');
+});
+
+test('tris indépendants des répartitions : intitulés, nombres, égalités et conservation au filtrage', async ({
+  page
+}) => {
+  await page.route('**/accessibility.html', async (route) => {
+    const response = await route.fetch();
+    const html = (await response.text()).replace(
+      /(<script type="application\/json" id="workspace-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => {
+        const model = JSON.parse(content);
+        for (const scope of model.scopes) {
+          scope.summary.categories = { Zebra: 1, Beta: 2, Alpha: 2 };
+          scope.summary.byComponent = { Zebra: 1, Beta: 2, Alpha: 2 };
+        }
+        return start + JSON.stringify(model) + end;
+      }
+    );
+    await route.fulfill({ response, body: html });
+  });
+  await page.goto('/accessibility.html');
+  const category = page.locator('[data-distribution-sort="category"]');
+  const labels = page.locator('[data-distribution="category"] .distribution-label');
+  await expect(labels).toHaveText(['Alpha', 'Beta', 'Zebra']);
+  await category.selectOption('label-desc');
+  await expect(labels).toHaveText(['Zebra', 'Beta', 'Alpha']);
+  await expect(category).toBeFocused();
+  await category.selectOption('count-asc');
+  await expect(labels).toHaveText(['Zebra', 'Alpha', 'Beta']);
+  await category.selectOption('count-desc');
+  await expect(labels).toHaveText(['Alpha', 'Beta', 'Zebra']);
+  await expect(page.locator('[data-distribution-sort="component"]')).toHaveValue('label-asc');
+  await page.locator('[data-distribution-sort="component"]').selectOption('label-desc');
+  await page.locator('[data-context-filter="repository"]').selectOption('acme/ds-react');
+  await expect(category).toHaveValue('count-desc');
+  await expect(labels).toHaveText(['Alpha', 'Beta', 'Zebra']);
+  await expect(page.locator('[data-distribution="component"] .distribution-label')).toHaveText([
+    'Zebra',
+    'Beta',
+    'Alpha'
+  ]);
+  await expect(page.locator('[data-distribution="criticality"] select')).toHaveCount(0);
+});
+
+test('issue #65 : ordre initial repository puis composant indépendant de l’ordre du payload', async ({
+  page
+}) => {
+  await page.route('**/components.html', async (route) => {
+    const response = await route.fetch();
+    const html = (await response.text()).replace(
+      /(<script type="application\/json" id="component-analysis-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => start + JSON.stringify(JSON.parse(content).reverse()) + end
+    );
+    await route.fulfill({ response, body: html });
+  });
+  await page.goto('/components.html');
+  const rows = await page
+    .locator('[data-component-rows] tr')
+    .evaluateAll((nodes) =>
+      nodes.map((node) => [node.children[1]!.textContent!.trim(), node.children[2]!.textContent!.trim()])
+    );
+  expect(rows.length).toBeGreaterThan(1);
+  expect(rows).toEqual(
+    [...rows].sort(
+      (a, b) =>
+        a[0]!.localeCompare(b[0]!, 'fr', { numeric: true }) ||
+        a[1]!.localeCompare(b[1]!, 'fr', { numeric: true })
+    )
+  );
 });
 
 test('cartes compactes et infobulles utilisables au clavier et sur mobile', async ({ page }, testInfo) => {
