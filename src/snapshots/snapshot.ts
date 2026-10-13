@@ -1,11 +1,31 @@
+/**
+ * @module snapshots.snapshot
+ * Assemble un snapshot daté à partir des données, contrôles et analyses.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { randomUUID } from 'node:crypto';
 import type { Analytics, DataQualityIssue, NormalizedData, RawDataset, Snapshot } from '../domain/types.js';
+import { buildVersionHistoricalStates } from './history.js';
 
 /** Assemble un snapshot immuable et calcule sa fiabilité globale. */
-export function buildSnapshot(rawData: RawDataset, normalizedData: NormalizedData, dqIssues: DataQualityIssue[], analytics: Analytics, modelVersion: string, ruleVersion: string, scope: string): Snapshot {
-  const capturedAt = new Date().toISOString();
+export function buildSnapshot(
+  rawData: RawDataset,
+  normalizedData: NormalizedData,
+  dqIssues: DataQualityIssue[],
+  analytics: Analytics,
+  modelVersion: string,
+  ruleVersion: string,
+  scope: string,
+  capturedAt: string = new Date().toISOString(),
+  previousSnapshot?: Snapshot
+): Snapshot {
   // Une alerte, y compris un simple avertissement, rend le snapshot partiel.
-  const reliability = dqIssues.some((issue) => issue.severity === 'ERROR') ? 'partial' : dqIssues.length > 0 ? 'partial' : 'reliable';
+  const reliability = dqIssues.some((issue) => issue.severity === 'ERROR')
+    ? 'partial'
+    : dqIssues.length > 0
+      ? 'partial'
+      : 'reliable';
   return {
     snapshotId: `snapshot-${capturedAt.replace(/[-:.TZ]/g, '')}-${randomUUID().slice(0, 8)}`,
     capturedAt,
@@ -23,6 +43,18 @@ export function buildSnapshot(rawData: RawDataset, normalizedData: NormalizedDat
     analytics: structuredClone(analytics),
     ruleVersion,
     modelVersion,
-    reliability
+    reliability,
+    historicalStates: buildVersionHistoricalStates(
+      normalizedData,
+      previousSnapshot &&
+        previousSnapshot.scope === scope &&
+        previousSnapshot.modelVersion === modelVersion &&
+        previousSnapshot.ruleVersion === ruleVersion &&
+        Date.parse(previousSnapshot.capturedAt) < Date.parse(capturedAt)
+        ? (previousSnapshot.historicalStates?.filter(
+            (state) => Date.parse(state.releasedAt) <= Date.parse(previousSnapshot.capturedAt)
+          ) ?? [])
+        : []
+    )
   };
 }

@@ -1,3 +1,9 @@
+/**
+ * @module anonymization.sanitize
+ * Nettoie les champs textuels et recherche les chaînes potentiellement identifiantes.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 const EMAIL = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
 const GITHUB_TOKEN = /(?:gh[pousr]|github_pat)_[A-Za-z0-9_]{20,}/g;
 const URL = /https?:\/\/[^\s)]+/gi;
@@ -5,9 +11,24 @@ const BEARER = /Bearer\s+[A-Za-z0-9._-]+/gi;
 const PHONE = /(?:\+?\d[\d .-]{7,}\d)/g;
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:?\d{2})$/;
 
-export interface SanitizeOptions { strictText: boolean; preserveComponentNames: boolean; }
+/**
+ * Définit le contrat de données « SanitizeOptions » utilisé par le pipeline.
+ */
+export interface SanitizeOptions {
+  strictText: boolean;
+  preserveComponentNames: boolean;
+}
 
-function reset(re: RegExp): RegExp { re.lastIndex = 0; return re; }
+/**
+ * Réalise le traitement « reset » dans le pipeline de qualité.
+ *
+ * @param re - Valeur de « re » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
+function reset(re: RegExp): RegExp {
+  re.lastIndex = 0;
+  return re;
+}
 
 /**
  * Phone detection is intentionally disabled for ISO timestamps. The generic
@@ -15,13 +36,20 @@ function reset(re: RegExp): RegExp { re.lastIndex = 0; return re; }
  * Free-form text remains fully scanned for phone-like values.
  */
 function containsPhone(value: string): boolean {
-  if (ISO_TIMESTAMP.test(value.trim())) return false;
+  if (
+    ISO_TIMESTAMP.test(value.trim()) ||
+    (/^\d{4}-\d{2}-\d{2}$/.test(value.trim()) && Number.isFinite(Date.parse(value)))
+  )
+    return false;
   return reset(PHONE).test(value);
 }
 
+/**
+ * Nettoie un texte en respectant les options de conservation.
+ */
 export function sanitizeText(value: string, options: SanitizeOptions): { value: string; changed: boolean } {
   if (options.strictText) return { value: '[anonymized]', changed: value !== '[anonymized]' };
-  let next = value
+  const next = value
     .replace(reset(GITHUB_TOKEN), '[token-redacted]')
     .replace(reset(BEARER), 'Bearer [redacted]')
     .replace(reset(EMAIL), '[email-redacted]')
@@ -30,6 +58,9 @@ export function sanitizeText(value: string, options: SanitizeOptions): { value: 
   return { value: next, changed: next !== value };
 }
 
+/**
+ * Repère les motifs textuels potentiellement sensibles.
+ */
 export function findSuspiciousStrings(value: string): string[] {
   const findings: string[] = [];
   if (reset(EMAIL).test(value)) findings.push('email');

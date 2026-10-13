@@ -1,16 +1,44 @@
-import type { Audit, Anomaly, Component, Library, PullRequest, Snapshot } from '../domain/types.js';
+/**
+ * @module snapshots.diff
+ * Compare deux snapshots pour identifier les changements d’entités.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
 
+import { issueBusinessState } from '../domain/business.js';
+import { businessTransitions } from './transitions.js';
+import type { BusinessTransition } from '../domain/types.js';
+import type {
+  Audit,
+  Anomaly,
+  Component,
+  ComponentVersion,
+  Library,
+  Issue,
+  PullRequest,
+  Snapshot,
+  Version
+} from '../domain/types.js';
+
+/**
+ * Définit le contrat de données « EntityDelta » utilisé par le pipeline.
+ */
 export interface EntityDelta<TId extends string = string> {
   added: TId[];
   removed: TId[];
 }
 
+/**
+ * Définit le contrat de données « AnomalyTransition » utilisé par le pipeline.
+ */
 export interface AnomalyTransition {
   anomalyId: string;
   from: Anomaly['status'];
   to: Anomaly['status'];
 }
 
+/**
+ * Définit le contrat de données « SnapshotDiff » utilisé par le pipeline.
+ */
 export interface SnapshotDiff {
   fromSnapshotId: string;
   toSnapshotId: string;
@@ -21,18 +49,41 @@ export interface SnapshotDiff {
   components: EntityDelta;
   audits: EntityDelta;
   anomalies: EntityDelta;
+  issues: EntityDelta;
+  issuesCreated: string[];
+  issuesTreated: string[];
+  issuesReopened: string[];
+  issuesCancelled: string[];
+  versions: EntityDelta;
+  componentVersions: EntityDelta;
   pullRequests: EntityDelta;
   anomalyTransitions: AnomalyTransition[];
   anomaliesCreated: string[];
   anomaliesCorrected: string[];
   anomaliesReopened: string[];
   anomaliesCancelled: string[];
+  businessTransitions: BusinessTransition[];
 }
 
+/**
+ * Réalise le traitement « ids » dans le pipeline de qualité.
+ *
+ * @param items - Valeur de « items » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function ids<T>(items: T[], id: (item: T) => string): Set<string> {
   return new Set(items.map(id));
 }
 
+/**
+ * Réalise le traitement « delta » dans le pipeline de qualité.
+ *
+ * @param before - Valeur de « before » utilisée par ce traitement.
+ * @param after - Valeur de « after » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function delta<T>(before: T[], after: T[], id: (item: T) => string): EntityDelta {
   const beforeIds = ids(before, id);
   const afterIds = ids(after, id);
@@ -42,13 +93,56 @@ function delta<T>(before: T[], after: T[], id: (item: T) => string): EntityDelta
   };
 }
 
+/**
+ * Réalise le traitement « by id » dans le pipeline de qualité.
+ *
+ * @param items - Valeur de « items » utilisée par ce traitement.
+ * @param id - Valeur de « id » utilisée par ce traitement.
+ * @returns Résultat du traitement.
+ */
 function byId<T>(items: T[], id: (item: T) => string): Map<string, T> {
   return new Map(items.map((item) => [id(item), item]));
 }
 
+/** Détermine le statut métier observable d’une issue à la date du snapshot. */
+function issueState(issue: Issue): 'open' | 'treated' | 'cancelled' {
+  return issueBusinessState(issue);
+}
+
 /** Compare deux snapshots et produit uniquement des faits observables entre les deux états. */
 export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
-  if (before.capturedAt >= after.capturedAt) throw new Error('Snapshot order is invalid: before must precede after.');
+  if (
+    before.scope !== after.scope ||
+    before.modelVersion !== after.modelVersion ||
+    before.ruleVersion !== after.ruleVersion
+  )
+    throw new Error('Snapshots incompatibles : périmètre, modèle ou règles différents.');
+  if (
+    !Number.isFinite(Date.parse(before.capturedAt)) ||
+    !Number.isFinite(Date.parse(after.capturedAt)) ||
+    Date.parse(before.capturedAt) >= Date.parse(after.capturedAt)
+  )
+    throw new Error('Snapshot order is invalid: before must precede after.');
+
+  const previousIssues = byId(before.normalizedData.issues ?? [], (item) => item.issueId);
+  const currentIssues = byId(after.normalizedData.issues ?? [], (item) => item.issueId);
+  const issuesTreated: string[] = [];
+  const issuesReopened: string[] = [];
+  const issuesCancelled: string[] = [];
+  for (const [issueId, current] of currentIssues) {
+    const previous = previousIssues.get(issueId);
+    if (!previous) continue;
+    const from = issueState(previous);
+    const to = issueState(current);
+    if (from !== 'treated' && to === 'treated') issuesTreated.push(issueId);
+    if (from === 'treated' && to === 'open') issuesReopened.push(issueId);
+    if (from !== 'cancelled' && to === 'cancelled') issuesCancelled.push(issueId);
+  }
+  const issueDelta = delta(
+    before.normalizedData.issues ?? [],
+    after.normalizedData.issues ?? [],
+    (item) => item.issueId
+  );
 
   const previousAnomalies = byId(before.normalizedData.anomalies, (item) => item.anomalyId);
   const currentAnomalies = byId(after.normalizedData.anomalies, (item) => item.anomalyId);
@@ -63,12 +157,16 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     if (previous.status !== current.status) {
       anomalyTransitions.push({ anomalyId, from: previous.status, to: current.status });
     }
-    if (!previous.firstDoneAt && current.firstDoneAt) anomaliesCorrected.push(anomalyId);
+    if (!previous.correctedAt && current.correctedAt) anomaliesCorrected.push(anomalyId);
     if (previous.status !== 'reopened' && current.status === 'reopened') anomaliesReopened.push(anomalyId);
     if (!previous.cancelled && current.cancelled) anomaliesCancelled.push(anomalyId);
   }
 
-  const anomaliesCreated = delta(before.normalizedData.anomalies, after.normalizedData.anomalies, (item) => item.anomalyId).added;
+  const anomaliesCreated = delta(
+    before.normalizedData.anomalies,
+    after.normalizedData.anomalies,
+    (item) => item.anomalyId
+  ).added;
 
   return {
     fromSnapshotId: before.snapshotId,
@@ -76,15 +174,47 @@ export function diffSnapshots(before: Snapshot, after: Snapshot): SnapshotDiff {
     fromCapturedAt: before.capturedAt,
     toCapturedAt: after.capturedAt,
     period: { from: before.capturedAt, to: after.capturedAt },
-    libraries: delta(before.normalizedData.libraries, after.normalizedData.libraries, (item: Library) => item.libraryId),
-    components: delta(before.normalizedData.components, after.normalizedData.components, (item: Component) => item.componentId),
+    issues: issueDelta,
+    issuesCreated: issueDelta.added,
+    issuesTreated,
+    issuesReopened,
+    issuesCancelled,
+    libraries: delta(
+      before.normalizedData.libraries,
+      after.normalizedData.libraries,
+      (item: Library) => item.libraryId
+    ),
+    components: delta(
+      before.normalizedData.components,
+      after.normalizedData.components,
+      (item: Component) => item.componentId
+    ),
     audits: delta(before.normalizedData.audits, after.normalizedData.audits, (item: Audit) => item.auditId),
-    anomalies: delta(before.normalizedData.anomalies, after.normalizedData.anomalies, (item: Anomaly) => item.anomalyId),
-    pullRequests: delta(before.normalizedData.pullRequests, after.normalizedData.pullRequests, (item: PullRequest) => item.pullRequestId),
+    versions: delta(
+      before.normalizedData.versions ?? [],
+      after.normalizedData.versions ?? [],
+      (item: Version) => item.versionId
+    ),
+    componentVersions: delta(
+      before.normalizedData.componentVersions ?? [],
+      after.normalizedData.componentVersions ?? [],
+      (item: ComponentVersion) => item.componentVersionId
+    ),
+    anomalies: delta(
+      before.normalizedData.anomalies,
+      after.normalizedData.anomalies,
+      (item: Anomaly) => item.anomalyId
+    ),
+    pullRequests: delta(
+      before.normalizedData.pullRequests,
+      after.normalizedData.pullRequests,
+      (item: PullRequest) => item.pullRequestId
+    ),
     anomalyTransitions,
     anomaliesCreated,
     anomaliesCorrected,
     anomaliesReopened,
-    anomaliesCancelled
+    anomaliesCancelled,
+    businessTransitions: businessTransitions(before, after)
   };
 }

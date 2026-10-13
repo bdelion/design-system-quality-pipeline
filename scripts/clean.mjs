@@ -1,6 +1,7 @@
+/** Nettoie uniquement le build ; conserve les captures, datasets et historiques personnels. */
 import { rm } from 'node:fs/promises';
 
-await Promise.all([
-  rm('dist', { recursive: true, force: true }),
-  rm('data/runs', { recursive: true, force: true })
-]);
+/** Répertoire exclusivement produit par la compilation. */
+const generatedPaths = ['dist'];
+
+await Promise.all(generatedPaths.map((path) => rm(path, { recursive: true, force: true })));

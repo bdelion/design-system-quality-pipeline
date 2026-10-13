@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title>ArchInsight</title>
-  <rect width="64" height="64" rx="14" fill="#23c7f3"/>
-  <path d="M16 22h32v8H24v6h18v8H24v6h24v8H16z" fill="#071a33"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="10" fill="#27509B"/><path d="M12 32V22m12 10V14m12 18V19" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="36" cy="12" r="3" fill="#FCE500"/></svg>

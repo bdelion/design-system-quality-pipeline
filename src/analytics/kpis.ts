@@ -1,3 +1,14 @@
+import { workspaceAnalytics } from './workspaces.js';
+import { auditCampaigns } from './audit-campaigns.js';
+import { teamActivitySummary } from './team-activity.js';
+import { repositoryActivity } from './repository-activity.js';
+import type { AccessibilityRecognition } from '../domain/accessibility.js';
+/**
+ * @module analytics.kpis
+ * Assemble les indicateurs V1 à partir des données normalisées et de Data Quality.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import type { Analytics, DataQualityIssue, NormalizedData } from '../domain/types.js';
 import { calculateMetrics } from './metrics.js';
 
@@ -10,10 +21,33 @@ import { calculateMetrics } from './metrics.js';
  * concurrentes d'un même indicateur. Elles sont conservées temporairement
  * pour les consommateurs legacy et pourront être supprimées dans une version
  * majeure après migration de ces consommateurs.
+ *
+ * @param data - Modèle métier normalisé.
+ * @param dqIssues - Diagnostics de qualité qui influencent la fiabilité.
+ * @param recognition - Conventions de qualification accessibilité.
+ * @param catalogueAvailable - Présence d’un catalogue de référence fourni, distinct d’un inventaire absent.
+ * @returns Métriques de référence et projections de compatibilité legacy.
  */
-export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]): Analytics {
-  const metrics = calculateMetrics(data, dqIssues);
+export function calculateKpis(
+  data: NormalizedData,
+  dqIssues: DataQualityIssue[],
+  recognition: AccessibilityRecognition = {},
+  catalogueAvailable = true
+): Analytics {
+  const metrics = calculateMetrics(data, dqIssues, catalogueAvailable);
+  /**
+   * Réalise le traitement « metric » dans le pipeline de qualité.
+   *
+   * @param id - Valeur de « id » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
   const metric = (id: string) => metrics[id];
+  /**
+   * Réalise le traitement « as legacy » dans le pipeline de qualité.
+   *
+   * @param id - Valeur de « id » utilisée par ce traitement.
+   * @returns Résultat du traitement.
+   */
   const asLegacy = (id: string) => {
     const value = metric(id);
     if (!value) throw new Error(`Missing V2 metric: ${id}`);
@@ -28,12 +62,19 @@ export function calculateKpis(data: NormalizedData, dqIssues: DataQualityIssue[]
   };
 
   return {
+    auditCampaigns: auditCampaigns(data, dqIssues),
+    teamActivity: teamActivitySummary(data),
+    repositoryActivity: repositoryActivity(data, dqIssues),
+    workspaces: workspaceAnalytics(data, dqIssues, recognition),
     anomaliesDeclared: asLegacy('anomaly.total'),
     anomaliesCorrected: asLegacy('anomaly.correctedEver'),
     openAnomalies: asLegacy('anomaly.open'),
-    anomaliesByCriticality: Object.fromEntries(['blocking', 'major', 'minor'].map((criticality) => [
-      criticality, metric(`anomaly.byCriticality.${criticality}`)?.value ?? 'unknown'
-    ])),
+    anomaliesByCriticality: Object.fromEntries(
+      ['blocking', 'major', 'minor'].map((criticality) => [
+        criticality,
+        metric(`anomaly.byCriticality.${criticality}`)?.value ?? 'unknown'
+      ])
+    ),
     anomaliesByCategory: Object.fromEntries(
       Object.entries(metrics)
         .filter(([id]) => id.startsWith('anomaly.byCategory.'))
