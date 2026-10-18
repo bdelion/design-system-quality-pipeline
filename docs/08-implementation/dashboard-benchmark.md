@@ -1,0 +1,71 @@
+# Benchmark synthétique du dashboard (#81)
+
+## Statut et périmètre
+
+**IMPLÉMENTÉ** : générateur `dashboard-load-v1` et protocole `dashboard-benchmark-v1`, sans collecteur GitHub, RAW interne, token ni identité réelle. Les noms `benchmark/repo-N` et liens `example.invalid` sont fictifs. Les diagnostics `BENCH-SYNTHETIC` chargent les vues : ce ne sont pas des constats du moteur DQ. Aucune décision métier, notamment D-047, n'est modifiée.
+
+| Scénario  | Dépôts | Issues |    PR | Component × Version | Diagnostics |
+| --------- | -----: | -----: | ----: | ------------------: | ----------: |
+| `control` |      1 |     24 |    18 |                  12 |          30 |
+| `load`    |      3 |  1 800 | 1 500 |               2 300 |       3 000 |
+
+Graine par défaut : `81`. Les dates sont fixes ; l'identifiant aléatoire du snapshot est remplacé uniquement dans le générateur de test. Relations, présences, audits et métriques passent par les couches de production. Les diagnostics sont injectés explicitement, indépendamment des erreurs que pourrait trouver le moteur DQ sur ce jeu artificiel. Le rapport enregistre volumes obtenus et empreinte SHA-256 de la capture.
+
+## Rejouer localement
+
+Node 22.23.3, dépendances verrouillées par `package-lock.json`, Edge installé sous Windows ; sous Linux installer Chromium avec `npx playwright install chromium`. La commande ne télécharge pas le navigateur.
+
+```powershell
+npm.cmd ci
+New-Item -ItemType Directory -Force data/output/benchmarks | Out-Null
+npm.cmd run benchmark:dashboard -- --scenario control --seed 81 --runs 3 --output data/output/benchmarks/control-before --screenshots
+npm.cmd run benchmark:dashboard -- --scenario load --seed 81 --runs 3 --output data/output/benchmarks/load-before
+```
+
+Lancer successivement, autres tâches lourdes arrêtées. Le parent doit exister ; une sortie existante est refusée. Choisir un nom neuf à chaque essai. HTML et captures restent sous `data/output/`, ignoré par Git. La charge peut demander plusieurs minutes, beaucoup de mémoire et plusieurs centaines de Mo de disque. Chaque génération utilise un processus neuf pour éliminer les caches et allocations des passages précédents. Aucun argument ne permet de fournir un dataset privé.
+
+Le serveur écoute `127.0.0.1` uniquement. Toute requête navigateur vers une autre origine est bloquée et invalide le passage. Aucun clic sur les liens des entités n'est effectué. Les erreurs JavaScript et réponses HTTP en erreur invalident également le passage.
+
+## Définitions des mesures
+
+`report.json` contient mesures brutes, empreintes et conditions ; `report.md` présente un tableau par page. Les dix pages HTML sont découvertes et triées.
+
+- **Préparation** : normalisation/Analytics/snapshot avant génération, valeur descriptive de la chauffe.
+- **Génération** : durée de `generateDashboard`, hors préparation, démarrage du processus, lecture et mesure des tailles. Une chauffe puis au moins trois passages mesurés, processus neufs ; capture et empreintes des pages doivent être identiques.
+- **Navigation** : début de `goto` jusqu'à `DOMContentLoaded`.
+- **Résultat disponible** : même début jusqu'à `load`, titre principal visible, polices prêtes et deux opportunités de frame. Ce n'est pas une preuve d'interactivité complète ni d'absence de tâche longue. Une optimisation asynchrone exige un état prêt observable ou une évolution du protocole à rejouer sur les deux révisions.
+- **Capture** : optionnelle, viewport seulement, passage supplémentaire hors séries temporelles.
+
+Conditions : PC headless 1 440 × 900, locale `fr-FR`, UTC, un worker, contexte neuf, service workers bloqués, HTTP sans cache ni compression, sans bridage CPU/réseau. Versions Node/navigateur, OS, CPU, mémoire, révision Git et passages sont consignés. Le système n'est pas isolé : les temps décrivent la machine, sans garantie de performance. Séries brutes, médiane, min/max, quartiles interpolés et écart interquartile (IQR) sont conservés.
+
+Les octets HTML sont ceux des fichiers UTF-8 non compressés. Le JSON embarqué (snapshot et scripts `application/json`) est **déjà inclus** dans le HTML. Les payloads sont identifiés et hachés ; les copies exactes sont comptées au sein des pages et entre pages. Ce n'est pas une mesure de recouvrement sémantique RAW/normalisé. Les lignes initiales sont les `tr` des `tbody` du fichier HTML ; lignes rendues et visibles sont mesurées après disponibilité. Les nœuds DOM incluent document, éléments, textes et commentaires ; les éléments sont aussi comptés séparément. Le contenu d'une chaîne JSON n'est pas du DOM.
+
+## Budgets et comparaison avant/après
+
+**VALIDÉ PAR L'UTILISATEUR LE 18/10/2026** : « Alerte dès la moindre augmentation », soit **0 % de croissance**, par page sur HTML/JSON, lignes initiales/rendues et nœuds DOM, face à une baseline synthétique compatible. Le choix est enregistré dans `config/benchmark-budgets.json`. Une diminution est permise. Une augmentation attendue pour une fonctionnalité exige une revue explicite et une nouvelle baseline ; ne pas la régénérer silencieusement pour contourner un échec.
+
+**PROPOSITION NON VALIDÉE** : accueil < 1 Mo sur la charge. La baseline actuelle empêche les régressions ; elle n'est pas un niveau de performance jugé satisfaisant. **Aucun budget temporel** n'est activé.
+
+```powershell
+npm.cmd run benchmark:dashboard -- --scenario load --seed 81 --runs 3 --output data/output/benchmarks/load-after --compare data/output/benchmarks/load-before/report.json --budgets config/benchmark-budgets.json
+```
+
+`--compare` rapporte les deltas après − avant ; `--budgets` fait échouer la commande si le budget est dépassé. Un budget `proposed` est refusé. Protocole, empreinte de capture, navigateur, viewport et pages doivent être identiques. La révision Git peut différer pour comparer une optimisation. Ne pas comparer contrôle/charge, graines, fixtures ou navigateurs différents. Garder l'ancien worktree et ses dépendances pour rejouer la référence sans les optimisations. La revue privée historique n'est pas comparable à ces résultats.
+
+Les tests protègent graine/volumes, répétabilité des pages, UTF-8/duplications, quantiles, compatibilité et budgets. Le test PC vérifie DOM stable, lignes créées par JavaScript, captures séparées et échec HTTP. Les budgets automatiques ciblent le contrôle ; la charge reste une commande locale explicite sans seuil de temps fragile en CI.
+
+La baseline sert aux optimisations #82, #83 et #87. Si le JSON est externalisé, étendre les mesures aux fichiers/réponses JSON externes et rejouer les deux révisions : le protocole courant mesure le JSON embarqué seulement.
+
+## Baseline réellement mesurée le 18/10/2026
+
+Référence de production : `ac6d477` (develop après #80), avec l'outil de cette issue. Node 22.23.3, Windows 10 x64, Intel Core i3-4130, 8 Go, Edge 155.0.4283.62. Les tâches de fond du poste ne sont pas isolées ; les temps sont descriptifs. Une chauffe et trois passages mesurés ont confirmé des empreintes de pages et comptes DOM stables. Le premier essai avec générations répétées dans un même processus a atteint la limite mémoire de Node ; le protocole livré isole chaque génération et a achevé les quatre passages de charge.
+
+| Mesure                           | Contrôle |     Charge |
+| -------------------------------- | -------: | ---------: |
+| HTML accueil, octets UTF-8       |  529 408 | 67 431 738 |
+| HTML cartographie, octets UTF-8  |  690 771 | 80 135 668 |
+| Nœuds DOM explorateur des issues |    3 711 |    267 797 |
+
+Sur la charge, les dix pages embarquent 678 926 764 octets JSON au total, dont 606 665 196 octets de copies exactes redondantes. La génération médiane mesurée est d'environ 18,7 s (IQR 1,1 s) ; le résultat disponible varie selon la page, environ 3 à 10,4 s de médiane. Ce sont des observations de ce poste, pas des budgets. Les captures ne sont pas activées sur la charge ; elles sont mesurées séparément sur le contrôle.
+
+Les [résultats de charge](benchmarks/load.md), leur [rapport JSON](benchmarks/load.json), le [contrôle comparé](benchmarks/control.md) et son [rapport JSON](benchmarks/control.json) conservent les agrégats et séries brutes, sans les HTML, snapshots ni captures volumineux. La comparaison du contrôle à sa référence ne montre aucune augmentation ; le budget validé de 0 % passe. La référence des budgets automatiques est `config/benchmark-control-baseline.json` ; son remplacement exige une revue explicite. Ces mesures sont distinctes des observations privées rapportées dans la revue initiale.
