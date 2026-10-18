@@ -6,6 +6,7 @@ import {
   type WorkspaceSummary
 } from '../analytics/workspaces.js';
 import { presentWorkspaceKpi } from './assets/kpi-presentation.js';
+import { presentWorkspaceVersions } from './assets/version-presentation.js';
 import { issueFacts } from './read-model.js';
 import { contextAttribute } from './evidence.js';
 
@@ -27,14 +28,20 @@ function githubIssueLink(url: string, number: number): string {
 export function resetWorkspaceModel(snapshot: Snapshot): void {
   models.delete(snapshot);
 }
-/** Restitue le contrat stocké ou projette un ancien snapshot sans le modifier. */
+/** Restitue le contrat courant ou reprojette ses versions sans modifier les faits ni les qualifications d'un ancien snapshot. */
 export function workspaceModel(snapshot: Snapshot): WorkspaceAnalytics {
   let model = models.get(snapshot);
   if (!model) {
     model =
-      snapshot.analytics.workspaces?.version === 1
+      snapshot.analytics.workspaces?.version === 1 &&
+      snapshot.analytics.workspaces.versionSelectionAlgorithm === 'prod-tag-v1'
         ? snapshot.analytics.workspaces
-        : workspaceAnalytics(snapshot.normalizedData, snapshot.dataQuality.issues);
+        : workspaceAnalytics(
+            snapshot.normalizedData,
+            snapshot.dataQuality.issues,
+            {},
+            snapshot.analytics.workspaces?.rows
+          );
     models.set(snapshot, model);
   }
   return model;
@@ -134,7 +141,7 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
     median: 'Médiane des délais calculables de la même population accessibilité.',
     p90: '90e percentile des délais calculables de la même population accessibilité.'
   };
-  return `<section class="kpi-grid" data-workspace-cards aria-label="Indicateurs du périmètre">${cards
+  return `<p class="panel-note" data-workspace-version-context>${html(presentWorkspaceVersions(model.available ? summary?.versionSelection : undefined))}</p><section class="kpi-grid" data-workspace-cards aria-label="Indicateurs du périmètre">${cards
     .map(([key, label, numerator, denominator]) => {
       const presentation = presentWorkspaceKpi(
         key as keyof WorkspaceSummary,

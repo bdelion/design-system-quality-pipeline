@@ -94,6 +94,16 @@ La section **Preuves des métriques Analytics** expose définition, périmètre,
 
 ## Validation
 
+### Versions PROD réellement évaluées (#80)
+
+La couverture et la conformité sans filtre de version évaluent, par repository, le plus grand numéro canonique `M.m.r` dont le tag Git correspond exactement au numéro, hors canal `development`. Ce comportement applique D-200 à D-204 : une milestone, un audit, une date seule ou un canal `release` ne prouvent pas une publication. La date du tag n'est pas requise pour identifier la PROD ; aucune date absente n'est inventée. Il s'agit d'une correction d'implémentation, sans nouvel arbitrage métier ni modification de D-047.
+
+Le bandeau commun aux cartes liste repository, numéro, canal et tag utilisé. Plusieurs repositories peuvent avoir des PROD différentes. Si un repository du périmètre ne possède aucune PROD démontrée, le bandeau le nomme et les ratios courants couverture/conformité restent indisponibles, jamais assimilés à zéro ou à une conformité. Le nombre de non-couverts est également présenté comme indisponible sur ce périmètre incomplet.
+
+Un filtre explicite de version utilise les relations de cette version, y compris en développement ou sans publication démontrée ; le bandeau indique ce statut. Seuls les repositories possédant la version sélectionnée appartiennent alors au périmètre. Sans filtre, stocks d'anomalies, délais et répartitions conservent leur périmètre toutes versions, y compris indéterminées ; le bandeau distingue ce périmètre de celui des ratios. Avec filtre, leurs relations explicites déterminent le périmètre.
+
+Analytics expose `versionSelection` dans chaque synthèse et le marqueur `versionSelectionAlgorithm: 'prod-tag-v1'`. Un ancien modèle sans ce marqueur est reprojeté côté serveur depuis les données normalisées, en conservant les qualifications historiques des lignes. La capture source reste inchangée ; le navigateur présente les résultats sans recalcul métier. Les régressions sont couvertes par `tests/workspace-version-selection.test.ts` et les parcours PC de `tests/browser/current-prod.spec.ts`.
+
 `tests/dashboard-consolidation.test.ts`, `tests/dashboard-context-filter-contract.test.ts`, les tests I3/I6/I7 et `tests/browser/dashboard.spec.ts` protègent les contrats. Le [rapport de consolidation](dashboard-consolidation-complete.md) contient les résultats effectivement obtenus.
 
 Les photographies `atRelease` déjà présentes dans une capture compatible antérieure à la capture courante sont préservées pour les versions alors publiées. Une annulation ultérieure modifie `currentKnowledge`, sans réécrire la photographie acquise. Les différences de modèle, règles ou périmètre empêchent cette réutilisation.

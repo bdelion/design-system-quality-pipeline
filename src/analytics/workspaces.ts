@@ -15,8 +15,21 @@ export interface AccessibilityRow extends IssueFact {
   categories: string[];
   origin: string;
 }
+/** Versions réellement évaluées et repositories dont la version ne peut pas être démontrée. */
+export interface WorkspaceVersionSelection {
+  mode: 'current-prod' | 'explicit';
+  versions: {
+    repository: string;
+    versionId: string;
+    number: string;
+    channel: 'prod' | 'development' | 'unpublished';
+    tag?: string;
+  }[];
+  missingRepositories: string[];
+}
 /** Résultats calculés pour un périmètre précis, avec dénominateurs visibles. */
 export interface WorkspaceSummary {
+  versionSelection?: WorkspaceVersionSelection;
   declared: number;
   treated: number;
   cancelled: number;
@@ -48,17 +61,19 @@ export interface WorkspaceSummary {
 /** Contrat additif : les anciens snapshots sont projetés sans être réécrits. */
 export interface WorkspaceAnalytics {
   version: 1;
+  versionSelectionAlgorithm?: 'prod-tag-v1';
   available: boolean;
   rows: AccessibilityRow[];
   review: AccessibilityRow[];
   scopes: { repository: string; component: string; version: string; summary: WorkspaceSummary }[];
 }
 
-/** Construit les populations sans assimiler un BUG générique à une anomalie d'accessibilité. */
+/** Construit les populations et les références PROD ; conserve les qualifications fournies lors d'une projection historique. */
 export function workspaceAnalytics(
   data: NormalizedData,
   quality: readonly DataQualityIssue[] = [],
-  recognition: AccessibilityRecognition = {}
+  recognition: AccessibilityRecognition = {},
+  previousRows?: readonly AccessibilityRow[]
 ): WorkspaceAnalytics {
   const facts = projectIssueFacts(data, quality, recognition);
   const issueById = new Map((data.issues ?? []).map((issue) => [issue.issueId, issue]));
@@ -67,6 +82,12 @@ export function workspaceAnalytics(
   const repositoryById = new Map(data.libraries.map((library) => [library.libraryId, library.repository]));
   const currentVersions = new Map<string, string>();
   for (const version of data.versions ?? []) {
+    if (
+      version.channel === 'development' ||
+      !/^\d+\.\d+\.\d+$/.test(version.number) ||
+      version.prodTag?.name !== version.number
+    )
+      continue;
     const previous = versionById.get(currentVersions.get(version.libraryId) ?? '');
     if (!previous || version.number.localeCompare(previous.number, 'en', { numeric: true }) > 0)
       currentVersions.set(version.libraryId, version.versionId);
@@ -74,51 +95,56 @@ export function workspaceAnalytics(
   const distinctAnomalies = [
     ...new Map(data.anomalies.map((anomaly) => [anomaly.issueId, anomaly])).values()
   ];
-  const rows: AccessibilityRow[] = distinctAnomalies.flatMap((anomaly) => {
-    const fact = facts.find((item) => item.id === anomaly.issueId);
-    if (!fact) return [];
-    const issue = issueById.get(anomaly.issueId)!;
-    const tokens = recognition.repositories?.[fact.repo] ?? recognition.labelAllOf ?? ['audit', 'rgaa'];
-    const qualification = accessibilityQualification(
-      issue.labels,
-      issue.accessibilityCategories,
-      issue.criticalities,
-      anomaly.origin === 'AUDIT' &&
-        Boolean(anomaly.auditId && data.audits.some((audit) => audit.auditId === anomaly.auditId)),
-      tokens
-    );
-    if (
-      quality.some(
-        (diagnostic) =>
-          [anomaly.anomalyId, issue.issueId].includes(diagnostic.entityId) &&
-          diagnostic.impacts.some(
-            (impact) => impact.action === 'exclude' && impact.metricId.startsWith('anomaly.correctionDelay.')
+  const rows: AccessibilityRow[] = previousRows
+    ? [...previousRows]
+    : distinctAnomalies.flatMap((anomaly) => {
+        const fact = facts.find((item) => item.id === anomaly.issueId);
+        if (!fact) return [];
+        const issue = issueById.get(anomaly.issueId)!;
+        const tokens = recognition.repositories?.[fact.repo] ?? recognition.labelAllOf ?? ['audit', 'rgaa'];
+        const qualification = accessibilityQualification(
+          issue.labels,
+          issue.accessibilityCategories,
+          issue.criticalities,
+          anomaly.origin === 'AUDIT' &&
+            Boolean(anomaly.auditId && data.audits.some((audit) => audit.auditId === anomaly.auditId)),
+          tokens
+        );
+        if (
+          quality.some(
+            (diagnostic) =>
+              [anomaly.anomalyId, issue.issueId].includes(diagnostic.entityId) &&
+              diagnostic.impacts.some(
+                (impact) =>
+                  impact.action === 'exclude' && impact.metricId.startsWith('anomaly.correctionDelay.')
+              )
           )
-      )
-    ) {
-      fact.delay = null;
-      fact.source = 'unavailable';
-    }
-    const applicable = (data.componentVersions ?? []).filter(
-      (relation) => anomaly.auditId && relation.applicableAuditIds?.includes(anomaly.auditId)
-    );
-    return [
-      {
-        ...fact,
-        qualification,
-        criticality: anomaly.criticality ?? 'unknown',
-        categories: anomaly.categories,
-        origin: anomaly.origin,
-        versionIds: [...new Set([...fact.versionIds, ...applicable.map((relation) => relation.versionId)])],
-        versions: [
-          ...new Set([
-            ...fact.versions,
-            ...applicable.flatMap((relation) => versionById.get(relation.versionId)?.number ?? [])
-          ])
-        ]
-      }
-    ];
-  });
+        ) {
+          fact.delay = null;
+          fact.source = 'unavailable';
+        }
+        const applicable = (data.componentVersions ?? []).filter(
+          (relation) => anomaly.auditId && relation.applicableAuditIds?.includes(anomaly.auditId)
+        );
+        return [
+          {
+            ...fact,
+            qualification,
+            criticality: anomaly.criticality ?? 'unknown',
+            categories: anomaly.categories,
+            origin: anomaly.origin,
+            versionIds: [
+              ...new Set([...fact.versionIds, ...applicable.map((relation) => relation.versionId)])
+            ],
+            versions: [
+              ...new Set([
+                ...fact.versions,
+                ...applicable.flatMap((relation) => versionById.get(relation.versionId)?.number ?? [])
+              ])
+            ]
+          }
+        ];
+      });
   const contexts = new Map<string, { repository: string; component: string; version: string }>();
   /** Enregistre uniquement les intersections réellement présentes et leurs agrégations partielles. */
   function register(repository: string, components: string[], versions: string[]): void {
@@ -135,6 +161,8 @@ export function workspaceAnalytics(
   }
   register('', [], []);
   for (const library of data.libraries) register(library.repository, [], []);
+  for (const version of data.versions ?? [])
+    register(repositoryById.get(version.libraryId) ?? '', [], [version.versionId]);
   for (const component of data.components)
     register(repositoryById.get(component.libraryId) ?? '', [component.componentId], []);
   for (const row of rows) register(row.repo, row.componentIds, row.versionIds);
@@ -167,6 +195,47 @@ export function workspaceAnalytics(
           component.name === context.component) &&
         (!context.repository || repositoryById.get(component.libraryId) === context.repository)
     );
+    const libraries = data.libraries.filter(
+      (library) =>
+        (!context.repository || library.repository === context.repository) &&
+        (!context.component || components.some((component) => component.libraryId === library.libraryId)) &&
+        (!context.version ||
+          (data.versions ?? []).some(
+            (version) =>
+              version.libraryId === library.libraryId &&
+              (version.versionId === context.version || version.number === context.version)
+          ))
+    );
+    const versionSelection: WorkspaceVersionSelection = {
+      mode: context.version ? 'explicit' : 'current-prod',
+      versions: [],
+      missingRepositories: []
+    };
+    for (const library of libraries) {
+      const versions = context.version
+        ? (data.versions ?? []).filter(
+            (version) =>
+              version.libraryId === library.libraryId &&
+              (version.versionId === context.version || version.number === context.version)
+          )
+        : [versionById.get(currentVersions.get(library.libraryId) ?? '')].filter(
+            (version): version is NonNullable<typeof version> => Boolean(version)
+          );
+      if (!versions.length) versionSelection.missingRepositories.push(library.repository);
+      for (const version of versions) {
+        const prod =
+          version.channel !== 'development' &&
+          version.prodTag?.name === version.number &&
+          /^\d+\.\d+\.\d+$/.test(version.number);
+        versionSelection.versions.push({
+          repository: library.repository,
+          versionId: version.versionId,
+          number: version.number,
+          channel: version.channel === 'development' ? 'development' : prod ? 'prod' : 'unpublished',
+          ...(prod ? { tag: version.prodTag!.name } : {})
+        });
+      }
+    }
     const relations = (data.componentVersions ?? []).filter(
       (relation) =>
         components.some((component) => component.componentId === relation.componentId) &&
@@ -228,6 +297,7 @@ export function workspaceAnalytics(
       ...relations.map((relation) => relation.componentVersionId)
     ]);
     const summary: WorkspaceSummary = {
+      versionSelection,
       declared: active.length,
       treated: treated.length,
       cancelled: population.filter((row) => row.status === 'cancelled').length,
@@ -248,8 +318,14 @@ export function workspaceAnalytics(
       nonConform,
       nonCovered,
       unknown,
-      coverage: componentCount && !unknown ? ((conform + nonConform) * 100) / componentCount : null,
-      conformity: conform + nonConform ? (conform * 100) / (conform + nonConform) : null,
+      coverage:
+        componentCount && !unknown && !versionSelection.missingRepositories.length
+          ? ((conform + nonConform) * 100) / componentCount
+          : null,
+      conformity:
+        conform + nonConform && !versionSelection.missingRepositories.length
+          ? (conform * 100) / (conform + nonConform)
+          : null,
       criticalities,
       categories,
       byComponent,
@@ -260,6 +336,7 @@ export function workspaceAnalytics(
   });
   return {
     version: 1,
+    versionSelectionAlgorithm: 'prod-tag-v1',
     available: data.issues !== undefined,
     rows,
     scopes,

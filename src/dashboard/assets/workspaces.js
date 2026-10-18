@@ -1,6 +1,7 @@
 ﻿import { currentContext, matchesFact, setContext } from './context.js';
 /* global Blob, URL */
 import { presentWorkspaceKpi } from './kpi-presentation.js';
+import { presentWorkspaceVersions } from './version-presentation.js';
 const payload = document.getElementById('workspace-data');
 const model = payload ? JSON.parse(payload.textContent) : null;
 const distributionSorts = { category: 'label-asc', component: 'label-asc' };
@@ -120,6 +121,9 @@ function renderWorkspace() {
       : null;
   document.querySelectorAll('[data-workspace-cards]').forEach((node) => {
     node.hidden = focused;
+  });
+  document.querySelectorAll('[data-workspace-version-context]').forEach((node) => {
+    node.textContent = presentWorkspaceVersions(summary?.versionSelection);
   });
   document.querySelectorAll('[data-workspace-kpi]').forEach((node) => {
     const key = node.dataset.workspaceKpi;
