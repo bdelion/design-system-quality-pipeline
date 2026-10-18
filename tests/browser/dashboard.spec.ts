@@ -1,4 +1,4 @@
-import type { Snapshot } from '../../src/domain/types.js';
+import type { DashboardPageModel } from '../../src/dashboard/page-read-model.js';
 import { workspaceAnalytics } from '../../src/analytics/workspaces.js';
 import { consolidationSnapshot } from '../support/consolidation.js';
 import { resolve } from 'node:path';
@@ -15,10 +15,10 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
   await page.route('**/accessibility.html*', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(window\.__SNAPSHOT__ = )([\s\S]*?)(; if \(location\.protocol)/,
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, json, end) => {
         const snapshot = JSON.parse(json);
-        const model = snapshot.analytics.workspaces;
+        const model = snapshot.data.workspaces;
         const summary = {
           ...model.scopes[0].summary,
           coverage: (16 * 100) / 76,
@@ -93,6 +93,13 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
 function componentCounterRows() {
   const facts = Array.from({ length: 5 }, (_, index) => ({
     id: `counter-issue-${index + 1}`,
+    title: `Issue synthétique ${index + 1}`,
+    labels: [],
+    componentIds: [],
+    auditIds: [],
+    anomalyIds: [],
+    projectContexts: [],
+    status: 'open',
     repo: 'acme/ds-react',
     components: index === 1 ? ['Button', 'Tag'] : [index === 0 ? 'Button' : index === 2 ? 'Tag' : 'Modal'],
     versions: [index < 3 ? '1.0.0' : '2.0.0'],
@@ -129,8 +136,12 @@ async function mockComponentCounters(page: Page, payload: unknown): Promise<void
   await page.route('**/components.html*', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="component-analysis-data">)[\s\S]*?(<\/script>)/,
-      (_, start, end) => start + JSON.stringify(payload) + end
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => {
+        const envelope = JSON.parse(content);
+        envelope.data.components = payload;
+        return start + JSON.stringify(envelope) + end;
+      }
     );
     await route.fulfill({ response, body });
   });
@@ -250,8 +261,12 @@ test('issue #69 : suivi des Epics et export CSV accessibles', async ({ page }) =
       ]
     };
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="epic-activity-data">)[\s\S]*?(<\/script>)/,
-      (_, start, end) => start + JSON.stringify(model) + end
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => {
+        const envelope = JSON.parse(content);
+        envelope.data.epics = model;
+        return start + JSON.stringify(envelope) + end;
+      }
     );
     await route.fulfill({ response, body: html });
   });
@@ -407,8 +422,9 @@ test('activité : contextes Project multiples, Velocity source et CSV', async ({
   await page.route('**/issues.html', async (route) => {
     const response = await route.fetch();
     const original = await response.text();
-    const match = original.match(/id="issue-explorer-data">([^<]+)<\/script>/)!;
-    const data = JSON.parse(match[1]!);
+    const match = original.match(/id="dashboard-page-data">([^<]+)<\/script>/)!;
+    const envelope = JSON.parse(match[1]!);
+    const data = envelope.data.issues;
     data.items[0].projectContexts = [
       {
         projectId: 'a',
@@ -421,7 +437,7 @@ test('activité : contextes Project multiples, Velocity source et CSV', async ({
     ];
     await route.fulfill({
       response,
-      body: original.replace(match[1]!, JSON.stringify(data).replace(/</g, '\\u003c'))
+      body: original.replace(match[1]!, JSON.stringify(envelope).replace(/</g, '\\u003c'))
     });
   });
   await page.goto('/issues.html');
@@ -624,10 +640,10 @@ test('la présence inconnue rend les ratios et le stock non couvert indisponible
   await page.route('**/accessibility.html', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(window\.__SNAPSHOT__ = )([\s\S]*?)(; if \(location\.protocol)/,
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_match, start, content, end) => {
         const current = JSON.parse(content);
-        current.analytics.workspaces = model;
+        current.data.workspaces = model;
         return start + JSON.stringify(current).replace(/</g, '\\u003c') + end;
       }
     );
@@ -651,7 +667,9 @@ test('les graphiques accessibilité restituent les agrégats et suivent les filt
     await page.locator('[data-context-filter="repository"]').selectOption(repository);
     const summary = await page.evaluate(
       (repo) =>
-        (window as unknown as { __SNAPSHOT__: Snapshot }).__SNAPSHOT__.analytics.workspaces!.scopes.find(
+        (
+          JSON.parse(document.getElementById('dashboard-page-data')!.textContent!) as DashboardPageModel
+        ).data.workspaces!.scopes.find(
           (scope) => scope.repository === repo && !scope.component && !scope.version
         )!.summary,
       repository
@@ -683,9 +701,10 @@ test('issue #49 : résultat par version auditée sans catalogue historique ni h�
   await page.route('**/components.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="component-analysis-data">)([\s\S]*?)(<\/script>)/,
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
-        const row = JSON.parse(content)[0];
+        const envelope = JSON.parse(content);
+        const row = envelope.data.components[0];
         row.name = 'Tag';
         row.versionSummaries = [];
         row.latestAuditId = 'audit-tag';
@@ -708,7 +727,8 @@ test('issue #49 : résultat par version auditée sans catalogue historique ni h�
             url: 'https://github.test/audit/2'
           }
         ];
-        return start + JSON.stringify([row]) + end;
+        envelope.data.components = [row];
+        return start + JSON.stringify(envelope) + end;
       }
     );
     await route.fulfill({ response, body: html });
@@ -730,9 +750,10 @@ test('historique : affiche les preuves et la conformité héritée sans inventer
   await page.route('**/components.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="component-analysis-data">)([\s\S]*?)(<\/script>)/,
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
-        const row = JSON.parse(content)[0];
+        const envelope = JSON.parse(content);
+        const row = envelope.data.components[0];
         row.name = 'Tag';
         row.componentIds = [row.componentId];
         row.latestAuditId = 'audit-tag';
@@ -765,7 +786,8 @@ test('historique : affiche les preuves et la conformité héritée sans inventer
             auditSources: [{ id: 'audit-tag', url: 'https://github.test/audit/1' }]
           }
         ];
-        return start + JSON.stringify([row]) + end;
+        envelope.data.components = [row];
+        return start + JSON.stringify(envelope) + end;
       }
     );
     await route.fulfill({ response, body: html });
@@ -806,10 +828,10 @@ test('tris indépendants des répartitions : intitulés, nombres, égalités et 
   await page.route('**/accessibility.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(window\.__SNAPSHOT__ = )([\s\S]*?)(; if \(location\.protocol)/,
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const snapshot = JSON.parse(content);
-        const model = snapshot.analytics.workspaces;
+        const model = snapshot.data.workspaces;
         for (const scope of model.scopes) {
           scope.summary.categories = { Zebra: 1, Beta: 2, Alpha: 2 };
           scope.summary.byComponent = { Zebra: 1, Beta: 2, Alpha: 2 };
@@ -849,8 +871,12 @@ test('issue #65 : ordre initial repository puis composant indépendant de l’or
   await page.route('**/components.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="component-analysis-data">)([\s\S]*?)(<\/script>)/,
-      (_, start, content, end) => start + JSON.stringify(JSON.parse(content).reverse()) + end
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, content, end) => {
+        const envelope = JSON.parse(content);
+        envelope.data.components.reverse();
+        return start + JSON.stringify(envelope) + end;
+      }
     );
     await route.fulfill({ response, body: html });
   });

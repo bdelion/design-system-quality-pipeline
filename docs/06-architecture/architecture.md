@@ -40,6 +40,8 @@ flowchart LR
 
 ## Responsabilités actuelles
 
+Depuis #83, la restitution passe par un [modèle de lecture versionné propre à chaque page](../07-decisions/ADR-005-modeles-lecture-dashboard.md) : `page-read-model.ts` construit l’enveloppe, `explorer-read-model.ts` projette les faits des explorateurs et `assets/page-model.js` valide le contrat partagé par les consommateurs du document. Le JSON est intégré au HTML ; les RAW et le snapshot complet ne sont pas distribués par le dashboard. Les règles métier et qualifications restent dans le pipeline.
+
 ---
 
 Couche Responsabilité

@@ -1,9 +1,10 @@
+import { pageContract } from './support/page-contract.js';
+import { dashboardPageModel, type DashboardPage } from '../src/dashboard/page-read-model.js';
 import { expect, it } from 'vitest';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { generateDashboard } from '../src/dashboard/generate.js';
-import { workspaceModel } from '../src/dashboard/workspaces.js';
 import { consolidationSnapshot } from './support/consolidation.js';
 
 for (const state of ['current', 'legacy', 'absent'] as const) {
@@ -27,7 +28,6 @@ for (const state of ['current', 'legacy', 'absent'] as const) {
     }
     if (state === 'absent') delete snapshot.analytics.workspaces;
     const source = JSON.stringify(snapshot);
-    const expected = workspaceModel(snapshot);
     const directory = await mkdtemp(join(tmpdir(), 'dsq-single-workspace-'));
     try {
       await generateDashboard(snapshot, directory);
@@ -37,11 +37,10 @@ for (const state of ['current', 'legacy', 'absent'] as const) {
         const html = await readFile(join(directory, 'dashboard', page), 'utf8');
         expect(html.includes('id="workspace-data"')).toBe(false);
         expect(html.includes('</script><script>window.__payloadProbe=true')).toBe(false);
-        expect(html.match(/"versionSelectionAlgorithm":"prod-tag-v1"/g)).toHaveLength(1);
-        const json = html.match(/window\.__SNAPSHOT__ = ([\s\S]*?); if \(location\.protocol/)![1]!;
-        if (state === 'current') expect(json === source.replace(/</g, '\\u003c')).toBe(true);
-        expect(JSON.parse(json).analytics.workspaces).toEqual(expected);
-        expect(html.match(/src="assets\/workspaces\.js"/g)).toHaveLength(1);
+        const id = page.replace('.html', '') as DashboardPage;
+        expect(pageContract(html)).toEqual(dashboardPageModel(snapshot, id));
+        expect(html.includes('window.__SNAPSHOT__')).toBe(false);
+        expect(html.match(/id="dashboard-page-data"/g)).toHaveLength(1);
       }
       expect(JSON.stringify(snapshot)).toBe(source);
     } finally {

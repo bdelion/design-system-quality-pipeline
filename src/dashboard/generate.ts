@@ -1,9 +1,10 @@
+import { auditStatusLabel } from './audit-presentation.js';
+import { dashboardPageModel } from './page-read-model.js';
 import {
   workspaceCards,
   workspaceNavigation,
   workspaceSubnavigation,
   accessibilityContent,
-  workspacePayload,
   workspaceModel,
   dataQualityContent,
   resetWorkspaceModel
@@ -11,7 +12,6 @@ import {
 import { issueFacts, resetDashboardReadModel } from './read-model.js';
 import { teamActivitySummary } from '../analytics/team-activity.js';
 import { repositoryActivity } from '../analytics/repository-activity.js';
-import { componentGithubLinks } from './component-links.js';
 import { latestComponentVersion } from '../analytics/component-versions.js';
 import { epicsContent } from './epics.js';
 import {
@@ -37,7 +37,6 @@ import { fileURLToPath } from 'node:url';
 import { stringify } from 'yaml';
 import type {
   AnomalyStatus,
-  AuditStatus,
   Component,
   DataQualityStatus,
   Metric,
@@ -67,11 +66,9 @@ export async function generateDashboard(
   resetWorkspaceModel(snapshot);
   const dashboardPath = resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });
-  // La projection navigateur remplace aussi les anciens agrégats sans réécrire la capture source.
-  const serializedSnapshot = JSON.stringify({
-    ...snapshot,
-    analytics: { ...snapshot.analytics, workspaces: workspaceModel(snapshot) }
-  }).replace(/</g, '\\u003c');
+  /** Construit uniquement le contrat du parcours demandé, sans RAW ni snapshot complet. */
+  const pageModel = (id: import('./page-read-model.js').DashboardPage) =>
+    dashboardPageModel(snapshot, id, githubUrl, componentPrefix);
   // Les assets sont lus depuis des fichiers dédiés afin que le HTML reste limité à la structure et aux données.
   await Promise.all([
     writeFile(
@@ -83,18 +80,13 @@ export async function generateDashboard(
           repositoryComparisonTables(snapshot, githubUrl, componentPrefix) +
           globalOverviewCards(snapshot) +
           '</div>',
-        serializedSnapshot
+        pageModel
       ),
       'utf8'
     ),
     writeFile(
       resolve(dashboardPath, 'issues.html'),
-      page(
-        snapshot,
-        'Analyse des issues',
-        issuesExplorerContent(snapshot, githubUrl, componentPrefix),
-        serializedSnapshot
-      ),
+      page(snapshot, 'Analyse des issues', issuesExplorerContent(snapshot), pageModel),
       'utf8'
     ),
     writeFile(
@@ -104,7 +96,7 @@ export async function generateDashboard(
         'Anomalies',
         '<p class="panel">Tous les BUG spécialisés sont conservés ici. Ils ne sont pas tous des anomalies d’accessibilité ; voir la qualification de chaque défaut et l’espace Accessibilité.</p>' +
           anomaliesContent(snapshot, githubUrl),
-        serializedSnapshot
+        pageModel
       ),
       'utf8'
     ),
@@ -114,18 +106,13 @@ export async function generateDashboard(
         snapshot,
         'Audits et composants',
         workspaceCards(snapshot, true) + auditsContent(snapshot, githubUrl),
-        serializedSnapshot
+        pageModel
       ),
       'utf8'
     ),
     writeFile(
       resolve(dashboardPath, 'components.html'),
-      page(
-        snapshot,
-        'Analyse des composants',
-        componentsExplorerContent(snapshot, githubUrl, componentPrefix),
-        serializedSnapshot
-      ),
+      page(snapshot, 'Analyse des composants', componentsExplorerContent(), pageModel),
       'utf8'
     ),
     writeFile(
@@ -134,23 +121,18 @@ export async function generateDashboard(
         snapshot,
         'Cartographie',
         graphContent(snapshot, githubUrl) + traceabilityContent(snapshot, githubUrl),
-        serializedSnapshot
+        pageModel
       ),
       'utf8'
     ),
     writeFile(
       resolve(dashboardPath, 'history.html'),
-      page(
-        snapshot,
-        'Historique',
-        historyContent(snapshot) + transitionJournalContent(snapshot),
-        serializedSnapshot
-      ),
+      page(snapshot, 'Historique', historyContent(snapshot) + transitionJournalContent(snapshot), pageModel),
       'utf8'
     ),
     writeFile(
       resolve(dashboardPath, 'accessibility.html'),
-      page(snapshot, 'Accessibilité', accessibilityContent(snapshot), serializedSnapshot),
+      page(snapshot, 'Accessibilité', accessibilityContent(snapshot), pageModel),
       'utf8'
     ),
     writeFile(
@@ -164,19 +146,20 @@ export async function generateDashboard(
           overviewContent(snapshot, githubUrl) +
           '</details>' +
           metricExplanationContent(snapshot),
-        serializedSnapshot
+        pageModel
       ),
       'utf8'
     ),
     copyDashboardAsset(dashboardPath, 'workspaces.js'),
     writeFile(
       resolve(dashboardPath, 'epics.html'),
-      page(snapshot, 'Suivi des Epics', epicsContent(snapshot), serializedSnapshot),
+      page(snapshot, 'Suivi des Epics', epicsContent(), pageModel),
       'utf8'
     ),
     copyDashboardAsset(dashboardPath, 'epics.js'),
     copyDashboardAsset(dashboardPath, 'style.css'),
     copyDashboardAsset(dashboardPath, 'app.js'),
+    copyDashboardAsset(dashboardPath, 'page-model.js'),
     copyDashboardAsset(dashboardPath, 'context.js'),
     copyDashboardAsset(dashboardPath, 'kpi-presentation.js'),
     copyDashboardAsset(dashboardPath, 'version-presentation.js'),
@@ -198,8 +181,29 @@ async function copyDashboardAsset(dashboardPath: string, assetName: string): Pro
 }
 
 /** Assemble une page HTML complète à partir d'un contenu et d'un snapshot. */
-function page(snapshot: Snapshot, title: string, content: string, serializedSnapshot: string): string {
-  // Le snapshot est sérialisé dans une balise script ; les chevrons sont échappés pour éviter une injection HTML.
+function page(
+  snapshot: Snapshot,
+  title: string,
+  content: string,
+  pageModel: (
+    id: import('./page-read-model.js').DashboardPage
+  ) => import('./page-read-model.js').DashboardPageModel
+): string {
+  const pageIds = {
+    'Vue d’ensemble': 'index',
+    'Analyse des issues': 'issues',
+    Anomalies: 'anomalies',
+    'Audits et composants': 'audits',
+    'Analyse des composants': 'components',
+    Cartographie: 'graph',
+    Historique: 'history',
+    Accessibilité: 'accessibility',
+    'Qualité des données': 'quality',
+    'Suivi des Epics': 'epics'
+  } as const;
+  const id = pageIds[title as keyof typeof pageIds];
+  const data = JSON.stringify(pageModel(id)).replace(/</g, '\\u003c');
+  // Seul le modèle de cette page est sérialisé ; les chevrons échappés empêchent une injection HTML.
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -208,14 +212,15 @@ function page(snapshot: Snapshot, title: string, content: string, serializedSnap
   <title>${title} | Design System Quality</title>
   <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
+<body data-dashboard-page="${id}">
 <section class="panel" data-file-warning hidden role="alert"><h2>Ouvrir le dashboard sur HTTP</h2><p>Les filtres et graphiques interactifs nécessitent un serveur local. Pour la démonstration, exécuter <code>npm run dashboard:serve</code>. Pour votre dataset, préciser son dossier avec <code>npm run dashboard:serve -- chemin/du/dashboard</code>, puis ouvrir <a href="http://127.0.0.1:4174/">http://127.0.0.1:4174/</a>.</p></section>
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Design System Quality</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${qualityLabel(snapshot.reliability)}</span></div></header>
-  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${['Qualité des données', 'Vue d’ensemble', 'Suivi des Epics'].includes(title) ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined)}${content}${workspacePayload()}</main></div>
-  <script>window.__SNAPSHOT__ = ${serializedSnapshot}; if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script><script type="module" src="assets/epics.js"></script>${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
+  <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${['Qualité des données', 'Vue d’ensemble', 'Suivi des Epics'].includes(title) ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined)}${content}</main></div>
+  <script type="application/json" id="dashboard-page-data">${data}</script><script>if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script>${id === 'epics' ? '<script type="module" src="assets/epics.js"></script>' : ''}${['accessibility', 'audits', 'quality'].includes(id) ? '<script type="module" src="assets/workspaces.js"></script>' : ''}${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
 </body></html>`
     .replace(/class="active" href=/g, 'class="active" aria-current="page" href=')
+    .replace(/<\/main><\/div>\s+<script/, '</main></div><script')
     .replace(/<th>/g, '<th scope="col">')
     .replace(
       /<div class="table-wrap(?: issue-table-wrap)?">/g,
@@ -814,23 +819,7 @@ function formatDateShort(value: string): string {
 }
 
 /** Vue exhaustive des issues, indépendamment de leur classification en anomalies. */
-function issuesExplorerContent(
-  snapshot: Snapshot,
-  githubUrl?: string,
-  componentPrefix = 'Component:'
-): string {
-  const repositories = new Map(snapshot.rawData.repositories.map((item) => [item.id, item]));
-  const items = issueFacts(snapshot).map((fact) => {
-    const issue = snapshot.normalizedData.issues?.find((item) => item.issueId === fact.id);
-    const repository = issue ? repositories.get(issue.repositoryId) : undefined;
-    const url = /^https:\/\/[^\s]+$/.test(fact.url)
-      ? fact.url
-      : repository
-        ? `${(githubUrl ?? 'https://github.com').replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${fact.number}`
-        : '';
-    return { ...fact, url };
-  });
-  const payload = JSON.stringify({ items, componentPrefix }).replace(/</g, '\\u003c');
+function issuesExplorerContent(snapshot: Snapshot): string {
   return `${teamActivityContent(snapshot)}<section class="issues-explorer" data-issues-explorer><h2>Analyse des issues · activité Squad / PO / AM</h2>
     <div class="issue-kpis" aria-live="polite">${[
       ['global', 'Issues · périmètre filtré', 'Done + Closed, dates réelles ou estimées'],
@@ -856,154 +845,11 @@ function issuesExplorerContent(
     <div class="issue-actions"><label><input type="checkbox" data-issue-components> Labels du composant uniquement</label><button class="reset-button" type="button" data-issue-dedupe aria-pressed="false">Dédoublonner par repo / issue</button><button class="reset-button" type="button" data-issue-clear-selection>Réinitialiser la sélection</button><button class="reset-button" type="button" data-issue-export>Exporter CSV</button></div>
     <p class="muted" data-issue-summary></p></section>
     <article class="panel table-panel"><div class="panel-heading"><h2>Issues GitHub · audits, anomalies et autres issues</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap" tabindex="0" role="region" aria-label="Tableau défilant"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner les issues affichées"></th>${['Repository', 'Issue', 'Label', 'Issue type', 'Statut', 'État GitHub', 'Nb PR', 'Délai issue', 'Ancienneté ouverte', 'Composants', 'Statut Project', 'Itération', 'Velocity source'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div></article>
-    <script type="application/json" id="issue-explorer-data">${payload}</script>
   </section>`;
 }
 
 /** Synthèse par composant : restitue les résultats d’audits par version cible sans inventer d’héritage. */
-function componentsExplorerContent(
-  snapshot: Snapshot,
-  githubUrl?: string,
-  componentPrefix = 'Component:'
-): string {
-  const libraries = new Map(snapshot.normalizedData.libraries.map((library) => [library.libraryId, library]));
-  const issues = snapshot.normalizedData.issues ?? [];
-  // Les labels des issues sont la source de vérité pour découvrir les composants.
-  const facts = issueFacts(snapshot);
-  const factById = new Map(facts.map((fact) => [fact.id, fact]));
-  // Le catalogue normalisé enrichit ces entrées, mais ne limite pas leur périmètre.
-  const prefix = componentPrefix.trim().toLocaleLowerCase('fr');
-  const discovered = new Map<
-    string,
-    { libraryId: string; name: string; componentId?: string; componentIds: string[] }
-  >();
-  for (const issue of issues) {
-    for (const label of issue.labels) {
-      if (!prefix || !label.toLocaleLowerCase('fr').startsWith(prefix)) continue;
-      const rawName = label.slice(componentPrefix.trim().length).trim();
-      const resolved = snapshot.normalizedData.components.filter((c) =>
-        issue.componentIds.includes(c.componentId)
-      );
-      const name = resolved.find((c) => c.name === rawName || c.aliases.includes(rawName))?.name ?? rawName;
-      if (!name) continue;
-      const key = `${issue.libraryId}::${name.toLocaleLowerCase('fr')}`;
-      if (!discovered.has(key)) discovered.set(key, { libraryId: issue.libraryId, name, componentIds: [] });
-    }
-  }
-  for (const component of snapshot.normalizedData.components) {
-    const key = `${component.libraryId}::${component.name.toLocaleLowerCase('fr')}`;
-    const found = discovered.get(key);
-    if (found) {
-      found.componentIds.push(component.componentId);
-      if (!found.componentId || component.status === 'active') found.componentId = component.componentId;
-    } else if (!found)
-      discovered.set(key, {
-        libraryId: component.libraryId,
-        name: component.name,
-        componentId: component.componentId,
-        componentIds: [component.componentId]
-      });
-  }
-  const rows = [...discovered.values()].map((component) => {
-    const library = libraries.get(component.libraryId);
-    const matchingLabel = `${componentPrefix.trim()}${component.name}`.toLocaleLowerCase('fr');
-    const related = issues.filter(
-      (issue) =>
-        issue.libraryId === component.libraryId &&
-        (issue.componentIds.some((id) => component.componentIds.includes(id)) ||
-          (!component.componentId &&
-            issue.labels.some((label) => label.toLocaleLowerCase('fr') === matchingLabel)))
-    );
-    const audits = snapshot.normalizedData.audits.filter(
-      (audit) =>
-        component.componentIds.includes(audit.componentId) ||
-        related.some((issue) => issue.issueId === audit.issueId)
-    );
-    const latest =
-      latestCompletedAudit(audits, snapshot.normalizedData.issues ?? []) ??
-      audits.find((audit) => !isCompletedAudit(audit, snapshot.normalizedData.issues ?? []));
-    const items = related.map((issue) => {
-      const fact = factById.get(issue.issueId)!;
-      return {
-        ...fact,
-        open: fact.status === 'open',
-        cancelled: fact.status === 'cancelled',
-        treated: fact.status === 'closed'
-      };
-    });
-    const versionSummaries = (snapshot.normalizedData.componentVersions ?? [])
-      .filter((relation) => component.componentIds.includes(relation.componentId))
-      .map((relation) => ({
-        version:
-          snapshot.normalizedData.versions?.find((version) => version.versionId === relation.versionId)
-            ?.number ?? '',
-        versionId: relation.versionId,
-        componentId: relation.componentId,
-        channel:
-          snapshot.normalizedData.versions?.find((version) => version.versionId === relation.versionId)
-            ?.channel ?? '',
-        publication: snapshot.normalizedData.versions?.find(
-          (version) => version.versionId === relation.versionId
-        )?.prodTag
-          ? 'PROD'
-          : 'publication non prouvée',
-        provenance: relation.provenance.sourceId ?? '',
-        conformity: relation.verdict ?? 'INDETERMINE',
-        auditIds: relation.applicableAuditIds ?? [],
-        auditSources: (relation.applicableAuditIds ?? []).flatMap((id) => {
-          const audit = snapshot.normalizedData.audits.find((a) => a.auditId === id);
-          return audit ? [{ id, url: factById.get(audit.issueId)?.url ?? '' }] : [];
-        })
-      }))
-      .sort((a, b) => a.version.localeCompare(b.version, undefined, { numeric: true }));
-    const current = versionSummaries.at(-1);
-    const auditSources = audits
-      .map((audit) => ({
-        id: audit.auditId,
-        url: facts.find((fact) => fact.id === audit.issueId)?.url ?? '',
-        version: auditVersionLabel(audit, snapshot),
-        versionId: audit.versionId ?? '',
-        publication: snapshot.normalizedData.versions?.find(
-          (version) => version.versionId === audit.versionId
-        )?.prodTag
-          ? 'PROD'
-          : 'publication non prouvée',
-        status: audit.lifecycle ?? audit.status,
-        result: isCompletedAudit(audit, snapshot.normalizedData.issues ?? [])
-          ? auditStatusLabel(audit.status)
-          : '',
-        completedAt: audit.completedAt ?? ''
-      }))
-      .sort((a, b) => b.completedAt.localeCompare(a.completedAt));
-    return {
-      id: `${component.libraryId}:${component.name.toLocaleLowerCase('fr')}`,
-      componentId: component.componentId,
-      componentIds: component.componentIds,
-      repository: library?.repository ?? component.libraryId,
-      name: component.name,
-      audits: audits.length,
-      version: current?.version ?? '',
-      auditStatus: latest?.lifecycle ?? latest?.status ?? 'non audité',
-      conformity:
-        latest && isCompletedAudit(latest, snapshot.normalizedData.issues ?? [])
-          ? auditStatusLabel(latest.status)
-          : 'Aucun résultat définitif',
-      versionSummaries,
-      githubLinks: componentGithubLinks(
-        snapshot,
-        component.libraryId,
-        component.name,
-        componentPrefix,
-        related,
-        githubUrl
-      ),
-      latestAuditUrl: facts.find((fact) => fact.id === latest?.issueId)?.url ?? '',
-      latestAuditId: latest?.auditId ?? '',
-      auditSources,
-      items
-    };
-  });
-  const payload = JSON.stringify(rows).replace(/</g, '\\u003c');
+function componentsExplorerContent(): string {
   return `<section class="issues-explorer" data-component-analysis><p class="panel">Les liens chiffrés ouvrent une recherche GitHub sur les données actuelles du repository. Recherches approchées : « Ouvertes » utilise l’état GitHub ; « Traitées » utilise Closed avec motif completed, sans vérifier Done dans Project ; « Annulées » utilise le motif not planned, distinct de Cancelled dans Project. Les PR sont recherchées par références d’issues dans leur description : les liens manuels seuls peuvent manquer. Les grandes listes de PR proposent plusieurs recherches courtes pour conserver toutes les références. Les compteurs restent ceux du snapshot. Le résultat affiché porte sur la version cible de l’audit, sans propagation aux autres versions. Un audit en cours n’a pas de résultat définitif. La publication de cette version reste distincte de sa milestone. Dernier audit et résultat ouvrent leur audit justificatif.</p>
     <div class="issue-kpis" aria-live="polite">${[
       ['global', 'Global · Officiel'],
@@ -1025,7 +871,7 @@ function componentsExplorerContent(
       )
       .join('')}</div>
     <section class="panel issue-filters" aria-label="Filtres des composants"><div class="panel-heading"><h2>Filtres et recherche</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser</button></div><div class="issue-filter-grid"><label>Recherche<input class="search" data-component-search placeholder="Composant, repository…"></label><label>Repository<select data-component-filter="repository"><option value="">Tous</option></select></label><label>Composant<select data-component-filter="name"><option value="">Tous</option></select></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Résultat de l’audit<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Version cible<select data-component-filter="version"><option value="">Toutes</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" data-component-summary></p></section>
-    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Résultat de l’audit · version cible', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article><script type="application/json" id="component-analysis-data">${payload}</script>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Résultat de l’audit · version cible', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article>
   </section>`;
 }
 
@@ -1594,17 +1440,7 @@ function anomalyStatusLabel(value: AnomalyStatus): string {
   }[value];
 }
 /** Traduit l'état d'un audit pour le dashboard. */
-function auditStatusLabel(value: AuditStatus): string {
-  return {
-    not_evaluated: 'non évalué',
-    in_progress: 'en cours',
-    cancelled: 'annulé',
-    conform: 'conforme',
-    conditional: 'conditionnel',
-    non_conform: 'non conforme',
-    critical: 'critique'
-  }[value];
-}
+
 /** Traduit le niveau de sévérité d'une alerte qualité. */
 function severityLabel(value: Severity): string {
   return { INFO: 'information', WARNING: 'avertissement', ERROR: 'erreur' }[value];

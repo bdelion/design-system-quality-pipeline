@@ -1,3 +1,4 @@
+import { pageContract } from './support/page-contract.js';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -85,14 +86,14 @@ it('génère deux tableaux puis huit cartes et restitue les nouvelles informatio
     expect(activity).toContain('data-team-count="merged-prs">1');
     for (const label of ['Composants', 'Statut Project', 'Itération', 'Velocity source'])
       expect(activity).toContain(`Trier par ${label}`);
-    const payload = JSON.parse(activity.match(/id="issue-explorer-data">([^<]+)<\/script>/)![1]!);
-    expect(payload.items[0].projectContexts[0].projectName).toBe('Qualité');
+    const payload = pageContract(activity).data.issues!;
+    expect(payload.items[0]!.projectContexts[0]!.projectName).toBe('Qualité');
     const components = await readFile(join(output, 'dashboard/components.html'), 'utf8');
-    const rows = JSON.parse(components.match(/id="component-analysis-data">([^<]+)<\/script>/)![1]!);
-    expect(rows[0].latestAuditUrl).toContain('/issues/1');
+    const rows = pageContract(components).data.components!;
+    expect(rows[0]!.latestAuditUrl).toContain('/issues/1');
     expect(
-      rows[0].auditSources.find((audit: { id: string }) =>
-        rows[0].versionSummaries[0].auditIds.includes(audit.id)
+      rows[0]!.auditSources.find((audit: { id: string }) =>
+        rows[0]!.versionSummaries[0]!.auditIds.includes(audit.id)
       )
     ).toBeDefined();
   } finally {

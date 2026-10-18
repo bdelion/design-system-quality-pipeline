@@ -1,10 +1,13 @@
+import { readPageModel } from './page-model.js';
 import { durationStatistics } from './statistics.js';
 import { matchesFact, currentContext, setContext } from './context.js';
 /* global URL, Blob */
 (() => {
   const root = document.querySelector('[data-issues-explorer]');
   if (!root) return;
-  const payload = JSON.parse(document.getElementById('issue-explorer-data').textContent);
+  const pageModel = readPageModel();
+  const payload = pageModel?.data.issues;
+  if (!payload) return;
   const items = Array.isArray(payload) ? payload : payload.items;
   const componentPrefix = Array.isArray(payload) ? 'Component:' : payload.componentPrefix;
   /** Trouve un contrôle dans l’explorateur courant. */
@@ -74,7 +77,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   };
   /** Calcule l’ancienneté à la capture du snapshot, indépendamment de la date de consultation. */
   const dayAge = (item) =>
-    Math.max(0, (Date.parse(window.__SNAPSHOT__.capturedAt) - Date.parse(item.createdAt)) / 86400000);
+    Math.max(0, (Date.parse(pageModel.snapshot.capturedAt) - Date.parse(item.createdAt)) / 86400000);
   /** Ventile une issue par labels tout en conservant son identité pour les KPI distincts. */
   function rowsFor(item, matchingLabels) {
     const labels = dedupe

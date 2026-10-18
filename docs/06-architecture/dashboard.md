@@ -8,6 +8,8 @@ Le dashboard est généré depuis un snapshot en lecture seule. Il conserve les 
 - `src/analytics/issues.ts`, `component-versions.ts`, `catalog.ts` : faits, verdicts et contrats des indicateurs.
 - `src/analytics/statistics.js` : moyenne, médiane et P90 partagés avec le navigateur, déduplication et populations séparées.
 - `src/dashboard/read-model.ts` : projection des preuves par snapshot ; aucune nouvelle attribution d'audit.
+- `src/dashboard/page-read-model.ts`, `explorer-read-model.ts` : contrats versionnés par usage et projections des faits nécessaires ; aucun snapshot complet ni RAW distribué.
+- `src/dashboard/assets/page-model.js` : lecture et validation communes du JSON intégré au document ; explication des contrats absents, invalides ou inconnus, sans zéro de substitution. Voir [ADR-005](../07-decisions/ADR-005-modeles-lecture-dashboard.md).
 - `src/dashboard/evidence.ts` : sources, exclusions, formules, diagnostics et journal.
 - `src/dashboard/assets/context.js` : intersection exacte du périmètre et propagation des liens.
 
@@ -15,7 +17,7 @@ Les cartes accessibilité suivent les agrégats pré-calculés du périmètre re
 
 ## Consultation et accessibilité
 
-Servir le répertoire généré sur HTTP(S) avec un serveur de fichiers statiques : les modules JavaScript partagés nécessitent cette origine. Aucun serveur applicatif ni base de données n'est requis. Un lien d'évitement, des contrôles nommés, un focus visible, des tableaux défilants accessibles au clavier et des annonces de filtrage assurent l'accès aux interactions. Les tests Playwright exécutent les neuf pages sur desktop et mobile et axe-core contrôle WCAG A/AA ; cela ne constitue pas un audit RGAA manuel.
+Servir le répertoire généré complet, HTML et assets d’une même génération, sur HTTP(S) avec un serveur de fichiers statiques : les modules JavaScript partagés nécessitent cette origine. Aucun serveur applicatif ni base de données n’est requis. Chaque page contient son JSON versionné ; chaque navigation indépendante le lit pour ses modules, sans garantie de cache ou parsing partagé entre documents. Un lien d’évitement, des contrôles nommés, un focus visible, des tableaux défilants accessibles au clavier et des annonces de filtrage assurent l’accès aux interactions. Les tests Playwright couvrent les parcours PC ; axe-core contrôle WCAG A/AA sur les neuf pages de son parcours automatique. Cela ne constitue pas un audit RGAA manuel.
 
 ## Compatibilité historique
 

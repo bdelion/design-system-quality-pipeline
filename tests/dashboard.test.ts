@@ -1,3 +1,4 @@
+import { pageContract } from './support/page-contract.js';
 import { expect, it } from 'vitest';
 import { readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -36,7 +37,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('Vue d’ensemble');
   expect(html).toContain('design-system-react');
   expect(html).toContain('design-system-docs');
-  expect(html).toContain('Délai moyen');
+  expect(html).toContain('Moyenne');
   const diagnostics = await readFile(resolve(output, 'dashboard/quality.html'), 'utf8');
   expect(diagnostics).toContain('Temps de traitement des issues par repository');
   expect(diagnostics).toContain('Critères d’accessibilité');
@@ -48,7 +49,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(diagnostics).toContain('Fiabilité par métrique');
   expect(diagnostics).toContain('Pourquoi certains chiffres sont partiels');
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
-  expect(html).toContain('window.__SNAPSHOT__');
+  expect(html).toContain('dashboard-page-data');
   expect(html).toContain('class="sidebar"');
   expect(html).toContain('<span>Design System Quality</span>');
   expect(html).toContain('assets/logo.svg');
@@ -76,7 +77,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(issuesHtml).toContain('data-issue-dedupe');
   expect(issuesHtml).toContain('data-issue-column-sort');
   expect(issuesHtml).toContain('assets/issues.js');
-  expect(issuesHtml).toContain('issue-explorer-data');
+  expect(issuesHtml).toContain('dashboard-page-data');
   expect(html).toContain('href="issues.html"');
   const graphHtml = await readFile(resolve(output, 'dashboard/graph.html'), 'utf8');
   expect(graphHtml).toContain('Issues (tous types)');
@@ -281,14 +282,8 @@ it('uses the same treatment dates for Task issues across issues, components and 
     const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
     const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
     const overviewHtml = await readFile(resolve(output, 'dashboard/quality.html'), 'utf8');
-    const issuePayload = JSON.parse(
-      issuesHtml.match(/<script type="application\/json" id="issue-explorer-data">([^<]+)<\/script>/)![1]!
-    );
-    const componentRows = JSON.parse(
-      componentsHtml.match(
-        /<script type="application\/json" id="component-analysis-data">([^<]+)<\/script>/
-      )![1]!
-    );
+    const issuePayload = pageContract(issuesHtml).data.issues!;
+    const componentRows = pageContract(componentsHtml).data.components!;
     const projectedIssue = issuePayload.items.find(
       (item: { number: number }) => item.number === issue.number
     );
@@ -341,14 +336,8 @@ it('uses the last dated Project transition for reopened issues in both explorers
     await generateDashboard(snapshot, output, 'https://github.test');
     const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
     const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
-    const issuePayload = JSON.parse(
-      issuesHtml.match(/<script type="application\/json" id="issue-explorer-data">([^<]+)<\/script>/)![1]!
-    );
-    const componentRows = JSON.parse(
-      componentsHtml.match(
-        /<script type="application\/json" id="component-analysis-data">([^<]+)<\/script>/
-      )![1]!
-    );
+    const issuePayload = pageContract(issuesHtml).data.issues!;
+    const componentRows = pageContract(componentsHtml).data.components!;
     const projected = issuePayload.items.find((item: { number: number }) => item.number === issue.number);
     const component = componentRows
       .flatMap((row: { items: { number: number }[] }) => row.items)
