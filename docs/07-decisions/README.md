@@ -16,3 +16,4 @@ Les ADR documentent les décisions qui engagent la structure du projet.
 - ADR-002 : séparation RAW / modèle normalisé.
 - ADR-003 : métriques V2 comme contrat analytique.
 - ADR-004 : documentation structurée et versionnée.
+- [ADR-005 : modèles de lecture du dashboard par page](ADR-005-modeles-lecture-dashboard.md).

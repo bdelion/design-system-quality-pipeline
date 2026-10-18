@@ -1,0 +1,1441 @@
+{
+  "protocol": "dashboard-benchmark-v1",
+  "resources": {
+    "protocol": "dashboard-resources-v1",
+    "method": "dépendances statiques HTML/JS/CSS ; aucune hypothèse de cache entre pages",
+    "files": [
+      {
+        "path": "/assets/app.js",
+        "bytes": 9981,
+        "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+      },
+      {
+        "path": "/assets/components.js",
+        "bytes": 14926,
+        "sha256": "9464f721957702e71034518f3cd5084454f2e18e4771ff5986b58ebe4d5cf30a"
+      },
+      {
+        "path": "/assets/context.js",
+        "bytes": 3747,
+        "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+      },
+      {
+        "path": "/assets/epics.js",
+        "bytes": 3689,
+        "sha256": "2b478f807a0c48bdbdc8955b087a0eda5de4800e769b7b83d14e2daee1c5e376"
+      },
+      {
+        "path": "/assets/graph.js",
+        "bytes": 2054,
+        "sha256": "57e03cae15d8d19af7ffcd995c2f1cce533597e53ab76bfca6356003bf608067"
+      },
+      {
+        "path": "/assets/issues.js",
+        "bytes": 13456,
+        "sha256": "46bd48f4e5b38831c75704e4680a6a4ba416f6f65c708f2d16cef4e37965c4fd"
+      },
+      {
+        "path": "/assets/kpi-presentation.js",
+        "bytes": 3842,
+        "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+      },
+      {
+        "path": "/assets/logo.svg",
+        "bytes": 259,
+        "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+      },
+      {
+        "path": "/assets/page-model.js",
+        "bytes": 8032,
+        "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+      },
+      {
+        "path": "/assets/statistics.js",
+        "bytes": 1918,
+        "sha256": "4b9f2a75e9e581f28ad8411ee6c95964292c0f81957aee250b3beeaaece44f3e"
+      },
+      {
+        "path": "/assets/style.css",
+        "bytes": 30476,
+        "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+      },
+      {
+        "path": "/assets/version-presentation.js",
+        "bytes": 1589,
+        "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+      },
+      {
+        "path": "/assets/workspaces.js",
+        "bytes": 14623,
+        "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+      }
+    ],
+    "distributedFiles": [
+      {
+        "path": "/assets/app.js",
+        "bytes": 9981,
+        "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+      },
+      {
+        "path": "/assets/components.js",
+        "bytes": 14926,
+        "sha256": "9464f721957702e71034518f3cd5084454f2e18e4771ff5986b58ebe4d5cf30a"
+      },
+      {
+        "path": "/assets/context.js",
+        "bytes": 3747,
+        "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+      },
+      {
+        "path": "/assets/epics.js",
+        "bytes": 3689,
+        "sha256": "2b478f807a0c48bdbdc8955b087a0eda5de4800e769b7b83d14e2daee1c5e376"
+      },
+      {
+        "path": "/assets/graph.js",
+        "bytes": 2054,
+        "sha256": "57e03cae15d8d19af7ffcd995c2f1cce533597e53ab76bfca6356003bf608067"
+      },
+      {
+        "path": "/assets/issues.js",
+        "bytes": 13456,
+        "sha256": "46bd48f4e5b38831c75704e4680a6a4ba416f6f65c708f2d16cef4e37965c4fd"
+      },
+      {
+        "path": "/assets/kpi-presentation.js",
+        "bytes": 3842,
+        "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+      },
+      {
+        "path": "/assets/logo.svg",
+        "bytes": 259,
+        "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+      },
+      {
+        "path": "/assets/page-model.js",
+        "bytes": 8032,
+        "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+      },
+      {
+        "path": "/assets/statistics.js",
+        "bytes": 1918,
+        "sha256": "4b9f2a75e9e581f28ad8411ee6c95964292c0f81957aee250b3beeaaece44f3e"
+      },
+      {
+        "path": "/assets/style.css",
+        "bytes": 30476,
+        "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+      },
+      {
+        "path": "/assets/version-presentation.js",
+        "bytes": 1589,
+        "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+      },
+      {
+        "path": "/assets/workspaces.js",
+        "bytes": 14623,
+        "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+      }
+    ],
+    "sharedAssetBytes": 74467,
+    "referencedAssetBytes": 108592,
+    "distributionBytes": 82188761,
+    "pages": [
+      {
+        "page": "accessibility.html",
+        "htmlBytes": 33357729,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/kpi-presentation.js",
+            "bytes": 3842,
+            "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          },
+          {
+            "path": "/assets/version-presentation.js",
+            "bytes": 1589,
+            "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+          },
+          {
+            "path": "/assets/workspaces.js",
+            "bytes": 14623,
+            "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+          }
+        ],
+        "assetBytes": 72549,
+        "totalBytes": 33430278
+      },
+      {
+        "page": "anomalies.html",
+        "htmlBytes": 5688776,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 52495,
+        "totalBytes": 5741271
+      },
+      {
+        "page": "audits.html",
+        "htmlBytes": 20634209,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/kpi-presentation.js",
+            "bytes": 3842,
+            "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          },
+          {
+            "path": "/assets/version-presentation.js",
+            "bytes": 1589,
+            "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+          },
+          {
+            "path": "/assets/workspaces.js",
+            "bytes": 14623,
+            "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+          }
+        ],
+        "assetBytes": 72549,
+        "totalBytes": 20706758
+      },
+      {
+        "page": "components.html",
+        "htmlBytes": 3051524,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/components.js",
+            "bytes": 14926,
+            "sha256": "9464f721957702e71034518f3cd5084454f2e18e4771ff5986b58ebe4d5cf30a"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/statistics.js",
+            "bytes": 1918,
+            "sha256": "4b9f2a75e9e581f28ad8411ee6c95964292c0f81957aee250b3beeaaece44f3e"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 69339,
+        "totalBytes": 3120863
+      },
+      {
+        "page": "epics.html",
+        "htmlBytes": 5483,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/epics.js",
+            "bytes": 3689,
+            "sha256": "2b478f807a0c48bdbdc8955b087a0eda5de4800e769b7b83d14e2daee1c5e376"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 56184,
+        "totalBytes": 61667
+      },
+      {
+        "page": "graph.html",
+        "htmlBytes": 12728542,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/graph.js",
+            "bytes": 2054,
+            "sha256": "57e03cae15d8d19af7ffcd995c2f1cce533597e53ab76bfca6356003bf608067"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 54549,
+        "totalBytes": 12783091
+      },
+      {
+        "page": "history.html",
+        "htmlBytes": 7779,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 52495,
+        "totalBytes": 60274
+      },
+      {
+        "page": "index.html",
+        "htmlBytes": 24612,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 52495,
+        "totalBytes": 77107
+      },
+      {
+        "page": "issues.html",
+        "htmlBytes": 1855489,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/issues.js",
+            "bytes": 13456,
+            "sha256": "46bd48f4e5b38831c75704e4680a6a4ba416f6f65c708f2d16cef4e37965c4fd"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/statistics.js",
+            "bytes": 1918,
+            "sha256": "4b9f2a75e9e581f28ad8411ee6c95964292c0f81957aee250b3beeaaece44f3e"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          }
+        ],
+        "assetBytes": 67869,
+        "totalBytes": 1923358
+      },
+      {
+        "page": "quality.html",
+        "htmlBytes": 4726026,
+        "resources": [
+          {
+            "path": "/assets/app.js",
+            "bytes": 9981,
+            "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+          },
+          {
+            "path": "/assets/context.js",
+            "bytes": 3747,
+            "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+          },
+          {
+            "path": "/assets/kpi-presentation.js",
+            "bytes": 3842,
+            "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+          },
+          {
+            "path": "/assets/logo.svg",
+            "bytes": 259,
+            "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+          },
+          {
+            "path": "/assets/page-model.js",
+            "bytes": 8032,
+            "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+          },
+          {
+            "path": "/assets/style.css",
+            "bytes": 30476,
+            "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+          },
+          {
+            "path": "/assets/version-presentation.js",
+            "bytes": 1589,
+            "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+          },
+          {
+            "path": "/assets/workspaces.js",
+            "bytes": 14623,
+            "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+          }
+        ],
+        "assetBytes": 72549,
+        "totalBytes": 4798575
+      }
+    ]
+  },
+  "fixtureVersion": "dashboard-load-v1",
+  "fixtureHash": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15",
+  "scenario": "load",
+  "seed": 81,
+  "counts": {
+    "repositories": 3,
+    "issues": 1800,
+    "pullRequests": 1500,
+    "componentVersions": 2300,
+    "diagnostics": 3000
+  },
+  "revision": "3e816bbd15dd5cb2b54bd0280ce8eac1ab4877b5",
+  "workingTreeDirty": true,
+  "environment": {
+    "node": "v22.23.3",
+    "os": "win32",
+    "release": "10.0.19045",
+    "arch": "x64",
+    "cpu": "Intel(R) Core(TM) i3-4130 CPU @ 3.40GHz",
+    "logicalCpus": 4,
+    "memoryBytes": 8461107200
+  },
+  "browser": {
+    "version": "155.0.4283.62",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "conditions": {
+    "channel": "msedge",
+    "headless": true,
+    "locale": "fr-FR",
+    "timezone": "UTC",
+    "workers": 1,
+    "runs": 3,
+    "warmup": 1,
+    "cache": "nouveau contexte par passage, HTTP no-store, routage local uniquement",
+    "cpuThrottle": "aucun",
+    "network": "loopback uniquement, sans compression",
+    "readiness": "DOMContentLoaded pour navigation ; load + h1 visible + fonts.ready + deux requestAnimationFrame pour résultat ; pas une mesure d’interactivité complète",
+    "capture": "désactivée",
+    "preparation": "processus Node neuf par génération ; préparation normalisation/Analytics et démarrage exclus du temps de génération ; chauffe exclue des séries"
+  },
+  "preparationMs": 14124.6276,
+  "generationMs": {
+    "samples": [12912.393399999997, 9841.0723, 9428.105799999998],
+    "median": 9841.0723,
+    "min": 9428.105799999998,
+    "max": 12912.393399999997,
+    "p25": 9634.589049999999,
+    "p75": 11376.732849999999,
+    "iqr": 1742.1437999999998
+  },
+  "duplication": {
+    "scope": "copies exactes des scripts JSON embarqués, toutes pages ; inclut les répétitions au sein des pages",
+    "totalJsonBytes": 45978863,
+    "uniqueJsonBytes": 45978863,
+    "duplicateJsonBytes": 0
+  },
+  "pages": [
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/kpi-presentation.js",
+          "bytes": 3842,
+          "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        },
+        {
+          "path": "/assets/version-presentation.js",
+          "bytes": 1589,
+          "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+        },
+        {
+          "path": "/assets/workspaces.js",
+          "bytes": 14623,
+          "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+        }
+      ],
+      "assetBytes": 72549,
+      "totalBytes": 33430278,
+      "page": "accessibility.html",
+      "htmlBytes": 33357729,
+      "htmlSha256": "2769dd2f3326fdad92af296e66e565af60e4cd8d3042ce0b8dac5de2897a51b2",
+      "jsonBytes": 23016935,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 3540,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 23016935,
+          "sha256": "81a5aa4692611c22676089c408213b0daac83846d2333c6f05ed7c6243e593ef"
+        }
+      ],
+      "domNodes": 84654,
+      "domElements": 48051,
+      "renderedTableRows": 3544,
+      "visibleTableRows": 3544,
+      "navigationMs": {
+        "samples": [4307.668799999985, 4626.030799999979, 2508.1956000000064],
+        "median": 4307.668799999985,
+        "min": 2508.1956000000064,
+        "max": 4626.030799999979,
+        "p25": 3407.9321999999956,
+        "p75": 4466.849799999982,
+        "iqr": 1058.9175999999861
+      },
+      "resultReadyMs": {
+        "samples": [5338.796999999991, 5042.497799999983, 3410.448000000004],
+        "median": 5042.497799999983,
+        "min": 3410.448000000004,
+        "max": 5338.796999999991,
+        "p25": 4226.472899999993,
+        "p75": 5190.647399999987,
+        "iqr": 964.1744999999937
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 52495,
+      "totalBytes": 5741271,
+      "page": "anomalies.html",
+      "htmlBytes": 5688776,
+      "htmlSha256": "5284002ee3a51194ad31410cd61c0119a5ff1c9d605eccbd2468c98752121f83",
+      "jsonBytes": 227,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 1770,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 227,
+          "sha256": "7d013221591dc5367bdfa37064467e1b3d1befacfecb8977f448ab9ae8912878"
+        }
+      ],
+      "domNodes": 119384,
+      "domElements": 64961,
+      "renderedTableRows": 1770,
+      "visibleTableRows": 1770,
+      "navigationMs": {
+        "samples": [3704.0614999999816, 4331.048499999975, 4262.878800000006],
+        "median": 4262.878800000006,
+        "min": 3704.0614999999816,
+        "max": 4331.048499999975,
+        "p25": 3983.4701499999937,
+        "p75": 4296.963649999991,
+        "iqr": 313.49349999999686
+      },
+      "resultReadyMs": {
+        "samples": [4615.808999999979, 5140.746400000004, 5001.160399999993],
+        "median": 5001.160399999993,
+        "min": 4615.808999999979,
+        "max": 5140.746400000004,
+        "p25": 4808.484699999986,
+        "p75": 5070.9533999999985,
+        "iqr": 262.4687000000122
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/kpi-presentation.js",
+          "bytes": 3842,
+          "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        },
+        {
+          "path": "/assets/version-presentation.js",
+          "bytes": 1589,
+          "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+        },
+        {
+          "path": "/assets/workspaces.js",
+          "bytes": 14623,
+          "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+        }
+      ],
+      "assetBytes": 72549,
+      "totalBytes": 20706758,
+      "page": "audits.html",
+      "htmlBytes": 20634209,
+      "htmlSha256": "366b04420cf99c6d56353ab6ad6a53db7b57754e490ad4dedcdf0ef7e3a07e3d",
+      "jsonBytes": 18105776,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 2360,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 18105776,
+          "sha256": "5a8a443ebf294415f11d20c019774f4e37ff645b99cbd7dc8011944839a1f7c4"
+        }
+      ],
+      "domNodes": 71196,
+      "domElements": 44494,
+      "renderedTableRows": 2360,
+      "visibleTableRows": 2360,
+      "navigationMs": {
+        "samples": [5235.180900000007, 5754.628800000006, 4865.050500000012],
+        "median": 5235.180900000007,
+        "min": 4865.050500000012,
+        "max": 5754.628800000006,
+        "p25": 5050.115700000009,
+        "p75": 5494.904850000006,
+        "iqr": 444.7891499999969
+      },
+      "resultReadyMs": {
+        "samples": [6118.565800000011, 6725.785700000008, 5481.574599999993],
+        "median": 6118.565800000011,
+        "min": 5481.574599999993,
+        "max": 6725.785700000008,
+        "p25": 5800.070200000002,
+        "p75": 6422.175750000009,
+        "iqr": 622.1055500000075
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/components.js",
+          "bytes": 14926,
+          "sha256": "9464f721957702e71034518f3cd5084454f2e18e4771ff5986b58ebe4d5cf30a"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/statistics.js",
+          "bytes": 1918,
+          "sha256": "4b9f2a75e9e581f28ad8411ee6c95964292c0f81957aee250b3beeaaece44f3e"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 69339,
+      "totalBytes": 3120863,
+      "page": "components.html",
+      "htmlBytes": 3051524,
+      "htmlSha256": "37db6622e0146fe10afd69af80e9cb95fc0f4dcc2f4a2b5976b207e6e9223136",
+      "jsonBytes": 3026473,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 3026473,
+          "sha256": "a986719529c640ecde01ef6b0fceac1cc1679dfc79b2a6efbd0a08665be6debc"
+        }
+      ],
+      "domNodes": 37475,
+      "domElements": 21523,
+      "renderedTableRows": 230,
+      "visibleTableRows": 230,
+      "navigationMs": {
+        "samples": [427.7697000000044, 421.0933999999834, 439.5158999999985],
+        "median": 427.7697000000044,
+        "min": 421.0933999999834,
+        "max": 439.5158999999985,
+        "p25": 424.4315499999939,
+        "p75": 433.64280000000144,
+        "iqr": 9.211250000007567
+      },
+      "resultReadyMs": {
+        "samples": [852.0659999999916, 792.6348999999755, 775.020199999999],
+        "median": 792.6348999999755,
+        "min": 775.020199999999,
+        "max": 852.0659999999916,
+        "p25": 783.8275499999872,
+        "p75": 822.3504499999835,
+        "iqr": 38.5228999999963
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/epics.js",
+          "bytes": 3689,
+          "sha256": "2b478f807a0c48bdbdc8955b087a0eda5de4800e769b7b83d14e2daee1c5e376"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 56184,
+      "totalBytes": 61667,
+      "page": "epics.html",
+      "htmlBytes": 5483,
+      "htmlSha256": "63a954440b441fe73c07f07e25b6fc9414bc74ce73acbe0048eee676262a9084",
+      "jsonBytes": 255,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 255,
+          "sha256": "30ff9edb9b71b29ef4f9977dd83c1cbb5c2cbe8c68fcf95bbd6c4ee24ecdba69"
+        }
+      ],
+      "domNodes": 150,
+      "domElements": 92,
+      "renderedTableRows": 0,
+      "visibleTableRows": 0,
+      "navigationMs": {
+        "samples": [205.7112999999954, 191.09189999999944, 195.1119999999937],
+        "median": 195.1119999999937,
+        "min": 191.09189999999944,
+        "max": 205.7112999999954,
+        "p25": 193.10194999999658,
+        "p75": 200.41164999999455,
+        "iqr": 7.309699999997974
+      },
+      "resultReadyMs": {
+        "samples": [307.60449999998673, 243.68450000000303, 257.80489999998827],
+        "median": 257.80489999998827,
+        "min": 243.68450000000303,
+        "max": 307.60449999998673,
+        "p25": 250.74469999999565,
+        "p75": 282.7046999999875,
+        "iqr": 31.95999999999185
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/graph.js",
+          "bytes": 2054,
+          "sha256": "57e03cae15d8d19af7ffcd995c2f1cce533597e53ab76bfca6356003bf608067"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 54549,
+      "totalBytes": 12783091,
+      "page": "graph.html",
+      "htmlBytes": 12728542,
+      "htmlSha256": "9bd12732bdf552ef0366db8de592eb8c0a3743e9a535eed1a0ca5d1e9824929f",
+      "jsonBytes": 223,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 1800,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 223,
+          "sha256": "d5827d66752163e1d3ce6a3966db721969bf03e46fa2443d95b668679f0e0d4c"
+        }
+      ],
+      "domNodes": 126558,
+      "domElements": 78417,
+      "renderedTableRows": 1800,
+      "visibleTableRows": 1800,
+      "navigationMs": {
+        "samples": [7330.886099999974, 6594.426600000006, 6156.2875999999815],
+        "median": 6594.426600000006,
+        "min": 6156.2875999999815,
+        "max": 7330.886099999974,
+        "p25": 6375.357099999994,
+        "p75": 6962.65634999999,
+        "iqr": 587.2992499999964
+      },
+      "resultReadyMs": {
+        "samples": [7719.5294000000285, 7065.659999999974, 6819.4353999999585],
+        "median": 7065.659999999974,
+        "min": 6819.4353999999585,
+        "max": 7719.5294000000285,
+        "p25": 6942.547699999966,
+        "p75": 7392.5947000000015,
+        "iqr": 450.04700000003504
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 52495,
+      "totalBytes": 60274,
+      "page": "history.html",
+      "htmlBytes": 7779,
+      "htmlSha256": "9b037d29be88063d5006ce42b305de4258f25920debab0eb39f5e31e00aee50c",
+      "jsonBytes": 225,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 225,
+          "sha256": "b9e786d6e4eaa38e28f8aff25f40a79ad15e4f6eb2f8afc20095d2310f45322b"
+        }
+      ],
+      "domNodes": 246,
+      "domElements": 145,
+      "renderedTableRows": 0,
+      "visibleTableRows": 0,
+      "navigationMs": {
+        "samples": [254.35269999998854, 261.5632999999798, 281.8631999999634],
+        "median": 261.5632999999798,
+        "min": 254.35269999998854,
+        "max": 281.8631999999634,
+        "p25": 257.95799999998417,
+        "p75": 271.7132499999716,
+        "iqr": 13.755249999987427
+      },
+      "resultReadyMs": {
+        "samples": [396.4506999999867, 397.9463000000105, 387.6465999999782],
+        "median": 396.4506999999867,
+        "min": 387.6465999999782,
+        "max": 397.9463000000105,
+        "p25": 392.04864999998244,
+        "p75": 397.1984999999986,
+        "iqr": 5.1498500000161584
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 52495,
+      "totalBytes": 77107,
+      "page": "index.html",
+      "htmlBytes": 24612,
+      "htmlSha256": "92b5dc3d48eedf23ef85513e6ad7c265bb00bd9af2a6073a018ddacdcad5cf78",
+      "jsonBytes": 223,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 6,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 223,
+          "sha256": "469c8db7e1e18b485ebb501805b9f2ec83a15a8cb8c5648b48ddec039c2f1f88"
+        }
+      ],
+      "domNodes": 444,
+      "domElements": 265,
+      "renderedTableRows": 6,
+      "visibleTableRows": 6,
+      "navigationMs": {
+        "samples": [439.2896999999648, 254.66269999998622, 250.2621999999974],
+        "median": 254.66269999998622,
+        "min": 250.2621999999974,
+        "max": 439.2896999999648,
+        "p25": 252.4624499999918,
+        "p75": 346.9761999999755,
+        "iqr": 94.5137499999837
+      },
+      "resultReadyMs": {
+        "samples": [529.3154999999679, 362.9993999999715, 325.65710000001127],
+        "median": 362.9993999999715,
+        "min": 325.65710000001127,
+        "max": 529.3154999999679,
+        "p25": 344.3282499999914,
+        "p75": 446.1574499999697,
+        "iqr": 101.8291999999783
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/issues.js",
+          "bytes": 13456,
+          "sha256": "46bd48f4e5b38831c75704e4680a6a4ba416f6f65c708f2d16cef4e37965c4fd"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/statistics.js",
+          "bytes": 1918,
+          "sha256": "4b9f2a75e9e581f28ad8411ee6c95964292c0f81957aee250b3beeaaece44f3e"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        }
+      ],
+      "assetBytes": 67869,
+      "totalBytes": 1923358,
+      "page": "issues.html",
+      "htmlBytes": 1855489,
+      "htmlSha256": "01690fa651977f8e6419cf980cb0c6f425582e96ef6b52f9f0f2b15821ec5bc2",
+      "jsonBytes": 1828301,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 1828301,
+          "sha256": "e7b14b44b12bb3a62840e34006db9719018d370849b71331e2a439231b2ea5f1"
+        }
+      ],
+      "domNodes": 267791,
+      "domElements": 151708,
+      "renderedTableRows": 8880,
+      "visibleTableRows": 8880,
+      "navigationMs": {
+        "samples": [985.8156000000308, 680.4414000000106, 732.4794000000111],
+        "median": 732.4794000000111,
+        "min": 680.4414000000106,
+        "max": 985.8156000000308,
+        "p25": 706.4604000000108,
+        "p75": 859.147500000021,
+        "iqr": 152.6871000000101
+      },
+      "resultReadyMs": {
+        "samples": [5696.150599999994, 4262.261300000013, 4092.06799999997],
+        "median": 4262.261300000013,
+        "min": 4092.06799999997,
+        "max": 5696.150599999994,
+        "p25": 4177.1646499999915,
+        "p75": 4979.205950000003,
+        "iqr": 802.0413000000117
+      },
+      "captureMs": null
+    },
+    {
+      "resources": [
+        {
+          "path": "/assets/app.js",
+          "bytes": 9981,
+          "sha256": "d19cfeede290e92538068d52ad99a17849e65638602a3e2e72c516f9a7dc96d2"
+        },
+        {
+          "path": "/assets/context.js",
+          "bytes": 3747,
+          "sha256": "17c14ec8683ce914e47b4fd3357caed973370e3ea250ea3ac9ed8eeb8b79afb6"
+        },
+        {
+          "path": "/assets/kpi-presentation.js",
+          "bytes": 3842,
+          "sha256": "c2df3aa5a4297b8cbbb07d6308440cac08e772d6415ae1384e1267a8f521ce4e"
+        },
+        {
+          "path": "/assets/logo.svg",
+          "bytes": 259,
+          "sha256": "91e16d68644760b73d1633f0c2edca4b48b63057cc0f422d876c433a74907bd9"
+        },
+        {
+          "path": "/assets/page-model.js",
+          "bytes": 8032,
+          "sha256": "0342f29d661746fad7b74895a2eb58df2e7c4ea853e03f3a5de816ef2879fa9d"
+        },
+        {
+          "path": "/assets/style.css",
+          "bytes": 30476,
+          "sha256": "c816ae0cea84ac47bca0ceba76e534b80199934c4105d691785c2cf694552568"
+        },
+        {
+          "path": "/assets/version-presentation.js",
+          "bytes": 1589,
+          "sha256": "08a7a92165f33a7655e18ad1201f3eebe5176ebd98722c7d19ecff31896980d4"
+        },
+        {
+          "path": "/assets/workspaces.js",
+          "bytes": 14623,
+          "sha256": "2f4b6758637ce68dd94a090e591f8202a0054ad355460de324aeeb98bee7a5b8"
+        }
+      ],
+      "assetBytes": 72549,
+      "totalBytes": 4798575,
+      "page": "quality.html",
+      "htmlBytes": 4726026,
+      "htmlSha256": "0bc574ae0c8696fab9bd4ebb8d09069c20052505b253ba66a38d91bff4060d6b",
+      "jsonBytes": 225,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 3006,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 225,
+          "sha256": "23aad348efb928b531a3c61abcff58b50df283e9342f326d4d3240425986b45a"
+        }
+      ],
+      "domNodes": 149127,
+      "domElements": 66099,
+      "renderedTableRows": 3006,
+      "visibleTableRows": 3006,
+      "navigationMs": {
+        "samples": [1975.883600000001, 2191.8577000000514, 1763.7015000000247],
+        "median": 1975.883600000001,
+        "min": 1763.7015000000247,
+        "max": 2191.8577000000514,
+        "p25": 1869.7925500000129,
+        "p75": 2083.870650000026,
+        "iqr": 214.07810000001336
+      },
+      "resultReadyMs": {
+        "samples": [2261.68889999995, 2501.4793000000063, 2030.6331000000355],
+        "median": 2261.68889999995,
+        "min": 2030.6331000000355,
+        "max": 2501.4793000000063,
+        "p25": 2146.160999999993,
+        "p75": 2381.584099999978,
+        "iqr": 235.42309999998542
+      },
+      "captureMs": null
+    }
+  ],
+  "comparison": [
+    {
+      "page": "accessibility.html",
+      "htmlBytes": -18439484,
+      "jsonBytes": -18439506,
+      "initialTableRows": 0,
+      "domNodes": 0,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "anomalies.html",
+      "htmlBytes": -41456254,
+      "jsonBytes": -41456214,
+      "initialTableRows": 0,
+      "domNodes": -1,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "audits.html",
+      "htmlBytes": -23350650,
+      "jsonBytes": -23350665,
+      "initialTableRows": 0,
+      "domNodes": 0,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "components.html",
+      "htmlBytes": -41456309,
+      "jsonBytes": -41456200,
+      "initialTableRows": 0,
+      "domNodes": -3,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "epics.html",
+      "htmlBytes": -41456266,
+      "jsonBytes": -41456210,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "graph.html",
+      "htmlBytes": -41456262,
+      "jsonBytes": -41456218,
+      "initialTableRows": 0,
+      "domNodes": -1,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "history.html",
+      "htmlBytes": -41456258,
+      "jsonBytes": -41456216,
+      "initialTableRows": 0,
+      "domNodes": -1,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "index.html",
+      "htmlBytes": -41456262,
+      "jsonBytes": -41456218,
+      "initialTableRows": 0,
+      "domNodes": -1,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "issues.html",
+      "htmlBytes": -41456322,
+      "jsonBytes": -41456208,
+      "initialTableRows": 0,
+      "domNodes": -4,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "quality.html",
+      "htmlBytes": -41456200,
+      "jsonBytes": -41456216,
+      "initialTableRows": 0,
+      "domNodes": 0,
+      "renderedTableRows": 0
+    }
+  ],
+  "budgetFailures": []
+}

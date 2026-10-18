@@ -1,3 +1,4 @@
+import { readPageModel } from './page-model.js';
 /* global URL, Blob */
 import { durationStatistics } from './statistics.js';
 import { matchesFact, currentContext, setContext } from './context.js';
@@ -14,12 +15,8 @@ import { matchesFact, currentContext, setContext } from './context.js';
     if (feedback)
       feedback.textContent = `Repository : ${currentContext().get('repository') || 'tous'} · ${message}`;
   }
-  let rows;
-  try {
-    rows = JSON.parse(document.getElementById('component-analysis-data')?.textContent ?? 'null');
-  } catch {
-    rows = null;
-  }
+  const pageModel = readPageModel();
+  const rows = pageModel?.data.components;
   if (!Array.isArray(rows)) {
     updateSummary(
       'Données de l’explorateur indisponibles. Régénérez le dashboard depuis un snapshot compatible.'
@@ -182,10 +179,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
         const stats = durationStatistics(row.items).global;
         const prs = new Set(row.items.flatMap((item) => item.prs));
         const age = oldest
-          ? Math.max(
-              0,
-              (Date.parse(window.__SNAPSHOT__.capturedAt) - Date.parse(oldest.createdAt)) / 86400000
-            )
+          ? Math.max(0, (Date.parse(pageModel.snapshot.capturedAt) - Date.parse(oldest.createdAt)) / 86400000)
           : null;
         return {
           row,

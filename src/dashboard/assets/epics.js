@@ -1,8 +1,10 @@
+import { readPageModel } from './page-model.js';
 /* global Blob, URL, location, setTimeout */
 (() => {
   const root = document.querySelector('[data-epic-activity]');
   if (!root) return;
-  const model = JSON.parse(document.getElementById('epic-activity-data').textContent);
+  const model = readPageModel()?.data.epics;
+  if (!model) return;
   const select = root.querySelector('[data-epic-select]');
   const button = root.querySelector('[data-epic-export]');
   const summary = root.querySelector('[data-epic-summary]');

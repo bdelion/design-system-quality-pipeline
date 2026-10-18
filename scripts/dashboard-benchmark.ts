@@ -1,3 +1,4 @@
+import { directoryResources, resourceFiles } from './benchmark-resources.js';
 import { chromium, type Browser } from '@playwright/test';
 import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -30,6 +31,7 @@ export async function measureBrowserPage(browser: Browser, url: string, captureP
     serviceWorkers: 'block'
   });
   const errors: string[] = [];
+  const resources = new Set<string>();
   await context.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin !== new URL(url).origin) {
       errors.push('Requête non locale interdite');
@@ -41,6 +43,8 @@ export async function measureBrowserPage(browser: Browser, url: string, captureP
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('response', (response) => {
       if (response.status() >= 400) errors.push(`HTTP ${response.status()}`);
+      if (response.url() !== url && response.ok())
+        resources.add(decodeURIComponent(new URL(response.url()).pathname));
     });
     const start = performance.now();
     const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
@@ -72,7 +76,7 @@ export async function measureBrowserPage(browser: Browser, url: string, captureP
       captureMs = performance.now() - captureStart;
     }
     if (errors.length) throw new Error(`Erreurs navigateur : ${errors.join('; ')}`);
-    return { ...counts, navigationMs, resultReadyMs, captureMs };
+    return { ...counts, navigationMs, resultReadyMs, captureMs, resources: [...resources].sort() };
   } finally {
     await context.close();
   }
@@ -180,6 +184,9 @@ export async function runBenchmark(options: {
     navigationMs: ReturnType<typeof summarizeSamples>;
     resultReadyMs: ReturnType<typeof summarizeSamples>;
     captureMs: number | null;
+    resources: Awaited<ReturnType<typeof resourceFiles>>;
+    assetBytes: number;
+    totalBytes: number;
   })[] = [];
   try {
     server = await startDashboardServer(join(output, 'dashboard'), 0);
@@ -198,7 +205,12 @@ export async function runBenchmark(options: {
       const capture = options.screenshots
         ? await measureBrowserPage(browser, url, join(output, file + '.png'))
         : null;
+      const resources = await resourceFiles(join(output, 'dashboard'), first.resources);
+      const assetBytes = resources.reduce((sum, resource) => sum + resource.bytes, 0);
       pages.push({
+        resources,
+        assetBytes,
+        totalBytes: metrics.htmlBytes + assetBytes,
         page: file,
         ...metrics,
         domNodes: first.domNodes,
@@ -215,6 +227,7 @@ export async function runBenchmark(options: {
     const unique = new Map(payloads.map((payload) => [payload.sha256, payload.bytes]));
     const report = {
       protocol: benchmarkProtocol,
+      resources: await directoryResources(join(output, 'dashboard')),
       fixtureVersion,
       fixtureHash,
       scenario: options.scenario,
@@ -272,7 +285,7 @@ export async function runBenchmark(options: {
       join(output, 'report.json'),
       JSON.stringify({ ...report, comparison, budgetFailures }, null, 2) + '\n'
     );
-    await writeFile(join(output, 'report.md'), renderReport(report, comparison));
+    await writeFile(join(output, 'report.md'), renderReport(report, comparison) + renderResources(report));
     console.log(`Rapport : ${join(output, 'report.md')}`);
     if (budgetFailures.length) throw new Error(`Budgets dépassés : ${budgetFailures.join('; ')}`);
     return report;
@@ -286,6 +299,11 @@ export async function runBenchmark(options: {
       await browser.close();
     }
   }
+}
+
+/** Présente les ressources de chaque navigation et le coût dédupliqué du dossier distribué. */
+function renderResources(report: Awaited<ReturnType<typeof runBenchmark>>): string {
+  return `\n## Ressources locales\n\nJSON déjà inclus dans HTML. Assets utilisés mesurés sur une navigation sans cache ; imports communs comptés une seule fois par page.\n\n| Page | Assets octets | HTML + assets octets |\n| --- | ---: | ---: |\n${report.pages.map((page) => `| ${page.page} | ${page.assetBytes} | ${page.totalBytes} |`).join('\n')}\n\nAssets partagés entre plusieurs pages : ${report.resources.sharedAssetBytes} octets. Dossier HTML + tous les assets distribués, dédupliqués par chemin : ${report.resources.distributionBytes} octets. Les empreintes et dépendances statiques par page figurent dans report.json ; les archives sans cette extension ne renseignent pas ces mesures (indisponible, jamais zéro). Aucun cache ni parsing commun entre documents indépendants n’est garanti.\n`;
 }
 
 /** Produit une synthèse partageable, sans chemins locaux privés ni contenu des entités. */

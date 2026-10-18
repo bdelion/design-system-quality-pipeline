@@ -84,7 +84,7 @@ Les filtres forment une intersection ; une dimension absente d'une preuve ne sat
 
 Les liens ciblant une issue, un audit ou une anomalie remplacent les anciennes identités, familles et versions afin d'éviter un contexte contradictoire. Les paramètres explicitement écrits dans le lien cible et son ancre sont conservés. Les liens externes et téléchargements restent indépendants.
 
-Les cartes KPI présentent le **snapshot complet**, explicitement indiqué sur chaque page. Les tableaux et statistiques des explorateurs suivent les filtres et la sélection ; ils ne prétendent pas recalculer des verdicts Analytics dans le navigateur.
+Les cartes globales présentent les **agrégats de toute la capture** lorsque ce périmètre est indiqué ; cela n’implique pas de transporter le snapshot complet dans le navigateur. Les tableaux et statistiques des explorateurs suivent les filtres et la sélection ; ils ne prétendent pas recalculer des verdicts Analytics dans le navigateur.
 
 ## Historique et explicabilité
 
@@ -96,11 +96,13 @@ La section **Preuves des métriques Analytics** expose définition, périmètre,
 
 ### Source unique du modèle des espaces (#82)
 
-Le HTML émet le modèle Analytics des espaces une seule fois, dans `window.__SNAPSHOT__.analytics.workspaces`. `app.js` et `workspaces.js` partagent ce snapshot ; le second ne parse plus un script JSON `workspace-data` distinct. Le module des espaces reste chargé sur les mêmes pages. Les scripts modules sont différés : l'affectation inline du snapshot est exécutée avant leurs consommateurs.
+Le lot #82 a supprimé la seconde sérialisation du modèle Analytics des espaces. Le lot #83 conserve cette unicité mais remplace son transport global par le [contrat de page versionné (ADR-005)](../07-decisions/ADR-005-modeles-lecture-dashboard.md). Il n’existe plus de `window.__SNAPSHOT__` ni de script `workspace-data` dans les nouveaux HTML. Les consommateurs partagent le chargement validé de `dashboard-page-data` dans le document.
 
 La génération construit une projection navigateur sans modifier la capture source. Pour une capture ancienne ou sans agrégats, `workspaceModel` fournit le même contrat courant aux cartes HTML et au navigateur ; les qualifications historiques existantes sont conservées. Aucune formule, réserve, relation, règle de filtrage ou structure CSV n'est changée. La sérialisation continue d'échapper les chevrons pour empêcher une fermeture de script par une valeur de donnée.
 
-Le serveur HTTP local et l'avertissement `file:` restent nécessaires et inchangés. Cette optimisation retire uniquement une copie embarquée ; elle n'externalise pas les JSON et ne met pas en œuvre la pagination de #83. Les régressions couvrent les dix pages pour les captures actuelles/anciennes/sans modèle, l'immuabilité, l'échappement, puis la parité PC des cartes, réserves, liens, filtres et exports CSV.
+Le serveur HTTP local et l’avertissement `file:` restent nécessaires. #83 cible le JSON intégré selon les besoins de chaque page, sans externalisation ni pagination. Les régressions couvrent les dix pages pour les captures actuelles/anciennes/sans modèle, l’immuabilité, l’échappement, puis la parité PC des cartes, réserves, liens, filtres et exports CSV. Le modèle des espaces expose seulement les synthèses pour les audits et ajoute les faits d’export pour l’accessibilité ; les preuves déjà rendues dans le HTML ne sont pas rediffusées en JSON. Les modules spécifiques sont chargés uniquement sur leurs parcours.
+
+Un contrat manquant, invalide ou de version inconnue affiche une alerte et désactive les interactions concernées, sans afficher de zéro de substitution. Les tableaux statiques restent visibles avec une réserve explicite. Distribuer ensemble HTML et assets d’une même génération ; les anciennes captures passent par la projection serveur existante, les anciens dossiers restent consultables avec leurs propres assets. Un mélange de générations n’est pas supporté.
 
 ### Versions PROD réellement évaluées (#80)
 

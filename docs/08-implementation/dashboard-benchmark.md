@@ -40,6 +40,10 @@ Conditions : PC headless 1 440 × 900, locale `fr-FR`, UTC, un worker, contexte 
 
 Les octets HTML sont ceux des fichiers UTF-8 non compressés. Le JSON embarqué (snapshot et scripts `application/json`) est **déjà inclus** dans le HTML. Les payloads sont identifiés et hachés ; les copies exactes sont comptées au sein des pages et entre pages. Ce n'est pas une mesure de recouvrement sémantique RAW/normalisé. Les lignes initiales sont les `tr` des `tbody` du fichier HTML ; lignes rendues et visibles sont mesurées après disponibilité. Les nœuds DOM incluent document, éléments, textes et commentaires ; les éléments sont aussi comptés séparément. Le contenu d'une chaîne JSON n'est pas du DOM.
 
+Depuis #83, l’extension additive `dashboard-resources-v1` recense aussi les JS/CSS/images. Chaque page indique les ressources locales effectivement reçues, leur taille et empreinte, `assetBytes` et `totalBytes` (HTML + assets, sans ajouter une seconde fois le JSON intégré). `resources.pages` décrit en complément les dépendances statiques HTML/JS/CSS ; `sharedAssetBytes` compte une fois les assets référencés par plusieurs pages. `distributionBytes` additionne les dix HTML et tous les fichiers du dossier assets, y compris ceux qui ne sont pas référencés. Les octets sont non compressés, sans hypothèse de cache entre documents.
+
+Les archives #81/#82 ne contiennent pas cette extension : leurs mesures de ressources restent indisponibles, jamais supposées nulles. `directoryResources` permet de recenser un ancien dossier conservé sans le régénérer ni modifier son rapport historique. Les comparaisons et budgets existants continuent à porter sur les cinq métriques déterministes validées ; les coûts des ressources sont présentés séparément pour revue, sans inventer un nouveau budget. Voir [ADR-005](../07-decisions/ADR-005-modeles-lecture-dashboard.md) pour le choix du JSON intégré.
+
 ## Budgets et comparaison avant/après
 
 **VALIDÉ PAR L'UTILISATEUR LE 18/10/2026** : « Alerte dès la moindre augmentation », soit **0 % de croissance**, par page sur HTML/JSON, lignes initiales/rendues et nœuds DOM, face à une baseline synthétique compatible. Le choix est enregistré dans `config/benchmark-budgets.json`. Une diminution est permise. Une augmentation attendue pour une fonctionnalité exige une revue explicite et une nouvelle baseline ; ne pas la régénérer silencieusement pour contourner un échec.
@@ -86,3 +90,24 @@ Chaque page retire 25 950 803 octets JSON et les 61 octets de sa balise redondan
 Voir le [rapport de charge après #82](benchmarks/issue-82-load.md) et ses [mesures JSON avec deltas](benchmarks/issue-82-load.json). Le HTML reste volumineux et le snapshot est encore présent dans chaque page ; l'externalisation des données et la pagination ne font pas partie de ce lot.
 
 Le [contrôle après #82](benchmarks/issue-82-control.md) et ses [mesures JSON](benchmarks/issue-82-control.json) confirment aussi le budget : 185 488 octets HTML retirés par page, accueil de 529 408 à 343 920 octets, lignes inchangées et deux nœuds DOM en moins. Les captures viewport sont mesurées séparément des passages chronométrés. Les références et budgets #81 restent inchangés ; les nouveaux tests imposent en plus l'unicité du modèle émis.
+
+## Modèles de lecture par page (#83)
+
+**MESURÉ LE 19/10/2026**, sur `3e816bb` avec le patch #83 (arbre modifié indiqué dans les rapports). Choix validé avant développement : JSON ciblé intégré, [ADR-005](../07-decisions/ADR-005-modeles-lecture-dashboard.md). Protocole v1, fixture v1, graine 81, Node 22.23.3 et Edge 155.0.4283.62 identiques aux références #82. Une chauffe et trois générations mesurées, puis navigations indépendantes sans cache. Le poste et les tâches de validation ne sont pas isolés : aucune conclusion de rapidité ni seuil de temps n’est tiré de ces séries.
+
+| Charge : octets non compressés         | Avant #83 (après #82) |  Après #83 |
+| -------------------------------------- | --------------------: | ---------: |
+| HTML accueil                           |            41 480 874 |     24 612 |
+| HTML accessibilité                     |            51 797 213 | 33 357 729 |
+| HTML cartographie                      |            54 184 804 | 12 728 542 |
+| Dix HTML cumulés                       |           455 520 436 | 82 080 169 |
+| Assets distribués, une fois par chemin |                99 850 |    108 592 |
+| Dix HTML + assets distribués           |           455 620 286 | 82 188 761 |
+
+L’accueil de charge utilise 52 495 octets d’assets, soit 77 107 octets HTML + assets. Sur le contrôle, son HTML passe de 343 920 à 11 078 octets ; le dossier complet passe de 4 074 264 à 1 043 737 octets. Le lecteur et la validation ajoutent du JavaScript : les assets partagés passent de 69 410 à 74 467 octets ; les modules inutiles retirés de chaque page et surtout la réduction des données font baisser le coût total. Ces valeurs sont exposées séparément, sans changer le périmètre des budgets validés.
+
+L’[inventaire avant migration](benchmarks/issue-83-before-resources.json) a été mesuré sur les fichiers conservés de `3e816bb`, sans réécriture des archives #81/#82. Son coût statique des assets, indépendant du scénario, est additionné aux HTML de charge archivés pour calculer le total avant ci-dessus ; ce n’est pas une série réseau historique reconstituée. Les rapports après incluent les ressources réellement reçues par chaque navigation ainsi que les dépendances statiques et leurs empreintes.
+
+Les budgets de croissance nulle passent sur contrôle et charge, par comparaison aux rapports #82 : lignes initiales/rendues identiques, DOM stable ou réduit. Les références #81 et la baseline automatique ne sont pas remplacées. L’ajout de la balise JSON est compensé par le retrait d’un nœud texte d’espacement et des modules hors parcours, sans modification des contrôles visibles. Les tests protègent contrats, immuabilité, échappement, erreurs, qualifications et parité KPI/filtres/liens/CSV.
+
+Voir [contrôle #83](benchmarks/issue-83-control.md), [JSON contrôle](benchmarks/issue-83-control.json), [charge #83](benchmarks/issue-83-load.md) et [JSON charge](benchmarks/issue-83-load.json). Les copies JSON exactement identiques entre pages disparaissent ; cela ne prouve pas l’absence de redondance sémantique. Les synthèses par contexte et les tableaux statiques restent volumineux, notamment en accessibilité : aucune pagination ni taille maximale universelle n’est garantie. La cible accueil < 1 Mo reste une proposition générale, même si ce jeu synthétique est désormais inférieur à cette valeur.

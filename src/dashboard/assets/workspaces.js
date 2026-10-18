@@ -1,8 +1,9 @@
-﻿import { currentContext, matchesFact, setContext } from './context.js';
+import { readPageModel } from './page-model.js';
+import { currentContext, matchesFact, setContext } from './context.js';
 /* global Blob, URL */
 import { presentWorkspaceKpi } from './kpi-presentation.js';
 import { presentWorkspaceVersions } from './version-presentation.js';
-const model = window.__SNAPSHOT__?.analytics?.workspaces ?? null;
+const model = readPageModel()?.data.workspaces ?? null;
 const distributionSorts = { category: 'label-asc', component: 'label-asc' };
 document.addEventListener('change', (event) => {
   const control = event.target;
@@ -94,8 +95,8 @@ function distributionChart(title, entries, note, dimension) {
 }
 /** Restitue les KPI du périmètre exact avec unités, populations et réserves, puis les répartitions. */
 function renderWorkspace() {
-  if (!model) return;
   renderQuality();
+  if (!model) return;
   const params = currentContext(),
     context = canonicalContext();
   const focused = [
@@ -351,37 +352,3 @@ document
     )
   );
 renderQuality();
-
-for (const button of document.querySelectorAll('.metric-info-button')) {
-  const tooltip = document.getElementById(button.getAttribute('popovertarget'));
-  if (!tooltip) continue;
-  /** Place l’infobulle près de son bouton en restant dans la fenêtre visible. */
-  function positionTooltip() {
-    const anchor = button.getBoundingClientRect();
-    const bounds = tooltip.getBoundingClientRect();
-    tooltip.style.left =
-      Math.max(12, Math.min(anchor.right - bounds.width, window.innerWidth - bounds.width - 12)) + 'px';
-    tooltip.style.top =
-      Math.max(
-        12,
-        anchor.bottom + bounds.height + 8 <= window.innerHeight
-          ? anchor.bottom + 8
-          : anchor.top - bounds.height - 8
-      ) + 'px';
-  }
-  tooltip.addEventListener('toggle', (event) => {
-    const open = event.newState === 'open';
-    button.setAttribute('aria-expanded', String(open));
-    if (open) positionTooltip();
-  });
-  window.addEventListener('resize', () => {
-    if (tooltip.matches(':popover-open')) positionTooltip();
-  });
-  window.addEventListener(
-    'scroll',
-    () => {
-      if (tooltip.matches(':popover-open')) positionTooltip();
-    },
-    true
-  );
-}

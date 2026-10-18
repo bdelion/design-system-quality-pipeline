@@ -3,9 +3,9 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Server } from 'node:http';
-import type { Snapshot } from '../../src/domain/types.js';
+import type { DashboardPageModel } from '../../src/dashboard/page-read-model.js';
+import { dashboardPageModel } from '../../src/dashboard/page-read-model.js';
 import { generateDashboard } from '../../src/dashboard/generate.js';
-import { workspaceModel } from '../../src/dashboard/workspaces.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 import { consolidationSnapshot } from '../support/consolidation.js';
 
@@ -23,7 +23,7 @@ test('issue #82 : parité PC des cartes, réserves, filtres, liens et CSV avec u
       delete snapshot.analytics.workspaces!.versionSelectionAlgorithm;
       snapshot.analytics.workspaces!.scopes[0]!.summary.coverage = -1;
     }
-    const expected = workspaceModel(snapshot);
+    const expected = dashboardPageModel(snapshot, 'accessibility').data.workspaces;
     const source = JSON.stringify(snapshot);
     const directory = await mkdtemp(join(tmpdir(), 'dsq-browser-payload-'));
     let server: Server | undefined;
@@ -35,7 +35,9 @@ test('issue #82 : parité PC des cartes, réserves, filtres, liens et CSV avec u
       await page.goto(`http://127.0.0.1:${address.port}/accessibility.html`);
       await expect(page.locator('#workspace-data')).toHaveCount(0);
       const actual = await page.evaluate(
-        () => (window as unknown as { __SNAPSHOT__: Snapshot }).__SNAPSHOT__.analytics.workspaces
+        () =>
+          (JSON.parse(document.getElementById('dashboard-page-data')!.textContent!) as DashboardPageModel)
+            .data.workspaces
       );
       expect(actual).toEqual(expected);
       await page.locator('[data-context-filter="repository"]').selectOption('acme/ds-react');
