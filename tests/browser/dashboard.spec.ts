@@ -152,20 +152,6 @@ for (const pageName of [
     ).toEqual([]);
     expect(errors).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath('desktop.png'), fullPage: false });
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.locator('h1')).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(391);
-    for (const link of await page.locator('[data-workspace-nav]').all()) {
-      const bounds = await link.boundingBox();
-      expect(bounds).not.toBeNull();
-      expect(bounds!.x).toBeGreaterThanOrEqual(0);
-      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
-    }
-    await page.screenshot({ path: testInfo.outputPath('mobile.png'), fullPage: false });
-    const mobileAccessibility = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze();
-    expect(mobileAccessibility.violations.map((violation) => violation.id)).toEqual([]);
     await page.keyboard.press('Tab');
     await expect(page.locator('.skip-link')).toBeFocused();
     await page.keyboard.press('Enter');
@@ -685,7 +671,9 @@ test('issue #65 : ordre initial repository puis composant indépendant de l’or
   );
 });
 
-test('cartes compactes et infobulles utilisables au clavier et sur mobile', async ({ page }, testInfo) => {
+test('cartes compactes et infobulles utilisables au clavier et à la souris sur PC', async ({
+  page
+}, testInfo) => {
   await page.goto('/accessibility.html');
   const button = page.locator('.metric-info-button').first();
   const card = page.locator('.compact-kpi').first();
@@ -701,13 +689,12 @@ test('cartes compactes et infobulles utilisables au clavier et sur mobile', asyn
   await expect(page.locator('.metric-tooltip:popover-open')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(button).toHaveAttribute('aria-expanded', 'false');
-  await page.setViewportSize({ width: 390, height: 844 });
   await button.click();
   const tooltip = page.locator('.metric-tooltip:popover-open');
   const bounds = await tooltip.boundingBox();
   await tooltip.screenshot({ path: testInfo.outputPath('metric-tooltip.png') });
   expect(bounds!.x).toBeGreaterThanOrEqual(0);
-  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze())
       .violations

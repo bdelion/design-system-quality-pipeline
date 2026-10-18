@@ -19,10 +19,10 @@ Fond gris clair, surfaces blanches, navigation bleu foncé, cartes hiérarchisé
 | Besoin                            | Écrans                                      | Contrôle                                                              |
 | --------------------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
 | Navigation et clavier             | Neuf pages                                  | Anciens liens, navigation contextuelle et lien d’évitement Playwright |
-| Lecture mobile                    | Neuf pages                                  | Largeur à 390 px et captures desktop/mobile                           |
+| Lecture sur PC                    | Neuf pages                                  | Captures desktop ; périmètre mobile retiré (#74)                      |
 | Métriques et inconnues explicites | Accueil, accessibilité, explorateurs        | Tests des populations et informations des métriques                   |
 | Tableaux utilisables              | Issues, composants, qualité                 | Filtres, sélection et exports CSV                                     |
-| Contrastes et intitulés           | Neuf pages                                  | axe WCAG A/AA sur desktop et mobile                                   |
+| Contrastes et intitulés           | Neuf pages                                  | axe WCAG A/AA sur desktop                                             |
 | Traçabilité                       | Audits, anomalies, historique, cartographie | Tests des relations et anciens liens                                  |
 
 Les captures sont des preuves de revue visuelle, sans comparaison pixel par pixel. Les contrôles axe ne constituent pas un audit RGAA complet. Les snapshots métier restent inchangés.

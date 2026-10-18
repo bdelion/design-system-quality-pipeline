@@ -61,6 +61,8 @@ Pour suivre la présence et la qualité des composants par version, `fixture:pre
 
 ## Données et tests
 
+Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage desktop, l’accessibilité et les interactions au clavier et à la souris ; les scénarios mobiles ont été retirés (#74). Voir le [périmètre des validations](docs/08-implementation/tests.md#validation-intégrale-du-dashboard).
+
 Pour un RAW non anonymisé, `pipeline --dataset <raw.json> --historical-catalogue <identites.yaml> --historical-repository <owner/repository>` importe l'historique local sans passer par `fixture:prepare`. Le fichier d'identités désigne son référentiel de présences via `historicalCatalogue`. Voir le [parcours local détaillé](docs/08-implementation/datasets.md#collecte-non-anonymisée--historique-local-et-fichier-didentités).
 
 Le dashboard propose **Activité des équipes → Suivi des Epics** : choix d'une Epic, durées calendaires par composant/issue et export CSV. Une nouvelle collecte est nécessaire pour récupérer les mentions présentes dans les descriptions. Voir [le contrat et les limites du suivi](docs/08-implementation/dashboard-coherence.md#suivi-des-epics-69).
