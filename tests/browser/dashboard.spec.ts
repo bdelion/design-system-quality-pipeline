@@ -5,10 +5,128 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import type { Server } from 'node:http';
 import { startDashboardTestServer } from '../../scripts/serve-dashboard-tests.js';
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 
 let server: Server | undefined;
+
+/** Prépare trois composants et cinq issues, dont une partagée, sans dépendance à une collecte privée. */
+function componentCounterRows() {
+  const facts = Array.from({ length: 5 }, (_, index) => ({
+    id: `counter-issue-${index + 1}`,
+    repo: 'acme/ds-react',
+    components: index === 1 ? ['Button', 'Tag'] : [index === 0 ? 'Button' : index === 2 ? 'Tag' : 'Modal'],
+    versions: [index < 3 ? '1.0.0' : '2.0.0'],
+    versionIds: [index < 3 ? 'counter-v1' : 'counter-v2'],
+    prs: [],
+    open: false,
+    treated: false,
+    cancelled: false,
+    delay: null,
+    source: 'unknown'
+  }));
+  return ['Button', 'Tag', 'Modal'].map((name) => ({
+    id: `counter-${name}`,
+    name,
+    repository: 'acme/ds-react',
+    componentId: `counter-${name}`,
+    items: facts.filter((fact) => fact.components.includes(name)),
+    audits: 0,
+    auditSources: [],
+    versionSummaries: [
+      {
+        version: name === 'Modal' ? '2.0.0' : '1.0.0',
+        versionId: name === 'Modal' ? 'counter-v2' : 'counter-v1',
+        channel: 'development',
+        auditSources: [],
+        provenance: 'Scénario synthétique #78'
+      }
+    ]
+  }));
+}
+
+/** Remplace uniquement le modèle de l'explorateur dans la page servie pour tester les compteurs. */
+async function mockComponentCounters(page: Page, payload: unknown): Promise<void> {
+  await page.route('**/components.html*', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(
+      /(<script type="application\/json" id="component-analysis-data">)[\s\S]*?(<\/script>)/,
+      (_, start, end) => start + JSON.stringify(payload) + end
+    );
+    await route.fulfill({ response, body });
+  });
+}
+
+test('issue #78 : compteurs distincts après filtres, sélection, reset et lien ciblé', async ({ page }) => {
+  await mockComponentCounters(page, componentCounterRows());
+  await page.goto('/components.html');
+  const feedback = page.locator('[data-filter-feedback]');
+  const summary = page.locator('[data-component-summary]');
+  const rows = page.locator('[data-component-rows] tr');
+  await expect(rows).toHaveCount(3);
+  await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
+  await expect(feedback).toHaveAttribute('role', 'status');
+  await expect(feedback).toHaveAttribute('aria-live', 'polite');
+  await page.locator('[data-component-search]').fill('Tag');
+  await expect(rows).toHaveCount(1);
+  await expect(feedback).toContainText('1 composant visible · 2 issues distinctes');
+  await page.locator('[data-component-search]').fill('introuvable');
+  await expect(rows).toHaveCount(0);
+  await expect(feedback).toContainText('0 composants visibles · 0 issues distinctes');
+  await page.locator('[data-component-reset]').click();
+  await page.getByRole('checkbox', { name: 'Sélectionner Button', exact: true }).check();
+  await expect(feedback).toContainText(
+    '3 composants visibles · 1 composant sélectionné · 2 issues distinctes dans la sélection'
+  );
+  await page.getByRole('checkbox', { name: 'Sélectionner Tag', exact: true }).check();
+  await expect(feedback).toContainText('2 composants sélectionnés · 3 issues distinctes dans la sélection');
+  await page.locator('[data-component-clear]').click();
+  await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
+  await page.locator('[data-context-filter="repository"]').selectOption('acme/ds-react');
+  await page.locator('[data-component-filter="name"]').selectOption('Tag');
+  await page.locator('[data-context-filter="version"]').selectOption('1.0.0');
+  await expect(rows).toHaveCount(1);
+  const manual = await feedback.textContent();
+  await expect(summary).toHaveText('1 composant visible · 2 issues distinctes');
+  await page.goto('/components.html?repository=acme%2Fds-react&component=Tag&version=1.0.0');
+  await expect(rows).toHaveCount(1);
+  await expect(feedback).toHaveText(manual!);
+  await page.locator('[data-clear-context]').click();
+  await expect(rows).toHaveCount(3);
+  await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
+  await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
+  await expect(rows).toHaveCount(1);
+  await expect(feedback).toContainText('1 composant visible · 2 issues distinctes');
+  await page.locator('[data-component-reset]').click();
+  await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
+  await page.locator('[data-component-column="1"]').fill('Modal');
+  await expect(rows).toHaveCount(1);
+  await expect(feedback).toContainText('1 composant visible · 2 issues distinctes');
+  await page.locator('[data-component-reset]').click();
+  await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
+});
+
+test('issue #78 : modèle indisponible distinct des résultats vides', async ({ page }) => {
+  await mockComponentCounters(page, null);
+  await page.goto('/components.html');
+  await expect(page.locator('[data-filter-feedback]')).toContainText(
+    'Données de l’explorateur indisponibles'
+  );
+  await expect(page.locator('[data-component-summary]')).toContainText(
+    'Données de l’explorateur indisponibles'
+  );
+  await expect(page.locator('[data-component-search]')).toBeDisabled();
+  await expect(page.locator('[data-component-count="global"]')).toHaveText('Indisponible');
+});
+
+test('issue #78 : un modèle vide reste un résultat nul disponible', async ({ page }) => {
+  await mockComponentCounters(page, []);
+  await page.goto('/components.html');
+  await expect(page.locator('[data-filter-feedback]')).toContainText(
+    '0 composants visibles · 0 issues distinctes'
+  );
+  await expect(page.locator('[data-component-search]')).toBeEnabled();
+});
 
 /** Vérifie sélection d'Epic, inconnues, zéro, liens externes et export CSV du modèle calculé. */
 test('issue #69 : suivi des Epics et export CSV accessibles', async ({ page }) => {

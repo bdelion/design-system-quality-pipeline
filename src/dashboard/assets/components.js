@@ -5,9 +5,33 @@ import { matchesFact, currentContext, setContext } from './context.js';
 (() => {
   const root = document.querySelector('[data-component-analysis]');
   if (!root) return;
-  const rows = JSON.parse(document.getElementById('component-analysis-data').textContent);
   /** Trouve un contrôle dans l'explorateur courant. */
   const $ = (selector) => root.querySelector(selector);
+  /** Publie le même résumé de population localement et dans le retour de filtrage annoncé. */
+  function updateSummary(message) {
+    $('[data-component-summary]').textContent = message;
+    const feedback = document.querySelector('[data-filter-feedback]');
+    if (feedback)
+      feedback.textContent = `Repository : ${currentContext().get('repository') || 'tous'} · ${message}`;
+  }
+  let rows;
+  try {
+    rows = JSON.parse(document.getElementById('component-analysis-data')?.textContent ?? 'null');
+  } catch {
+    rows = null;
+  }
+  if (!Array.isArray(rows)) {
+    updateSummary(
+      'Données de l’explorateur indisponibles. Régénérez le dashboard depuis un snapshot compatible.'
+    );
+    root.querySelectorAll('input, select, button').forEach((control) => {
+      control.disabled = true;
+    });
+    root.querySelectorAll('[data-component-count]').forEach((count) => {
+      count.textContent = 'Indisponible';
+    });
+    return;
+  }
   /** Échappe les valeurs des cellules et des liens générés. */
   const escape = (value) =>
     String(value ?? '').replace(
@@ -132,7 +156,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     if (index === 10 && oldest) return externalLink(oldest.url, value);
     return escape(value);
   }
-  /** Filtre et trie par repository puis composant par défaut, en agrégeant les faits Analytics distincts. */
+  /** Rend les résultats et annonce séparément composants visibles, sélection et issues Analytics distinctes. */
   function render() {
     const query = $('[data-component-search]').value.toLocaleLowerCase('fr');
     const visible = rows
@@ -213,8 +237,13 @@ import { matchesFact, currentContext, setContext } from './context.js';
         $(`[data-component-kpi="${kind}-${stat}"]`).textContent = fmt(statistics[stat]);
       $(`[data-component-count="${kind}"]`).textContent = `${statistics.count} issue(s) distincte(s)`;
     }
-    $('[data-component-summary]').textContent =
-      `${visible.length} composants · ${items.length} issues distinctes${selecting ? ' sélectionnées' : ''}`;
+    const summary =
+      `${visible.length} composant${visible.length === 1 ? '' : 's'} visible${visible.length === 1 ? '' : 's'} · ` +
+      (selecting
+        ? `${chosen.length} composant${chosen.length === 1 ? '' : 's'} sélectionné${chosen.length === 1 ? '' : 's'} · `
+        : '') +
+      `${items.length} issues distinctes${selecting ? ' dans la sélection' : ''}`;
+    updateSummary(summary);
     $('[data-component-all]').checked =
       visible.length > 0 && visible.every(({ row }) => selected.has(row.id));
     $('[data-component-rows]').innerHTML = visible
