@@ -10,6 +10,83 @@ import { AxeBuilder } from '@axe-core/playwright';
 
 let server: Server | undefined;
 
+test('issue #79 : unités, populations et réserves des KPI après filtrage', async ({ page }) => {
+  await page.route('**/accessibility.html*', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(
+      /(<script type="application\/json" id="workspace-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, json, end) => {
+        const model = JSON.parse(json);
+        const summary = {
+          ...model.scopes[0].summary,
+          coverage: (16 * 100) / 76,
+          covered: 16,
+          components: 76,
+          conform: 8,
+          conformity: 50,
+          unknown: 0,
+          declared: 20,
+          treated: 0,
+          treatmentRate: 0,
+          average: 5.2,
+          measured: 12,
+          actual: 10,
+          estimated: 2,
+          qualityIssues: 1
+        };
+        model.scopes = [
+          { repository: '', component: '', version: '', summary },
+          {
+            repository: 'acme/ds-react',
+            component: 'Button',
+            version: '1.0.0',
+            summary: {
+              ...summary,
+              coverage: 0,
+              covered: 0,
+              components: 4,
+              conformity: null,
+              conform: 0,
+              average: 0,
+              measured: 1,
+              actual: 1,
+              estimated: 0,
+              qualityIssues: 0
+            }
+          }
+        ];
+        return start + JSON.stringify(model) + end;
+      }
+    );
+    await route.fulfill({ response, body });
+  });
+  await page.goto('/accessibility.html');
+  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('21,1 %');
+  await expect(page.locator('[data-workspace-ratio="coverage"]')).toHaveText('16 sur 76 composants présents');
+  await expect(page.locator('[data-workspace-kpi="conformity"]')).toHaveText('50 %');
+  await expect(page.locator('[data-workspace-kpi="treatmentRate"]')).toHaveText('0 %');
+  await expect(page.locator('[data-workspace-kpi="average"]')).toHaveText('5,2 j');
+  await expect(page.locator('[data-workspace-ratio="average"]')).toContainText('12 issues mesurables');
+  await expect(page.locator('[data-workspace-reserve="coverage"]')).toContainText(
+    '1 réserve de données liée au périmètre'
+  );
+  await page.locator('[data-context-filter="repository"]').selectOption('acme/ds-react');
+  await page.locator('[data-context-filter="component"]').selectOption('Button');
+  await page.locator('[data-context-filter="version"]').selectOption('1.0.0');
+  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('0 %');
+  await expect(page.locator('[data-workspace-ratio="coverage"]')).toHaveText('0 sur 4 composants présents');
+  await expect(page.locator('[data-workspace-kpi="conformity"]')).toHaveText('Indisponible');
+  await expect(page.locator('[data-workspace-ratio="conformity"]')).toHaveText('Ratio indisponible');
+  await expect(page.locator('[data-workspace-kpi="average"]')).toHaveText('0 j');
+  await expect(page.locator('[data-workspace-ratio="average"]')).toContainText('1 issues mesurables');
+  await expect(page.locator('[data-workspace-reserve="coverage"]')).toHaveText('');
+  await page.goto('/accessibility.html?version=inconnue');
+  await expect(page.locator('[data-workspace-kpi="declared"]')).toHaveText('Indisponible');
+  await expect(page.locator('[data-workspace-ratio="declared"]')).toHaveText('Population indisponible');
+  await page.locator('[data-clear-context]').click();
+  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('21,1 %');
+});
+
 /** Prépare trois composants et cinq issues, dont une partagée, sans dépendance à une collecte privée. */
 function componentCounterRows() {
   const facts = Array.from({ length: 5 }, (_, index) => ({
@@ -449,15 +526,15 @@ test('les indicateurs accessibilité et la liste suivent le même périmètre et
 }) => {
   await page.goto('/accessibility.html?repository=acme%2Fds-react&component=Button&version=2.0.0');
   await expect(page.locator('[data-workspace-kpi="declared"]')).toHaveText('1');
-  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('100');
+  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('100 %');
   await expect(page.locator('#population [data-workspace-row]:visible')).toHaveCount(1);
   await expect(page.locator('#population [data-workspace-row]:visible')).toContainText('anomaly-a');
   await page.locator('[data-context-filter="component"]').selectOption('Modal');
-  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('0');
+  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('0 %');
   await expect(page.locator('[data-workspace-kpi="conformity"]')).toHaveText('Indisponible');
   await expect(page.locator('#population [data-workspace-row]:visible')).toHaveCount(0);
   await page.locator('[data-clear-context]').click();
-  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('50');
+  await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('50 %');
 });
 
 test('liste de revue exportable et navigation depuis un ancien lien ciblé', async ({ page }) => {

@@ -1687,6 +1687,11 @@ caption {
 .compact-kpi {
   padding: 14px 16px;
 }
+/* Les unités, populations et réserves restent lisibles sans réduire leur taille ni les tronquer. */
+[data-workspace-cards] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  align-items: start;
+}
 .compact-kpi .kpi-label {
   display: block;
   padding-right: 24px;

@@ -4,6 +4,14 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+### Présentation des KPI d’accessibilité (#79)
+
+**IMPLÉMENTÉ.** Les cartes complètes et compactes emploient une présentation commune dans le HTML généré et après filtrage : taux en `%`, délais en `j`, effectifs sans unité ambiguë et population nommée près de la valeur. Exemples synthétiques : « 21,1 % · 16 sur 76 composants présents », « 50 % · 8 sur 16 composants couverts », « 5,2 j · 12 issues mesurables ». Les délais précisent les effectifs de dates Done et d’estimations déjà fournis par Analytics.
+
+Un zéro mesuré reste visible : `0 %` avec un dénominateur positif, ou `0 j` avec une population mesurable. Une valeur absente/non finie, un dénominateur nul ou une présence indéterminée empêchant de conclure restent indisponibles. Aucun agrégat global n’est substitué à un périmètre sans données.
+
+Les réserves sont visibles dans chaque carte, sans imposer l’ouverture de l’aide. Les nombres de réserves DQ sont explicitement ceux du **périmètre**, pas une preuve que chaque KPI est individuellement partiel ; les présences/verdicts indéterminés restent signalés. Le formatage restitue les valeurs et leurs populations pré-calculées ; il ne modifie ni les formules, ni la sélection PROD/développement traitée séparément dans #80.
+
 ### Compteurs de l’explorateur Composants (#78)
 
 **IMPLÉMENTÉ.** Le résumé et le retour de filtrage annoncé aux technologies d’assistance utilisent le même rendu de l’explorateur : composants visibles et issues distinctes, sans addition de lignes provenant d’autres tableaux. Une issue liée à plusieurs composants n’est comptée qu’une fois dans la population d’issues.

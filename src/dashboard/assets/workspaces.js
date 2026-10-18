@@ -1,5 +1,6 @@
 ﻿import { currentContext, matchesFact, setContext } from './context.js';
 /* global Blob, URL */
+import { presentWorkspaceKpi } from './kpi-presentation.js';
 const payload = document.getElementById('workspace-data');
 const model = payload ? JSON.parse(payload.textContent) : null;
 const distributionSorts = { category: 'label-asc', component: 'label-asc' };
@@ -91,7 +92,7 @@ function distributionChart(title, entries, note, dimension) {
     '</p></figure>'
   );
 }
-/** Restitue les résultats du périmètre avec critères et composants triés, en conservant l’ordre des criticités. */
+/** Restitue les KPI du périmètre exact avec unités, populations et réserves, puis les répartitions. */
 function renderWorkspace() {
   if (!model) return;
   renderQuality();
@@ -122,27 +123,17 @@ function renderWorkspace() {
   });
   document.querySelectorAll('[data-workspace-kpi]').forEach((node) => {
     const key = node.dataset.workspaceKpi;
-    node.textContent = format(key === 'nonCovered' && summary?.unknown > 0 ? null : summary?.[key]);
+    node.textContent = presentWorkspaceKpi(key, summary).value;
   });
   document.querySelectorAll('[data-workspace-ratio]').forEach((node) => {
-    node.textContent = node.dataset.denominator
-      ? typeof summary?.[node.dataset.workspaceRatio] !== 'number'
-        ? 'Ratio indisponible'
-        : `${format(summary?.[node.dataset.numerator])} / ${format(summary?.[node.dataset.denominator])}`
-      : ['average', 'median', 'p90'].includes(node.dataset.workspaceRatio)
-        ? 'jours · population calculable'
-        : '';
+    node.textContent = presentWorkspaceKpi(node.dataset.workspaceRatio, summary).population;
+  });
+  document.querySelectorAll('[data-workspace-reserve]').forEach((node) => {
+    node.textContent = presentWorkspaceKpi(node.dataset.workspaceReserve, summary).reserve;
   });
   document.querySelectorAll('[data-workspace-unavailable]').forEach((node) => {
     const key = node.dataset.workspaceUnavailable;
-    node.textContent =
-      typeof summary?.[key] === 'number' && !(key === 'nonCovered' && summary.unknown > 0)
-        ? ''
-        : ['coverage', 'conformity', 'nonCovered'].includes(key)
-          ? summary?.unknown
-            ? 'Présence ou couverture indéterminée pour les versions PROD courantes ou la version sélectionnée : aucun zéro ni taux ne peut être conclu.'
-            : 'Aucun dénominateur exploitable dans ce périmètre : consulter les audits et la qualité des données.'
-          : 'Population ou dates calculables insuffisantes dans ce périmètre.';
+    node.textContent = presentWorkspaceKpi(key, summary).unavailable;
   });
   const info = document.querySelector('[data-workspace-summary]');
   if (info)
