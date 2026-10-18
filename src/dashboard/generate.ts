@@ -174,6 +174,7 @@ export async function generateDashboard(
     copyDashboardAsset(dashboardPath, 'style.css'),
     copyDashboardAsset(dashboardPath, 'app.js'),
     copyDashboardAsset(dashboardPath, 'context.js'),
+    copyDashboardAsset(dashboardPath, 'kpi-presentation.js'),
     writeFile(
       resolve(dashboardPath, 'assets/statistics.js'),
       await readFile(new URL('../analytics/statistics.js', import.meta.url))

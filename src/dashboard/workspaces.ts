@@ -1,6 +1,11 @@
-﻿/** Organisation des espaces métier et restitution des populations calculées par Analytics. */
+/** Organisation des espaces métier et restitution des populations calculées par Analytics. */
 import type { Snapshot } from '../domain/types.js';
-import { workspaceAnalytics, type WorkspaceAnalytics } from '../analytics/workspaces.js';
+import {
+  workspaceAnalytics,
+  type WorkspaceAnalytics,
+  type WorkspaceSummary
+} from '../analytics/workspaces.js';
+import { presentWorkspaceKpi } from './assets/kpi-presentation.js';
 import { issueFacts } from './read-model.js';
 import { contextAttribute } from './evidence.js';
 
@@ -77,7 +82,7 @@ export function workspaceSubnavigation(title: string): string {
     return '<nav class="workspace-tabs" aria-label="Vues du patrimoine"><a href="components.html">Composants et versions</a><a href="graph.html">Cartographie et relations</a></nav>';
   return '';
 }
-/** Affiche des KPI de la même population ; chaque chiffre dispose d'une définition proche. */
+/** Affiche unités, populations et réserves des KPI selon le contrat partagé avec le navigateur. */
 export function workspaceCards(snapshot: Snapshot, compact = false): string {
   const model = workspaceModel(snapshot);
   const summary = model.scopes.find(
@@ -131,15 +136,11 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
   };
   return `<section class="kpi-grid" data-workspace-cards aria-label="Indicateurs du périmètre">${cards
     .map(([key, label, numerator, denominator]) => {
-      const value =
-        model.available && summary && !(key === 'nonCovered' && summary.unknown > 0)
-          ? summary[key as keyof typeof summary]
-          : null;
-      const display =
-        typeof value === 'number'
-          ? value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })
-          : 'Indisponible';
-      return `<article class="kpi-card compact-kpi"><span class="kpi-label">${label}</span><strong class="number-indicator" data-workspace-kpi="${key}">${display}</strong><span data-workspace-ratio="${key}" data-numerator="${numerator}" data-denominator="${denominator}"></span><button type="button" class="metric-info-button" popovertarget="metric-info-${key}" aria-controls="metric-info-${key}" aria-expanded="false" aria-label="Informations sur ${label}"><span aria-hidden="true">i</span></button><div id="metric-info-${key}" class="metric-tooltip" popover role="dialog" aria-label="Informations sur ${label}"><p>${definitions[key]}</p><p data-workspace-unavailable="${key}">${value === null ? (['coverage', 'conformity', 'nonCovered'].includes(key) ? 'Présence composant × version ou verdict incomplet : consulter les réserves de données.' : 'Population ou dates calculables insuffisantes.') : ''}</p><p><a href="accessibility.html#population">Voir les issues de la population</a> · <a href="quality.html">Réserves de données</a></p></div></article>`;
+      const presentation = presentWorkspaceKpi(
+        key as keyof WorkspaceSummary,
+        model.available ? summary : null
+      );
+      return `<article class="kpi-card compact-kpi"><span class="kpi-label">${label}</span><strong class="number-indicator" data-workspace-kpi="${key}">${html(presentation.value)}</strong><span data-workspace-ratio="${key}" data-numerator="${numerator}" data-denominator="${denominator}">${html(presentation.population)}</span><small data-workspace-reserve="${key}">${html(presentation.reserve)}</small><button type="button" class="metric-info-button" popovertarget="metric-info-${key}" aria-controls="metric-info-${key}" aria-expanded="false" aria-label="Informations sur ${label}"><span aria-hidden="true">i</span></button><div id="metric-info-${key}" class="metric-tooltip" popover role="dialog" aria-label="Informations sur ${label}"><p>${definitions[key]}</p><p data-workspace-unavailable="${key}">${html(presentation.unavailable)}</p><p><a href="accessibility.html#population">Voir les issues de la population</a> · <a href="quality.html">Réserves de données</a></p></div></article>`;
     })
     .join('')}</section><p role="status" aria-live="polite" data-workspace-summary></p>`;
 }

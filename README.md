@@ -61,6 +61,8 @@ Pour suivre la présence et la qualité des composants par version, `fixture:pre
 
 ## Données et tests
 
+Les cartes d’accessibilité affichent l’unité, la population et les réserves près de chaque KPI, y compris après filtrage. Voir le [contrat de présentation](docs/08-implementation/dashboard-coherence.md#présentation-des-kpi-daccessibilité-79).
+
 Dans « Composants et versions », les compteurs distinguent composants visibles, sélection et issues distinctes. Les règles de filtrage et les états sans données sont décrits dans le [contrat des compteurs](docs/08-implementation/dashboard-coherence.md#compteurs-de-lexplorateur-composants-78).
 
 Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage desktop, l’accessibilité et les interactions au clavier et à la souris ; les scénarios mobiles ont été retirés (#74). Voir le [périmètre des validations](docs/08-implementation/tests.md#validation-intégrale-du-dashboard).
