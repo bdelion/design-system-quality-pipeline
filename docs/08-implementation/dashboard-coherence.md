@@ -4,6 +4,14 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+### Compteurs de l’explorateur Composants (#78)
+
+**IMPLÉMENTÉ.** Le résumé et le retour de filtrage annoncé aux technologies d’assistance utilisent le même rendu de l’explorateur : composants visibles et issues distinctes, sans addition de lignes provenant d’autres tableaux. Une issue liée à plusieurs composants n’est comptée qu’une fois dans la population d’issues.
+
+La sélection conserve les composants visibles et indique séparément combien de composants sont sélectionnés ; le nombre d’issues et les statistiques portent alors sur l’intersection entre sélection et résultats filtrés. « Réinitialiser la sélection » restaure les statistiques de tous les résultats visibles. La recherche, les filtres locaux/par colonne et partagés, les liens ciblés et leur effacement actualisent les deux résumés. Le bouton « Réinitialiser » efface les filtres ; la sélection dispose de son propre bouton.
+
+Un modèle chargé sans résultat affiche zéro composant et zéro issue. Un modèle absent, illisible ou non tabulaire est signalé comme indisponible : ses contrôles sont désactivés et aucun effectif nul n’est présenté comme une mesure. Cette correction ne change ni les règles métier ni les populations Analytics du pipeline.
+
 ### Suivi des Epics (#69)
 
 **IMPLÉMENTÉ.** Depuis « Activité des équipes », la sous-navigation « Suivi des Epics » ouvre `epics.html`. La page permet de choisir une Epic du dataset et d'exporter ses lignes en CSV. Les rattachements sont les mentions `#numéro`, `owner/repository#numéro` ou URL d'issue présentes dans la description, sans nécessité de mot-clé de clôture. Ils restent distincts des parents/sub-issues. La collecte conserve uniquement les identifiants référencés ; les descriptions ne sont pas embarquées. L'anonymisation remappe aussi les mentions entre dépôts ; une référence non résolue reste opaque et ne fabrique pas d'Epic.

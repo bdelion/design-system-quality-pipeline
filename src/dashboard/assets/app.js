@@ -23,7 +23,7 @@ function matchesContext(row, fields) {
   return matchesRow(row, currentContext(), fields);
 }
 
-/** Applique une seule intersection de filtres, sans seconde passe qui réafficherait des lignes hors périmètre. */
+/** Filtre les lignes statiques ; l'explorateur Composants publie lui-même ses populations dynamiques. */
 function applyFilters() {
   const params = currentContext();
   const query = (controls.text?.value || '').toLowerCase();
@@ -63,14 +63,15 @@ function applyFilters() {
       (Boolean(params.get('progress')) && row.dataset.progress !== params.get('progress')) ||
       (Boolean(params.get('result')) && row.dataset.auditResult !== params.get('result'));
   });
-  const visible = [
-    ...document.querySelectorAll(
-      '[data-table-row], [data-component-row], [data-component-version-row], [data-audit-row], [data-trace-row], [data-transition-row], #population [data-workspace-row]'
-    )
-  ].filter((row) => !row.hidden).length;
   const feedback = document.querySelector('[data-filter-feedback]');
-  if (feedback)
+  if (feedback && !document.querySelector('[data-component-analysis]')) {
+    const visible = [
+      ...document.querySelectorAll(
+        '[data-table-row], [data-component-row], [data-component-version-row], [data-audit-row], [data-trace-row], [data-transition-row], #population [data-workspace-row]'
+      )
+    ].filter((row) => !row.hidden).length;
     feedback.textContent = `Repository : ${params.get('repository') || 'tous'} · ${visible} lignes visibles dans les tableaux de cette vue.`;
+  }
 }
 
 /** Restaure les filtres URL, y compris une valeur inconnue, et transmet le périmètre aux liens internes. */
