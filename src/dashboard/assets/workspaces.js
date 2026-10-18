@@ -2,8 +2,7 @@
 /* global Blob, URL */
 import { presentWorkspaceKpi } from './kpi-presentation.js';
 import { presentWorkspaceVersions } from './version-presentation.js';
-const payload = document.getElementById('workspace-data');
-const model = payload ? JSON.parse(payload.textContent) : null;
+const model = window.__SNAPSHOT__?.analytics?.workspaces ?? null;
 const distributionSorts = { category: 'label-asc', component: 'label-asc' };
 document.addEventListener('change', (event) => {
   const control = event.target;

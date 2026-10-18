@@ -1,3 +1,4 @@
+import type { Snapshot } from '../../src/domain/types.js';
 import { workspaceAnalytics } from '../../src/analytics/workspaces.js';
 import { consolidationSnapshot } from '../support/consolidation.js';
 import { resolve } from 'node:path';
@@ -14,9 +15,10 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
   await page.route('**/accessibility.html*', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="workspace-data">)([\s\S]*?)(<\/script>)/,
+      /(window\.__SNAPSHOT__ = )([\s\S]*?)(; if \(location\.protocol)/,
       (_, start, json, end) => {
-        const model = JSON.parse(json);
+        const snapshot = JSON.parse(json);
+        const model = snapshot.analytics.workspaces;
         const summary = {
           ...model.scopes[0].summary,
           coverage: (16 * 100) / 76,
@@ -55,7 +57,7 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
             }
           }
         ];
-        return start + JSON.stringify(model) + end;
+        return start + JSON.stringify(snapshot).replace(/</g, '\\u003c') + end;
       }
     );
     await route.fulfill({ response, body });
@@ -622,8 +624,12 @@ test('la présence inconnue rend les ratios et le stock non couvert indisponible
   await page.route('**/accessibility.html', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="workspace-data">)[\s\S]*?(<\/script>)/,
-      (_match, start, end) => start + JSON.stringify(model).replace(/</g, '\\u003c') + end
+      /(window\.__SNAPSHOT__ = )([\s\S]*?)(; if \(location\.protocol)/,
+      (_match, start, content, end) => {
+        const current = JSON.parse(content);
+        current.analytics.workspaces = model;
+        return start + JSON.stringify(current).replace(/</g, '\\u003c') + end;
+      }
     );
     await route.fulfill({ response, body });
   });
@@ -643,16 +649,13 @@ test('les graphiques accessibilité restituent les agrégats et suivent les filt
   await page.locator('.distribution-grid').screenshot({ path: testInfo.outputPath('distributions.png') });
   for (const repository of ['', 'acme/ds-react']) {
     await page.locator('[data-context-filter="repository"]').selectOption(repository);
-    const summary = await page
-      .locator('#workspace-data')
-      .evaluate(
-        (node, repo) =>
-          JSON.parse(node.textContent!).scopes.find(
-            (scope: { repository: string; component: string; version: string }) =>
-              scope.repository === repo && !scope.component && !scope.version
-          ).summary,
-        repository
-      );
+    const summary = await page.evaluate(
+      (repo) =>
+        (window as unknown as { __SNAPSHOT__: Snapshot }).__SNAPSHOT__.analytics.workspaces!.scopes.find(
+          (scope) => scope.repository === repo && !scope.component && !scope.version
+        )!.summary,
+      repository
+    );
     const rows = page.locator('[data-distribution="criticality"] .distribution-row');
     await expect(rows).toHaveCount(Object.keys(summary.criticalities).length);
     let index = 0;
@@ -803,14 +806,15 @@ test('tris indépendants des répartitions : intitulés, nombres, égalités et 
   await page.route('**/accessibility.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="workspace-data">)([\s\S]*?)(<\/script>)/,
+      /(window\.__SNAPSHOT__ = )([\s\S]*?)(; if \(location\.protocol)/,
       (_, start, content, end) => {
-        const model = JSON.parse(content);
+        const snapshot = JSON.parse(content);
+        const model = snapshot.analytics.workspaces;
         for (const scope of model.scopes) {
           scope.summary.categories = { Zebra: 1, Beta: 2, Alpha: 2 };
           scope.summary.byComponent = { Zebra: 1, Beta: 2, Alpha: 2 };
         }
-        return start + JSON.stringify(model) + end;
+        return start + JSON.stringify(snapshot).replace(/</g, '\\u003c') + end;
       }
     );
     await route.fulfill({ response, body: html });

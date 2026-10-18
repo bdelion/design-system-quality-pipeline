@@ -94,6 +94,14 @@ La section **Preuves des métriques Analytics** expose définition, périmètre,
 
 ## Validation
 
+### Source unique du modèle des espaces (#82)
+
+Le HTML émet le modèle Analytics des espaces une seule fois, dans `window.__SNAPSHOT__.analytics.workspaces`. `app.js` et `workspaces.js` partagent ce snapshot ; le second ne parse plus un script JSON `workspace-data` distinct. Le module des espaces reste chargé sur les mêmes pages. Les scripts modules sont différés : l'affectation inline du snapshot est exécutée avant leurs consommateurs.
+
+La génération construit une projection navigateur sans modifier la capture source. Pour une capture ancienne ou sans agrégats, `workspaceModel` fournit le même contrat courant aux cartes HTML et au navigateur ; les qualifications historiques existantes sont conservées. Aucune formule, réserve, relation, règle de filtrage ou structure CSV n'est changée. La sérialisation continue d'échapper les chevrons pour empêcher une fermeture de script par une valeur de donnée.
+
+Le serveur HTTP local et l'avertissement `file:` restent nécessaires et inchangés. Cette optimisation retire uniquement une copie embarquée ; elle n'externalise pas les JSON et ne met pas en œuvre la pagination de #83. Les régressions couvrent les dix pages pour les captures actuelles/anciennes/sans modèle, l'immuabilité, l'échappement, puis la parité PC des cartes, réserves, liens, filtres et exports CSV.
+
 ### Versions PROD réellement évaluées (#80)
 
 La couverture et la conformité sans filtre de version évaluent, par repository, le plus grand numéro canonique `M.m.r` dont le tag Git correspond exactement au numéro, hors canal `development`. Ce comportement applique D-200 à D-204 : une milestone, un audit, une date seule ou un canal `release` ne prouvent pas une publication. La date du tag n'est pas requise pour identifier la PROD ; aucune date absente n'est inventée. Il s'agit d'une correction d'implémentation, sans nouvel arbitrage métier ni modification de D-047.
