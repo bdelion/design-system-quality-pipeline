@@ -1,6 +1,8 @@
 # Refonte du dashboard par besoins
 
 **Statut : IMPLÉMENTÉ localement ; refonte complétée par les issues #35, #45, #47 et #48.**
+
+**Périmètre de validation actualisé — #74 :** les tests courants ciblent uniquement les PC. Les mentions desktop/mobile dans les bilans ci-dessous sont historiques ; voir le [périmètre courant des tests](tests.md#validation-intégrale-du-dashboard).
 La demande validée privilégie les responsables des audits d’accessibilité, puis la Squad (PO et AM), puis la direction et les consommateurs. Ce document décrit le comportement livré ; il ne remplace pas le registre des décisions métier.
 
 ## Navigation et populations
@@ -46,7 +48,7 @@ Sans version sélectionnée, couverture et conformité utilisent la version PROD
 | Distinguer bugs, audits et accessibilité           | Toutes les issues et spécialisations                  | Famille, qualification, origine explicite                                  | Activité, Défauts normalisés, Cartographie | dashboard-consolidation.test.ts, dashboard-workspaces.test.ts, browser : traçabilité           |
 | Cohérence cartes/tableaux/navigation               | Périmètre repository/composant/version                | Agrégats pré-calculés communs                                              | Six espaces                                | browser : filtre hérité, reset, ancien lien ciblé, filtre catégorie                            |
 | Diagnostics et explicabilité                       | Réserves DQ et contrats Analytics                     | Sources, exclusions, fiabilité                                             | Chiffres et Qualité des données            | dashboard.test.ts ; browser : définition près du chiffre et DQ                                 |
-| Accès aux écrans                                   | Neuf pages desktop/mobile                             | axe-core, focus, absence d’erreur JS                                       | Tous                                       | tests/browser/dashboard.spec.ts                                                                |
+| Accès aux écrans                                   | Neuf pages desktop                                    | axe-core, focus, absence d’erreur JS                                       | Tous                                       | tests/browser/dashboard.spec.ts                                                                |
 
 ## Calcul et compatibilité
 
