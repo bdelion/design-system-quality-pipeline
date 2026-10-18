@@ -71,6 +71,8 @@ Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage deskto
 
 `npm run benchmark:dashboard -- --scenario control --runs 3 --output data/output/benchmarks/control-before` mesure un jeu entièrement synthétique (parent à créer, sortie neuve). Le scénario `load`, les rapports par page et les budgets validés sans croissance sont décrits dans le [protocole de benchmark PC](docs/08-implementation/dashboard-benchmark.md).
 
+Le dashboard partage une [source unique du modèle des espaces](docs/08-implementation/dashboard-coherence.md#source-unique-du-modèle-des-espaces-82) entre ses scripts, y compris pour les anciennes captures compatibles, sans réécrire les snapshots.
+
 Pour un RAW non anonymisé, `pipeline --dataset <raw.json> --historical-catalogue <identites.yaml> --historical-repository <owner/repository>` importe l'historique local sans passer par `fixture:prepare`. Le fichier d'identités désigne son référentiel de présences via `historicalCatalogue`. Voir le [parcours local détaillé](docs/08-implementation/datasets.md#collecte-non-anonymisée--historique-local-et-fichier-didentités).
 
 Le dashboard propose **Activité des équipes → Suivi des Epics** : choix d'une Epic, durées calendaires par composant/issue et export CSV. Une nouvelle collecte est nécessaire pour récupérer les mentions présentes dans les descriptions. Voir [le contrat et les limites du suivi](docs/08-implementation/dashboard-coherence.md#suivi-des-epics-69).

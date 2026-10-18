@@ -69,3 +69,20 @@ Référence de production : `ac6d477` (develop après #80), avec l'outil de cett
 Sur la charge, les dix pages embarquent 678 926 764 octets JSON au total, dont 606 665 196 octets de copies exactes redondantes. La génération médiane mesurée est d'environ 18,7 s (IQR 1,1 s) ; le résultat disponible varie selon la page, environ 3 à 10,4 s de médiane. Ce sont des observations de ce poste, pas des budgets. Les captures ne sont pas activées sur la charge ; elles sont mesurées séparément sur le contrôle.
 
 Les [résultats de charge](benchmarks/load.md), leur [rapport JSON](benchmarks/load.json), le [contrôle comparé](benchmarks/control.md) et son [rapport JSON](benchmarks/control.json) conservent les agrégats et séries brutes, sans les HTML, snapshots ni captures volumineux. La comparaison du contrôle à sa référence ne montre aucune augmentation ; le budget validé de 0 % passe. La référence des budgets automatiques est `config/benchmark-control-baseline.json` ; son remplacement exige une revue explicite. Ces mesures sont distinctes des observations privées rapportées dans la revue initiale.
+
+## Comparaison de la source unique des espaces (#82)
+
+**MESURÉ LE 18/10/2026** : même protocole v1, graine 81, fixture v1 et Edge 155.0.4283.62 en 1 440 × 900. Les références #81 ci-dessus sont conservées. Le rapport après correspond à `86bb800` avec le patch #82 (arbre de travail modifié, consigné dans le JSON). Les empreintes des captures et du JSON snapshot embarqué sont identiques avant/après sur la charge ; seule la seconde représentation du modèle des espaces est retirée.
+
+| Charge : octets HTML non compressés |   Avant #82 |   Après #82 |   Réduction |
+| ----------------------------------- | ----------: | ----------: | ----------: |
+| Accueil                             |  67 431 738 |  41 480 874 |  25 950 864 |
+| Accessibilité                       |  77 748 077 |  51 797 213 |  25 950 864 |
+| Cartographie                        |  80 135 668 |  54 184 804 |  25 950 864 |
+| Dix pages cumulées                  | 715 029 076 | 455 520 436 | 259 508 640 |
+
+Chaque page retire 25 950 803 octets JSON et les 61 octets de sa balise redondante. L'accueil est réduit d'environ 38,48 %. Les dix pages conservent exactement les mêmes nombres de lignes initiales/rendues ; le DOM diminue de deux nœuds par page (script JSON et son texte), sans modification des éléments d'interface. Les budgets de 0 % passent. Aucun gain de temps n'est garanti : les durées brutes et leur dispersion sont descriptives, sur un poste non isolé ; les tests fonctionnels/compteurs protègent la parité.
+
+Voir le [rapport de charge après #82](benchmarks/issue-82-load.md) et ses [mesures JSON avec deltas](benchmarks/issue-82-load.json). Le HTML reste volumineux et le snapshot est encore présent dans chaque page ; l'externalisation des données et la pagination ne font pas partie de ce lot.
+
+Le [contrôle après #82](benchmarks/issue-82-control.md) et ses [mesures JSON](benchmarks/issue-82-control.json) confirment aussi le budget : 185 488 octets HTML retirés par page, accueil de 529 408 à 343 920 octets, lignes inchangées et deux nœuds DOM en moins. Les captures viewport sont mesurées séparément des passages chronométrés. Les références et budgets #81 restent inchangés ; les nouveaux tests imposent en plus l'unicité du modèle émis.

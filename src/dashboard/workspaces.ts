@@ -161,9 +161,9 @@ export function accessibilityPopulation(snapshot: Snapshot, review = false): str
 export function accessibilityContent(snapshot: Snapshot): string {
   return `<section class="panel"><h2>Pilotage des audits d’accessibilité</h2><p>Priorité aux responsables d’audit, puis à la Squad, son PO et son AM. Un audit, une anomalie d’accessibilité et un bug générique sont des objets distincts.</p><p>Sans sélection de version, la conformité porte sur la version PROD courante de chaque repository. Le stock des anomalies inclut les versions non déterminées ; sélectionner une version limite aux relations explicites ou aux audits applicables.</p></section>${workspaceCards(snapshot)}<article class="panel"><h2>Criticités, catégories et composants</h2><div data-workspace-breakdowns></div><p>Les catégories sont multi-étiquettes : leurs effectifs ne s’additionnent pas. Les criticités inconnues restent visibles.</p></article>${accessibilityPopulation(snapshot)}${accessibilityPopulation(snapshot, true)}<section class="panel"><h2>Conformité à la sortie d’une version</h2><p>L’état à la publication reste distinct de la connaissance actuelle et des audits de rattrapage.</p><a href="audits.html#component-versions">Voir les verdicts et les photographies de release</a></section><section class="panel"><h2>Usages des applications et fréquence d’utilisation</h2><p>Indisponible : aucune source de consommation des applications ni fréquence d’usage des composants n’est collectée. Aucun zéro n’est affiché.</p><h2>Audits de maquettes Design</h2><p>Indisponible : les données actuelles ne distinguent pas de façon fiable les audits de maquettes et leurs anomalies. Aucun taux n’est inventé.</p></section>`;
 }
-/** Expose le contrat pré-calculé avec une sérialisation sûre pour le navigateur. */
-export function workspacePayload(snapshot: Snapshot): string {
-  return `<script type="application/json" id="workspace-data">${JSON.stringify(workspaceModel(snapshot)).replace(/</g, '\\u003c')}</script><script type="module" src="assets/workspaces.js"></script>`;
+/** Charge le consommateur du modèle déjà présent dans le snapshot navigateur, sans seconde sérialisation. */
+export function workspacePayload(): string {
+  return '<script type="module" src="assets/workspaces.js"></script>';
 }
 
 /** Présente les réserves DQ avec leurs relations explicites et des filtres de diagnostic. */
