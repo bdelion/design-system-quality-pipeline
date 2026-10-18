@@ -30,6 +30,10 @@ export function presentWorkspaceKpi(key, summary) {
   const duration = ['average', 'median', 'p90'].includes(key);
   const raw = summary?.[key];
   const unknown = ['coverage', 'nonCovered'].includes(key) && summary?.unknown > 0;
+  const missingProd =
+    ['coverage', 'conformity', 'nonCovered'].includes(key) &&
+    summary?.versionSelection?.mode === 'current-prod' &&
+    summary.versionSelection.missingRepositories.length > 0;
   const validRate =
     !rate ||
     (typeof summary?.[rate[0]] === 'number' &&
@@ -42,6 +46,7 @@ export function presentWorkspaceKpi(key, summary) {
     typeof raw === 'number' &&
     Number.isFinite(raw) &&
     !unknown &&
+    !missingProd &&
     validRate &&
     (!duration || (typeof summary?.measured === 'number' && summary.measured > 0));
   const value = available ? number(raw) + (rate ? ' %' : duration ? ' j' : '') : 'Indisponible';
@@ -56,11 +61,13 @@ export function presentWorkspaceKpi(key, summary) {
         : (populations[key] ?? 'Population indisponible');
   const unavailable = available
     ? ''
-    : unknown
-      ? 'Présence ou couverture indéterminée : aucun zéro ni taux ne peut être conclu.'
-      : rate
-        ? 'Aucun ratio calculable dans ce périmètre : valeur ou dénominateur indisponible.'
-        : 'Population ou dates calculables insuffisantes dans ce périmètre.';
+    : missingProd
+      ? 'Version PROD non démontrée : consulter le périmètre des versions et ses preuves.'
+      : unknown
+        ? 'Présence ou couverture indéterminée : aucun zéro ni taux ne peut être conclu.'
+        : rate
+          ? 'Aucun ratio calculable dans ce périmètre : valeur ou dénominateur indisponible.'
+          : 'Population ou dates calculables insuffisantes dans ce périmètre.';
   const reserves = [];
   if (unavailable) reserves.push(unavailable);
   if (summary?.qualityIssues > 0)
