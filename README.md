@@ -30,6 +30,8 @@ Fournir `GITHUB_TOKEN` dans le shell ou dans `.env`, puis :
 
 Pour GitHub Enterprise, consulter la [configuration des endpoints et des liens web](docs/08-implementation/guide-utilisation.md#3-collecter-vos-repositories) avant la collecte.
 
+Les appels GitHub utilisent le transport Octokit ; la pagination, les quotas et les reprises restent pilotés par le pipeline. Le [bilan de l’intégration (#72)](docs/08-implementation/octokit.md) explique ses bénéfices et les limites concernant les performances et la consommation de quota.
+
 ```powershell
 npm.cmd run collect -- --repositories repositories.json --output data/local/mon-jeu/raw.json
 npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output datasets/mon-jeu

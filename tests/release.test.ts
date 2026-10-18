@@ -20,7 +20,11 @@ const pr: ReleasePullRequest = {
   merge_commit_sha: sha,
   base: { ref: 'main' }
 };
-afterEach(() => vi.unstubAllEnvs());
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 /** Simule les lectures REST habituelles et délègue les publications au test. */
 function apiFor(
   post: (body: unknown) => unknown,
@@ -166,6 +170,34 @@ describe('publication après merge', () => {
     vi.stubEnv('GITHUB_EVENT_NAME', 'pull_request');
     vi.stubEnv('GITHUB_REF', 'refs/heads/main');
     await expect(runRelease()).rejects.toThrow('Publication réservée');
+  });
+  it('transporte les lectures et publications via Octokit sans relance HTTP implicite', async () => {
+    vi.stubEnv('GITHUB_EVENT_NAME', 'push');
+    vi.stubEnv('GITHUB_REF', 'refs/heads/main');
+    vi.stubEnv('GITHUB_TOKEN', 'fake-release-token');
+    vi.stubEnv('GITHUB_REPOSITORY', 'acme/dsq');
+    vi.stubEnv('GITHUB_SHA', sha);
+    vi.stubEnv('GITHUB_RUN_ID', '10');
+    vi.spyOn(process.stdout, 'write').mockReturnValue(true);
+    const api = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      expect(new Headers(init?.headers).get('authorization')).toBe('Bearer fake-release-token');
+      if (url.includes('/commits/' + sha + '/pulls')) return Response.json([pr]);
+      if (url.includes('/pulls/42/commits')) return Response.json([]);
+      if (url.includes('/tags?')) return Response.json([]);
+      expect(init?.method).toBe('POST');
+      const body = JSON.parse(String(init?.body));
+      if (url.endsWith('/git/refs')) {
+        expect(body.sha).toBe(sha);
+        return Response.json({}, { status: 201 });
+      }
+      expect(url).toBe('https://api.github.com/repos/acme/dsq/releases');
+      expect(body).toMatchObject({ target_commitish: sha, draft: false });
+      return Response.json({}, { status: 403 });
+    });
+    vi.stubGlobal('fetch', api);
+    await expect(runRelease()).rejects.toMatchObject({ status: 403 });
+    expect(api).toHaveBeenCalledTimes(5);
   });
 });
 it('le workflow attend tous les contrôles et réserve les écritures au job main', async () => {

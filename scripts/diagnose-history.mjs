@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* global process, fetch, console */
+/* global process, console */
 /** Local, read-only GitHub history diagnostic. Export contains no raw names or identifiers. */
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -7,6 +7,7 @@ if (existsSync('.env') && typeof process.loadEnvFile === 'function') process.loa
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { randomBytes, createHmac } from 'node:crypto';
+import { githubRequest } from '../src/lib/github-transport.js';
 
 /** Returns a keyed, non-reversible digest; the per-run key is never exported. */
 function digest(key, value) {
@@ -159,7 +160,7 @@ function summarize(dataset) {
   };
 }
 
-/** Reads every available GitHub status-timeline page for one issue. */
+/** Lit chaque page d'historique GitHub via Octokit, sans relance implicite. */
 async function fetchLiveHistory(repo, issue, token, graphqlUrl) {
   const owner = repo.owner;
   const name = repo.name;
@@ -182,7 +183,7 @@ async function fetchLiveHistory(repo, issue, token, graphqlUrl) {
         }
       } }
     }`;
-    const response = await fetch(graphqlUrl, {
+    const response = await githubRequest(graphqlUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
