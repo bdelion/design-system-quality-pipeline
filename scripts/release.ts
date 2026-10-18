@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { githubRequest } from '../src/lib/github-transport.js';
 /** Métadonnées publiques utilisées pour rédiger une release. */
 export interface ReleasePullRequest {
   number: number;
@@ -203,9 +204,9 @@ export async function runRelease(): Promise<void> {
     !runId
   )
     throw new Error('Contexte de release incomplet');
-  /** Appelle l’API GitHub avec les permissions temporaires du job release. */
+  /** Appelle GitHub via Octokit avec les permissions temporaires du job release. */
   const api: ReleaseApi = async <T>(path: string, body?: unknown): Promise<T> => {
-    const response = await fetch('https://api.github.com/repos/' + repository + path, {
+    const response = await githubRequest('https://api.github.com/repos/' + repository + path, {
       method: body === undefined ? 'GET' : 'POST',
       headers: {
         Accept: 'application/vnd.github+json',

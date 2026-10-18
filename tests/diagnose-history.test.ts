@@ -1,11 +1,60 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   classify,
   compareTransitions,
   classifyExtraTransitions,
   parseArgs,
-  formatDiagnosticSummary
+  formatDiagnosticSummary,
+  diagnose
 } from '../scripts/diagnose-history.mjs';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
+
+it('diagnostique via Octokit les pages GraphQL Enterprise sans requête supplémentaire', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'dsq-octokit-'));
+  try {
+    const raw = join(directory, 'raw.json');
+    await writeFile(
+      raw,
+      JSON.stringify({
+        repositories: [{ id: 'r', owner: 'acme', name: 'dsq', issues: [{ id: 'i', number: 1 }] }]
+      })
+    );
+    vi.stubEnv('GITHUB_TOKEN', 'fake-diagnostic-token');
+    vi.stubEnv('GITHUB_GRAPHQL_URL', 'https://git.test/api/graphql');
+    const api = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      expect(new Headers(init?.headers).get('authorization')).toBe('Bearer fake-diagnostic-token');
+      const body = JSON.parse(String(init?.body));
+      const first = body.variables.after === null;
+      return Response.json({
+        data: {
+          repository: {
+            issue: {
+              projectItems: { nodes: [], pageInfo: { hasNextPage: false } },
+              timelineItems: { nodes: [], pageInfo: { hasNextPage: first, endCursor: first ? 'next' : null } }
+            }
+          }
+        }
+      });
+    });
+    vi.stubGlobal('fetch', api);
+    const summary = await diagnose({ raw, output: join(directory, 'output'), live: true, sample: 1 });
+    expect(summary).toMatchObject({ live: { checked: 1, outcomes: { OK: 1 } } });
+    expect(api).toHaveBeenCalledTimes(2);
+    expect(api.mock.calls.map(([url]) => url)).toEqual([
+      'https://git.test/api/graphql',
+      'https://git.test/api/graphql'
+    ]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
 
 describe('local history diagnostic', () => {
   it('présente une synthèse française sans exporter le JSON sur stdout', () => {

@@ -2,6 +2,8 @@
 
 **IMPLÉMENTÉ — #51.** La commande `collect` applique le pré-check et la coordination des quotas. La préparation et le rejeu des datasets ne font aucun appel GitHub.
 
+**IMPLÉMENTÉ — #72.** Le transport est assuré par `@octokit/request`, sans plugin de retry ou de throttling : les règles ci-dessous restent pilotées par `GithubRequests`. Voir le [périmètre et le bilan Octokit](octokit.md), notamment l’absence de gain de quota ou de performance établi.
+
 ## Comportement par défaut
 
 Avant de lire les repositories, le collecteur vérifie les quotas REST et GraphQL avec `GET /rate_limit`. Les en-têtes des réponses et le champ GraphQL `rateLimit` mettent ensuite à jour les faits connus. Les deux quotas primaires restent distincts.

@@ -1,6 +1,7 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import pLimit from 'p-limit';
 import type { CollectionProgress } from '../lib/collection-progress.js';
+import { githubRequest } from '../lib/github-transport.js';
 
 /** Options communes aux commandes qui effectuent une collecte GitHub. */
 export interface GithubQuotaOptions {
@@ -282,7 +283,7 @@ export class GithubRequests {
     this.progress.warn(`Quota ${name} : vérification avant reprise.`);
   }
 
-  /** Exécute les retries HTTP/réseau, explique les refus d’authentification et détecte les erreurs GraphQL HTTP 200. */
+  /** Pilote les appels Octokit, les retries HTTP/réseau et les erreurs GraphQL HTTP 200. */
   private async execute(url: string, init: RequestInit, resource: Resource): Promise<Response> {
     const maxRetries = this.options.maxRetries ?? 3;
     for (let attempt = 0; ; attempt++) {
@@ -297,7 +298,7 @@ export class GithubRequests {
         });
         new Headers(init.headers).forEach((value, name) => headers.set(name, value));
         headers.set('Authorization', `Bearer ${this.token}`);
-        response = await fetch(url, {
+        response = await githubRequest(url, {
           ...init,
           signal: this.aborter.signal,
           headers
