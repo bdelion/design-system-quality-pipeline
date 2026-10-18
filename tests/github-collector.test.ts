@@ -153,6 +153,8 @@ describe('collecteur GitHub', () => {
     expect(dataset.repositories[0]?.issues).toHaveLength(2);
     expect(dataset.repositories[0]?.pullRequests[0]?.state).toBe('MERGED');
     expect(dataset.repositories[0]?.issues[0]?.linkedPullRequestIds).toEqual(['acme/design-system:pr:900']);
+    expect(dataset.repositories[0]?.issues[0]?.descriptionIssueIds).toEqual(['acme/design-system:issue:42']);
+    expect(dataset.repositories[0]?.issues[1]?.descriptionIssueIds).toEqual([]);
     expect(dataset.repositories[0]?.issues[0]).toMatchObject({
       rawIssueType: 'Bug',
       url: 'https://github.com/acme/design-system/issues/12'

@@ -87,6 +87,33 @@ Les chemins privés du classeur et de la sélection ne sont pas embarqués. Les 
 
 Les observations locales validées priment sur les catalogues GitHub pour les noms sélectionnés et leurs noms historiques ; les autres composants conservent leurs preuves GitHub. Le diagnostic de catalogue absent indique le nombre de présences démontrées localement lorsqu'elles existent. Si une nouvelle collecte possède un tag PROD pour une colonne encore décrite en développement, l'import demande d'actualiser le référentiel : le contenu d'une branche de mise au point ne prouve pas celui de sa publication finale.
 
+### Collecte non anonymisée : historique local et fichier d'identités
+
+**IMPLÉMENTÉ.** `pipeline` accepte directement le RAW produit par `collect`, avec sa configuration capturée. Aucune préparation de fixture ni anonymisation n'est nécessaire. Les noms, dates et URLs réels sont conservés ; la graine privée de collecte est exclue du snapshot. Garder les sorties privées.
+
+Le fichier `config/local/demo-react-historique-identites.draft.yaml` peut servir de point d'entrée en ajoutant :
+
+```yaml
+historicalCatalogue: ./demo-react-historique-composants.yaml
+```
+
+Ce chemin est résolu par rapport au fichier d'identités, pas au dossier du terminal. Le suffixe `.draft.yaml` et `draft: true` sont acceptés pour ce document de règles confirmées ; ils ne constituent pas une preuve de présence. L'import vérifie les noms et intervalles Table/RMCTable, la continuité des identités, les lignes source de fusion Checkbox et la règle d'attribution des audits contre le référentiel de présences. Une contradiction bloque le rejeu, sans réécrire ni fabriquer de preuves. Les identifiants du document de règles sont des noms de déclarations ; les identités temporelles calculées proviennent du référentiel associé.
+
+Exécuter depuis la racine du projet, sous Git Bash ou PowerShell :
+
+```bash
+npm.cmd run pipeline -- --dataset data/local/mon-jeu/raw.json --output data/output/mon-jeu-historique --historical-catalogue config/local/demo-react-historique-identites.draft.yaml --historical-repository MON-OWNER/MON-DEPOT
+npm.cmd run dashboard:serve -- data/output/mon-jeu-historique/dashboard
+```
+
+Remplacer le chemin RAW et `MON-OWNER/MON-DEPOT` par le dépôt réel contenu dans la collecte. `--historical-repository` affecte explicitement le référentiel portant l'alias `demo-react` à ce dépôt, sans modifier les YAML ni anonymiser les faits. Cette option exige exactement un fichier historique et un dépôt présent dans le RAW ; le nom seul est accepté s'il correspond exactement. Sans cette option, le champ `repository` doit déjà correspondre au dépôt réel.
+
+Il est également possible de fournir directement `demo-react-historique-composants.yaml` à `--historical-catalogue`. Pour plusieurs dépôts, fournir plusieurs fichiers avec leurs dépôts correctement déclarés, sans l'option d'affectation unique. Les historiques fournis remplacent pour le run ceux du même dépôt déjà embarqués dans un dataset, sans modifier le dataset source. Un rejeu avec fichiers externes relit ces fichiers : conserver la même commande pour reproduire le résultat. Le parcours fixture reste autonome avec son historique embarqué.
+
+Ouvrir `http://127.0.0.1:4174/`, puis **Composants → Qualité par version**. Une observation 1.8.0 en développement reste distincte d'une publication PROD : si la nouvelle collecte contient un tag PROD 1.8.0, actualiser d'abord ses preuves de présence dans le référentiel.
+
+`datasets/issue-49/catalogue-historique.draft.yaml` était une **ancienne grille de revue** de 27 composants pour 1.7.1 et 1.8.0, avec `presence: null` et `evidence: null`. Ce n'est pas une entrée CLI. Le référentiel issu d'Excel le remplace pour ce parcours ; le pipeline ne le lit pas. Il peut être archivé ou supprimé localement si aucune note personnelle supplémentaire n'y a été ajoutée. Le classeur et le CSV de sélection sont les sources de constitution ; le fichier d'identités exprime les règles ; le fichier de composants porte les preuves par version.
+
 ### Cas concret : le dataset de l'issue #49
 
 Les chemins suivants sont relatifs à la racine du projet. Ils correspondent au jeu local enrichi pendant l'intégration :

@@ -282,6 +282,10 @@ export function anonymizeDataset(input: RawDataset, options: AnonymizationOption
       anonymized.parents = issue.parents.map(
         (id, index) => issueAliases.get(id) ?? anonymized.parents[index]!
       );
+      if (issue.descriptionIssueIds !== undefined)
+        anonymized.descriptionIssueIds = issue.descriptionIssueIds.map(
+          (id) => issueAliases.get(id) ?? map('unresolved-issue-reference', id, 'reference')
+        );
     }
   }
   const dataset: RawDataset = {

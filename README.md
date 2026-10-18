@@ -59,6 +59,10 @@ Pour suivre la présence et la qualité des composants par version, `fixture:pre
 
 ## Données et tests
 
+Pour un RAW non anonymisé, `pipeline --dataset <raw.json> --historical-catalogue <identites.yaml> --historical-repository <owner/repository>` importe l'historique local sans passer par `fixture:prepare`. Le fichier d'identités désigne son référentiel de présences via `historicalCatalogue`. Voir le [parcours local détaillé](docs/08-implementation/datasets.md#collecte-non-anonymisée--historique-local-et-fichier-didentités).
+
+Le dashboard propose **Activité des équipes → Suivi des Epics** : choix d'une Epic, durées calendaires par composant/issue et export CSV. Une nouvelle collecte est nécessaire pour récupérer les mentions présentes dans les descriptions. Voir [le contrat et les limites du suivi](docs/08-implementation/dashboard-coherence.md#suivi-des-epics-69).
+
 Les tests utilisent leurs propres références stables ; modifier une collecte ou la démonstration ne les remplace pas. `fixture:validate` contrôle votre dataset, tandis que `npm test` vérifie le logiciel. Une réserve Data Quality peut rendre le dashboard partiel sans invalider la structure du dataset. Les sorties sont écrites dans le dossier choisi, avec un historique limité aux scopes et versions compatibles. Les faits RAW ne sont pas réécrits par le pipeline.
 
 Les tokens, graines, captures et correspondances restent locaux. Les dossiers `data/local/`, `data/output/` et `datasets/` sont ignorés par Git. Une fixture préparée nécessite une revue avant partage : labels, types, statuts et tags métier peuvent conserver des informations sensibles.

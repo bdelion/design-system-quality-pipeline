@@ -4,6 +4,31 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+### Suivi des Epics (#69)
+
+**IMPLÉMENTÉ.** Depuis « Activité des équipes », la sous-navigation « Suivi des Epics » ouvre `epics.html`. La page permet de choisir une Epic du dataset et d'exporter ses lignes en CSV. Les rattachements sont les mentions `#numéro`, `owner/repository#numéro` ou URL d'issue présentes dans la description, sans nécessité de mot-clé de clôture. Ils restent distincts des parents/sub-issues. La collecte conserve uniquement les identifiants référencés ; les descriptions ne sont pas embarquées. L'anonymisation remappe aussi les mentions entre dépôts ; une référence non résolue reste opaque et ne fabrique pas d'Epic.
+
+Le pipeline calcule une ligne par composant préfixé et issue rattachée, avec numéro et lien de l'issue, vélocité du Project, premier passage à In progress, dernier passage à Done et durée en heures. La durée est **calendaire**, sans retrait des pauses, week-ends ou réouvertures ; elle ne mesure pas une charge de travail. Elle ne dépend pas de `closedAt`, de l'état GitHub courant ou des critères de fin d'audit. Les versions futures, comme 1.9.0 pour un package 1.8.0, restent incluses dans cette activité.
+
+Les dates sont triées par instant, en tenant compte des fuseaux horaires. Une date de transition requise invalide, un Done antérieur au premier In progress, un historique absent ou une transition manquante sont indiqués dans la cellule du temps passé. La vélocité `0` est conservée ; une valeur absente reste inconnue. Le parcours demandé possède un Project ; si plusieurs contextes sont présents, aucun choix arbitraire n'est fait et le calcul est signalé ambigu. Une issue sans label de composant reste visible avec « Composant absent ». Une issue multi-composants donne plusieurs lignes : ces durées ne doivent pas être additionnées comme des charges distinctes.
+
+Le CSV contient les lignes de l'Epic sélectionnée, le repository et le numéro de l'Epic, les mêmes valeurs et motifs que la page. Il utilise UTF-8 avec BOM, séparateur `;`, échappement des guillemets et protection des cellules interprétables comme formules.
+
+Un historique dont la première transition indique un état précédent In progress prouve que le travail avait déjà commencé avant les événements disponibles : la date du premier passage est alors inconnue et la durée n'est pas fabriquée à partir d'une réentrée ultérieure. Une transition In progress vers In progress ne constitue pas une nouvelle entrée.
+
+**Pour les anciennes fixtures :** un nouveau pipeline crée la page, mais ne peut retrouver les références supprimées lors des anciennes collectes. Refaire une collecte puis préparer une nouvelle fixture. Une collecte partielle est signalée, sans convertir l'absence de capture en preuve qu'aucune issue n'est rattachée. Le jeu `issue-49` existant reste intact et nécessite cette nouvelle collecte pour produire le suivi réel de son Epic.
+
+Exemple depuis la racine du projet, en choisissant des destinations qui n'existent pas encore pour la collecte et la préparation :
+
+```powershell
+npm.cmd run collect -- --repositories repositories.json --output data/local/issue-69/raw.json
+npm.cmd run fixture:prepare -- --input data/local/issue-69/raw.json --output datasets/issue-69
+npm.cmd run pipeline -- --dataset datasets/issue-69 --output data/output/issue-69
+npm.cmd run dashboard:serve -- data/output/issue-69/dashboard
+```
+
+`repositories.json` contient les noms réels `owner/repository` à collecter, avec le token configuré localement. Ouvrir `http://127.0.0.1:4174/epics.html`, puis choisir l'Epic : son numéro peut avoir changé après anonymisation. Pour conserver les mêmes alias entre captures, utiliser la même graine d'anonymisation selon le [parcours des datasets](datasets.md#anonymisation). Aucun catalogue historique n'est nécessaire pour ce suivi d'activité ; les enrichissements de qualité restent facultatifs et distincts.
+
 La comparaison des repositories sur la page Audits est une synthèse calculée dans le pipeline par repository et version cible : composants distincts avec audit, états des audits, résultats des seuls audits terminés, anomalies distinctes explicitement rattachées et améliorations. Les anomalies hors audit sont exclues de ce tableau ; sa qualité agrège les réserves des preuves concernées. Les repositories sans audit reconnu ne sont pas présentés comme des stocks nuls. Cette synthèse ne dépend pas du catalogue historique et n’est pas une couverture des dernières versions PROD. Un ancien snapshot sans cette synthèse demande un nouveau rejeu, sans recalcul métier dans le dashboard.
 
 Dans « Composants par repository », le résultat affiché porte sur l’audit de la version cible, déterminée par la milestone. Un audit terminé restitue son résultat calculé par le pipeline ; une amélioration n’altère pas sa conformité. Les audits incomplets n’ont pas de résultat définitif. Les versions sont filtrables même sans catalogue historique ; aucun résultat n’est propagé vers une autre version. La publication PROD est indiquée seulement lorsqu’un tag PROD est connu, sinon elle reste non prouvée. Les métriques et verdicts historiques Component × Version restent distincts et exigent leurs preuves de présence.

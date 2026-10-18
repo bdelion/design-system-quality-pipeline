@@ -5,6 +5,7 @@
  */
 
 import { nominalVersion } from '../domain/version-scope.js';
+import { descriptionIssueReferences } from '../domain/description-references.js';
 import pLimit from 'p-limit';
 import { CollectionProgress } from '../lib/collection-progress.js';
 import { GithubRequests, type GithubQuotaOptions } from './github-requests.js';
@@ -393,6 +394,7 @@ function toRawIssue(
       )
       .map((label) => label.slice(rules.labels.accessibilityCriticalityPrefix.length).toLowerCase()),
     parents: [],
+    descriptionIssueIds: descriptionIssueReferences(issue.body, repository),
     createdAt: issue.created_at,
     ...(issue.closed_at ? { closedAt: issue.closed_at } : {}),
     linkedPullRequestIds,

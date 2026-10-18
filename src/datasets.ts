@@ -115,6 +115,8 @@ export function validateRaw(value: unknown): asserts value is RawDataset {
       if (!issue.id || issueIds.has(issue.id))
         throw new Error('RAW invalide : identifiant d’issue absent ou dupliqué.');
       issueIds.add(issue.id);
+      if (issue.descriptionIssueIds !== undefined && !strings(issue.descriptionIssueIds))
+        throw new Error('RAW invalide : mentions de description.');
       for (const key of [
         'rawIssueType',
         'component',

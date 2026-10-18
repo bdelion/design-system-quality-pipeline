@@ -41,7 +41,7 @@ export function workspaceNavigation(title: string): string {
       ? 'index'
       : ['Accessibilité', 'Anomalies', 'Audits et composants'].includes(title)
         ? 'accessibility'
-        : title === 'Analyse des issues'
+        : ['Analyse des issues', 'Suivi des Epics'].includes(title)
           ? 'issues'
           : ['Analyse des composants', 'Cartographie'].includes(title)
             ? 'components'
@@ -69,6 +69,8 @@ export function workspaceNavigation(title: string): string {
 }
 /** Fournit les liens détaillés sans dupliquer les espaces dans la navigation principale. */
 export function workspaceSubnavigation(title: string): string {
+  if (['Analyse des issues', 'Suivi des Epics'].includes(title))
+    return '<nav class="workspace-tabs" aria-label="Vues activité"><a href="issues.html">Activité des équipes</a><a href="epics.html">Suivi des Epics</a></nav>';
   if (['Accessibilité', 'Anomalies', 'Audits et composants'].includes(title))
     return '<nav class="workspace-tabs" aria-label="Vues accessibilité"><a href="accessibility.html">Indicateurs accessibilité</a><a href="audits.html">Audits et conformité par version</a><a href="accessibility.html#review">Issues à examiner</a><a href="anomalies.html">Tous les défauts normalisés</a></nav>';
   if (['Analyse des composants', 'Cartographie'].includes(title))
