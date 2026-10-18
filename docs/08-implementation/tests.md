@@ -173,6 +173,8 @@ ensuite son implémentation.
 
 ## Validation intégrale du dashboard
 
+Le [benchmark synthétique PC](dashboard-benchmark.md) fournit les scénarios de contrôle/charge, les volumes HTML/JSON et DOM, les temps séparés et la comparaison avant/après. Les budgets validés sont déterministes (0 % de croissance) ; aucun seuil temporel n'est utilisé dans les tests.
+
 **IMPLÉMENTÉ — #74.** Le dashboard est utilisé uniquement sur PC. Les tests navigateur s’exécutent en viewport desktop ; les passages en 390 × 844, les captures mobiles et les analyses axe-core mobiles sont supprimés. Les contrôles desktop, les captures, le lien d’évitement, les interactions clavier/souris et les analyses d’accessibilité restent exécutés. Les bilans antérieurs mentionnant le mobile décrivent les validations historiques.
 
 `npm run check:dashboard` exécute typage, lint sans avertissement, contrôle TSDoc des fonctions nommées TypeScript/JavaScript, tests Vitest, compilation, tests navigateur, formatage et génération TypeDoc. Sur PowerShell, utiliser `npm.cmd` si les scripts PowerShell sont bloqués.

@@ -29,7 +29,8 @@
     "check:tsdoc": "node scripts/check-tsdoc.mjs",
     "check:ai": "node scripts/check-ai-config.mjs",
     "ai:index:update": "node scripts/update-ai-decisions-index.mjs",
-    "dashboard:serve": "tsx scripts/serve-dashboard.ts"
+    "dashboard:serve": "tsx scripts/serve-dashboard.ts",
+    "benchmark:dashboard": "tsx scripts/dashboard-benchmark.ts"
   },
   "dependencies": {
     "@octokit/request": "^10.0.16",

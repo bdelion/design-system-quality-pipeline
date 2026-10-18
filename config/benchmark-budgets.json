@@ -1,0 +1,6 @@
+{
+  "status": "validated",
+  "maxGrowthPercent": 0,
+  "scope": "Par page, baseline synthétique compatible : HTML/JSON non compressés, lignes tbody initiales/rendues et nœuds DOM. Aucun budget temporel.",
+  "validation": "Validation explicite utilisateur le 2026-10-18 : alerte dès la moindre augmentation. Aucun seuil temporel ; accueil < 1 Mo reste une proposition séparée."
+}
