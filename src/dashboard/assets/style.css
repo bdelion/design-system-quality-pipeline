@@ -320,9 +320,9 @@ a {
   background: #ffffff;
   color: #52627a;
   text-align: left;
-  font: 10px ui-monospace;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
   padding: 11px;
 }
 .table-panel td {
@@ -1359,13 +1359,15 @@ button:disabled {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 th {
   background: #edf2fa;
   color: var(--nav);
   text-align: left;
-  font-size: 12px;
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 700;
   padding: 14px 12px;
   border-bottom: 1px solid var(--line);
@@ -1379,6 +1381,8 @@ td {
   background: #edf2fa;
   color: var(--nav);
   padding: 14px 12px;
+  font-size: 14px;
+  font-weight: 700;
 }
 .table-panel td {
   color: var(--text);
@@ -1394,15 +1398,61 @@ tbody tr:nth-child(even) {
 .table-panel small,
 td small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 caption {
   color: var(--muted);
   text-align: left;
   padding: 12px;
-  font-size: 12px;
+  font-size: 13px;
   background: white;
+}
+/* Lecture PC : les libellés longs reviennent à la ligne sans masquer leurs unités. */
+.table-wrap th,
+.table-wrap td {
+  overflow-wrap: anywhere;
+}
+.table-wrap th {
+  min-width: 8rem;
+  overflow-wrap: normal;
+}
+.table-wrap th:has(input[type='checkbox']) {
+  min-width: 3rem;
+  width: 3rem;
+}
+.table-wrap th button {
+  font: inherit;
+  text-align: inherit;
+  white-space: normal;
+  overflow-wrap: normal;
+}
+/* Colonnes numériques des contrats existants : ne pas aligner à droite les identités ou verdicts. */
+[aria-label='Patrimoine et activité par repository'] :is(th, td):nth-child(n + 2),
+[aria-label='Temps de traitement par repository'] td:nth-child(n + 2),
+[aria-label='Temps de traitement par repository'] thead tr:last-child th,
+[aria-label='Répartition par criticité'] :is(th, td):nth-child(n + 2),
+[aria-label='Synthèse des audits par version cible'] :is(th, td):nth-child(n + 3):nth-child(-n + 14),
+table:has([data-component-rows]) :is(th, td):nth-child(n + 4):nth-child(-n + 9),
+table:has([data-component-rows]) :is(th, td):nth-child(n + 13),
+table:has([data-issue-rows]) :is(th, td):is(:nth-child(8), :nth-child(9), :nth-child(10), :nth-child(15)),
+table:has([data-quality-causes]) th:nth-child(2),
+[data-cause-count] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  --cell-whitespace: nowrap;
+}
+.table-wrap td:not([colspan]) {
+  font-variant-numeric: tabular-nums;
+  white-space: var(--cell-whitespace, normal);
+}
+/* Les codes et identifiants gardent une police technique, à une taille lisible. */
+.table-wrap :is(code, kbd, samp),
+[data-quality-row] td:first-child,
+[data-quality-row] td:nth-child(5) > a:first-child,
+[data-table-row] td:first-child > strong {
+  font-family: ui-monospace, monospace;
+  font-size: 14px;
 }
 .tag,
 .state,
