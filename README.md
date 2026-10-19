@@ -73,6 +73,8 @@ Le [contrat des populations](docs/08-implementation/component-populations.md) di
 
 Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage desktop, l’accessibilité et les interactions au clavier et à la souris ; les scénarios mobiles ont été retirés (#74). Voir le [périmètre des validations](docs/08-implementation/tests.md#validation-intégrale-du-dashboard).
 
+Les tableaux utilisent une typographie courante, des nombres alignés et un défilement au clavier. Voir la [revue de lisibilité PC et ses captures à 200 %](docs/08-implementation/dashboard-table-readability.md).
+
 `npm run benchmark:dashboard -- --scenario control --runs 3 --output data/output/benchmarks/control-before` mesure un jeu entièrement synthétique (parent à créer, sortie neuve). Le scénario `load`, les rapports par page et les budgets validés sans croissance sont décrits dans le [protocole de benchmark PC](docs/08-implementation/dashboard-benchmark.md).
 
 Le dashboard embarque un [JSON versionné propre à chaque page](docs/07-decisions/ADR-005-modeles-lecture-dashboard.md), sans snapshot complet ni RAW. Les filtres et CSV conservent leurs faits et qualifications ; les anciennes captures compatibles sont projetées sans réécriture. Distribuer le dossier complet avec ses assets et le servir en HTTP ; une erreur de contrat est signalée explicitement.
