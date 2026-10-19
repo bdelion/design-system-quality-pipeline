@@ -137,3 +137,28 @@ test('issue #84 : références inconnues et navigation historique conservent le 
   await expect(page.locator('[data-component-search]')).toHaveValue('');
   await expect(page.locator('[data-component-rows] tr')).not.toHaveCount(0);
 });
+
+test('issue #86 : une recherche actuelle divergente ne modifie pas le stock du snapshot', async ({
+  page,
+  context
+}) => {
+  await context.route('https://github.com/**', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<p>3 issues ouvertes actuellement</p>' })
+  );
+  await page.goto('/index.html');
+  const inventory = page.getByRole('region', { name: 'Patrimoine et activité par repository' });
+  const count = inventory.locator('tbody tr').first().locator('td').nth(5);
+  const frozen = await count.textContent();
+  await expect(count).toContainText('GitHub actuel ≈');
+  const popupPromise = page.waitForEvent('popup');
+  await count.locator('a').click();
+  const popup = await popupPromise;
+  await expect(popup.locator('body')).toHaveText('3 issues ouvertes actuellement');
+  await expect(count).toHaveText(frozen!);
+  await popup.close();
+  await page.goto('/components.html');
+  await expect(page.locator('[data-component-rows] tr').first().locator('td').nth(3)).toContainText(
+    'GitHub actuel ≈'
+  );
+  await expect(page.locator('.table-panel .badge').first()).toContainText('Snapshot du');
+});

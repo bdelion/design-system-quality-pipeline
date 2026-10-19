@@ -140,11 +140,15 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
     const field = { 2: 'issues', 3: 'open', 4: 'treated', 5: 'cancelled', 6: 'prs', 7: 'audits' }[index];
     if (index === 6 && row.githubLinks?.prSearches.length > 1) {
       return (
-        externalLink(row.githubLinks.prs, value, 'PR par références d’issues ; première recherche.') +
+        externalLink(
+          row.githubLinks.prs,
+          `${value} · GitHub actuel ≈`,
+          'Recherche approchée par références d’issues.'
+        ) +
         '<small>' +
         row.githubLinks.prSearches
           .slice(1)
-          .map((url, i) => externalLink(url, `Recherche PR ${i + 2}`))
+          .map((url, i) => externalLink(url, `GitHub actuel ≈ · PR ${i + 2}`))
           .join('<br>') +
         '</small>'
       );
@@ -152,8 +156,8 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
     if (field)
       return externalLink(
         row.githubLinks?.[field],
-        value,
-        'Recherche GitHub actuelle ; population approchée, voir l’aide « Comprendre les résultats et les liens GitHub ».'
+        /^https:\/\/[^\s]+$/.test(row.githubLinks?.[field] ?? '') ? `${value} · GitHub actuel ≈` : value,
+        'Recherche approchée ; le compteur reste celui du snapshot.'
       );
     if (index === 8) return externalLink(row.latestAuditUrl, value);
     if (index === 9) {

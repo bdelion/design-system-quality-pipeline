@@ -90,3 +90,5 @@ Les tokens, graines, captures et correspondances restent locaux. Les dossiers `d
 - [Tests et configurations](docs/08-implementation/configurations-et-tests.md)
 - [Documentation métier et gouvernance](docs/README.md)
 - [Développer](docs/08-implementation/guide-developpement.md)
+
+Les compteurs restent figés à la date du snapshot. Dans les tableaux de repositories et de composants, « GitHub actuel ≈ » ouvre une recherche actuelle et approchée : son résultat peut différer du compteur et ne le justifie pas. Les [liens d’entités résolues](docs/08-implementation/dashboard-links.md) ouvrent leur issue ou PR ; une référence non résolue reste du texte.
