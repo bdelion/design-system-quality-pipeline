@@ -1,3 +1,4 @@
+import { componentPopulationContent } from './component-populations.js';
 import { auditStatusLabel } from './audit-presentation.js';
 import { dashboardPageModel } from './page-read-model.js';
 import {
@@ -77,7 +78,7 @@ export async function generateDashboard(
         snapshot,
         'Vue d’ensemble',
         '<div data-overview-global>' +
-          repositoryComparisonTables(snapshot, githubUrl, componentPrefix) +
+          repositoryComparisonTables(snapshot, githubUrl) +
           globalOverviewCards(snapshot) +
           '</div>',
         pageModel
@@ -105,7 +106,9 @@ export async function generateDashboard(
       page(
         snapshot,
         'Audits et composants',
-        workspaceCards(snapshot, true) + auditsContent(snapshot, githubUrl),
+        workspaceCards(snapshot, true) +
+          auditsContent(snapshot, githubUrl) +
+          componentPopulationContent(snapshot),
         pageModel
       ),
       'utf8'
@@ -159,6 +162,7 @@ export async function generateDashboard(
     copyDashboardAsset(dashboardPath, 'epics.js'),
     copyDashboardAsset(dashboardPath, 'style.css'),
     copyDashboardAsset(dashboardPath, 'app.js'),
+    copyDashboardAsset(dashboardPath, 'populations.js'),
     copyDashboardAsset(dashboardPath, 'page-model.js'),
     copyDashboardAsset(dashboardPath, 'context.js'),
     copyDashboardAsset(dashboardPath, 'kpi-presentation.js'),
@@ -217,7 +221,7 @@ function page(
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
   <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Design System Quality</span></a><span class="workspace-label">Qualité du Design System</span><div class="topbar-actions"><span class="status-pill status-${title === 'Vue d’ensemble' ? 'partial' : 'neutral'}">${qualityLabel(snapshot.reliability)}</span></div></header>
   <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Snapshot</span><strong data-captured-at></strong><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow">Qualité du Design System / V2.2</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted">Lecture seule · données du snapshot courant</p></div></div>${workspaceSubnavigation(title)}${['Qualité des données', 'Vue d’ensemble', 'Suivi des Epics'].includes(title) ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined, id === 'components' ? { feedback: false, resetLabel: 'Effacer le périmètre' } : {})}${content}</main></div>
-  <script type="application/json" id="dashboard-page-data">${data}</script><script>if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script>${id === 'epics' ? '<script type="module" src="assets/epics.js"></script>' : ''}${['accessibility', 'audits', 'quality'].includes(id) ? '<script type="module" src="assets/workspaces.js"></script>' : ''}${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
+  <script type="application/json" id="dashboard-page-data">${data}</script><script>if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script>${id === 'audits' ? '<script type="module" src="assets/populations.js"></script>' : ''}${id === 'epics' ? '<script type="module" src="assets/epics.js"></script>' : ''}${['accessibility', 'audits', 'quality'].includes(id) ? '<script type="module" src="assets/workspaces.js"></script>' : ''}${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
 </body></html>`
     .replace(/class="active" href=/g, 'class="active" aria-current="page" href=')
     .replace(/<\/main><\/div>\s+<script/, '</main></div><script')
@@ -254,7 +258,7 @@ function componentVersionVerdictLabel(value: 'NON_COUVERT' | 'CONFORME' | 'NON_C
 function globalOverviewCards(snapshot: Snapshot): string {
   const cards: Array<[string, string, string]> = [
     ['portfolio.repositories', 'Repositories', 'components.html'],
-    ['portfolio.components', 'Composants actifs', 'components.html'],
+    ['portfolio.components', 'Composants actifs', 'audits.html#component-populations'],
     ['audit.completed', 'Audits terminés', 'audits.html'],
     ['anomaly.total', 'Défauts normalisés déclarés', 'anomalies.html'],
     ['anomaly.open', 'Défauts normalisés ouverts', 'anomalies.html'],
@@ -280,17 +284,13 @@ function globalOverviewCards(snapshot: Snapshot): string {
 }
 
 /** Restitue les deux comparaisons globales par repository, sans filtre de navigation. */
-function repositoryComparisonTables(
-  snapshot: Snapshot,
-  githubUrl?: string,
-  componentPrefix = 'Component:'
-): string {
+function repositoryComparisonTables(snapshot: Snapshot, githubUrl?: string): string {
   const groups = [
     ['global', 'Ensemble (Done + closedAt)'],
     ['done', 'Sans estimation (Done)'],
     ['estimated', 'Avec estimation (closedAt)']
   ];
-  return `<article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison des sources</p><h2>Patrimoine et activité par repository</h2></div><span class="badge">${snapshot.normalizedData.libraries.length} repositories</span></div><p>Stocks du snapshot. Les liens ouvrent les listes GitHub actuelles : composants via leurs labels, anomalies via leurs Issue Types. Les anomalies ouvertes selon le pipeline peuvent différer des issues ouvertes dans GitHub.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Patrimoine et activité par repository"><table><thead><tr>${['Repository', 'Composants', 'Anomalies', 'Anomalies ouvertes', 'Issues', 'Issues ouvertes', 'PR', 'PR fusionnées'].map((label) => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${repositoryRows(snapshot, githubUrl, componentPrefix)}</tbody></table></div></article>
+  return `<article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Comparaison des sources</p><h2>Patrimoine et activité par repository</h2></div><span class="badge">${snapshot.normalizedData.libraries.length} repositories</span></div><p>Stocks du snapshot. Identités : preuves locales. Autres liens : listes GitHub actuelles, anomalies par Issue Type. Les anomalies ouvertes selon le pipeline peuvent différer des issues ouvertes dans GitHub.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Patrimoine et activité par repository"><table><thead><tr>${['Repository', 'Identités historiques', 'Anomalies', 'Anomalies ouvertes', 'Issues', 'Issues ouvertes', 'PR', 'PR fusionnées'].map((label) => `<th scope="col">${label}</th>`).join('')}</tr></thead><tbody>${repositoryRows(snapshot, githubUrl)}</tbody></table></div></article>
   <article class="panel table-panel"><div class="panel-heading"><div><p class="eyebrow">Délais de traitement</p><h2>Temps de traitement des issues par repository</h2></div><span class="badge">Jours calendaires</span></div><p>Issues distinctes Done ET Closed, dates calculables et exclusions Data Quality appliquées. Done : dernière transition datée. closedAt : estimation admise uniquement si Done est prouvé et sa date absente. Les annulations sont exclues.</p><div class="table-wrap" tabindex="0" role="region" aria-label="Temps de traitement par repository"><table><thead><tr><th scope="col" rowspan="2">Repository</th>${groups.map(([, label]) => `<th scope="colgroup" colspan="4">${label}</th>`).join('')}</tr><tr>${groups.map(() => ['Issues mesurables', 'Moyenne', 'Médiane', 'P90'].map((label) => `<th scope="col">${label}</th>`).join('')).join('')}</tr></thead><tbody>${delayRows(snapshot)}</tbody></table></div></article>`;
 }
 
@@ -852,7 +852,7 @@ function issuesExplorerContent(snapshot: Snapshot): string {
 function componentsExplorerContent(): string {
   return `<section class="issues-explorer" data-component-analysis>
     <section class="panel issue-filters" aria-label="Affiner les résultats"><div class="panel-heading"><h2>Affiner les résultats</h2><button type="button" class="reset-button" data-component-reset>Réinitialiser la vue</button></div><div class="issue-filter-grid"><label>Recherche locale<input class="search" data-component-search placeholder="Composant, repository…"></label><label>État de l'audit<select data-component-filter="auditStatus"><option value="">Tous</option></select></label><label>Résultat de l’audit<select data-component-filter="conformity"><option value="">Tous</option></select></label><label>Issues ouvertes<select data-component-filter="open"><option value="">Toutes</option><option value="yes">Avec issues ouvertes</option><option value="no">Sans issue ouverte</option></select></label></div><div class="issue-actions"><button class="reset-button" data-component-clear type="button">Réinitialiser la sélection</button><button class="reset-button" data-component-export type="button">Exporter CSV</button></div><p class="muted" role="status" aria-live="polite" data-component-summary data-filter-feedback></p></section>
-    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par composant</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Résultat de l’audit · version cible', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Composants par repository</h2><span class="badge">Une ligne par nom / repository</span></div><div class="table-wrap issue-table-wrap"><table class="issue-table"><thead><tr><th><input type="checkbox" data-component-all aria-label="Sélectionner les composants visibles"></th>${['Repository', 'Composant', 'Issues', 'Ouvertes', 'Traitées', 'Annulées', 'PR', 'Audits', 'Dernier audit', 'Résultat de l’audit · version cible', 'Plus ancienne ouverte', 'Ancienneté maximale', 'Délai moyen'].map((label, i) => `<th><button type="button" data-component-sort="${i}" aria-label="Trier par ${label}">${label} ↕</button><input class="issue-column-filter" data-component-column="${i}" aria-label="Filtrer ${label}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-component-rows></tbody></table></div></article>
     <details class="panel" data-component-statistics><summary>Délais des issues du résultat ou de la sélection</summary><div class="issue-kpis" aria-live="polite">${[
       ['global', 'Global · Officiel'],
       ['done', 'Sans estimation'],
@@ -872,7 +872,7 @@ function componentsExplorerContent(): string {
             .join('')}</div><small data-component-count="${key}">0 issue</small></article>`
       )
       .join('')}</div></details>
-    <details class="panel" data-component-help><summary>Comprendre les résultats et les liens GitHub</summary><p>Les liens chiffrés ouvrent une recherche GitHub sur les données actuelles du repository. Recherches approchées : « Ouvertes » utilise l’état GitHub ; « Traitées » utilise Closed avec motif completed, sans vérifier Done dans Project ; « Annulées » utilise le motif not planned, distinct de Cancelled dans Project. Les PR sont recherchées par références d’issues dans leur description : les liens manuels seuls peuvent manquer. Les grandes listes de PR proposent plusieurs recherches courtes pour conserver toutes les références. Les compteurs restent ceux du snapshot. Le résultat affiché porte sur la version cible de l’audit, sans propagation aux autres versions. Un audit en cours n’a pas de résultat définitif. La publication de cette version reste distincte de sa milestone. Dernier audit et résultat ouvrent leur audit justificatif.</p></details>
+    <details class="panel" data-component-help><summary>Comprendre les résultats et les liens GitHub</summary><p>Les liens chiffrés ouvrent une recherche GitHub sur les données actuelles du repository. Recherches approchées : « Ouvertes » utilise l’état GitHub ; « Traitées » utilise Closed avec motif completed, sans vérifier Done dans Project ; « Annulées » utilise le motif not planned, distinct de Cancelled dans Project. Les PR sont recherchées par références d’issues dans leur description : les liens manuels seuls peuvent manquer. Les grandes listes de PR proposent plusieurs recherches courtes pour conserver toutes les références. Les compteurs restent ceux du snapshot. Le résultat affiché porte sur la version cible de l’audit, sans propagation aux autres versions. Un audit en cours n’a pas de résultat définitif. La publication de cette version reste distincte de sa milestone. Dernier audit et résultat ouvrent leur audit justificatif. Ce tableau regroupe les noms par repository ; les identités historiques distinctes et leurs présences sont consultables dans le <a href="audits.html#component-populations">détail des populations</a>.</p></details>
   </section>`;
 }
 
@@ -1248,9 +1248,9 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
       const library = libraries.find(
         (item) => item.libraryId === (version?.libraryId ?? component?.libraryId)
       );
-      const verdict = relation.verdict ?? 'NON_COUVERT';
+      const verdict = relation.verdict;
       const auditIds = relation.applicableAuditIds ?? [];
-      return `<tr ${contextAttribute({ repository: library?.repository, components: [component?.name], componentIds: [relation.componentId], versions: [version?.number], versionIds: [relation.versionId], auditIds: relation.applicableAuditIds ?? [] })} data-component-version-row data-component="${escapeHtml(component?.name ?? relation.componentId)}" data-version="${escapeHtml(version?.number ?? relation.versionId)}" data-repository="${escapeHtml(library?.repository ?? '')}" data-verdict="${verdict}"><td>${repositoryReference(snapshot, library?.name ?? 'repository inconnu', githubUrl)}</td><td><strong>${escapeHtml(component?.name ?? relation.componentId)}</strong><small>${escapeHtml(relation.componentId)}</small></td><td>${escapeHtml(version?.number ?? relation.versionId)}</td><td><span class="state state-${verdict.toLowerCase().replace('_', '-')}">${componentVersionVerdictLabel(verdict)}</span></td><td>${auditIds.length ? auditIds.map((id) => `<a href="audits.html?audit=${encodeURIComponent(id)}">${escapeHtml(id)}</a>${snapshot.normalizedData.audits.find((audit) => audit.auditId === id)?.versionId !== relation.versionId ? ' <span class="tag">hérité</span>' : ' <span class="tag">direct</span>'}`).join('<br>') : '—'}</td><td><span class="tag tag-${relation.dataQualityStatus}">${qualityLabel(relation.dataQualityStatus)}</span></td></tr>`;
+      return `<tr ${contextAttribute({ repository: library?.repository, components: [component?.name], componentIds: [relation.componentId], versions: [version?.number], versionIds: [relation.versionId], auditIds: relation.applicableAuditIds ?? [] })} data-component-version-row data-component="${escapeHtml(component?.name ?? relation.componentId)}" data-version="${escapeHtml(version?.number ?? relation.versionId)}" data-repository="${escapeHtml(library?.repository ?? '')}" data-verdict="${verdict ?? 'unknown'}"><td>${repositoryReference(snapshot, library?.name ?? 'repository inconnu', githubUrl)}</td><td><strong>${escapeHtml(component?.name ?? relation.componentId)}</strong><small>${escapeHtml(relation.componentId)}</small></td><td>${escapeHtml(version?.number ?? relation.versionId)}</td><td><span class="state state-${verdict?.toLowerCase().replace('_', '-') ?? 'unknown'}">${verdict ? componentVersionVerdictLabel(verdict) : 'indéterminé'}</span></td><td>${auditIds.length ? auditIds.map((id) => `<a href="audits.html?audit=${encodeURIComponent(id)}">${escapeHtml(id)}</a>${snapshot.normalizedData.audits.find((audit) => audit.auditId === id)?.versionId !== relation.versionId ? ' <span class="tag">hérité</span>' : ' <span class="tag">direct</span>'}`).join('<br>') : '—'}</td><td><span class="tag tag-${relation.dataQualityStatus}">${qualityLabel(relation.dataQualityStatus)}</span></td></tr>`;
     })
     .join('');
 
@@ -1331,7 +1331,7 @@ function componentAuditRow(
 /** Rend les barres de répartition par criticité avec leurs filtres. */
 /** Rend les barres de répartition par catégorie d'accessibilité. */
 /** Construit la comparaison des repositories dans la page d'accueil. */
-function repositoryRows(snapshot: Snapshot, githubUrl?: string, componentPrefix = 'Component:'): string {
+function repositoryRows(snapshot: Snapshot, githubUrl?: string): string {
   const rows =
     snapshot.analytics.repositoryActivity ??
     repositoryActivity(snapshot.normalizedData, snapshot.dataQuality.issues);
@@ -1346,15 +1346,6 @@ function repositoryRows(snapshot: Snapshot, githubUrl?: string, componentPrefix 
       const issues = (snapshot.normalizedData.issues ?? []).filter(
         (item) => item.libraryId === row.libraryId
       );
-      const componentLabels = [
-        ...new Set(
-          issues
-            .flatMap((item) => item.labels)
-            .filter((label) =>
-              label.toLocaleLowerCase('fr').startsWith(componentPrefix.toLocaleLowerCase('fr'))
-            )
-        )
-      ];
       const anomalyIds = new Set(snapshot.normalizedData.anomalies.map((item) => item.issueId));
       const types = [
         ...new Set(
@@ -1366,12 +1357,6 @@ function repositoryRows(snapshot: Snapshot, githubUrl?: string, componentPrefix 
       ];
       /** Protège un littéral de recherche GitHub. */
       const quote = (value: string): string => `"${value.replace(/["\\]/g, '\\$&')}"`;
-      const componentQuery =
-        'is:issue (' +
-        (componentLabels.length ? componentLabels : [componentPrefix])
-          .map((label) => 'label:' + quote(label))
-          .join(' OR ') +
-        ')';
       const anomalyQuery =
         'is:issue (' +
         (types.length ? types : ['Bug']).map((type) => 'type:' + quote(type)).join(' OR ') +
@@ -1383,7 +1368,7 @@ function repositoryRows(snapshot: Snapshot, githubUrl?: string, componentPrefix 
           : /^https:\/\/[^\s]+$/.test(base)
             ? `<a href="${escapeHtml(base + '/' + kind + '?q=' + encodeURIComponent(query))}" target="_blank" rel="noopener noreferrer">${value} ↗</a>`
             : String(value);
-      return `<tr><td>${repositoryReference(snapshot, row.name, githubUrl)}<small>${escapeHtml(row.repository)}</small></td><td>${countLink(row.components, componentQuery)}</td><td>${countLink(row.anomalies, anomalyQuery)}</td><td>${countLink(row.openAnomalies, anomalyQuery + ' is:open')}</td><td>${countLink(row.issues, 'is:issue')}</td><td>${countLink(row.openIssues, 'is:issue is:open')}</td><td>${countLink(row.pullRequests, 'is:pr', 'pulls')}</td><td>${countLink(row.mergedPullRequests, 'is:pr is:merged', 'pulls')}</td></tr>`;
+      return `<tr><td>${repositoryReference(snapshot, row.name, githubUrl)}<small>${escapeHtml(row.repository)}</small></td><td><a href="audits.html?repository=${encodeURIComponent(row.repository)}#component-populations">${row.components}</a></td><td>${countLink(row.anomalies, anomalyQuery)}</td><td>${countLink(row.openAnomalies, anomalyQuery + ' is:open')}</td><td>${countLink(row.issues, 'is:issue')}</td><td>${countLink(row.openIssues, 'is:issue is:open')}</td><td>${countLink(row.pullRequests, 'is:pr', 'pulls')}</td><td>${countLink(row.mergedPullRequests, 'is:pr is:merged', 'pulls')}</td></tr>`;
     })
     .join('');
 }

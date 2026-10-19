@@ -93,6 +93,8 @@ Le [contrôle après #82](benchmarks/issue-82-control.md) et ses [mesures JSON](
 
 ## Modèles de lecture par page (#83)
 
+> Depuis #85, la référence automatique de contrôle a été actualisée après revue et validation explicite du coût du détail nominatif. Le budget reste à 0 %. Les mesures et baselines historiques de cette page sont conservées ; voir le [contrat des populations et la revue de coût](component-populations.md#revue-mesurée-du-coût-fonctionnel).
+
 **MESURÉ LE 19/10/2026**, sur `3e816bb` avec le patch #83 (arbre modifié indiqué dans les rapports). Choix validé avant développement : JSON ciblé intégré, [ADR-005](../07-decisions/ADR-005-modeles-lecture-dashboard.md). Protocole v1, fixture v1, graine 81, Node 22.23.3 et Edge 155.0.4283.62 identiques aux références #82. Une chauffe et trois générations mesurées, puis navigations indépendantes sans cache. Le poste et les tâches de validation ne sont pas isolés : aucune conclusion de rapidité ni seuil de temps n’est tiré de ces séries.
 
 | Charge : octets non compressés         | Avant #83 (après #82) |  Après #83 |

@@ -69,6 +69,8 @@ Dans « Composants et versions », les compteurs distinguent composants visibles
 
 Le [parcours Composants](docs/08-implementation/components-workflow.md) utilise un seul périmètre repository/composant/version. La recherche locale affine ce résultat ; « Réinitialiser la vue » efface aussi la sélection et les filtres. Le tableau précède les délais et l’aide détaillée, dépliables au clavier.
 
+Le [contrat des populations](docs/08-implementation/component-populations.md) distingue identités historiques, actifs, présences par version, couples couverts et conformes. Le détail nominatif dans Audits et conformité expose les identités, alias, preuves et exclusions ; les effectifs et formules restent inchangés.
+
 Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage desktop, l’accessibilité et les interactions au clavier et à la souris ; les scénarios mobiles ont été retirés (#74). Voir le [périmètre des validations](docs/08-implementation/tests.md#validation-intégrale-du-dashboard).
 
 `npm run benchmark:dashboard -- --scenario control --runs 3 --output data/output/benchmarks/control-before` mesure un jeu entièrement synthétique (parent à créer, sortie neuve). Le scénario `load`, les rapports par page et les budgets validés sans croissance sont décrits dans le [protocole de benchmark PC](docs/08-implementation/dashboard-benchmark.md).

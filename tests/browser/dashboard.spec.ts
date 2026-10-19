@@ -64,7 +64,9 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
   });
   await page.goto('/accessibility.html');
   await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('21,1 %');
-  await expect(page.locator('[data-workspace-ratio="coverage"]')).toHaveText('16 sur 76 composants présents');
+  await expect(page.locator('[data-workspace-ratio="coverage"]')).toHaveText(
+    '16 sur 76 éléments du périmètre calculé'
+  );
   await expect(page.locator('[data-workspace-kpi="conformity"]')).toHaveText('50 %');
   await expect(page.locator('[data-workspace-kpi="treatmentRate"]')).toHaveText('0 %');
   await expect(page.locator('[data-workspace-kpi="average"]')).toHaveText('5,2 j');
@@ -76,7 +78,9 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
   await page.locator('[data-context-filter="component"]').selectOption('Button');
   await page.locator('[data-context-filter="version"]').selectOption('1.0.0');
   await expect(page.locator('[data-workspace-kpi="coverage"]')).toHaveText('0 %');
-  await expect(page.locator('[data-workspace-ratio="coverage"]')).toHaveText('0 sur 4 composants présents');
+  await expect(page.locator('[data-workspace-ratio="coverage"]')).toHaveText(
+    '0 sur 4 éléments du périmètre calculé'
+  );
   await expect(page.locator('[data-workspace-kpi="conformity"]')).toHaveText('Indisponible');
   await expect(page.locator('[data-workspace-ratio="conformity"]')).toHaveText('Ratio indisponible');
   await expect(page.locator('[data-workspace-kpi="average"]')).toHaveText('0 j');
@@ -301,7 +305,7 @@ test('vue d’ensemble : stocks cliquables et délais Ensemble, Done et closedAt
   await expect(row.locator('td').nth(4)).toHaveText('8 ↗');
   await expect(row.locator('td').nth(5)).toHaveText('2 ↗');
   await expect(row.locator('td').nth(6)).toHaveText('1 ↗');
-  for (const link of await row.locator('td:not(:first-child) a').all()) {
+  for (const link of await row.locator('td:nth-child(n+3) a').all()) {
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   }
@@ -586,7 +590,7 @@ test('la synthèse globale reste visible à l’accueil même avec un ancien fil
   await expect(page.locator('.kpi-card')).toHaveCount(8);
   await expect(page.locator('[data-metric-id="portfolio.components"]')).toHaveAttribute(
     'href',
-    'components.html'
+    'audits.html#component-populations'
   );
   await expect(page.getByRole('heading', { name: 'Patrimoine et activité par repository' })).toBeVisible();
   await expect(
