@@ -4,6 +4,10 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+### Pagination des listes Activité et DQ (#87)
+
+Les listes montent 50 lignes par page ; les filtres, tris et CSV utilisent tous les résultats. La sélection d’Activité couvre les issues distinctes de toutes les pages filtrées et sert aux KPI ; son CSV exporte toutes les lignes filtrées. DQ conserve ses motifs et preuves dans le contrat propre à `quality.html`, avec un export intégral. Voir les [contrats, limites, tests et mesures de pagination](dashboard-pagination.md).
+
 ### Résumé de capture près du titre (#89)
 
 **IMPLÉMENTÉ.** Chaque page rapproche du titre la date de capture, le périmètre partagé et la fiabilité **globale du snapshot**. La capture est présentée en UTC avec secondes et fuseau explicite, sans seuil de péremption. Une date absente, invalide ou non zonée est indisponible, sans remplacement par la date du jour. Le champ « Capture » restitue `snapshot.scope` ; il ne prétend pas identifier un dataset dont le nom n’aurait pas été capturé.

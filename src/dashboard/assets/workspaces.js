@@ -1,5 +1,5 @@
 import { readPageModel } from './page-model.js';
-import { currentContext, matchesFact, setContext } from './context.js';
+import { currentContext, matchesFact } from './context.js';
 /* global Blob, URL */
 import { presentWorkspaceKpi } from './kpi-presentation.js';
 import { presentWorkspaceVersions } from './version-presentation.js';
@@ -95,7 +95,6 @@ function distributionChart(title, entries, note, dimension) {
 }
 /** Restitue les KPI du périmètre exact avec unités, populations et réserves, puis les répartitions. */
 function renderWorkspace() {
-  renderQuality();
   if (!model) return;
   const params = currentContext(),
     context = canonicalContext();
@@ -296,59 +295,3 @@ document
     button.addEventListener('click', () => exportPopulation(button.dataset.accessibilityExport))
   );
 renderWorkspace();
-
-/** Filtre les diagnostics sur les dimensions prouvées et annonce le nombre de résultats. */
-function renderQuality() {
-  const params = currentContext();
-  const controls = [...document.querySelectorAll('[data-quality-filter]')];
-  if (!controls.length) return;
-  for (const control of controls) {
-    const value = params.get(control.dataset.qualityFilter) || '';
-    if (
-      control.tagName === 'SELECT' &&
-      value &&
-      ![...control.options].some((option) => option.value === value)
-    ) {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = 'Référence inconnue : ' + value;
-      control.append(option);
-    }
-    control.value = value;
-  }
-  const query = (params.get('dqSearch') || '').toLocaleLowerCase('fr');
-  const rows = [...document.querySelectorAll('[data-quality-row]')];
-  for (const row of rows) {
-    const context = JSON.parse(row.dataset.qualityContext);
-    row.hidden =
-      (!!query && !row.textContent.toLocaleLowerCase('fr').includes(query)) ||
-      controls.some((control) => {
-        const key = control.dataset.qualityFilter;
-        const expected = params.get(key);
-        return key !== 'dqSearch' && expected && !context[key]?.includes(expected);
-      });
-  }
-  document.querySelector('[data-quality-count]').textContent = rows.filter((row) => !row.hidden).length;
-}
-/** Applique les filtres de diagnostic à l’URL sans toucher au snapshot. */
-function updateQuality(event) {
-  const control = event.target;
-  setContext({ [control.dataset.qualityFilter]: control.value });
-}
-for (const control of document.querySelectorAll('[data-quality-filter]')) {
-  control.addEventListener('input', updateQuality);
-  control.addEventListener('change', updateQuality);
-}
-document
-  .querySelector('[data-quality-reset]')
-  ?.addEventListener('click', () =>
-    setContext(
-      Object.fromEntries(
-        [...document.querySelectorAll('[data-quality-filter]')].map((control) => [
-          control.dataset.qualityFilter,
-          ''
-        ])
-      )
-    )
-  );
-renderQuality();

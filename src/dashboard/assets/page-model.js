@@ -44,7 +44,7 @@ export function decodePageModel(text, expectedPage) {
     anomalies: [],
     graph: [],
     history: [],
-    quality: [],
+    quality: ['quality'],
     issues: ['issues'],
     components: ['components'],
     accessibility: ['workspaces'],
@@ -68,6 +68,34 @@ export function decodePageModel(text, expectedPage) {
   )
     throw new Error('Détails requis absents ou hors du parcours.');
   const data = model.data;
+  if (
+    expectedPage === 'quality' &&
+    (!Array.isArray(data.quality) ||
+      !data.quality.every(
+        (row) =>
+          record(row) &&
+          [
+            'id',
+            'ruleId',
+            'severity',
+            'entityType',
+            'entityId',
+            'message',
+            'action',
+            'sourceUrl',
+            'issueId'
+          ].every((key) => typeof row[key] === 'string') &&
+          Array.isArray(row.repositories) &&
+          row.repositories.every((repo) => typeof repo === 'string') &&
+          Array.isArray(row.impacts) &&
+          row.impacts.every(
+            (impact) =>
+              record(impact) &&
+              ['metricId', 'action', 'reason'].every((key) => typeof impact[key] === 'string')
+          )
+      ))
+  )
+    throw new Error('Diagnostics de qualité indisponibles.');
   if (
     expectedPage === 'issues' &&
     (!record(data.issues) || !facts(data.issues.items) || typeof data.issues.componentPrefix !== 'string')
@@ -191,9 +219,11 @@ function showPageError(message) {
   main.querySelectorAll('input, select, button').forEach((control) => {
     control.disabled = true;
   });
-  main.querySelectorAll('[data-workspace-kpi], [data-issue-kpi], [data-component-count]').forEach((node) => {
-    node.textContent = 'Indisponible';
-  });
+  main
+    .querySelectorAll('[data-workspace-kpi], [data-issue-kpi], [data-component-count], [data-quality-count]')
+    .forEach((node) => {
+      node.textContent = 'Indisponible';
+    });
   main.querySelectorAll('[data-workspace-ratio]').forEach((node) => {
     node.textContent = 'Ratio indisponible';
   });

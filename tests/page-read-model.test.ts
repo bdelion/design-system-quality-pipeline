@@ -6,7 +6,7 @@ import { decodePageModel } from '../src/dashboard/assets/page-model.js';
 it('projette une enveloppe versionnée propre à chaque usage sans modifier la capture', () => {
   const snapshot = consolidationSnapshot();
   const before = JSON.stringify(snapshot);
-  for (const page of ['index', 'anomalies', 'graph', 'history', 'quality'] as const) {
+  for (const page of ['index', 'anomalies', 'graph', 'history'] as const) {
     const model = dashboardPageModel(snapshot, page);
     expect(model.schema).toBe('dsq-dashboard-page');
     expect(model.version).toBe(1);
@@ -15,6 +15,9 @@ it('projette une enveloppe versionnée propre à chaque usage sans modifier la c
     expect(JSON.stringify(model)).not.toMatch(/rawData|normalizedData|componentVersions|analytics/);
   }
   const audits = dashboardPageModel(snapshot, 'audits');
+  expect(dashboardPageModel(snapshot, 'quality').data.quality).toHaveLength(
+    snapshot.dataQuality.issues.length
+  );
   expect(audits.data.workspaces!.scopes.length).toBeGreaterThan(0);
   expect(audits.data.workspaces).not.toHaveProperty('rows');
   expect(audits.data.workspaces!.scopes[0]!.summary).not.toHaveProperty('sourceIds');

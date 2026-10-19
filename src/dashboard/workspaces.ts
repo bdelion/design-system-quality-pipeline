@@ -1,3 +1,6 @@
+import { qualityReadModel } from './quality-read-model.js';
+import { qualityRowHtml } from './assets/quality-presentation.js';
+import { paginate, paginationContent } from './assets/pagination.js';
 /** Organisation des espaces métier et restitution des populations calculées par Analytics. */
 import type { Snapshot } from '../domain/types.js';
 import {
@@ -7,7 +10,6 @@ import {
 } from '../analytics/workspaces.js';
 import { presentWorkspaceKpi } from './assets/kpi-presentation.js';
 import { presentWorkspaceVersions } from './assets/version-presentation.js';
-import { issueFacts } from './read-model.js';
 import { contextAttribute } from './evidence.js';
 
 /** Échappe une valeur avant son insertion dans le HTML. */
@@ -163,69 +165,18 @@ export function accessibilityContent(snapshot: Snapshot): string {
 }
 /** Présente les réserves DQ avec leurs relations explicites et des filtres de diagnostic. */
 export function dataQualityContent(snapshot: Snapshot, githubUrl?: string): string {
-  const repositories = new Map<string, Set<string>>();
-  /** Associe une identité explicite à un repository sans déduire une origine du texte du diagnostic. */
-  function associate(id: string, repo: string): void {
-    if (!repo) return;
-    const values = repositories.get(id) ?? new Set<string>();
-    values.add(repo);
-    repositories.set(id, values);
-  }
-  for (const fact of issueFacts(snapshot))
-    for (const id of [
-      fact.id,
-      ...fact.auditIds,
-      ...fact.anomalyIds,
-      ...fact.componentIds,
-      ...fact.versionIds,
-      ...fact.prs
-    ])
-      associate(id, fact.repo);
-  const data = snapshot.normalizedData;
-  const sources = new Map<string, string>();
-  const baseUrl = (githubUrl ?? 'https://github.com').replace(/\/+$/, '');
-  for (const repository of snapshot.rawData.repositories) {
-    const repoUrl = `${baseUrl}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}`;
-    for (const issue of repository.issues) sources.set(issue.id, `${repoUrl}/issues/${issue.number}`);
-    for (const pr of repository.pullRequests) sources.set(pr.id, `${repoUrl}/pull/${pr.number}`);
-  }
-  for (const issue of data.issues ?? []) {
-    const url = sources.get(issue.provenance.sourceId ?? issue.issueId) ?? issue.url;
-    if (/^https:\/\/[^\s]+$/.test(url)) sources.set(issue.issueId, url);
-  }
-  for (const entity of [...data.anomalies, ...data.audits]) {
-    const url = sources.get(entity.issueId) ?? sources.get(entity.provenance.sourceId ?? '');
-    if (url) sources.set('auditId' in entity ? entity.auditId : entity.anomalyId, url);
-  }
-  for (const entity of [...data.components, ...(data.versions ?? []), ...data.pullRequests]) {
-    const url = sources.get(entity.provenance.sourceId ?? '');
-    if (url)
-      sources.set(
-        'componentId' in entity
-          ? entity.componentId
-          : 'versionId' in entity
-            ? entity.versionId
-            : entity.pullRequestId,
-        url
-      );
-  }
-  for (const library of data.libraries) {
-    associate(library.libraryId, library.repository);
-    for (const entity of [...data.components, ...(data.versions ?? [])].filter(
-      (item) => item.libraryId === library.libraryId
-    )) {
-      associate('componentId' in entity ? entity.componentId : entity.versionId, library.repository);
-      if (entity.provenance.sourceId) associate(entity.provenance.sourceId, library.repository);
-    }
-  }
-  for (const relation of data.componentVersions ?? [])
-    for (const repo of repositories.get(relation.componentId) ?? [])
-      associate(relation.componentVersionId, repo);
+  const rows = qualityReadModel(snapshot, githubUrl);
   const filters: Array<[string, string, string[]]> = [
     [
       'repository',
       'Repository',
-      [...new Set([...repositories.values()].flatMap((values) => [...values])), '__unknown__']
+      [
+        ...new Set([
+          ...snapshot.normalizedData.libraries.map((library) => library.repository),
+          ...rows.flatMap((row) => row.repositories)
+        ]),
+        '__unknown__'
+      ]
     ],
     ['dqRule', 'Règle', snapshot.dataQuality.issues.map((item) => item.ruleId)],
     ['dqSeverity', 'Sévérité', snapshot.dataQuality.issues.map((item) => item.severity)],
@@ -263,7 +214,7 @@ export function dataQualityContent(snapshot: Snapshot, githubUrl?: string): stri
       .join('') +
     '<label>Rechercher<input type="search" data-quality-filter="dqSearch"></label><button type="button" data-quality-reset>Réinitialiser</button></div><p role="status" aria-live="polite"><strong class="number-indicator" data-quality-count>' +
     snapshot.dataQuality.issues.length +
-    '</strong> alertes affichées <span data-quality-total>sur ' +
+    '</strong> diagnostics filtrés <span data-quality-total>sur ' +
     snapshot.dataQuality.issues.length +
     '</span></p><div class="table-wrap" tabindex="0" role="region" aria-label="Diagnostics de qualité des données"><table><caption>Réserves, entités et effets sur les métriques</caption><thead><tr>' +
     [
@@ -276,66 +227,15 @@ export function dataQualityContent(snapshot: Snapshot, githubUrl?: string): stri
       'Action',
       'Métriques et impacts'
     ]
-      .map((label) => '<th scope="col">' + label + '</th>')
+      .map(
+        (label, index) =>
+          `<th scope="col"><button type="button" data-quality-sort="${index}">${label} ↕</button></th>`
+      )
       .join('') +
-    '</tr></thead><tbody>' +
-    snapshot.dataQuality.issues
-      .map((item) => {
-        const repos = [...(repositories.get(item.entityId) ?? [])];
-        const fact = issueFacts(snapshot).find(
-          (row) =>
-            row.id === item.entityId ||
-            row.auditIds.includes(item.entityId) ||
-            row.anomalyIds.includes(item.entityId)
-        );
-        const context = {
-          repository: repos.length ? repos : ['__unknown__'],
-          dqRule: [item.ruleId],
-          dqSeverity: [item.severity],
-          dqAction: [item.action],
-          dqType: [item.entityType],
-          dqMetric: item.impacts.map((impact) => impact.metricId)
-        };
-        return (
-          '<tr data-quality-row data-quality-context="' +
-          html(JSON.stringify(context)) +
-          '"><td>' +
-          html(item.ruleId) +
-          '</td><td>' +
-          html(item.severity) +
-          '</td><td>' +
-          html(repos.join(', ') || 'Non déterminé') +
-          '</td><td>' +
-          html(item.entityType) +
-          '</td><td>' +
-          (/^https:\/\/[^\s"<>]+$/.test(sources.get(item.entityId) ?? '')
-            ? `<a href="${html(sources.get(item.entityId))}" target="_blank" rel="noopener noreferrer">${html(item.entityId)} ↗</a>`
-            : html(item.entityId)) +
-          (fact
-            ? '<br><a href="graph.html?issue=' +
-              encodeURIComponent(fact.id) +
-              '#traceability">Voir les relations explicites</a>'
-            : '') +
-          '</td><td>' +
-          html(item.message) +
-          '</td><td>' +
-          html(item.action) +
-          '</td><td>' +
-          item.impacts
-            .map(
-              (impact) =>
-                html(impact.metricId) +
-                ' · ' +
-                html(impact.action) +
-                '<small>' +
-                html(impact.reason) +
-                '</small>'
-            )
-            .join('<br>') +
-          '</td></tr>'
-        );
-      })
-      .join('') +
-    '</tbody></table></div></article>'
+    '</tr></thead><tbody data-quality-rows>' +
+    paginate(rows).rows.map(qualityRowHtml).join('') +
+    '</tbody></table></div>' +
+    paginationContent('quality') +
+    '<p>CSV : tous les diagnostics filtrés, toutes pages.</p><button type="button" data-quality-export>Exporter CSV</button></article>'
   );
 }

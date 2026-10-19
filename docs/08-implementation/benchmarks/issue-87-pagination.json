@@ -1,0 +1,333 @@
+{
+  "protocol": "dashboard-pagination-v1",
+  "measurement": "dashboard-benchmark-v1 (#81), chauffe puis 3 contextes neufs, 1440×900, HTTP local sans cache, aucune limite de temps",
+  "fixture": "pagination-synthetic-v1",
+  "fixtureHash": "22f3eb18704a4fbfb62027297f7e9124492dacdd659e87fae3a3339916b47619",
+  "browser": "155.0.4283.62",
+  "results": [
+    {
+      "state": "before",
+      "page": "issues.html",
+      "htmlBytes": 110216,
+      "htmlSha256": "2e31bba00a52761d79ced8da5644e335256e4758c10901489f38c19245772705",
+      "jsonBytes": 95839,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 95839,
+          "sha256": "bee2d7b16410ca11dee639885bf87824a40d63eaf6673bb4062e6d3ff1ae0e0c"
+        }
+      ],
+      "samples": [
+        {
+          "domNodes": 4036,
+          "domElements": 2310,
+          "renderedTableRows": 120,
+          "visibleTableRows": 120,
+          "navigationMs": 2532.8297000000002,
+          "resultReadyMs": 2681.4848,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/issues.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/snapshot-context.js",
+            "/assets/statistics.js",
+            "/assets/style.css"
+          ]
+        },
+        {
+          "domNodes": 4036,
+          "domElements": 2310,
+          "renderedTableRows": 120,
+          "visibleTableRows": 120,
+          "navigationMs": 254.9951000000001,
+          "resultReadyMs": 383.15250000000015,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/issues.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/snapshot-context.js",
+            "/assets/statistics.js",
+            "/assets/style.css"
+          ]
+        },
+        {
+          "domNodes": 4036,
+          "domElements": 2310,
+          "renderedTableRows": 120,
+          "visibleTableRows": 120,
+          "navigationMs": 557.5968000000012,
+          "resultReadyMs": 747.3341999999993,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/issues.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/snapshot-context.js",
+            "/assets/statistics.js",
+            "/assets/style.css"
+          ]
+        }
+      ]
+    },
+    {
+      "state": "before",
+      "page": "quality.html",
+      "htmlBytes": 2296767,
+      "htmlSha256": "998844d60000e395da8eeb76b332c3f6e5a5307ee3dd8721a165fcc4490f1e37",
+      "jsonBytes": 209,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 3002,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 209,
+          "sha256": "34f1e26a3d94fde537a9736628f94415918d51b47032706ae29084861207a81b"
+        }
+      ],
+      "samples": [
+        {
+          "domNodes": 70459,
+          "domElements": 39837,
+          "renderedTableRows": 3002,
+          "visibleTableRows": 3002,
+          "navigationMs": 1338.2066000000013,
+          "resultReadyMs": 1589.8276000000005,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/kpi-presentation.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/snapshot-context.js",
+            "/assets/style.css",
+            "/assets/version-presentation.js",
+            "/assets/workspaces.js"
+          ]
+        },
+        {
+          "domNodes": 70459,
+          "domElements": 39837,
+          "renderedTableRows": 3002,
+          "visibleTableRows": 3002,
+          "navigationMs": 1581.3582999999999,
+          "resultReadyMs": 1829.7957999999999,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/kpi-presentation.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/snapshot-context.js",
+            "/assets/style.css",
+            "/assets/version-presentation.js",
+            "/assets/workspaces.js"
+          ]
+        },
+        {
+          "domNodes": 70459,
+          "domElements": 39837,
+          "renderedTableRows": 3002,
+          "visibleTableRows": 3002,
+          "navigationMs": 1388.8876000000018,
+          "resultReadyMs": 1609.8934000000008,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/kpi-presentation.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/snapshot-context.js",
+            "/assets/style.css",
+            "/assets/version-presentation.js",
+            "/assets/workspaces.js"
+          ]
+        }
+      ]
+    },
+    {
+      "state": "after",
+      "page": "issues.html",
+      "htmlBytes": 110713,
+      "htmlSha256": "8b8d13f45d94cf4fdc3c000332fca0a3b09053f53087093fbc9fac529dc09e3f",
+      "jsonBytes": 95839,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 95839,
+          "sha256": "bee2d7b16410ca11dee639885bf87824a40d63eaf6673bb4062e6d3ff1ae0e0c"
+        }
+      ],
+      "samples": [
+        {
+          "domNodes": 1946,
+          "domElements": 1125,
+          "renderedTableRows": 50,
+          "visibleTableRows": 50,
+          "navigationMs": 209.1875,
+          "resultReadyMs": 306.83640000000014,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/csv.js",
+            "/assets/issues.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/pagination.js",
+            "/assets/snapshot-context.js",
+            "/assets/statistics.js",
+            "/assets/style.css"
+          ]
+        },
+        {
+          "domNodes": 1946,
+          "domElements": 1125,
+          "renderedTableRows": 50,
+          "visibleTableRows": 50,
+          "navigationMs": 199.87089999999807,
+          "resultReadyMs": 295.1482999999971,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/csv.js",
+            "/assets/issues.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/pagination.js",
+            "/assets/snapshot-context.js",
+            "/assets/statistics.js",
+            "/assets/style.css"
+          ]
+        },
+        {
+          "domNodes": 1946,
+          "domElements": 1125,
+          "renderedTableRows": 50,
+          "visibleTableRows": 50,
+          "navigationMs": 231.90299999999843,
+          "resultReadyMs": 327.0590000000011,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/csv.js",
+            "/assets/issues.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/pagination.js",
+            "/assets/snapshot-context.js",
+            "/assets/statistics.js",
+            "/assets/style.css"
+          ]
+        }
+      ]
+    },
+    {
+      "state": "after",
+      "page": "quality.html",
+      "htmlBytes": 1335566,
+      "htmlSha256": "02dc46df755df26344b5fcd87113d8961b5cf8e473a961b6fe14e275920ac725",
+      "jsonBytes": 1264906,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 52,
+      "payloads": [
+        {
+          "id": "dashboard-page-data",
+          "bytes": 1264906,
+          "sha256": "1cec6c3cbd5c4a777a7ff7509c9862cc9ae2f393e8fea0910c0173fda1de87a8"
+        }
+      ],
+      "samples": [
+        {
+          "domNodes": 2629,
+          "domElements": 1502,
+          "renderedTableRows": 52,
+          "visibleTableRows": 52,
+          "navigationMs": 251.701299999997,
+          "resultReadyMs": 344.71010000000024,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/csv.js",
+            "/assets/kpi-presentation.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/pagination.js",
+            "/assets/quality-presentation.js",
+            "/assets/quality.js",
+            "/assets/snapshot-context.js",
+            "/assets/style.css",
+            "/assets/version-presentation.js",
+            "/assets/workspaces.js"
+          ]
+        },
+        {
+          "domNodes": 2629,
+          "domElements": 1502,
+          "renderedTableRows": 52,
+          "visibleTableRows": 52,
+          "navigationMs": 246.3793000000005,
+          "resultReadyMs": 361.043700000002,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/csv.js",
+            "/assets/kpi-presentation.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/pagination.js",
+            "/assets/quality-presentation.js",
+            "/assets/quality.js",
+            "/assets/snapshot-context.js",
+            "/assets/style.css",
+            "/assets/version-presentation.js",
+            "/assets/workspaces.js"
+          ]
+        },
+        {
+          "domNodes": 2629,
+          "domElements": 1502,
+          "renderedTableRows": 52,
+          "visibleTableRows": 52,
+          "navigationMs": 268.7069999999985,
+          "resultReadyMs": 365.77869999999893,
+          "captureMs": null,
+          "resources": [
+            "/assets/app.js",
+            "/assets/context.js",
+            "/assets/csv.js",
+            "/assets/kpi-presentation.js",
+            "/assets/logo.svg",
+            "/assets/page-model.js",
+            "/assets/pagination.js",
+            "/assets/quality-presentation.js",
+            "/assets/quality.js",
+            "/assets/snapshot-context.js",
+            "/assets/style.css",
+            "/assets/version-presentation.js",
+            "/assets/workspaces.js"
+          ]
+        }
+      ]
+    }
+  ]
+}
