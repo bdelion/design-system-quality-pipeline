@@ -1,7 +1,8 @@
+import { paginate, updatePagination } from './pagination.js';
+import { downloadCsv } from './csv.js';
 import { readPageModel } from './page-model.js';
 import { durationStatistics } from './statistics.js';
 import { matchesFact, currentContext, setContext } from './context.js';
-/* global URL, Blob */
 (() => {
   const root = document.querySelector('[data-issues-explorer]');
   if (!root) return;
@@ -22,6 +23,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   );
   const selection = new Set();
   let selectionActive = false;
+  let page = 1;
   let dedupe = false;
   let columnSort = -1;
   let descending = false;
@@ -198,16 +200,26 @@ import { matchesFact, currentContext, setContext } from './context.js';
     $('[data-issue-summary]').textContent =
       `${visible.length} lignes · ${displayed.length} issues distinctes · ${selectionActive ? relevant.length + ' issues sélectionnées' : 'KPI sur les issues filtrées'}`;
     $('[data-issue-select-all]').checked = displayed.length > 0 && displayed.every((id) => selection.has(id));
-    $('[data-issue-rows]').innerHTML = visible
+    const state = paginate(visible, page);
+    page = state.page;
+    const focused = document.activeElement?.dataset.issueCheck;
+    const focusedIndex = [...root.querySelectorAll('[data-issue-check]')].indexOf(document.activeElement);
+    updatePagination(root.querySelector('[data-pagination]'), state);
+    $('[data-issue-select-all]').indeterminate =
+      displayed.some((id) => selection.has(id)) && !displayed.every((id) => selection.has(id));
+    $('[data-issue-rows]').innerHTML = state.rows
       .map(
         ({ item, values }) =>
           `<tr><td><input type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${index === 1 && item.url && /^https:\/\/[^\s]+$/.test(item.url) ? `<a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>` : escape(value)}</td>`).join('')}</tr>`
       )
       .join('');
+    const focusTarget = root.querySelectorAll('[data-issue-check]')[focusedIndex];
+    if (focused && focusTarget?.dataset.issueCheck === focused) focusTarget.focus();
     return visible;
   }
   /** Restaure les dimensions partagées et rafraîchit l'intersection de filtres. */
-  const redraw = () => {
+  const redraw = (reset = true) => {
+    if (reset) page = 1;
     const params = currentContext();
     filters.repo.value = params.get('repository') || '';
     filters.family.value = params.get('family') || '';
@@ -224,8 +236,16 @@ import { matchesFact, currentContext, setContext } from './context.js';
         redraw();
       })
     );
-  window.addEventListener('dashboard-context-change', redraw);
-  window.addEventListener('popstate', redraw);
+  window.addEventListener('dashboard-context-change', () => redraw());
+  window.addEventListener('popstate', () => redraw());
+  $('[data-page-previous]').addEventListener('click', () => {
+    page--;
+    render();
+  });
+  $('[data-page-next]').addEventListener('click', () => {
+    page++;
+    render();
+  });
   $('[data-issue-dedupe]').addEventListener('click', (event) => {
     dedupe = !dedupe;
     event.currentTarget.setAttribute('aria-pressed', String(dedupe));
@@ -246,7 +266,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   $('[data-issue-clear-selection]').addEventListener('click', () => {
     selection.clear();
     selectionActive = false;
-    redraw();
+    redraw(false);
   });
   $('[data-issue-select-all]').addEventListener('change', (event) => {
     const checked = event.target.checked;
@@ -255,7 +275,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
       else selection.delete(key(item));
     }
     selectionActive = true;
-    redraw();
+    redraw(false);
   });
   $('[data-issue-rows]').addEventListener('change', (event) => {
     const id = event.target.dataset.issueCheck;
@@ -263,7 +283,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     if (event.target.checked) selection.add(id);
     else selection.delete(id);
     selectionActive = true;
-    redraw();
+    redraw(false);
   });
   root.querySelectorAll('[data-issue-column-sort]').forEach((button) =>
     button.addEventListener('click', () => {
@@ -305,19 +325,10 @@ import { matchesFact, currentContext, setContext } from './context.js';
       ],
       ...visible.map(({ values }) => values)
     ];
-    const csv =
-      '\ufeff' +
+    downloadCsv(
+      root.hasAttribute('data-components-explorer') ? 'analyse-composants.csv' : 'analyse-issues.csv',
       rows
-        .map((row) => row.map((cell) => '"' + String(cell).replace(/"/g, '""') + '"').join(';'))
-        .join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = root.hasAttribute('data-components-explorer')
-      ? 'analyse-composants.csv'
-      : 'analyse-issues.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+    );
   });
   redraw();
 })();

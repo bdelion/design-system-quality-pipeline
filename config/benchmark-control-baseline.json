@@ -21,93 +21,93 @@
   "pages": [
     {
       "page": "accessibility.html",
-      "htmlBytes": 308842,
+      "htmlBytes": 308817,
       "jsonBytes": 171448,
       "initialTableRows": 42,
-      "domNodes": 1696,
-      "renderedTableRows": 46
+      "renderedTableRows": 46,
+      "domNodes": 1689
     },
     {
       "page": "anomalies.html",
-      "htmlBytes": 81336,
+      "htmlBytes": 81311,
       "jsonBytes": 230,
       "initialTableRows": 21,
-      "domNodes": 1889,
-      "renderedTableRows": 21
+      "renderedTableRows": 21,
+      "domNodes": 1882
     },
     {
       "page": "audits.html",
-      "htmlBytes": 173394,
+      "htmlBytes": 173369,
       "jsonBytes": 118067,
       "initialTableRows": 30,
-      "domNodes": 1529,
-      "renderedTableRows": 30
+      "renderedTableRows": 30,
+      "domNodes": 1522
     },
     {
       "page": "components.html",
-      "htmlBytes": 50598,
+      "htmlBytes": 50565,
       "jsonBytes": 37976,
       "initialTableRows": 0,
-      "domNodes": 664,
-      "renderedTableRows": 4
+      "renderedTableRows": 4,
+      "domNodes": 657
     },
     {
       "page": "epics.html",
-      "htmlBytes": 5486,
+      "htmlBytes": 5461,
       "jsonBytes": 258,
       "initialTableRows": 0,
-      "domNodes": 150,
-      "renderedTableRows": 0
+      "renderedTableRows": 0,
+      "domNodes": 143
     },
     {
       "page": "graph.html",
-      "htmlBytes": 172441,
+      "htmlBytes": 172341,
       "jsonBytes": 226,
       "initialTableRows": 24,
-      "domNodes": 1840,
-      "renderedTableRows": 24
+      "renderedTableRows": 24,
+      "domNodes": 1833
     },
     {
       "page": "history.html",
-      "htmlBytes": 7658,
+      "htmlBytes": 7633,
       "jsonBytes": 228,
       "initialTableRows": 0,
-      "domNodes": 242,
-      "renderedTableRows": 0
+      "renderedTableRows": 0,
+      "domNodes": 235
     },
     {
       "page": "index.html",
-      "htmlBytes": 10867,
+      "htmlBytes": 10841,
       "jsonBytes": 226,
       "initialTableRows": 2,
-      "domNodes": 334,
-      "renderedTableRows": 2
+      "renderedTableRows": 2,
+      "domNodes": 324
     },
     {
       "page": "issues.html",
-      "htmlBytes": 38724,
+      "htmlBytes": 39196,
       "jsonBytes": 24120,
       "initialTableRows": 0,
-      "domNodes": 3705,
-      "renderedTableRows": 108
+      "renderedTableRows": 50,
+      "domNodes": 1968
     },
     {
       "page": "quality.html",
-      "htmlBytes": 96964,
-      "jsonBytes": 228,
+      "htmlBytes": 99575,
+      "jsonBytes": 10234,
       "initialTableRows": 32,
-      "domNodes": 3120,
-      "renderedTableRows": 32
+      "renderedTableRows": 32,
+      "domNodes": 3130
     }
   ],
   "validation": {
     "status": "validated",
     "date": "2026-10-19",
-    "issue": 85,
-    "approval": "Oui, valider cet ajout et la nouvelle référence",
-    "scope": "Surcoût fonctionnel des preuves et libellés #85 revu explicitement ; 0 % de croissance conservé.",
-    "report": "docs/08-implementation/benchmarks/issue-85-review.json",
-    "revision": "3fbf500102b5a0d129ee171462200855bd49951b",
+    "issue": 87,
+    "approval": "Oui, valider ces ajouts et la nouvelle référence",
+    "scope": "Coût fonctionnel des contrôles de pagination et de la projection DQ #87 revu explicitement ; 0 % de croissance conservé.",
+    "report": "docs/08-implementation/benchmarks/issue-87-review.json",
+    "revision": "a2b36e4ddf77abc764113c03f423a03e34b705e5",
     "workingTreeDirty": true
   }
 }

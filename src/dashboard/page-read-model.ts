@@ -3,6 +3,7 @@ import type { WorkspaceAnalytics, WorkspaceSummary, AccessibilityRow } from '../
 import type { EpicActivity } from '../analytics/epic-activity.js';
 import { workspaceModel } from './workspaces.js';
 import { issuesExplorerModel, componentsExplorerModel } from './explorer-read-model.js';
+import { qualityReadModel, type QualityRow } from './quality-read-model.js';
 
 /** Identités stables des parcours ; distinctes de leurs titres traduits. */
 export const dashboardPages = [
@@ -33,6 +34,7 @@ export interface WorkspacePageModel {
 }
 /** Sections exclusives aux usages qui en ont besoin. */
 export interface DashboardPageData {
+  quality?: QualityRow[];
   workspaces?: WorkspacePageModel;
   issues?: ReturnType<typeof issuesExplorerModel>;
   components?: ReturnType<typeof componentsExplorerModel>;
@@ -67,6 +69,7 @@ export function dashboardPageModel(
   componentPrefix = 'Component:'
 ): DashboardPageModel {
   const data: DashboardPageData = {};
+  if (page === 'quality') data.quality = qualityReadModel(snapshot, githubUrl);
   if (page === 'issues') data.issues = issuesExplorerModel(snapshot, githubUrl, componentPrefix);
   if (page === 'components') data.components = componentsExplorerModel(snapshot, githubUrl, componentPrefix);
   if (page === 'epics') data.epics = snapshot.analytics.epicActivity ?? { version: 1, epics: [] };
