@@ -77,6 +77,8 @@ Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage deskto
 
 Le dashboard embarque un [JSON versionné propre à chaque page](docs/07-decisions/ADR-005-modeles-lecture-dashboard.md), sans snapshot complet ni RAW. Les filtres et CSV conservent leurs faits et qualifications ; les anciennes captures compatibles sont projetées sans réécriture. Distribuer le dossier complet avec ses assets et le servir en HTTP ; une erreur de contrat est signalée explicitement.
 
+Près du titre, la capture est datée en UTC, le périmètre partagé suit les filtres et la fiabilité globale donne accès aux diagnostics et à leurs preuves. Une capture récente peut être partielle ; un résultat non conforme peut être fiable. Voir le [contrat du résumé de capture](docs/08-implementation/dashboard-coherence.md#résumé-de-capture-près-du-titre-89).
+
 Pour un RAW non anonymisé, `pipeline --dataset <raw.json> --historical-catalogue <identites.yaml> --historical-repository <owner/repository>` importe l'historique local sans passer par `fixture:prepare`. Le fichier d'identités désigne son référentiel de présences via `historicalCatalogue`. Voir le [parcours local détaillé](docs/08-implementation/datasets.md#collecte-non-anonymisée--historique-local-et-fichier-didentités).
 
 Le dashboard propose **Activité des équipes → Suivi des Epics** : choix d'une Epic, durées calendaires par composant/issue et export CSV. Une nouvelle collecte est nécessaire pour récupérer les mentions présentes dans les descriptions. Voir [le contrat et les limites du suivi](docs/08-implementation/dashboard-coherence.md#suivi-des-epics-69).

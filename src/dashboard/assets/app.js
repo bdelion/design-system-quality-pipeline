@@ -1,15 +1,18 @@
 import { contextKeys, contextualHref, currentContext, matchesRow, setContext } from './context.js';
 
 import { readPageModel } from './page-model.js';
+import { presentSnapshotScope } from './snapshot-context.js';
 
 /** Initialise les interactions communes uniquement après validation du contrat de page. */
 function initializePage() {
   const model = readPageModel();
-  if (!model) return;
+  const scope = document.querySelector('[data-snapshot-scope]');
+  if (!model) {
+    if (scope) scope.textContent = 'Périmètre interactif indisponible';
+    return;
+  }
   const snapshot = model.snapshot;
-  const capturedAt = document.querySelector('[data-captured-at]');
   const ruleVersion = document.querySelector('[data-rule-version]');
-  if (capturedAt) capturedAt.textContent = new Date(snapshot.capturedAt).toLocaleString('fr-FR');
   if (ruleVersion) ruleVersion.textContent = snapshot.ruleVersion;
 
   const links = new Map(
@@ -83,6 +86,8 @@ function initializePage() {
   /** Restaure les filtres URL, y compris une valeur inconnue, et transmet le périmètre aux liens internes. */
   function synchronizeContext() {
     const params = currentContext();
+    if (scope)
+      scope.textContent = `Capture : ${scope.dataset.snapshotScope || 'indisponible'} · ${presentSnapshotScope(model, params)}`;
     for (const control of contextControls) {
       const value = params.get(control.dataset.contextFilter) || '';
       if (value && ![...control.options].some((option) => option.value === value)) {
@@ -99,6 +104,8 @@ function initializePage() {
       if (control) control.value = params.get(key) || '';
     }
     for (const [link, original] of links) {
+      // La fiabilité globale mène à toutes ses causes, indépendamment des filtres de la vue.
+      if (link.hasAttribute('data-snapshot-reliability')) continue;
       const dimensions = /^(?:quality|index)\.html/.test(original)
         ? []
         : original.startsWith('history.html')

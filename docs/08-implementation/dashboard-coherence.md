@@ -4,6 +4,18 @@ Ce contrat remplace les anciens lots qui assimilaient `Closed` ou le seul `Done`
 
 ## Référentiel commun
 
+### Résumé de capture près du titre (#89)
+
+**IMPLÉMENTÉ.** Chaque page rapproche du titre la date de capture, le périmètre partagé et la fiabilité **globale du snapshot**. La capture est présentée en UTC avec secondes et fuseau explicite, sans seuil de péremption. Une date absente, invalide ou non zonée est indisponible, sans remplacement par la date du jour. Le champ « Capture » restitue `snapshot.scope` ; il ne prétend pas identifier un dataset dont le nom n’aurait pas été capturé.
+
+Le périmètre suit repository/composant/version, les liens ciblés, le reset et la navigation URL. Sur Accessibilité et Audits, les références PROD/développement sont celles de la synthèse Analytics exactement sélectionnée : couverture/conformité et stock de faits toutes versions restent distincts. Un filtre ciblé ne reçoit pas une synthèse globale de substitution. L’accueil reste global malgré des paramètres hérités. Les filtres locaux des tableaux et la sélection de lignes gardent leur résumé propre ; le titre nomme le périmètre partagé, pas les résultats de ces recherches locales.
+
+Le lien de fiabilité mène sans filtre hérité à `quality.html#quality`, où les diagnostics présentent règles, entités, sources résolues et effets sur les métriques. La fiabilité globale n’est pas recalculée pour le sous-ensemble affiché. Une fiabilité partielle sans diagnostic disponible indique « causes non documentées », jamais une cause supposée. Aucune non-conformité n’est transformée en réserve DQ ; un verdict non conforme fiable reste possible. Les réserves et populations propres aux KPI restent visibles dans leurs cartes.
+
+La date et la fiabilité sont rendues en HTML ; les références de version réutilisent le JSON existant de la page. Un contrat interactif invalide conserve les métadonnées statiques connues et signale l’indisponibilité du périmètre, selon le traitement commun des erreurs. Les tests couvrent capture récente partielle, non-conformité fiable, métadonnées absentes/invalides, PROD et développement, filtres/reset/rechargement et accès aux causes au clavier. La visibilité du tableau Composants avant 900 px est conservée.
+
+Le [contrôle synthétique #89](benchmarks/issue-89-control.md), graine 81 et trois passages, respecte les budgets à 0 % face à la référence approuvée de #85 : aucune augmentation HTML/JSON, des lignes ou du DOM. La référence et les seuils restent inchangés ; les durées ne portent aucun seuil automatique.
+
 ### Présentation des KPI d’accessibilité (#79)
 
 **IMPLÉMENTÉ.** Les cartes complètes et compactes emploient une présentation commune dans le HTML généré et après filtrage : taux en `%`, délais en `j`, effectifs sans unité ambiguë et population nommée près de la valeur. Exemples synthétiques : « 21,1 % · 16 sur 76 composants présents », « 50 % · 8 sur 16 composants couverts », « 5,2 j · 12 issues mesurables ». Les délais précisent les effectifs de dates Done et d’estimations déjà fournis par Analytics.
