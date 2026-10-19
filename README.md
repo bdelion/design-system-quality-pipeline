@@ -67,6 +67,8 @@ Le bandeau des versions indique les PROD réellement démontrées par repository
 
 Dans « Composants et versions », les compteurs distinguent composants visibles, sélection et issues distinctes. Les règles de filtrage et les états sans données sont décrits dans le [contrat des compteurs](docs/08-implementation/dashboard-coherence.md#compteurs-de-lexplorateur-composants-78).
 
+Le [parcours Composants](docs/08-implementation/components-workflow.md) utilise un seul périmètre repository/composant/version. La recherche locale affine ce résultat ; « Réinitialiser la vue » efface aussi la sélection et les filtres. Le tableau précède les délais et l’aide détaillée, dépliables au clavier.
+
 Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage desktop, l’accessibilité et les interactions au clavier et à la souris ; les scénarios mobiles ont été retirés (#74). Voir le [périmètre des validations](docs/08-implementation/tests.md#validation-intégrale-du-dashboard).
 
 `npm run benchmark:dashboard -- --scenario control --runs 3 --output data/output/benchmarks/control-before` mesure un jeu entièrement synthétique (parent à créer, sortie neuve). Le scénario `load`, les rapports par page et les budgets validés sans croissance sont décrits dans le [protocole de benchmark PC](docs/08-implementation/dashboard-benchmark.md).

@@ -22,10 +22,11 @@ function sourceLink(url: string | undefined, label: string): string {
     : `<span>${escape(label)} · source non résolue</span>`;
 }
 
-/** Construit le sélecteur de périmètre partagé ; les KPI globaux restent explicitement identifiés. */
+/** Construit le périmètre partagé ; une vue peut présenter son résumé et son reset avec ses résultats. */
 export function contextToolbar(
   snapshot: Snapshot,
-  dimensions = ['repository', 'component', 'version']
+  dimensions = ['repository', 'component', 'version'],
+  settings: { feedback?: boolean; resetLabel?: string } = {}
 ): string {
   const options = {
     repository: snapshot.normalizedData.libraries.map((item) => item.repository),
@@ -47,7 +48,7 @@ export function contextToolbar(
     )
     .join(
       ''
-    )}<button type="button" class="reset-button" data-clear-context>Effacer les filtres</button></div><p role="status" aria-live="polite" data-filter-feedback></p></section>`;
+    )}<button type="button" class="reset-button" data-clear-context>${escape(settings.resetLabel ?? 'Effacer les filtres')}</button></div>${settings.feedback === false ? '' : '<p role="status" aria-live="polite" data-filter-feedback></p>'}</section>`;
 }
 
 /** Restitue les preuves et les liens de PR avec la base GitHub capturée, y compris Enterprise. */

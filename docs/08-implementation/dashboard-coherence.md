@@ -78,6 +78,8 @@ La cartographie contient une table exhaustive incluant les issues transverses. C
 
 ## Navigation
 
+Sur **Composants et versions**, le [parcours PC #84](components-workflow.md) conserve un seul sélecteur repository/composant/version, piloté par l’URL. Le résumé du résultat et ses compteurs suivent ce périmètre et les affinements locaux. « Effacer le périmètre » conserve la recherche locale ; « Réinitialiser la vue » efface périmètre, affinements et sélection, puis restaure le tri initial. Le tableau précède les sections dépliables des délais et de l’aide ; les populations et formules restent celles du contrat existant.
+
 Les dimensions partagées sont `repository` (owner/name), `component` (nom ou identité canonique), `version` (numéro ou identité canonique), `issue`, `audit`, `anomaly` et `family`.
 
 Les filtres forment une intersection ; une dimension absente d'une preuve ne satisfait pas ce filtre. Une référence inconnue donne une population vide et reste visible dans le sélecteur. Les modifications mettent à jour l'URL, les liens et les vues. Effacer le périmètre supprime ses anciennes dimensions.

@@ -173,18 +173,18 @@ test('issue #78 : compteurs distincts après filtres, sélection, reset et lien 
   await page.locator('[data-component-clear]').click();
   await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
   await page.locator('[data-context-filter="repository"]').selectOption('acme/ds-react');
-  await page.locator('[data-component-filter="name"]').selectOption('Tag');
+  await page.locator('[data-context-filter="component"]').selectOption('Tag');
   await page.locator('[data-context-filter="version"]').selectOption('1.0.0');
   await expect(rows).toHaveCount(1);
   const manual = await feedback.textContent();
-  await expect(summary).toHaveText('1 composant visible · 2 issues distinctes');
+  await expect(summary).toContainText('1 composant visible · 2 issues distinctes');
   await page.goto('/components.html?repository=acme%2Fds-react&component=Tag&version=1.0.0');
   await expect(rows).toHaveCount(1);
   await expect(feedback).toHaveText(manual!);
   await page.locator('[data-clear-context]').click();
   await expect(rows).toHaveCount(3);
   await expect(feedback).toContainText('3 composants visibles · 5 issues distinctes');
-  await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
+  await page.locator('[data-context-filter="version"]').selectOption('2.0.0');
   await expect(rows).toHaveCount(1);
   await expect(feedback).toContainText('1 composant visible · 2 issues distinctes');
   await page.locator('[data-component-reset]').click();
@@ -410,10 +410,10 @@ test('KPI distincts cohérents entre explorateurs, sélection et CSV', async ({ 
   await page.goto('/components.html?repository=acme%2Fds-react');
   await expect(page.locator('[data-component-kpi="global-average"]')).toHaveText(average!);
   await expect(page.locator('[data-component-kpi="global-median"]')).toHaveText(median!);
-  await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
+  await page.locator('[data-context-filter="version"]').selectOption('2.0.0');
   await expect(page.locator('[data-component-rows]')).toContainText('Aucun résultat définitif');
   await expect(page.locator('[data-component-summary]')).toContainText('2 issues distinctes');
-  await page.locator('[data-component-filter="version"]').selectOption('1.0.0');
+  await page.locator('[data-context-filter="version"]').selectOption('1.0.0');
   await expect(page.locator('[data-component-rows]')).toContainText('non conforme');
 });
 
@@ -475,7 +475,7 @@ test('composants, accessibilité et DQ : liens GitHub dans un nouvel onglet', as
   expect(treated.searchParams.get('q')).toContain('reason:completed');
   await expect(row.locator('td').nth(9).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
   await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/1$/);
-  await page.locator('[data-component-filter="version"]').selectOption('2.0.0');
+  await page.locator('[data-context-filter="version"]').selectOption('2.0.0');
   await expect(row.locator('td').nth(10).locator('a')).toHaveAttribute('href', /\/issues\/3$/);
   await expect(row).toContainText('Aucun résultat définitif');
   await page.goto('/accessibility.html');
@@ -737,10 +737,10 @@ test('issue #49 : résultat par version auditée sans catalogue historique ni h�
   const rows = page.locator('[data-component-rows]');
   await expect(rows).toContainText('conforme · 1.7.1');
   await expect(rows).not.toContainText('NON_COUVERT');
-  await page.locator('[data-component-filter="version"]').selectOption('1.8.0');
+  await page.locator('[data-context-filter="version"]').selectOption('1.8.0');
   await expect(rows).toContainText('Aucun résultat définitif · 1.8.0');
   await expect(rows).not.toContainText('conforme · 1.8.0');
-  await page.locator('[data-component-filter="version"]').selectOption('1.7.1');
+  await page.locator('[data-context-filter="version"]').selectOption('1.7.1');
   await expect(rows).toContainText('conforme · 1.7.1');
 });
 
@@ -793,7 +793,7 @@ test('historique : affiche les preuves et la conformité héritée sans inventer
     await route.fulfill({ response, body: html });
   });
   await page.goto('/components.html');
-  await page.locator('[data-component-filter="version"]').selectOption('1.8.0');
+  await page.locator('[data-context-filter="version"]').selectOption('1.8.0');
   const history = page.locator('[data-component-history]');
   await history.locator('summary').focus();
   await page.keyboard.press('Enter');
