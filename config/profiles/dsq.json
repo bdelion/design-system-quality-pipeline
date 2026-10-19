@@ -1,7 +1,7 @@
 {
   "profileId": "dsq",
-  "modelVersion": "2.4",
-  "ruleVersion": "dq-2026.10-audit-relations",
+  "modelVersion": "2.5",
+  "ruleVersion": "dq-2026.10-business-review",
   "auditVersion": "2026.09",
   "github": {
     "labels": {
@@ -76,6 +76,34 @@
       "resolved",
       "resolves"
     ],
-    "cancelledProjectStatuses": ["Cancelled"]
+    "cancelledProjectStatuses": ["Cancelled"],
+    "issuePolicy": {
+      "classification": {
+        "accessibility": {
+          "labels": ["bug:accessibility", "Accessibility"],
+          "prefixes": ["🚦 rgaa:", "♿ a11y:"]
+        },
+        "functional": {
+          "labels": ["bug:functional"],
+          "prefixes": []
+        }
+      },
+      "bugInference": {
+        "labels": ["bug:accessibility", "bug:functional"],
+        "prefixes": ["🚦 rgaa:", "♿ a11y:"]
+      },
+      "auditorAdvice": {
+        "labels": ["VOIR AUDITEUR"],
+        "prefixes": []
+      },
+      "resolution": {
+        "prefix": "resolution:",
+        "accepted": "accepted",
+        "invalid": "invalid"
+      },
+      "componentLabels": {
+        "InputPagination": "InputPagination"
+      }
+    }
   }
 }

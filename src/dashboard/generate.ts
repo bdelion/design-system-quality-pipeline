@@ -26,6 +26,7 @@ import {
 } from './evidence.js';
 import { auditReadModel } from './audit-read-model.js';
 import { anomaliesForAudit, auditVersionLabel } from './audit-relations.js';
+import { businessReviewContent } from './business-review.js';
 import { latestCompletedAudit, isCompletedAudit } from './audit-selection.js';
 import { calculateHistoryCoverage, correctionDateReason } from './history-coverage.js';
 /**
@@ -109,6 +110,7 @@ export async function generateDashboard(
         snapshot,
         'Audits et composants',
         workspaceCards(snapshot, true) +
+          businessReviewContent(snapshot) +
           auditsContent(snapshot, githubUrl) +
           componentPopulationContent(snapshot),
         pageModel
@@ -849,11 +851,11 @@ function issuesExplorerContent(snapshot: Snapshot): string {
       )
       .join('')}</div>
     <section class="panel issue-filters" aria-label="Filtres des issues"><div class="panel-heading"><h2>Filtres et recherche</h2><button class="reset-button" type="button" data-issue-reset>Réinitialiser</button></div>
-    <div class="issue-filter-grid"><label>Recherche globale<input class="search" data-issue-search placeholder="Numéro, titre, label…"></label><label>Repository<select data-issue-filter="repo"><option value="">Tous</option></select></label><label>Label<select data-issue-filter="label"><option value="">Tous</option></select></label><label>Issue type<select data-issue-filter="type"><option value="">Tous</option></select></label><label>Famille métier<select data-issue-filter="family"><option value="">Toutes</option><option value="audit">Audit</option><option value="audit_anomaly">Anomalie d’audit</option><option value="anomaly">Défaut hors audit ou origine non résolue</option><option value="improvement">Improvement</option><option value="other">Autre issue / bug non qualifié</option></select></label><label>Statut<select data-issue-filter="status"><option value="">Tous</option><option value="open">Ouvertes / en cours</option><option value="closed">Done ET Closed</option><option value="cancelled">Cancelled</option></select></label><label>État GitHub<select data-issue-filter="githubState"><option value="">Tous</option><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select></label><label>Tri<select data-issue-sort><option value="repo">Repository</option><option value="number">Numéro</option><option value="age">Ancienneté ouverte</option><option value="delay">Délai de traitement</option></select></label></div>
+    <div class="issue-filter-grid"><label>Recherche globale<input class="search" data-issue-search placeholder="Numéro, titre, label…"></label><label>Repository<select data-issue-filter="repo"><option value="">Tous</option></select></label><label>Label<select data-issue-filter="label"><option value="">Tous</option></select></label><label>Issue type<select data-issue-filter="type"><option value="">Tous</option></select></label><label>Famille métier<select data-issue-filter="family"><option value="">Toutes</option><option value="audit">Audit</option><option value="audit_anomaly">Anomalie d’audit</option><option value="anomaly">Défaut hors audit ou origine non résolue</option><option value="improvement">Improvement</option><option value="other">Autre issue / bug non qualifié</option></select></label><label>Statut<select data-issue-filter="status"><option value="">Tous</option><option value="open">Ouvertes / en cours</option><option value="closed">Done ET Closed</option><option value="cancelled">Cancelled</option></select></label><label>État GitHub<select data-issue-filter="githubState"><option value="">Tous</option><option value="OPEN">OPEN</option><option value="CLOSED">CLOSED</option></select></label><label>Rattachement Project<select data-issue-filter="project"><option value="">Tous</option><option value="none">Sans Project enregistré</option><option value="missing-status">Avec Project, statut manquant</option><option value="with-status">Avec Project et statut</option></select></label><label>Nature du bug<select data-issue-filter="kind"><option value="">Toutes</option><option value="accessibility">Accessibilité</option><option value="functional">Fonctionnel</option><option value="unknown">Nature non renseignée</option></select></label><label>Vérifications<select data-issue-filter="review"><option value="">Toutes</option><option value="no-audit">Anomalies sans audit rattaché</option><option value="no-component">Anomalies sans composant</option><option value="audit-no-component">Audits sans composant</option><option value="advice">Avis auditeur demandé</option><option value="corrected">Corrections confirmées</option><option value="improvements">Améliorations proposées</option><option value="warnings">Signalements</option></select></label><label>Tri<select data-issue-sort><option value="repo">Repository</option><option value="number">Numéro</option><option value="age">Ancienneté ouverte</option><option value="delay">Délai de traitement</option></select></label></div>
     <div class="issue-actions"><label><input type="checkbox" data-issue-components> Labels du composant uniquement</label><button class="reset-button" type="button" data-issue-dedupe aria-pressed="false">Dédoublonner par repo / issue</button><button class="reset-button" type="button" data-issue-clear-selection>Réinitialiser la sélection</button><button class="reset-button" type="button" data-issue-export>Exporter CSV</button></div>
     <p>CSV : toutes les lignes filtrées, toutes pages. La sélection porte sur les issues distinctes de toutes les pages filtrées et sert aux KPI.</p>
     <p class="muted" data-issue-summary></p></section>
-    <article class="panel table-panel"><div class="panel-heading"><h2>Issues GitHub · audits, anomalies et autres issues</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap" tabindex="0" role="region" aria-label="Tableau défilant"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner toutes les issues filtrées, toutes pages"></th>${['Repository', 'Issue', 'Label', 'Issue type', 'Statut', 'État GitHub', 'Nb PR', 'Délai issue', 'Ancienneté ouverte', 'Composants', 'Statut Project', 'Itération', 'Velocity source'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div>${paginationContent('issues')}</article>
+    <article class="panel table-panel"><div class="panel-heading"><h2>Issues GitHub · audits, anomalies et autres issues</h2><span class="badge">Tri et recherche par colonne</span></div><div class="table-wrap issue-table-wrap" tabindex="0" role="region" aria-label="Tableau défilant"><table class="issue-table"><thead><tr><th><input type="checkbox" data-issue-select-all aria-label="Sélectionner toutes les issues filtrées, toutes pages"></th>${['Repository', 'Issue', 'Label', 'Issue type', 'Statut', 'État GitHub', 'Nb PR', 'Délai issue', 'Ancienneté ouverte', 'Composants', 'Statut Project', 'Itération', 'Velocity source', 'Nature du bug', 'Correction / résolution', 'Version de correction', 'Signalements'].map((name, i) => `<th><button type="button" data-issue-column-sort="${i}" aria-label="Trier par ${name}">${name} ↕</button><input class="issue-column-filter" data-issue-column="${i}" aria-label="Filtrer ${name}" placeholder="Filtrer…"></th>`).join('')}</tr></thead><tbody data-issue-rows></tbody></table></div>${paginationContent('issues')}</article>
   </section>`;
 }
 
@@ -1021,10 +1023,17 @@ function graphContent(snapshot: Snapshot, githubUrl?: string): string {
   }
   const anomaliesByComponent = new Map<string, Snapshot['normalizedData']['anomalies']>();
   for (const anomaly of snapshot.normalizedData.anomalies) {
-    if (!anomaly.componentId) continue;
-    const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
-    list.push(anomaly);
-    anomaliesByComponent.set(anomaly.componentId, list);
+    const source = snapshot.normalizedData.issues?.find((issue) => issue.issueId === anomaly.issueId);
+    const componentIds = source?.review
+      ? source.componentIds
+      : anomaly.componentId
+        ? [anomaly.componentId]
+        : [];
+    for (const id of new Set(componentIds)) {
+      const list = anomaliesByComponent.get(id) ?? [];
+      list.push(anomaly);
+      anomaliesByComponent.set(id, list);
+    }
   }
 
   const repositoriesMetric = metricOrUnknown(metrics, 'portfolio.repositories');
@@ -1142,10 +1151,17 @@ function auditsContent(snapshot: Snapshot, githubUrl?: string): string {
   }
   const anomaliesByComponent = new Map<string, typeof snapshot.normalizedData.anomalies>();
   for (const anomaly of snapshot.normalizedData.anomalies) {
-    if (!anomaly.componentId) continue;
-    const list = anomaliesByComponent.get(anomaly.componentId) ?? [];
-    list.push(anomaly);
-    anomaliesByComponent.set(anomaly.componentId, list);
+    const source = snapshot.normalizedData.issues?.find((issue) => issue.issueId === anomaly.issueId);
+    const componentIds = source?.review
+      ? source.componentIds
+      : anomaly.componentId
+        ? [anomaly.componentId]
+        : [];
+    for (const id of new Set(componentIds)) {
+      const list = anomaliesByComponent.get(id) ?? [];
+      list.push(anomaly);
+      anomaliesByComponent.set(id, list);
+    }
   }
 
   const coverage = preferredMetric(metrics, 'componentVersion.auditCoverage', 'portfolio.auditCoverage');

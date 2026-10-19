@@ -1,5 +1,13 @@
 # Changelog
 
+## Revue métier des bugs et audits — non publiée
+
+- Labels et préfixes configurables pour les catégories de bugs, les demandes d’avis auditeur et les motifs d’annulation.
+- Correction confirmée par Done et PR liée fusionnée, distincte de sa vérification par audit ultérieur.
+- Rattachements issus des labels composant, comptage par occurrence et maintien des bugs prévus dans une version future.
+- Filtres Project, bugs sans audit/composant, nature et corrections ; versions de correction et preuves PR dans l’explorateur.
+- Synthèse des audits et des améliorations, diagnostic DQ-035 et conservation des sources.
+
 ## Périmètre des versions — issue #39 — non publié
 
 - Lecture de la version du package racine et exclusion des versions futures des analyses accessibilité et conformité.

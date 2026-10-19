@@ -1,5 +1,9 @@
 /** Libellés de présentation issus des fiches docs/quality-rules ; aucune règle métier n’est changée. */
 const rules = {
+  'DQ-035': [
+    'Qualification ou rattachement à vérifier',
+    'Vérifier les labels, motifs de résolution et composants des issues concernées.'
+  ],
   'DQ-001': ['Criticité absente', 'Vérifier le label ou la donnée de criticité dans la source.'],
   'DQ-002': [
     'Criticités incompatibles',

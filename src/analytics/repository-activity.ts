@@ -31,7 +31,15 @@ export function repositoryActivity(
   return data.libraries.map((library) => {
     const components = data.components.filter((item) => item.libraryId === library.libraryId);
     const ids = new Set(components.map((item) => item.componentId));
-    const anomalies = data.anomalies.filter((item) => item.componentId && ids.has(item.componentId));
+    const anomalies = data.anomalies.flatMap((item) => {
+      const issue = data.issues?.find((candidate) => candidate.issueId === item.issueId);
+      const componentIds = issue?.review
+        ? [...new Set(issue.componentIds)]
+        : item.componentId
+          ? [item.componentId]
+          : [];
+      return componentIds.filter((id) => ids.has(id)).map(() => item);
+    });
     const issues = data.issues
       ? [
           ...new Map(

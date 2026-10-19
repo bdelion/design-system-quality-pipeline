@@ -110,6 +110,14 @@ export function workspaceAnalytics(
             Boolean(anomaly.auditId && data.audits.some((audit) => audit.auditId === anomaly.auditId)),
           tokens
         );
+        if (issue.review?.kinds.includes('accessibility') && qualification.status === 'unqualified') {
+          qualification.status = 'presumed';
+          qualification.reasons.push('Label d’accessibilité configuré');
+        }
+        if (issue.review && !issue.review.kinds.includes('accessibility')) {
+          qualification.status = 'unqualified';
+          qualification.reasons = ['Aucun marqueur d’accessibilité configuré'];
+        }
         if (
           quality.some(
             (diagnostic) =>
@@ -183,9 +191,26 @@ export function workspaceAnalytics(
           row.versionIds.includes(context.version) ||
           row.versions.includes(context.version))
     );
-    const population = selected.filter((row) => row.qualification.status !== 'unqualified');
-    const active = population.filter((row) => row.status !== 'cancelled');
-    const treated = active.filter((row) => row.status === 'closed');
+    const population = selected
+      .filter((row) => row.qualification.status !== 'unqualified')
+      .flatMap((row) =>
+        row.review
+          ? [...new Set(row.componentIds)]
+              .filter(
+                (id) =>
+                  !context.component ||
+                  id === context.component ||
+                  componentById.get(id)?.name === context.component
+              )
+              .map(() => row)
+          : [row]
+      );
+    const active = population.filter((row) =>
+      row.review ? !row.review.neutralized : row.status !== 'cancelled'
+    );
+    const treated = active.filter((row) =>
+      row.review ? row.review.correctionConfirmed : row.status === 'closed'
+    );
     const stats = durationStatistics(treated);
     const components = data.components.filter(
       (component) =>

@@ -36,7 +36,17 @@ export function auditCampaigns(
       const anomalies = [
         ...new Map(
           data.anomalies
-            .filter((item) => item.origin === 'AUDIT' && item.auditId && ids.has(item.auditId))
+            .filter(
+              (item) =>
+                item.origin === 'AUDIT' &&
+                item.auditId &&
+                ids.has(item.auditId) &&
+                item.accessibility !== false &&
+                (!data.issues?.find((issue) => issue.issueId === item.issueId)?.review ||
+                  data.issues
+                    ?.find((issue) => issue.issueId === item.issueId)
+                    ?.componentIds.some((id) => audits.some((audit) => audit.componentId === id)))
+            )
             .map((item) => [item.issueId, item])
         ).values()
       ];

@@ -16,7 +16,17 @@ export function issuesExplorerModel(snapshot: Snapshot, githubUrl?: string, comp
       : repository
         ? `${(githubUrl ?? 'https://github.com').replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/issues/${fact.number}`
         : '';
-    return { ...fact, url };
+    const pullRequestLinks =
+      issue?.review && repository
+        ? repository.pullRequests
+            .filter((pr) => issue.linkedPullRequestIds.includes(pr.id))
+            .map((pr) => ({
+              number: pr.number,
+              state: pr.state,
+              url: `${(githubUrl ?? 'https://github.com').replace(/\/+$/, '')}/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.name)}/pull/${pr.number}`
+            }))
+        : undefined;
+    return { ...fact, url, ...(pullRequestLinks ? { pullRequestLinks } : {}) };
   });
   return { items, componentPrefix };
 }

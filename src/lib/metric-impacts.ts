@@ -10,6 +10,11 @@ const RULE_METRIC_IMPACTS: Record<
   string,
   { pattern: string; action: 'include' | 'exclude' | 'unknown'; reason: string }[]
 > = {
+  'DQ-035': ['issue.*', 'anomaly.*', 'audit.*', 'componentVersion.*'].map((pattern) => ({
+    pattern,
+    action: 'include',
+    reason: 'Qualification ou rattachement à vérifier ; aucune preuve manquante n’est inventée.'
+  })),
   'DQ-033': [
     'audit.*',
     'anomaly.*',

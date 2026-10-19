@@ -7,6 +7,7 @@ import { matchesMetricPattern } from '../lib/metric-impacts.js';
 
 /** Lecture Analytics commune d'une issue, de sa population et de ses preuves. */
 export interface IssueFact {
+  review?: Issue['review'];
   id: string;
   key: string;
   repo: string;
@@ -98,33 +99,46 @@ export function projectIssueFacts(
     );
     return {
       id: issue.issueId,
+      ...(issue.review ? { review: issue.review } : {}),
       key: `${repo}#${issue.number}`,
       repo,
       number: issue.number,
       title: issue.title,
       url: issue.url,
       labels: issue.labels,
-      type: issue.rawIssueType ?? issue.issueType ?? 'Non renseigné',
+      type:
+        issue.rawIssueType ??
+        issue.issueType ??
+        (issue.review?.typeSource === 'unconfirmed' ? 'Type non confirmé' : 'Non renseigné'),
       projectContexts: issue.projectContexts,
       family: issueClassification(issue, data),
-      familyLabel: issue.futureVersion
-        ? 'Version future · activité conservée, hors analyses accessibilité'
-        : anomalies.length && qualification.status === 'qualified' && anomalies[0]?.origin !== 'AUDIT'
-          ? 'Anomalie d’accessibilité qualifiée · origine ' + anomalies[0]?.origin
-          : (
-              {
-                audit: 'Audit',
-                audit_anomaly: 'Anomalie d’accessibilité liée à un audit',
-                anomaly:
-                  anomalies[0]?.origin === 'HORS_AUDIT'
-                    ? anomalies[0].criticality || anomalies[0].categories.length
-                      ? 'Anomalie d’accessibilité présumée hors audit · à examiner'
-                      : 'Bug hors audit · qualification RGAA non prouvée'
-                    : 'Anomalie (origine indéterminée)',
-                improvement: 'Improvement d’audit',
-                other: 'Autre issue'
-              } as const
-            )[issueClassification(issue, data)],
+      familyLabel:
+        issue.review && anomalies.length
+          ? issue.review.kinds.includes('accessibility')
+            ? anomalies[0]?.origin === 'AUDIT'
+              ? 'Anomalie d’accessibilité liée à un audit'
+              : 'Bug d’accessibilité sans audit rattaché'
+            : issue.review.kinds.includes('functional')
+              ? 'Bug fonctionnel'
+              : 'Bug — nature non renseignée'
+          : issue.futureVersion
+            ? 'Version future · activité conservée, hors analyses accessibilité'
+            : anomalies.length && qualification.status === 'qualified' && anomalies[0]?.origin !== 'AUDIT'
+              ? 'Anomalie d’accessibilité qualifiée · origine ' + anomalies[0]?.origin
+              : (
+                  {
+                    audit: 'Audit',
+                    audit_anomaly: 'Anomalie d’accessibilité liée à un audit',
+                    anomaly:
+                      anomalies[0]?.origin === 'HORS_AUDIT'
+                        ? anomalies[0].criticality || anomalies[0].categories.length
+                          ? 'Anomalie d’accessibilité présumée hors audit · à examiner'
+                          : 'Bug hors audit · qualification RGAA non prouvée'
+                        : 'Anomalie (origine indéterminée)',
+                    improvement: 'Improvement d’audit',
+                    other: 'Autre issue'
+                  } as const
+                )[issueClassification(issue, data)],
       status: treatment.cancelled ? 'cancelled' : treatment.treated ? 'closed' : 'open',
       githubState: issue.state,
       componentIds: [...new Set(issue.componentIds)],

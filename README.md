@@ -102,3 +102,7 @@ Les tokens, graines, captures et correspondances restent locaux. Les dossiers `d
 - [Développer](docs/08-implementation/guide-developpement.md)
 
 Les compteurs restent figés à la date du snapshot. Dans les tableaux de repositories et de composants, « GitHub actuel ≈ » ouvre une recherche actuelle et approchée : son résultat peut différer du compteur et ne le justifie pas. Les [liens d’entités résolues](docs/08-implementation/dashboard-links.md) ouvrent leur issue ou PR ; une référence non résolue reste du texte.
+
+## Revue métier des bugs et corrections
+
+Les [décisions et conventions de labels du 19 octobre 2026](docs/08-implementation/validation-metier-20261019.md) distinguent bugs fonctionnels, accessibilité, améliorations, corrections confirmées et vérification par audit. Le rejeu accepte `--issue-policy config/issue-policy.example.json`, sans modifier les JSON sources. Les filtres de la page Activité permettent notamment de retrouver les issues sans Project, sans audit, sans composant ou demandant un avis auditeur.

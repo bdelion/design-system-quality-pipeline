@@ -287,7 +287,7 @@ describe('issue #39 : borne package et activité des équipes', () => {
     const profile = JSON.parse(await readFile('config/profiles/dsq.json', 'utf8')) as {
       ruleVersion: string;
     };
-    expect(profile.ruleVersion).toBe('dq-2026.10-audit-relations');
+    expect(profile.ruleVersion).toBe('dq-2026.10-business-review');
     const raw = dataset();
     const { data, quality, analytics } = analyze(raw);
     const previous = buildSnapshot(

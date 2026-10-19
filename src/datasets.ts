@@ -5,6 +5,7 @@ import { parse, stringify } from 'yaml';
 import type { RawDataset } from './domain/types.js';
 import type { PipelineConfig } from './config.js';
 import { validateMilestoneDetection } from './config.js';
+import { validateIssuePolicy } from './domain/issue-policy.js';
 import { validateAccessibilityRecognition } from './domain/accessibility.js';
 import { validateCatalogue, type Catalogue } from './catalogue.js';
 import { rootPath } from './lib/paths.js';
@@ -289,6 +290,7 @@ export function validateDatasetConfig(value: unknown): asserts value is Pipeline
     throw new Error('Conventions DSQ : règles de milestones invalides.');
   validateMilestoneDetection(config.github.milestoneDetection);
   validateAccessibilityRecognition(config.github.accessibilityRecognition);
+  validateIssuePolicy(config.github.issuePolicy);
 }
 
 /** Charge les conventions livrées et leur donne le périmètre explicite de la capture. */

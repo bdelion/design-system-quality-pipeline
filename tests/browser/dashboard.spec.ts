@@ -929,3 +929,61 @@ test('cartes compactes et infobulles utilisables au clavier et à la souris sur 
       .violations
   ).toEqual([]);
 });
+
+test('revue métier : filtres Project, nature, URL, export et réinitialisation', async ({ page }) => {
+  await page.route('**/issues.html*', async (route) => {
+    const response = await route.fetch();
+    const body = (await response.text()).replace(
+      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      (_, start, json, end) => {
+        const model = JSON.parse(json);
+        const original = model.data.issues.items[0];
+        model.data.issues.items = ['none', 'missing-status', 'with-status'].map((project, index) => ({
+          ...original,
+          id: 'review-' + index,
+          key: 'review#' + index,
+          number: 900001 + index,
+          labels: ['test'],
+          type: 'Bug',
+          family: 'anomaly',
+          anomalyIds: ['anomaly-' + index],
+          auditIds: [],
+          review: {
+            project,
+            kinds: index === 2 ? ['functional'] : ['accessibility'],
+            advice: index === 0,
+            correctionConfirmed: index === 1,
+            correctionVersion: '1.9.0',
+            correctionLabel: 'Correction test',
+            warnings: []
+          }
+        }));
+        return start + JSON.stringify(model) + end;
+      }
+    );
+    await route.fulfill({ response, body });
+  });
+  await page.goto('/issues.html?project=none');
+  const rows = page.locator('[data-issue-rows] tr');
+  await expect(rows).toHaveCount(1);
+  await expect(rows).toContainText('900001');
+  await page.locator('[data-issue-filter="project"]').selectOption('missing-status');
+  await expect(rows).toContainText('900002');
+  await page.reload();
+  await expect(page.locator('[data-issue-filter="project"]')).toHaveValue('missing-status');
+  await expect(rows).toContainText('900002');
+  const download = page.waitForEvent('download');
+  await page.locator('[data-issue-export]').click();
+  const exported = await download;
+  const content = await readFile((await exported.path())!, 'utf8');
+  expect(content).toContain('900002');
+  expect(content).not.toContain('900001');
+  expect(content).toContain('Version de correction');
+  await page.locator('[data-issue-reset]').click();
+  await expect(rows).toHaveCount(3);
+  await page.locator('[data-issue-filter="kind"]').selectOption('functional');
+  await expect(rows).toHaveCount(1);
+  await expect(rows).toContainText('900003');
+  await page.goto('/issues.html?project=inconnu');
+  await expect(rows).toHaveCount(0);
+});
