@@ -167,6 +167,7 @@ export async function generateDashboard(
     copyDashboardAsset(dashboardPath, 'pagination.js'),
     copyDashboardAsset(dashboardPath, 'csv.js'),
     copyDashboardAsset(dashboardPath, 'quality.js'),
+    copyDashboardAsset(dashboardPath, 'quality-causes.js'),
     copyDashboardAsset(dashboardPath, 'quality-presentation.js'),
     copyDashboardAsset(dashboardPath, 'snapshot-context.js'),
     copyDashboardAsset(dashboardPath, 'populations.js'),

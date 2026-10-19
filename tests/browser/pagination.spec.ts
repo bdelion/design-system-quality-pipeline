@@ -24,6 +24,25 @@ test.afterAll(async () => {
   await rm(output, { recursive: true, force: true });
 });
 
+test('issue #88 : les 3 000 causes sont paginées séparément des occurrences', async ({ page }) => {
+  await page.goto(`${root}/quality.html`);
+  const groups = page.locator('[data-quality-cause-row]');
+  const nav = page.locator('[data-pagination="quality-causes"]');
+  await expect(groups).toHaveCount(50);
+  await expect(nav).toContainText('1–50 sur 3000');
+  await nav.getByRole('button', { name: 'Suivant' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(nav).toContainText('51–100 sur 3000');
+  await expect(nav.getByRole('button', { name: 'Suivant' })).toBeFocused();
+  await expect(groups.first()).toContainText('Diagnostic synthétique 51');
+  await groups.first().locator('[data-quality-cause]').click();
+  await expect(page.locator('[data-quality-count]')).toHaveText('1');
+  await expect(page.locator('[data-quality-row]')).toHaveCount(1);
+  await expect(nav).toContainText('51–100 sur 3000');
+  await page.locator('[data-quality-filter="dqRule"]').selectOption('CIBLE');
+  await expect(nav).toContainText('1–50 sur 120');
+});
+
 test('issue #87 : Activité, sélection inter-pages, tri global, liens ciblés et CSV intégral', async ({
   page
 }) => {
@@ -130,7 +149,7 @@ test('issue #87 : un contrat DQ absent désactive pagination et export sans faux
   await expect(page.locator('[data-page-data-error]')).toBeVisible();
   await expect(page.locator('[data-quality-count]')).toHaveText('Indisponible');
   await expect(page.locator('[data-quality-export]')).toBeDisabled();
-  await expect(page.locator('[data-page-next]')).toBeDisabled();
+  await expect(page.locator('[data-pagination="quality"] [data-page-next]')).toBeDisabled();
 });
 
 test('issue #87 : le focus reste sur la même occurrence d’une issue multi-labels', async ({ page }) => {

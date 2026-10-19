@@ -93,6 +93,8 @@ Le [contrôle après #82](benchmarks/issue-82-control.md) et ses [mesures JSON](
 
 ## Modèles de lecture par page (#83)
 
+> Depuis #88, le coût de la synthèse des causes DQ a été mesuré puis explicitement approuvé comme nouvelle référence automatique. Le budget reste à 0 %. Voir les [causes DQ et leur revue de coût](dashboard-quality-causes.md#budget).
+
 > Depuis #87, les ajouts fonctionnels de pagination et du JSON DQ ont été mesurés puis explicitement approuvés par l’utilisateur comme nouvelle référence automatique, avec un budget toujours à 0 %. Voir les [contrats et mesures de pagination](dashboard-pagination.md#mesures-synthétiques). Les rapports historiques ci-dessous conservent leurs références d’origine.
 
 > Depuis #85, la référence automatique de contrôle a été actualisée après revue et validation explicite du coût du détail nominatif. Le budget reste à 0 %. Les mesures et baselines historiques de cette page sont conservées ; voir le [contrat des populations et la revue de coût](component-populations.md#revue-mesurée-du-coût-fonctionnel).

@@ -227,6 +227,9 @@ function showPageError(message) {
   main.querySelectorAll('[data-workspace-ratio]').forEach((node) => {
     node.textContent = 'Ratio indisponible';
   });
+  main.querySelectorAll('[data-quality-group-summary], [data-quality-cause-selection]').forEach((node) => {
+    node.textContent = 'Indisponible';
+  });
   main.querySelectorAll('[data-workspace-breakdowns]').forEach((node) => {
     node.textContent = 'Ventilations indisponibles.';
   });

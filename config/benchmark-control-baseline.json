@@ -93,21 +93,21 @@
     },
     {
       "page": "quality.html",
-      "htmlBytes": 99575,
+      "htmlBytes": 121284,
       "jsonBytes": 10234,
-      "initialTableRows": 32,
-      "renderedTableRows": 32,
-      "domNodes": 3130
+      "initialTableRows": 62,
+      "renderedTableRows": 62,
+      "domNodes": 3977
     }
   ],
   "validation": {
     "status": "validated",
     "date": "2026-10-19",
-    "issue": 87,
+    "issue": 88,
     "approval": "Oui, valider ces ajouts et la nouvelle référence",
-    "scope": "Coût fonctionnel des contrôles de pagination et de la projection DQ #87 revu explicitement ; 0 % de croissance conservé.",
-    "report": "docs/08-implementation/benchmarks/issue-87-review.json",
-    "revision": "a2b36e4ddf77abc764113c03f423a03e34b705e5",
+    "scope": "Coût fonctionnel de la synthèse des causes DQ #88 revu explicitement ; 0 % de croissance conservé.",
+    "report": "docs/08-implementation/benchmarks/issue-88-review.json",
+    "revision": "83e633d35e05ab75af0a93e3724455cad2581202",
     "workingTreeDirty": true
   }
 }
