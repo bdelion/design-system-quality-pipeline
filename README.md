@@ -2,6 +2,8 @@
 
 Collecter des repositories GitHub, préparer un dataset autonome et rejouer son dashboard hors réseau. GitHub reste en lecture seule. Les conventions DSQ sont livrées dans `config/profiles/dsq.json` ; les informations absentes restent inconnues.
 
+Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)** regroupe les commandes, toutes leurs options, les fichiers requis et les recettes : dashboard GitHub à jour, rejeu privé, jeu anonymisé, catalogues et historiques.
+
 ## Démarrer sans GitHub
 
 Le [diagnostic des calculs d’audit (#49)](docs/08-implementation/issue-49-audit-diagnostic.md) distingue la campagne courante, les relations parent collectées et les preuves historiques nécessaires aux verdicts par version.
@@ -49,7 +51,7 @@ Aucun `system.yaml`, `catalogue.yaml` ou fichier V1 n’est à fabriquer. La cap
 | Script                             | Fonction                                                                                                                                           |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `collect`                          | Capturer GitHub depuis une liste JSON de repositories, avec le profil DSQ livré et les [options de quota](docs/08-implementation/quotas-github.md) |
-| `fixture:prepare`                  | Préparer depuis un RAW ou enrichir une fixture ; `--input`, `--output`, `--catalogue`, `--historical-catalogue` facultatifs                        |
+| `fixture:prepare`                  | Préparer depuis un RAW ou enrichir une fixture ; `--input` et `--output` requis ; catalogues facultatifs                                           |
 | `fixture:validate`                 | Contrôler le dataset et exécuter son pipeline dans un dossier temporaire ; `--dataset`                                                             |
 | `pipeline`                         | Rejouer le dataset hors réseau ; `--dataset`, `--output` ; démonstration par défaut                                                                |
 | `dashboard:serve`                  | Consulter le dashboard local ; dossier facultatif après `--`                                                                                       |

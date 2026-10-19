@@ -54,6 +54,8 @@ Le registre n'a pas vocation à remplacer les documents métier thématiques : i
 
 ## Parcours recommandé
 
+Pour exécuter la CLI, commencer par le **[guide d’utilisation : commandes, fichiers et recettes](08-implementation/guide-utilisation.md)**. Il regroupe le parcours GitHub à jour, le rejeu local privé, l’anonymisation et les enrichissements ; les documents ci-dessous approfondissent les contrats.
+
 | Besoin                                  | Document                                   |
 | --------------------------------------- | ------------------------------------------ |
 | Comprendre le projet                    | `00-cadrage/vision.md`                     |
