@@ -302,9 +302,9 @@ test('vue d’ensemble : stocks cliquables et délais Ensemble, Done et closedAt
   const inventory = page.getByRole('region', { name: 'Patrimoine et activité par repository' });
   await expect(inventory.locator('thead')).not.toContainText('Fiabilité');
   const row = inventory.locator('tbody tr').first();
-  await expect(row.locator('td').nth(4)).toHaveText('8 ↗');
-  await expect(row.locator('td').nth(5)).toHaveText('2 ↗');
-  await expect(row.locator('td').nth(6)).toHaveText('1 ↗');
+  await expect(row.locator('td').nth(4)).toHaveText('8 · GitHub actuel ≈ ↗');
+  await expect(row.locator('td').nth(5)).toHaveText('2 · GitHub actuel ≈ ↗');
+  await expect(row.locator('td').nth(6)).toHaveText('1 · GitHub actuel ≈ ↗');
   for (const link of await row.locator('td:nth-child(n+3) a').all()) {
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
