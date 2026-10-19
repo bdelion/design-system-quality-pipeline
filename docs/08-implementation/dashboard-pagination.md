@@ -6,7 +6,7 @@
 
 Activité conserve les issues distinctes sélectionnées entre pages. La case d’en-tête sélectionne **toutes les issues filtrées, toutes pages**, pas seulement les 50 occurrences montées. Les KPI portent sur l’intersection entre sélection et population filtrée, sans compter plusieurs fois une issue multi-labels. Effacer la sélection rétablit les KPI des issues filtrées. Le CSV d’Activité exporte **toutes les lignes filtrées et triées**, indépendamment de la sélection utilisée par les KPI ; ce contrat est affiché dans l’interface.
 
-DQ ne propose pas de sélection. Son CSV exporte tous les diagnostics filtrés et triés, avec identifiant, règle, sévérité, entité, repository prouvé ou « Non déterminé », message, action, motifs et impacts complets, URL source et issue reliée. Il n’est jamais limité à la page courante. Les deux exports utilisent UTF-8 avec BOM, séparateur `;`, guillemets échappés et protection des valeurs pouvant devenir des formules de tableur.
+DQ ne propose pas de sélection individuelle. Depuis [#88](dashboard-quality-causes.md), choisir une cause restreint le détail et le CSV à ses occurrences, tout en conservant les filtres. Son CSV exporte tous les diagnostics concernés et triés, avec identifiant, règle, sévérité, entité, repository prouvé ou « Non déterminé », message, action, motifs et impacts complets, URL source et issue reliée. Il n’est jamais limité à la page courante. Les deux exports utilisent UTF-8 avec BOM, séparateur `;`, guillemets échappés et protection des valeurs pouvant devenir des formules de tableur.
 
 ## Données et preuves
 

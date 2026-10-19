@@ -1,4 +1,5 @@
 import { qualityReadModel } from './quality-read-model.js';
+import { groupQualityRows, qualityCauseHtml, qualityGroupSummary } from './assets/quality-causes.js';
 import { qualityRowHtml } from './assets/quality-presentation.js';
 import { paginate, paginationContent } from './assets/pagination.js';
 /** Organisation des espaces métier et restitution des populations calculées par Analytics. */
@@ -166,6 +167,7 @@ export function accessibilityContent(snapshot: Snapshot): string {
 /** Présente les réserves DQ avec leurs relations explicites et des filtres de diagnostic. */
 export function dataQualityContent(snapshot: Snapshot, githubUrl?: string): string {
   const rows = qualityReadModel(snapshot, githubUrl);
+  const groups = groupQualityRows(rows);
   const filters: Array<[string, string, string[]]> = [
     [
       'repository',
@@ -216,7 +218,26 @@ export function dataQualityContent(snapshot: Snapshot, githubUrl?: string): stri
     snapshot.dataQuality.issues.length +
     '</strong> diagnostics filtrés <span data-quality-total>sur ' +
     snapshot.dataQuality.issues.length +
-    '</span></p><div class="table-wrap" tabindex="0" role="region" aria-label="Diagnostics de qualité des données"><table><caption>Réserves, entités et effets sur les métriques</caption><thead><tr>' +
+    '</span></p><section aria-label="Synthèse des causes DQ"><h3>Causes et prochaines vérifications</h3><p>Ces occurrences décrivent la fiabilité des données, pas un nombre de défauts produit ni un verdict de conformité RGAA.</p><p data-quality-group-summary role="status" aria-live="polite" tabindex="-1">' +
+    qualityGroupSummary(groups.length, rows.length) +
+    '</p><div class="table-wrap" tabindex="0" role="region" aria-label="Causes des diagnostics"><table><thead><tr>' +
+    [
+      'Cause et message source',
+      'Occurrences',
+      'Sévérité et action',
+      'Indicateurs et effets déclarés',
+      'Prochaine vérification',
+      'Détail'
+    ]
+      .map((label) => `<th scope="col">${label}</th>`)
+      .join('') +
+    '</tr></thead><tbody data-quality-causes>' +
+    paginate(groups)
+      .rows.map((group, index) => qualityCauseHtml(group, `${snapshot.snapshotId}:${index}`))
+      .join('') +
+    '</tbody></table></div>' +
+    paginationContent('quality-causes') +
+    '</section><h3 data-quality-occurrences-heading tabindex="-1">Occurrences et preuves techniques</h3><p data-quality-cause-selection>Comme les filtres, le choix d’une cause limite le détail et le CSV complet.</p><button type="button" data-quality-all-causes>Toutes les causes</button><div class="table-wrap" tabindex="0" role="region" aria-label="Diagnostics de qualité des données"><table><caption>Réserves, entités et effets sur les métriques</caption><thead><tr>' +
     [
       'Règle',
       'Sévérité',

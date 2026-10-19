@@ -79,6 +79,8 @@ Le dashboard embarque un [JSON versionné propre à chaque page](docs/07-decisio
 
 Activité et Qualité des données affichent 50 lignes par page. Filtres, tris et CSV portent sur tous les résultats ; la sélection d’Activité sert aux KPI et couvre les issues distinctes de toutes les pages filtrées. Voir le [contrat de pagination et ses mesures](docs/08-implementation/dashboard-pagination.md).
 
+Qualité des données regroupe les occurrences par cause, sévérité et impacts, avec une prochaine vérification lorsqu'elle est documentée et une source résolue. Chaque groupe ouvre ses occurrences et leur export complet ; ces décomptes décrivent la fiabilité des données. Voir le [contrat des causes DQ](docs/08-implementation/dashboard-quality-causes.md).
+
 Près du titre, la capture est datée en UTC, le périmètre partagé suit les filtres et la fiabilité globale donne accès aux diagnostics et à leurs preuves. Une capture récente peut être partielle ; un résultat non conforme peut être fiable. Voir le [contrat du résumé de capture](docs/08-implementation/dashboard-coherence.md#résumé-de-capture-près-du-titre-89).
 
 Pour un RAW non anonymisé, `pipeline --dataset <raw.json> --historical-catalogue <identites.yaml> --historical-repository <owner/repository>` importe l'historique local sans passer par `fixture:prepare`. Le fichier d'identités désigne son référentiel de présences via `historicalCatalogue`. Voir le [parcours local détaillé](docs/08-implementation/datasets.md#collecte-non-anonymisée--historique-local-et-fichier-didentités).
