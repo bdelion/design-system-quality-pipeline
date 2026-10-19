@@ -78,6 +78,8 @@ La cartographie contient une table exhaustive incluant les issues transverses. C
 
 ## Navigation
 
+Le [contrat des populations de composants #85](component-populations.md) inventorie les périmètres et sources : identités historiques, statut active, présences matérialisées, couverts et conformes. Le détail nominatif `audits.html#component-populations` conserve les incarnations et alias, les absences prouvées et les inconnus. La couverture utilise toujours son dénominateur historique de calcul ; son libellé ne l’assimile plus automatiquement à des présences démontrées. Les formules et effectifs restent inchangés, la correction éventuelle relevant de #63.
+
 Sur **Composants et versions**, le [parcours PC #84](components-workflow.md) conserve un seul sélecteur repository/composant/version, piloté par l’URL. Le résumé du résultat et ses compteurs suivent ce périmètre et les affinements locaux. « Effacer le périmètre » conserve la recherche locale ; « Réinitialiser la vue » efface périmètre, affinements et sélection, puis restaure le tri initial. Le tableau précède les sections dépliables des délais et de l’aide ; les populations et formules restent celles du contrat existant.
 
 Les dimensions partagées sont `repository` (owner/name), `component` (nom ou identité canonique), `version` (numéro ou identité canonique), `issue`, `audit`, `anomaly` et `family`.

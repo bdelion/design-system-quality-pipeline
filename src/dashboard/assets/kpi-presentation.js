@@ -13,8 +13,8 @@ function number(value) {
  */
 export function presentWorkspaceKpi(key, summary) {
   const rates = {
-    coverage: ['covered', 'components', 'composants présents'],
-    conformity: ['conform', 'covered', 'composants couverts'],
+    coverage: ['covered', 'components', 'éléments du périmètre calculé'],
+    conformity: ['conform', 'covered', 'couples couverts'],
     treatmentRate: ['treated', 'declared', 'issues non annulées']
   };
   const populations = {
@@ -23,7 +23,7 @@ export function presentWorkspaceKpi(key, summary) {
     remaining: 'issues d’accessibilité non annulées à traiter',
     cancelled: 'issues d’accessibilité annulées',
     presumed: 'issues d’accessibilité présumée, annulations comprises',
-    nonCovered: 'composants présents sans audit terminé applicable',
+    nonCovered: 'éléments du périmètre calculé sans audit terminé applicable',
     unknown: 'composants à présence ou verdict indéterminé'
   };
   const rate = rates[key];

@@ -21,83 +21,93 @@
   "pages": [
     {
       "page": "accessibility.html",
-      "htmlBytes": 655752,
-      "jsonBytes": 518451,
+      "htmlBytes": 308842,
+      "jsonBytes": 171448,
       "initialTableRows": 42,
-      "domNodes": 1698,
+      "domNodes": 1696,
       "renderedTableRows": 46
     },
     {
       "page": "anomalies.html",
-      "htmlBytes": 599658,
-      "jsonBytes": 518451,
+      "htmlBytes": 81336,
+      "jsonBytes": 230,
       "initialTableRows": 21,
-      "domNodes": 1892,
+      "domNodes": 1889,
       "renderedTableRows": 21
     },
     {
       "page": "audits.html",
-      "htmlBytes": 562494,
-      "jsonBytes": 518451,
-      "initialTableRows": 18,
-      "domNodes": 1314,
-      "renderedTableRows": 18
+      "htmlBytes": 173394,
+      "jsonBytes": 118067,
+      "initialTableRows": 30,
+      "domNodes": 1529,
+      "renderedTableRows": 30
     },
     {
       "page": "components.html",
-      "htmlBytes": 568832,
-      "jsonBytes": 556183,
+      "htmlBytes": 50598,
+      "jsonBytes": 37976,
       "initialTableRows": 0,
-      "domNodes": 692,
+      "domNodes": 664,
       "renderedTableRows": 4
     },
     {
       "page": "epics.html",
-      "htmlBytes": 523820,
-      "jsonBytes": 518475,
+      "htmlBytes": 5486,
+      "jsonBytes": 258,
       "initialTableRows": 0,
-      "domNodes": 154,
+      "domNodes": 150,
       "renderedTableRows": 0
     },
     {
       "page": "graph.html",
-      "htmlBytes": 690771,
-      "jsonBytes": 518451,
+      "htmlBytes": 172441,
+      "jsonBytes": 226,
       "initialTableRows": 24,
-      "domNodes": 1843,
+      "domNodes": 1840,
       "renderedTableRows": 24
     },
     {
       "page": "history.html",
-      "htmlBytes": 525984,
-      "jsonBytes": 518451,
+      "htmlBytes": 7658,
+      "jsonBytes": 228,
       "initialTableRows": 0,
-      "domNodes": 245,
+      "domNodes": 242,
       "renderedTableRows": 0
     },
     {
       "page": "index.html",
-      "htmlBytes": 529408,
-      "jsonBytes": 518451,
+      "htmlBytes": 10867,
+      "jsonBytes": 226,
       "initialTableRows": 2,
-      "domNodes": 337,
+      "domNodes": 334,
       "renderedTableRows": 2
     },
     {
       "page": "issues.html",
-      "htmlBytes": 557114,
-      "jsonBytes": 542335,
+      "htmlBytes": 38724,
+      "jsonBytes": 24120,
       "initialTableRows": 0,
-      "domNodes": 3711,
+      "domNodes": 3705,
       "renderedTableRows": 108
     },
     {
       "page": "quality.html",
-      "htmlBytes": 615461,
-      "jsonBytes": 518451,
+      "htmlBytes": 96964,
+      "jsonBytes": 228,
       "initialTableRows": 32,
-      "domNodes": 3122,
+      "domNodes": 3120,
       "renderedTableRows": 32
     }
-  ]
+  ],
+  "validation": {
+    "status": "validated",
+    "date": "2026-10-19",
+    "issue": 85,
+    "approval": "Oui, valider cet ajout et la nouvelle référence",
+    "scope": "Surcoût fonctionnel des preuves et libellés #85 revu explicitement ; 0 % de croissance conservé.",
+    "report": "docs/08-implementation/benchmarks/issue-85-review.json",
+    "revision": "3fbf500102b5a0d129ee171462200855bd49951b",
+    "workingTreeDirty": true
+  }
 }

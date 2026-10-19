@@ -7,10 +7,10 @@ import { workspaceAnalytics } from '../src/analytics/workspaces.js';
 it('présente taux et dénominateurs sans recalculer la formule métier', () => {
   expect(
     presentWorkspaceKpi('coverage', { coverage: (16 * 100) / 76, covered: 16, components: 76, unknown: 0 })
-  ).toMatchObject({ value: '21,1 %', population: '16 sur 76 composants présents' });
+  ).toMatchObject({ value: '21,1 %', population: '16 sur 76 éléments du périmètre calculé' });
   expect(presentWorkspaceKpi('conformity', { conformity: 50, conform: 8, covered: 16 })).toMatchObject({
     value: '50 %',
-    population: '8 sur 16 composants couverts'
+    population: '8 sur 16 couples couverts'
   });
   expect(presentWorkspaceKpi('treatmentRate', { treatmentRate: 0, treated: 0, declared: 20 })).toMatchObject({
     value: '0 %',
@@ -82,7 +82,7 @@ it('rend les mêmes unités et populations dès le HTML initial, en mode complet
   for (const compact of [false, true]) {
     const html = workspaceCards(snapshot, compact);
     expect(html).toContain('>21,1 %</strong>');
-    expect(html).toContain('16 sur 76 composants présents');
+    expect(html).toContain('16 sur 76 éléments du périmètre calculé');
     expect(html).toContain('>5,2 j</strong>');
     expect(html).toContain('12 issues mesurables');
     expect(html).toContain('data-workspace-reserve="coverage"');

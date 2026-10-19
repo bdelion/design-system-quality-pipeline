@@ -190,7 +190,7 @@ describe('I9 V1 reference scenario', () => {
       expect(html).toContain('Patrimoine et activité par repository');
       expect(html).toContain('Patrimoine et activité globale');
       expect(await readFile(resolve(output, 'dashboard/accessibility.html'), 'utf8')).toContain(
-        'Couverture des composants'
+        'Couverture du périmètre calculé'
       );
       expect(await readFile(resolve(output, 'dashboard/quality.html'), 'utf8')).toContain(
         'Fiabilité par métrique'

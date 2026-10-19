@@ -97,8 +97,8 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
   )?.summary;
   const cards: Array<[string, string, string, string]> = compact
     ? [
-        ['coverage', 'Couverture des composants', 'covered', 'components'],
-        ['conformity', 'Conformité des composants audités', 'conform', 'covered'],
+        ['coverage', 'Couverture du périmètre calculé', 'covered', 'components'],
+        ['conformity', 'Conformité des couples couverts', 'conform', 'covered'],
         ['remaining', 'Anomalies d’accessibilité à traiter', '', ''],
         ['average', 'Délai moyen de correction', '', '']
       ]
@@ -109,9 +109,9 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
         ['remaining', 'Anomalies à traiter', '', ''],
         ['cancelled', 'Annulations séparées', '', ''],
         ['presumed', 'Accessibilité présumée', '', ''],
-        ['coverage', 'Couverture des composants', 'covered', 'components'],
-        ['conformity', 'Conformité des composants audités', 'conform', 'covered'],
-        ['nonCovered', 'Composants non couverts', '', ''],
+        ['coverage', 'Couverture du périmètre calculé', 'covered', 'components'],
+        ['conformity', 'Conformité des couples couverts', 'conform', 'covered'],
+        ['nonCovered', 'Couples présents non couverts', '', ''],
         ['unknown', 'Présence ou couverture indéterminée', '', ''],
         ['average', 'Délai moyen de correction', '', ''],
         ['median', 'Délai médian', '', ''],
@@ -129,9 +129,9 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
     presumed:
       'Signal a11y/RGAA sans label combinant Audit et RGAA ni relation valide à un audit. Qualification à examiner.',
     coverage:
-      'Composants couverts / composants présents dans la version sélectionnée, ou les versions PROD courantes de chaque repository. Les présences inconnues restent inconnues.',
+      'Couples couverts / périmètre calculé : identités non retirées en PROD courante, relations matérialisées si version explicite. Ce dénominateur ne prouve pas la présence ; voir le détail nominatif.',
     conformity:
-      'Composants conformes / couverts. Non audité reste distinct de non conforme. Le verdict provient des audits applicables, pas de la correction seule.',
+      'Couples conformes / couples couverts. Non audité reste distinct de non conforme. Le verdict provient des audits applicables, pas de la correction seule.',
     unknown:
       'Composants connus dont la présence dans la version ou le verdict ne peut pas être établi. Ils ne sont pas assimilés à des composants non couverts.',
     nonCovered:
@@ -147,7 +147,7 @@ export function workspaceCards(snapshot: Snapshot, compact = false): string {
         key as keyof WorkspaceSummary,
         model.available ? summary : null
       );
-      return `<article class="kpi-card compact-kpi"><span class="kpi-label">${label}</span><strong class="number-indicator" data-workspace-kpi="${key}">${html(presentation.value)}</strong><span data-workspace-ratio="${key}" data-numerator="${numerator}" data-denominator="${denominator}">${html(presentation.population)}</span><small data-workspace-reserve="${key}">${html(presentation.reserve)}</small><button type="button" class="metric-info-button" popovertarget="metric-info-${key}" aria-controls="metric-info-${key}" aria-expanded="false" aria-label="Informations sur ${label}"><span aria-hidden="true">i</span></button><div id="metric-info-${key}" class="metric-tooltip" popover role="dialog" aria-label="Informations sur ${label}"><p>${definitions[key]}</p><p data-workspace-unavailable="${key}">${html(presentation.unavailable)}</p><p><a href="accessibility.html#population">Voir les issues de la population</a> · <a href="quality.html">Réserves de données</a></p></div></article>`;
+      return `<article class="kpi-card compact-kpi"><span class="kpi-label">${label}</span><strong class="number-indicator" data-workspace-kpi="${key}">${html(presentation.value)}</strong><span data-workspace-ratio="${key}" data-numerator="${numerator}" data-denominator="${denominator}">${html(presentation.population)}</span><small data-workspace-reserve="${key}">${html(presentation.reserve)}</small><button type="button" class="metric-info-button" popovertarget="metric-info-${key}" aria-controls="metric-info-${key}" aria-expanded="false" aria-label="Informations sur ${label}"><span aria-hidden="true">i</span></button><div id="metric-info-${key}" class="metric-tooltip" popover role="dialog" aria-label="Informations sur ${label}"><p>${definitions[key]}</p><p data-workspace-unavailable="${key}">${html(presentation.unavailable)}</p><p><a href="${['coverage', 'conformity', 'nonCovered', 'unknown'].includes(key) ? 'audits.html#component-populations' : 'accessibility.html#population'}">Voir les preuves de la population</a> · <a href="quality.html">Réserves de données</a></p></div></article>`;
     })
     .join('')}</section><p role="status" aria-live="polite" data-workspace-summary></p>`;
 }
