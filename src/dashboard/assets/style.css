@@ -891,6 +891,16 @@ a {
   font-size: 12px;
   color: #52627a;
 }
+[data-component-analysis] .issue-filter-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+}
+[data-component-analysis] .panel-heading {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+[data-component-summary] {
+  overflow-wrap: anywhere;
+}
 .issue-filter-grid select,
 .issue-filter-grid input {
   width: 100%;

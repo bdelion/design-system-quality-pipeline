@@ -1,19 +1,18 @@
 import { readPageModel } from './page-model.js';
 /* global URL, Blob */
 import { durationStatistics } from './statistics.js';
-import { matchesFact, currentContext, setContext } from './context.js';
+import { matchesFact, currentContext, setContext, contextKeys } from './context.js';
 
 (() => {
   const root = document.querySelector('[data-component-analysis]');
   if (!root) return;
   /** Trouve un contrôle dans l'explorateur courant. */
   const $ = (selector) => root.querySelector(selector);
-  /** Publie le même résumé de population localement et dans le retour de filtrage annoncé. */
+  /** Annonce le périmètre URL et la population effective dans un seul résumé des résultats. */
   function updateSummary(message) {
-    $('[data-component-summary]').textContent = message;
-    const feedback = document.querySelector('[data-filter-feedback]');
-    if (feedback)
-      feedback.textContent = `Repository : ${currentContext().get('repository') || 'tous'} · ${message}`;
+    const context = currentContext();
+    $('[data-component-summary]').textContent =
+      `Repository : ${context.get('repository') || 'tous'} · Composant : ${context.get('component') || 'tous'} · Version : ${context.get('version') || 'toutes'} · ${message}`;
   }
   const pageModel = readPageModel();
   const rows = pageModel?.data.components;
@@ -41,22 +40,37 @@ import { matchesFact, currentContext, setContext } from './context.js';
   let selecting = false;
   let sort = 0;
   let descending = false;
-  const controls = ['repository', 'name', 'auditStatus', 'conformity', 'version', 'open'];
+  // Les composants découverts par labels et leurs versions restent sélectionnables hors catalogue.
+  const scopes = {
+    repository: rows.map((row) => row.repository),
+    component: rows.map((row) => row.name),
+    version: rows.flatMap((row) => [
+      ...row.auditSources.map((audit) => audit.version),
+      ...(row.versionSummaries ?? []).map((item) => item.version),
+      ...row.items.flatMap((item) => item.versions)
+    ])
+  };
+  for (const [key, values] of Object.entries(scopes)) {
+    const control = document.querySelector(`[data-context-filter="${key}"]`);
+    for (const value of [...new Set(values)]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }))) {
+      const known = [...control.options].find((option) => option.value === value);
+      if (known) {
+        known.textContent = value;
+        continue;
+      }
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      control.append(option);
+    }
+  }
+  const controls = ['auditStatus', 'conformity', 'open'];
   for (const field of controls.filter((key) => key !== 'open')) {
-    const values = [
-      ...new Set(
-        rows
-          .flatMap((row) =>
-            field === 'version'
-              ? [
-                  ...row.auditSources.map((audit) => audit.version),
-                  ...(row.versionSummaries ?? []).map((item) => item.version)
-                ]
-              : [row[field]]
-          )
-          .filter(Boolean)
-      )
-    ].sort((a, b) => a.localeCompare(b, 'fr'));
+    const values = [...new Set(rows.map((row) => row[field]).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, 'fr')
+    );
     for (const value of values) {
       const option = document.createElement('option');
       option.value = value;
@@ -68,7 +82,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   /** Projette le résultat de l’audit sur sa version cible, sans héritage vers une autre version. */
   function projectRow(row) {
     const context = currentContext();
-    const version = context.get('version') || $('[data-component-filter="version"]').value;
+    const version = context.get('version');
     const items = row.items.filter(
       (item) =>
         matchesFact(item, context) &&
@@ -114,7 +128,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   function linkedValue(row, oldest, value, index) {
     if (index === 1 && row.versionSummaries?.length) {
       const context = currentContext();
-      const version = context.get('version') || $('[data-component-filter="version"]').value;
+      const version = context.get('version');
       const history = row.versionSummaries.filter(
         (item) => !version || item.version === version || item.versionId === version
       );
@@ -139,7 +153,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
       return externalLink(
         row.githubLinks?.[field],
         value,
-        'Recherche GitHub actuelle ; population approchée, voir les explications au-dessus du tableau.'
+        'Recherche GitHub actuelle ; population approchée, voir l’aide « Comprendre les résultats et les liens GitHub ».'
       );
     if (index === 8) return externalLink(row.latestAuditUrl, value);
     if (index === 9) {
@@ -252,9 +266,6 @@ import { matchesFact, currentContext, setContext } from './context.js';
     .querySelectorAll('select,input[data-component-search],input[data-component-column]')
     .forEach((control) =>
       control.addEventListener('input', () => {
-        const field = control.dataset.componentFilter;
-        if (['repository', 'name', 'version'].includes(field))
-          setContext({ [field === 'name' ? 'component' : field]: control.value });
         render();
       })
     );
@@ -303,7 +314,17 @@ import { matchesFact, currentContext, setContext } from './context.js';
       });
     sort = 0;
     descending = false;
-    setContext({ repository: '', component: '', version: '', issue: '', audit: '', anomaly: '', family: '' });
+    selected.clear();
+    selecting = false;
+    root
+      .querySelectorAll('[data-component-sort]')
+      .forEach((header) =>
+        header.parentElement.setAttribute(
+          'aria-sort',
+          header.dataset.componentSort === '0' ? 'ascending' : 'none'
+        )
+      );
+    setContext(Object.fromEntries([...contextKeys, 'progress', 'result', 'scope'].map((key) => [key, ''])));
     render();
   });
   $('[data-component-export]').addEventListener('click', () => {
@@ -335,15 +356,8 @@ import { matchesFact, currentContext, setContext } from './context.js';
     link.click();
     URL.revokeObjectURL(url);
   });
-  /** Synchronise les filtres métier après effacement, navigation ou changement du périmètre partagé. */
+  /** Relit uniquement le périmètre URL après navigation ou changement des sélecteurs partagés. */
   function synchronize() {
-    const context = currentContext();
-    for (const [field, key] of Object.entries({
-      repository: 'repository',
-      name: 'component',
-      version: 'version'
-    }))
-      $(`[data-component-filter="${field}"]`).value = context.get(key) || '';
     render();
   }
   window.addEventListener('dashboard-context-change', synchronize);
