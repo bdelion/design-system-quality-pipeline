@@ -5,6 +5,7 @@
  */
 
 import { nominalVersion } from '../domain/version-scope.js';
+import { defaultIssuePolicy, matchesLabels } from '../domain/issue-policy.js';
 import { descriptionIssueReferences } from '../domain/description-references.js';
 import pLimit from 'p-limit';
 import { CollectionProgress } from '../lib/collection-progress.js';
@@ -888,11 +889,9 @@ function inferIssueType(
   title: string,
   rules: GithubProcessingConfig
 ): RawIssue['issueType'] {
-  const normalized = `${labels.join(' ')} ${title}`.toLowerCase();
-  for (const [issueType, keywords] of Object.entries(rules.issueTypes.keywords)) {
-    if (keywords.some((keyword) => normalized.includes(keyword.toLowerCase())))
-      return issueType as RawIssue['issueType'];
-  }
+  // Le titre ne prouve aucun type métier ; « auditeur » ne signifie pas « audit ».
+  void title;
+  if (matchesLabels(labels, rules.issuePolicy?.bugInference ?? defaultIssuePolicy.bugInference)) return 'BUG';
   return 'UNKNOWN';
 }
 

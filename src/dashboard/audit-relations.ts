@@ -20,6 +20,7 @@ export function anomaliesForAudit(
   const linked: Anomaly[] = [];
   const unresolved: Anomaly[] = [];
   for (const anomaly of anomalies) {
+    if (anomaly.accessibility === false) continue;
     const issue = issuesById.get(anomaly.issueId);
     const parents = new Set([
       ...(anomaly.parentRefs ?? []),
@@ -30,7 +31,8 @@ export function anomaliesForAudit(
     const explicit = anomaly.auditId
       ? anomaly.auditId === audit.auditId && (parents.size === 0 || parentMatches)
       : parentMatches;
-    if (explicit) linked.push(anomaly);
+    if (explicit && (!issue?.review || issue.componentIds.includes(audit.componentId))) linked.push(anomaly);
+    else if (explicit) unresolved.push(anomaly);
     else if (anomaly.componentId === audit.componentId || issue?.componentIds.includes(audit.componentId))
       unresolved.push(anomaly);
   }

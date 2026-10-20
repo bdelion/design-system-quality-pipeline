@@ -227,3 +227,7 @@ La Milestone fait partie du contexte de l'Audit et doit être prise en compte, m
 La RC ne doit donc pas être déduite implicitement de la dernière RC Jenkins disponible ou de la seule Milestone.
 
 Pour un Audit de rattrapage post-PROD, la Version auditée reste la Version PROD `M.m.r`; le besoin du champ RC concerne l'Audit pré-PROD.
+
+## Amendement de terminaison et restitution — D-244
+
+**DÉCIDÉ le 19 octobre 2026** : le statut Project Done suffit à considérer l’audit terminé ; Closed n’est plus une condition supplémentaire. Cet amendement de D-047 ne fabrique pas de date manquante. La synthèse privilégie la version auditée terminée la plus élevée. Un audit a un seul composant et les anomalies sont rattachées par leurs propres labels. Voir les [règles de vérification des corrections](../08-implementation/validation-metier-20261019.md).

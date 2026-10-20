@@ -113,7 +113,7 @@ export interface RawIssue {
   title: string;
   state: 'OPEN' | 'CLOSED';
   /** Legacy canonicalized value kept until all fixtures are migrated. */
-  issueType: 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE' | 'OTHER' | 'UNKNOWN';
+  issueType: 'EPIC' | 'AUDIT' | 'BUG' | 'NEW_COMPONENT' | 'FEATURE' | 'ENHANCEMENT' | 'OTHER' | 'UNKNOWN';
   /** Raw GitHub Issue Type, when GitHub provides one. */
   rawIssueType?: string;
   /** Canonical web URL collected from GitHub. Legacy fixtures may omit it. */
@@ -247,6 +247,7 @@ export interface IssueProjectContext {
 
 /** Issue GitHub générique conservée exhaustivement dans le modèle normalisé. */
 export interface Issue {
+  review?: import('./issue-review.js').IssueReview;
   /** Milestone future ou parent audit futur explicite : activité conservée, accessibilité exclue. */
   futureVersion?: boolean;
   issueId: string;
@@ -326,6 +327,9 @@ export interface PullRequest {
 /** Anomalie qualité rattachée à un composant et à un audit. */
 /** Spécialisation technique BUG ; la qualification accessibilité est indépendante et portée par Analytics.workspaces. */
 export interface Anomaly {
+  /** Qualification et neutralisation explicites, indépendantes de la fermeture GitHub. */
+  accessibility?: boolean;
+  neutralized?: boolean;
   anomalyId: string;
   issueId: string;
   origin: AnomalyOrigin;
@@ -465,6 +469,7 @@ export interface BusinessTransition {
 
 /** Ensemble des indicateurs calculés à partir des données normalisées. */
 export interface Analytics {
+  businessReview?: ReturnType<typeof import('../analytics/business-review.js').businessReview>;
   epicActivity?: import('../analytics/epic-activity.js').EpicActivity;
   /** Synthèse des audits par version cible ; absente des anciens snapshots. */
   auditCampaigns?: AuditCampaignSummary[];
@@ -503,6 +508,8 @@ export interface Analytics {
  * Agrégat des entités métier normalisées.
  */
 export interface NormalizedData {
+  /** Conventions effectivement appliquées pour reproduire la qualification. */
+  reviewPolicy?: { algorithm: 'issue-review-v1'; configuration: import('./issue-policy.js').IssuePolicy };
   libraries: Library[];
   components: Component[];
   /** I1 target collection. Optional only during the staged migration of existing normalizers. */

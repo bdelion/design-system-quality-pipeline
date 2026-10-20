@@ -34,3 +34,7 @@ La spécialisation normalisée BUG est conservée conformément au modèle actue
 ## Qualification accessibilité indépendante
 
 **IMPLÉMENTÉ :** `Analytics.workspaces` distingue qualifiée (audit explicitement lié ou label contenant Audit et RGAA), présumée (signaux a11y/RGAA à examiner) et non qualifiée. La spécialisation `Anomaly` reste plus large et ses anciens indicateurs ne deviennent pas des indicateurs RGAA. Aucun label ne crée une relation d’audit. Voir la [population et la liste de revue](../08-implementation/dashboard-role-refactor.md).
+
+## Arbitrages validés le 19 octobre 2026 — D-244
+
+Les [décisions de revue métier](../08-implementation/validation-metier-20261019.md) complètent et remplacent les limites de configuration décrites plus haut : labels exacts/préfixes configurables, catégories non exclusives, rattachement explicite au composant, comptage par occurrence, correction Done + PR fusionnée et annulation motivée. Une amélioration ne dégrade pas la conformité. Une correction ne prouve pas la conformité sans audit de vérification.

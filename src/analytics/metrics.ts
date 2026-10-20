@@ -154,7 +154,12 @@ export function calculateMetrics(
       .map((audit) => audit.componentId)
       .filter((componentId) => activeComponentIds.has(componentId))
   );
-  const validAnomalies = data.anomalies.filter((anomaly) => !anomaly.cancelled);
+  const validAnomalies = data.anomalies.flatMap((anomaly) => {
+    const issue = data.issues?.find((item) => item.issueId === anomaly.issueId);
+    if (!issue?.review) return anomaly.cancelled ? [] : [anomaly];
+    if (issue.review.neutralized) return [];
+    return [...new Set(issue.componentIds)].map(() => anomaly);
+  });
   /**
    * Récupère les identifiants des anomalies du périmètre analysé dans le pipeline de qualité.
    *
@@ -166,6 +171,8 @@ export function calculateMetrics(
       .filter((anomaly) => !excluded(metricId).has(anomaly.anomalyId))
       .map((anomaly) => anomaly.anomalyId);
   const corrected = validAnomalies.filter((anomaly) => {
+    const review = data.issues?.find((item) => item.issueId === anomaly.issueId)?.review;
+    if (review && !review.correctionConfirmed) return false;
     const date = anomaly.effectiveCorrectedAt ?? anomaly.correctedAt ?? anomaly.firstDoneAt;
     return (
       Boolean(date) &&
@@ -422,12 +429,16 @@ export function calculateMetrics(
       .map((x) => x.anomalyId);
     m[id] = metric(id, ids.length, ids.length, totalIds.length, ids, issues);
   }
+  const confirmed = validAnomalies.filter((anomaly) => {
+    const review = data.issues?.find((issue) => issue.issueId === anomaly.issueId)?.review;
+    return review ? review.correctionConfirmed : corrected.includes(anomaly);
+  });
   m['anomaly.correctedEver'] = metric(
     'anomaly.correctedEver',
-    corrected.length,
-    corrected.length,
+    confirmed.length,
+    confirmed.length,
     totalIds.length,
-    corrected.map((x) => x.anomalyId),
+    confirmed.map((x) => x.anomalyId),
     issues
   );
   const reopened = validAnomalies.filter(

@@ -18,8 +18,8 @@ de départ, pas une liste exhaustive. `npm run check:ai` contrôle ces chemins e
 
 ## Décisions, implémentation et écarts à vérifier
 
-- **ÉTABLI — D-047** : l’audit est terminé lorsque Project Done et GitHub Closed sont tous deux satisfaits. Sa date de réalisation est l’instant où la seconde condition est satisfaite. Lire `docs/00-cadrage/questions-ouvertes.md` et `docs/01-metier/audits.md`.
-- **IMPLÉMENTÉ — contrat V3** : `auditCompletedAt` retient la dernière transition Project Done connue, sans substitution par `closedAt`. Ce calcul n’est pas identique à D-047 lorsque la fermeture intervient ensuite. **ÉCART À ARBITRER** : ne pas le présenter comme une décision établie ni migrer le code sans demande.
+- **ÉTABLI — D-244 amende D-047** : pour le profil DSQ courant et les rejeux avec `issuePolicy`, Project Done suffit à terminer un audit. Une date manquante reste inconnue. Les anciennes fixtures conservent leur contrat historique Done + Closed. Lire `docs/08-implementation/validation-metier-20261019.md` et `docs/01-metier/audits.md`.
+- **IMPLÉMENTÉ** : le traitement `issue-review-v1` conserve les preuves Done/PR, la configuration appliquée et les réserves. Les corrections d’accessibilité nécessitent une vérification par audit ultérieur pour lever l’attente ; la correction seule ne prouve pas la conformité.
 - **ÉTABLI — D-238** : cardinalité 0..n Components des anomalies HORS_AUDIT ; cette décision ne porte pas sur les dates d’audit.
 - **IMPLÉMENTÉ** : un BUG configuré ne prouve pas une qualification RGAA ; lire `docs/01-metier/anomalies.md`.
 - La correction seule d’une anomalie ne rétablit pas le verdict de conformité ; lire les règles d’audits applicables dans `docs/01-metier/audits.md` avant de modifier les KPI.

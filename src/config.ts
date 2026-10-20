@@ -9,6 +9,8 @@ import 'dotenv/config';
 
 /** Paramètres de lecture des issues et pull requests GitHub. */
 export interface GithubProcessingConfig {
+  /** Conventions métier validées pour les labels et les motifs de résolution. */
+  issuePolicy?: import('./domain/issue-policy.js').IssuePolicy;
   /** Variantes explicites de labels accessibilité, communes ou par repository. */
   accessibilityRecognition?: AccessibilityRecognition;
   labels: {

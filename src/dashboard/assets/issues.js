@@ -16,7 +16,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   /** Déduplique les valeurs et les trie pour les filtres et les populations. */
   const unique = (values) => [...new Set(values)].sort((a, b) => String(a).localeCompare(String(b), 'fr'));
   const filters = Object.fromEntries(
-    ['repo', 'label', 'type', 'status', 'githubState', 'family'].map((key) => [
+    ['repo', 'label', 'type', 'status', 'githubState', 'family', 'project', 'kind', 'review'].map((key) => [
       key,
       $(`[data-issue-filter="${key}"]`)
     ])
@@ -57,6 +57,20 @@ import { matchesFact, currentContext, setContext } from './context.js';
   const columns = [...root.querySelectorAll('[data-issue-column]')];
   /** Retourne l’identité distincte d’une issue dans son repository. */
   const key = (item) => item.key;
+  /** Rend les références GitHub vérifiées en conservant les valeurs textuelles échappées. */
+  const cell = (item, value, index) => {
+    if (index === 1 && item.url && /^https:\/\/[^\s]+$/.test(item.url))
+      return `<a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>`;
+    if (index === 6 && item.pullRequestLinks?.length)
+      return item.pullRequestLinks
+        .filter((pr) => /^https:\/\/[^\s]+$/.test(pr.url))
+        .map(
+          (pr) =>
+            `<a href="${escape(pr.url)}" target="_blank" rel="noopener noreferrer">#${escape(pr.number)} · ${escape(pr.state)}</a>`
+        )
+        .join(' ; ');
+    return escape(value);
+  };
   /** Présente une valeur par Project et conserve les absences et les valeurs source nulles explicites. */
   const projectValues = (item, field) => {
     const contexts = item.projectContexts ?? [];
@@ -71,11 +85,17 @@ import { matchesFact, currentContext, setContext } from './context.js';
                   : context.rawVelocity;
             return (
               (contexts.length > 1 ? `${context.projectName || context.projectId} : ` : '') +
-              (value ?? 'Non renseigné')
+              (value === undefined || value === null || (typeof value === 'string' && !value.trim())
+                ? field === 'velocity'
+                  ? 'Non renseignée'
+                  : 'Non renseigné'
+                : value)
             );
           })
           .join(' ; ')
-      : 'Non renseigné';
+      : field === 'velocity'
+        ? 'Non renseignée'
+        : 'Sans Project enregistré';
   };
   /** Calcule l’ancienneté à la capture du snapshot, indépendamment de la date de consultation. */
   const dayAge = (item) =>
@@ -107,6 +127,23 @@ import { matchesFact, currentContext, setContext } from './context.js';
       return (
         matchesFact(item, currentContext()) &&
         (!filters.family.value || item.family === filters.family.value) &&
+        (!filters.project.value || item.review?.project === filters.project.value) &&
+        (!filters.kind.value ||
+          (filters.kind.value === 'unknown'
+            ? item.anomalyIds.length && item.review?.kinds.length === 0
+            : item.review?.kinds.includes(filters.kind.value))) &&
+        (!filters.review.value ||
+          {
+            'no-audit': item.anomalyIds.length > 0 && item.auditIds.length === 0,
+            'no-component': item.anomalyIds.length > 0 && item.componentIds.length === 0,
+            'audit-no-component':
+              (item.review?.auditCandidate || item.type.toLowerCase() === 'audit') &&
+              item.componentIds.length === 0,
+            advice: item.review?.advice,
+            corrected: item.anomalyIds.length > 0 && item.review?.correctionConfirmed,
+            improvements: item.family === 'improvement',
+            warnings: item.review?.warnings.length > 0
+          }[filters.review.value]) &&
         eligible.length &&
         (!componentOnly || hasComponent) &&
         (!filters.repo.value || item.repo === filters.repo.value) &&
@@ -152,7 +189,10 @@ import { matchesFact, currentContext, setContext } from './context.js';
           item.repo,
           item.number,
           item.label,
-          item.type + ' · ' + item.familyLabel,
+          item.type +
+            ' · ' +
+            item.familyLabel +
+            (item.review?.typeSource === 'labels' ? ' · Déduit des labels' : ''),
           item.status,
           item.githubState,
           item.prs.length,
@@ -161,7 +201,20 @@ import { matchesFact, currentContext, setContext } from './context.js';
           item.components?.join(', ') || 'Non renseigné',
           projectValues(item, 'status'),
           projectValues(item, 'iteration'),
-          projectValues(item, 'velocity')
+          projectValues(item, 'velocity'),
+          item.anomalyIds.length
+            ? item.review?.kinds
+                .map((kind) => ({ accessibility: 'Accessibilité', functional: 'Fonctionnel' })[kind])
+                .join(', ') || 'Nature non renseignée'
+            : '—',
+          item.anomalyIds.length ? item.review?.correctionLabel || 'Indisponible' : '—',
+          item.anomalyIds.length
+            ? item.review?.correctionVersion
+              ? (item.review.correctionConfirmed ? 'Confirmée pour ' : 'Prévue : ') +
+                item.review.correctionVersion
+              : 'Version de correction non renseignée'
+            : '—',
+          item.review?.warnings.join(' ; ') || ''
         ]
       }))
     );
@@ -210,7 +263,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     $('[data-issue-rows]').innerHTML = state.rows
       .map(
         ({ item, values }) =>
-          `<tr><td><input type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${index === 1 && item.url && /^https:\/\/[^\s]+$/.test(item.url) ? `<a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>` : escape(value)}</td>`).join('')}</tr>`
+          `<tr><td><input type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${cell(item, value, index)}</td>`).join('')}</tr>`
       )
       .join('');
     const focusTarget = root.querySelectorAll('[data-issue-check]')[focusedIndex];
@@ -223,6 +276,16 @@ import { matchesFact, currentContext, setContext } from './context.js';
     const params = currentContext();
     filters.repo.value = params.get('repository') || '';
     filters.family.value = params.get('family') || '';
+    for (const dimension of ['project', 'kind', 'review']) {
+      const value = params.get(dimension) || '';
+      if (value && ![...filters[dimension].options].some((option) => option.value === value)) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = 'Valeur inconnue : ' + value;
+        filters[dimension].append(option);
+      }
+      filters[dimension].value = value;
+    }
     render();
   };
   root
@@ -233,6 +296,8 @@ import { matchesFact, currentContext, setContext } from './context.js';
       control.addEventListener('input', () => {
         if (control === filters.repo) setContext({ repository: control.value });
         if (control === filters.family) setContext({ family: control.value });
+        for (const dimension of ['project', 'kind', 'review'])
+          if (control === filters[dimension]) setContext({ [dimension]: control.value });
         redraw();
       })
     );
@@ -260,7 +325,18 @@ import { matchesFact, currentContext, setContext } from './context.js';
     $('[data-issue-components]').checked = false;
     columnSort = -1;
     descending = false;
-    setContext({ repository: '', component: '', version: '', issue: '', audit: '', anomaly: '', family: '' });
+    setContext({
+      repository: '',
+      component: '',
+      version: '',
+      issue: '',
+      audit: '',
+      anomaly: '',
+      family: '',
+      project: '',
+      kind: '',
+      review: ''
+    });
     redraw();
   });
   $('[data-issue-clear-selection]').addEventListener('click', () => {
@@ -321,9 +397,17 @@ import { matchesFact, currentContext, setContext } from './context.js';
         'Composants',
         'Statut Project',
         'Itération',
-        'Velocity source'
+        'Velocity source',
+        'Nature du bug',
+        'Correction / résolution',
+        'Version de correction',
+        'Signalements',
+        'Preuves PR'
       ],
-      ...visible.map(({ values }) => values)
+      ...visible.map(({ item, values }) => [
+        ...values,
+        item.pullRequestLinks?.map((pr) => `#${pr.number} ${pr.state} ${pr.url}`).join(' ; ') ?? ''
+      ])
     ];
     downloadCsv(
       root.hasAttribute('data-components-explorer') ? 'analyse-composants.csv' : 'analyse-issues.csv',

@@ -36,6 +36,9 @@ function initializePage() {
   function applyFilters() {
     const params = currentContext();
     const query = (controls.text?.value || '').toLowerCase();
+    document.querySelectorAll('[data-review-row]').forEach((row) => {
+      row.hidden = !matchesRow(row, currentContext());
+    });
     document.querySelectorAll('[data-table-row]').forEach((row) => {
       row.hidden =
         !matchesContext(row) ||

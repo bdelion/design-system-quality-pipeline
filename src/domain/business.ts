@@ -42,6 +42,7 @@ export function issueClassification(
   const anomaly = data.anomalies.find((item) => item.issueId === issue.issueId);
   if (anomaly) return anomaly.origin === 'AUDIT' ? 'audit_anomaly' : 'anomaly';
   if (data.auditImprovements?.some((item) => item.issueId === issue.issueId)) return 'improvement';
+  if (issue.review && issue.issueType === 'FEATURE') return 'improvement';
   return 'other';
 }
 
@@ -52,6 +53,12 @@ export function auditProgress(
 ): 'pending' | 'ongoing' | 'completed' | 'cancelled' {
   const issue = issues.find((item) => item.issueId === audit.issueId);
   if (issue) {
+    if (
+      issue.review &&
+      issue.projectContexts.length > 0 &&
+      issue.projectContexts.every((context) => currentProjectStatus(context) === 'DONE')
+    )
+      return 'completed';
     const state = issueBusinessState(issue);
     if (state === 'cancelled') return 'cancelled';
     if (state === 'treated') return 'completed';

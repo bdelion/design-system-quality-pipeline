@@ -1,4 +1,5 @@
 import { workspaceAnalytics } from './workspaces.js';
+import { businessReview } from './business-review.js';
 import { auditCampaigns } from './audit-campaigns.js';
 import { teamActivitySummary } from './team-activity.js';
 import { repositoryActivity } from './repository-activity.js';
@@ -62,6 +63,7 @@ export function calculateKpis(
   };
 
   return {
+    ...(data.issues?.some((issue) => issue.review) ? { businessReview: businessReview(data) } : {}),
     auditCampaigns: auditCampaigns(data, dqIssues),
     teamActivity: teamActivitySummary(data),
     repositoryActivity: repositoryActivity(data, dqIssues),

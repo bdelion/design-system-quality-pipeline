@@ -18,8 +18,8 @@ export function applyComponentVersionVerdicts(data: NormalizedData): void {
   const completedAudits = data.audits.filter(
     (audit) =>
       isCompletedAudit(audit, data.issues ?? []) &&
-      audit.completedAt !== undefined &&
-      Number.isFinite(Date.parse(audit.completedAt))
+      (data.issues?.some((issue) => issue.issueId === audit.issueId && issue.review) ||
+        (audit.completedAt !== undefined && Number.isFinite(Date.parse(audit.completedAt))))
   );
 
   for (const relation of data.componentVersions ?? []) {
@@ -33,6 +33,25 @@ export function applyComponentVersionVerdicts(data: NormalizedData): void {
         : auditCohortIsConform(applicable, data)
           ? 'CONFORME'
           : 'NON_CONFORME';
+    const currentBugs = data.anomalies.filter(
+      (anomaly) =>
+        anomaly.accessibility &&
+        !anomaly.neutralized &&
+        data.issues
+          ?.find((issue) => issue.issueId === anomaly.issueId)
+          ?.componentIds.includes(relation.componentId)
+    );
+    if (
+      currentBugs.some((anomaly) => {
+        const review = data.issues?.find((issue) => issue.issueId === anomaly.issueId)?.review;
+        return (
+          review &&
+          (!review.correctionConfirmed ||
+            !review.verifyingAuditIds.some((id) => applicable.some((audit) => audit.auditId === id)))
+        );
+      })
+    )
+      relation.verdict = 'NON_CONFORME';
   }
 }
 
@@ -81,7 +100,17 @@ function latestApplicableAuditCohort(
 function auditCohortIsConform(audits: Audit[], data: NormalizedData): boolean {
   const auditIds = new Set(audits.map((audit) => audit.auditId));
   const hasAuditAnomaly = data.anomalies.some(
-    (anomaly) => anomaly.origin === 'AUDIT' && anomaly.auditId !== undefined && auditIds.has(anomaly.auditId)
+    (anomaly) =>
+      anomaly.origin === 'AUDIT' &&
+      anomaly.auditId !== undefined &&
+      auditIds.has(anomaly.auditId) &&
+      !anomaly.neutralized &&
+      (anomaly.accessibility === undefined || anomaly.accessibility) &&
+      (data.issues?.find((issue) => issue.issueId === anomaly.issueId)?.review
+        ? data
+            .issues!.find((issue) => issue.issueId === anomaly.issueId)!
+            .componentIds.some((id) => audits.some((audit) => audit.componentId === id))
+        : true)
   );
   if (hasAuditAnomaly) return false;
   return audits.every((audit) => audit.objectiveAuditResult === 'conform');

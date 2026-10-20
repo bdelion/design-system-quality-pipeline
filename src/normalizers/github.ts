@@ -5,6 +5,8 @@
  */
 
 import { isFutureVersion, milestoneVersionNumber } from '../domain/version-scope.js';
+import { applyIssueReviews } from '../domain/issue-review.js';
+import { defaultIssuePolicy, matchesLabels, validateIssuePolicy } from '../domain/issue-policy.js';
 import { stableId } from '../lib/ids.js';
 import { validateMilestoneDetection, type GithubProcessingConfig } from '../config.js';
 import { issueBusinessState, currentProjectStatus, lastDoneAt } from '../domain/business.js';
@@ -61,6 +63,9 @@ export function normalizeGithub(
   historicalComponents: HistoricalComponentCatalogue[] = []
 ): NormalizedData {
   validateMilestoneDetection(rules.milestoneDetection);
+  validateIssuePolicy(rules.issuePolicy);
+  const strictReview =
+    rules.issuePolicy !== undefined || rules.auditDetection?.allowLegacyIssueTypes === false;
   const localHistories = new Map(
     historicalComponents.map((input) => {
       const history = validateHistoricalComponents(input);
@@ -131,10 +136,20 @@ export function normalizeGithub(
       repository.issues
         .filter(
           (issue) =>
-            isFutureVersion(
-              milestoneVersionNumber(issue.milestone?.title, rules),
-              repository.packageManifest
-            ) ||
+            ((!strictReview ||
+              !(
+                issue.issueType === 'BUG' ||
+                issue.rawIssueType?.toLowerCase() === 'bug' ||
+                (!issue.rawIssueType &&
+                  matchesLabels(
+                    issue.labels,
+                    rules.issuePolicy?.bugInference ?? defaultIssuePolicy.bugInference
+                  ))
+              )) &&
+              isFutureVersion(
+                milestoneVersionNumber(issue.milestone?.title, rules),
+                repository.packageManifest
+              )) ||
             futureAuditIssueIds.has(issue.id) ||
             (issue.parents.length === 1 && futureAuditIssueIds.has(issue.parents[0]!))
         )
@@ -357,8 +372,9 @@ export function normalizeGithub(
     const repository = raw.repositories.find((r) => r.name === repositoryName)!;
     const parent =
       issue.parents.length === 1 ? repository.issues.find((i) => i.id === issue.parents[0]) : undefined;
+    const bug = issue.issueType === 'BUG' || issue.rawIssueType?.toLowerCase() === 'bug';
     const target =
-      milestoneVersionNumber(issue.milestone?.title, rules) ??
+      (strictReview && bug ? undefined : milestoneVersionNumber(issue.milestone?.title, rules)) ??
       milestoneVersionNumber(parent?.milestone?.title, rules);
     const observations = candidates.flatMap((c) =>
       c.history.filter(
@@ -372,7 +388,9 @@ export function normalizeGithub(
     const identities = [...new Set(observations.map((h) => h.identity!))];
     return identities.length === 1
       ? stableId('component', `${library.libraryId}:historical:${identities[0]!}`)
-      : undefined;
+      : strictReview && bug && !target
+        ? latestHistoricalComponentIdByName.get(`${library.libraryId}:${name}`)
+        : undefined;
   }
 
   // Le catalogue peut matérialiser un composant même lorsqu'aucune issue GitHub ne le mentionne.
@@ -413,7 +431,8 @@ export function normalizeGithub(
           ...issue.labels
             .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
             .map((label) => label.slice(rules.labels.componentPrefix.length).trim()),
-          ...(issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
+          ...issue.labels.flatMap((label) => rules.issuePolicy?.componentLabels?.[label] ?? []),
+          ...(!strictReview && issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
         ])
     );
     /** Conserve les composants dont la présence est attestée indépendamment de cette issue future. */
@@ -429,15 +448,35 @@ export function normalizeGithub(
             .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
             .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
             .filter(Boolean),
-          ...(issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
+          ...issue.labels.flatMap((label) => rules.issuePolicy?.componentLabels?.[label] ?? []),
+          ...(!strictReview && issue.rawIssueType === undefined && issue.component ? [issue.component] : [])
         ])
       ].filter((name) => !futureVersion || knownComponent(name));
       const componentName = componentNames[0] ?? '';
-      const componentId = resolveIssueComponent(repository.name, componentName, issue);
+      const componentId = componentName
+        ? resolveIssueComponent(repository.name, componentName, issue)
+        : undefined;
       const issueTypeRecognition = recognizeIssueType(issue.rawIssueType, rules);
+      if (!issue.rawIssueType && issue.issueType !== 'AUDIT') {
+        const legacy = issue.issueType === 'ENHANCEMENT' ? 'FEATURE' : issue.issueType;
+        if (['EPIC', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(legacy))
+          issueTypeRecognition.issueType = legacy as CanonicalIssueType;
+      }
+      if (
+        !issue.rawIssueType &&
+        !issueTypeRecognition.issueType &&
+        matchesLabels(issue.labels, rules.issuePolicy?.bugInference ?? defaultIssuePolicy.bugInference)
+      ) {
+        issueTypeRecognition.issueType = 'BUG';
+      }
       const recognizedComponentIds = issue.labels
-        .filter((label) => label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase()))
-        .map((label) => label.slice(rules.labels.componentPrefix.length).trim())
+        .flatMap((label) =>
+          label.toLowerCase().startsWith(rules.labels.componentPrefix.toLowerCase())
+            ? [label.slice(rules.labels.componentPrefix.length).trim()]
+            : rules.issuePolicy?.componentLabels?.[label]
+              ? [rules.issuePolicy.componentLabels[label]!]
+              : []
+        )
         .filter(Boolean)
         .filter((name) => !futureVersion || knownComponent(name))
         .map((name) => {
@@ -448,15 +487,13 @@ export function normalizeGithub(
       // resolved component through RawIssue.component but do not yet carry the
       // native rawIssueType/complete I1 facts. Never use this fallback for new
       // I1 collections.
-      const componentIds =
-        issue.rawIssueType === undefined &&
-        recognizedComponentIds.length === 0 &&
-        issue.component &&
-        componentNames.length > 0
-          ? componentId
+      const componentIds = [
+        ...new Set(
+          !strictReview && recognizedComponentIds.length === 0 && componentId
             ? [componentId]
-            : []
-          : recognizedComponentIds;
+            : recognizedComponentIds
+        )
+      ];
       const criticalities = issue.labels
         .filter((label) =>
           label.toLowerCase().startsWith(rules.labels.accessibilityCriticalityPrefix.toLowerCase())
@@ -637,12 +674,16 @@ export function normalizeGithub(
     if (!targetVersion && !legacyVersion) continue;
     const componentId = issue.componentIds[0]!;
     const auditId = stableId('audit', issue.issueId);
-    const completedAt = auditCompletedAt(issue);
     const businessState = issueBusinessState(issue);
+    const auditDone =
+      issue.projectContexts.length > 0 &&
+      issue.projectContexts.every((context) => currentProjectStatus(context) === 'DONE');
+    const completedAt = strictReview ? (auditDone ? lastDoneAt(issue) : undefined) : auditCompletedAt(issue);
+    const completed = strictReview ? auditDone : businessState === 'treated';
     const lifecycle =
       businessState === 'cancelled'
         ? 'cancelled'
-        : businessState === 'treated'
+        : completed
           ? 'completed'
           : issue.projectContexts.some((context) =>
                 ['IN_PROGRESS', 'IN_REVIEW', 'BLOCKED', 'DONE'].includes(currentProjectStatus(context) ?? '')
@@ -723,8 +764,9 @@ export function normalizeGithub(
             : lastDoneAt(issue)
               ? 'reopened'
               : 'open';
-      const legacyComponentId =
-        audit?.componentId ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined);
+      const legacyComponentId = strictReview
+        ? issue.componentIds[0]
+        : (audit?.componentId ?? (issue.componentIds.length === 1 ? issue.componentIds[0] : undefined));
       const correctedAt = businessCorrectedAt(issue);
       const doneCount = issue.projectContexts.flatMap((context) =>
         context.statusHistory.filter((transition) => transition.status === 'DONE')
@@ -773,7 +815,11 @@ export function normalizeGithub(
       continue;
     }
 
-    if (specializationType === 'FEATURE' && parentIds.length === 1 && validParentAudits.length === 1) {
+    if (
+      (specializationType === 'FEATURE' || rawIssue?.issueType === 'ENHANCEMENT') &&
+      parentIds.length === 1 &&
+      validParentAudits.length === 1
+    ) {
       auditImprovements.push({
         auditImprovementId: stableId('audit-improvement', issue.issueId),
         issueId: issue.issueId,
@@ -793,7 +839,7 @@ export function normalizeGithub(
     audit.status = audit.objectiveAuditResult;
   }
 
-  return {
+  const normalized: NormalizedData = {
     libraries,
     components: mergeComponents(historicalComponentsById, componentsByName),
     issues,
@@ -804,6 +850,22 @@ export function normalizeGithub(
     auditImprovements,
     pullRequests
   };
+  if (strictReview) applyIssueReviews(normalized, raw, rules, catalogue);
+  for (const audit of strictReview ? audits : []) {
+    if (audit.lifecycle !== 'completed') continue;
+    const blockers = anomalies.some(
+      (anomaly) =>
+        anomaly.auditId === audit.auditId &&
+        anomaly.accessibility &&
+        !anomaly.neutralized &&
+        issues.find((item) => item.issueId === anomaly.issueId)?.componentIds.includes(audit.componentId)
+    );
+    audit.objectiveAuditResult = blockers
+      ? 'non_conform'
+      : (rawIssueById.get(audit.issueId)?.auditResult ?? 'conform');
+    audit.status = audit.objectiveAuditResult;
+  }
+  return normalized;
 }
 
 /** Résout l’identité courante sans réutiliser celle dont la disparition a été prouvée. */
@@ -943,8 +1005,10 @@ function specializationIssueType(
   issue: Issue,
   rawIssue: RawIssue | undefined
 ): CanonicalIssueType | undefined {
+  if (issue.issueType) return issue.issueType;
   if (rawIssue?.rawIssueType !== undefined) return issue.issueType;
   const legacy = rawIssue?.issueType;
+  if (legacy === 'ENHANCEMENT') return 'FEATURE';
   return legacy && ['EPIC', 'AUDIT', 'BUG', 'NEW_COMPONENT', 'FEATURE'].includes(legacy)
     ? (legacy as CanonicalIssueType)
     : undefined;

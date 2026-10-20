@@ -1,0 +1,13 @@
+{
+  "classification": {
+    "accessibility": {
+      "labels": ["bug:accessibility", "Accessibility"],
+      "prefixes": ["🚦 rgaa:", "♿ a11y:"]
+    },
+    "functional": { "labels": ["bug:functional"], "prefixes": [] }
+  },
+  "bugInference": { "labels": ["bug:accessibility", "bug:functional"], "prefixes": ["🚦 rgaa:", "♿ a11y:"] },
+  "auditorAdvice": { "labels": ["VOIR AUDITEUR"], "prefixes": [] },
+  "resolution": { "prefix": "resolution:", "accepted": "accepted", "invalid": "invalid" },
+  "componentLabels": { "InputPagination": "InputPagination" }
+}

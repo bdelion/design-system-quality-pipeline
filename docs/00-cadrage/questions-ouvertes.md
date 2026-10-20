@@ -5501,3 +5501,11 @@ Pour chaque question :
 Les identifiants `D-xxx` et `Q-xxx` sont stables et ne doivent pas être renumérotés.
 
 Cette approche doit éviter que les contraintes actuelles de GitHub, Jenkins ou Nexus deviennent implicitement la définition du métier.
+
+### D-244 — Revue métier des issues, corrections et audits du 19 octobre 2026
+
+**Statut : Établi — validations explicites durant la revue du dataset local**
+
+Les [arbitrages consolidés](../08-implementation/validation-metier-20261019.md) définissent les catégories configurables de bugs, la priorité des labels composant, les occurrences par composant, les corrections confirmées par Done ET PR liée fusionnée, les annulations motivées et la vérification par audit ultérieur. Les améliorations restent indépendantes des anomalies et de la conformité.
+
+Cette décision amende D-047 : Done suffit à terminer une issue d’audit, sans exigence Closed ; elle ne fournit pas de date absente. Elle précise D-004 : la milestone de correction future d’un Bug ne doit pas exclure ce défaut existant. Elle conserve les identifiants et les textes historiques pour la traçabilité. L’association automatique de tout label égal à un nom du catalogue reste une proposition ; seule l’exception exacte InputPagination est validée.

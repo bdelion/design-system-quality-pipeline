@@ -17,6 +17,7 @@ import { buildSnapshot } from './snapshots/snapshot.js';
 import type { Snapshot } from './domain/types.js';
 import { calculateFlowMetrics } from './analytics/flows.js';
 import { applyComponentVersionVerdicts } from './analytics/component-versions.js';
+import { validateIssuePolicy, type IssuePolicy } from './domain/issue-policy.js';
 import { diffSnapshots } from './snapshots/diff.js';
 import { latestComparableSnapshot } from './snapshots/history.js';
 import { readdir, lstat } from 'node:fs/promises';
@@ -28,14 +29,25 @@ import { readdir, lstat } from 'node:fs/promises';
  * @param outputPath - Destination des snapshots et du dashboard, distincte des entrées.
  * @param historicalInputs - Référentiels de présence ou fichiers d'identités les désignant.
  * @param historicalRepositoryOverride - Dépôt réel auquel affecter explicitement l'unique import.
+ * @param issuePolicyPath - Conventions locales JSON, sans réécriture du dataset source.
  */
 export async function runPipeline(
   datasetPath: string,
   outputPath: string,
   historicalInputs: string[] = [],
-  historicalRepositoryOverride?: string
+  historicalRepositoryOverride?: string,
+  issuePolicyPath?: string
 ): Promise<Snapshot> {
   const { config, catalogue, rawData: raw, historicalComponents: embedded } = await loadDataset(datasetPath);
+  if (issuePolicyPath) {
+    const policy = await readJson<IssuePolicy>(issuePolicyPath);
+    validateIssuePolicy(policy);
+    config.github.issuePolicy = policy;
+  }
+  if (config.github.issuePolicy || config.github.auditDetection?.allowLegacyIssueTypes === false) {
+    config.modelVersion = '2.5';
+    config.ruleVersion = 'dq-2026.10-business-review';
+  }
   if (historicalRepositoryOverride !== undefined && historicalInputs.length !== 1)
     throw new Error('--historical-repository exige exactement un fichier --historical-catalogue.');
   const imported = await Promise.all(

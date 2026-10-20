@@ -40,6 +40,7 @@ it('issue #49 : stratégies explicites, bugs parentés et améliorations restent
   const clean = issue(2, 'Task', 'Input');
   clean.labels.push('Audit RGAA');
   const bug = issue(3, 'Bug', 'Button');
+  bug.linkedPullRequestIds = ['correction-pr'];
   bug.parents = [audit.id];
   const improvement = issue(4, 'Enhancement', 'Input');
   improvement.parents = [clean.id];
@@ -59,7 +60,15 @@ it('issue #49 : stratégies explicites, bugs parentés et améliorations restent
         packageManifest: { status: 'available', version: '1.8.0' },
         gitTags: [{ name: '1.7.1' }, { name: '1.8.0' }],
         issues: [audit, clean, bug, improvement, historical],
-        pullRequests: []
+        pullRequests: [
+          {
+            id: 'correction-pr',
+            number: 1,
+            state: 'MERGED',
+            mergedAt: '2026-01-02T00:00:00Z',
+            relatedIssueIds: []
+          }
+        ]
       }
     ]
   };
@@ -104,8 +113,10 @@ it('issue #49 : stratégies explicites, bugs parentés et améliorations restent
   withOutside.audits[0]!.lifecycle = 'ongoing';
   const sourceAudit = withOutside.issues!.find((item) => item.issueId === withOutside.audits[0]!.issueId)!;
   sourceAudit.state = 'OPEN';
-  expect(auditCampaigns(withOutside)[0]!.results.non_conform).toBe(0);
+  // Done suffit à terminer l’audit, même lorsque l’issue GitHub reste ouverte (D-244).
+  expect(auditCampaigns(withOutside)[0]!.results.non_conform).toBe(1);
   const legacyRules = structuredClone(config.github);
+  delete legacyRules.issuePolicy;
   delete legacyRules.auditDetection!.allowLegacyIssueTypes;
   expect(normalizeGithub(raw, legacyRules, undefined, '1.7.1').audits).toHaveLength(3);
   // Un bug corrigé ne rétablit pas seul la conformité ; l’amélioration n’affecte pas le verdict.

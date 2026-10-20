@@ -47,6 +47,9 @@ export function evaluateDataQuality(
   };
 
   const normalizedIssueById = new Map((data.issues ?? []).map((issue) => [issue.issueId, issue]));
+  for (const issue of data.issues ?? [])
+    if (issue.review?.warnings.length)
+      add('DQ-035', 'WARNING', 'include', 'issue', issue.issueId, issue.review.warnings.join(' ; '));
   /**
    * Réalise le traitement « issue for » dans le pipeline de qualité.
    *
@@ -315,7 +318,7 @@ export function evaluateDataQuality(
     const sourceIssue = raw.repositories
       .flatMap((repository) => repository.issues)
       .find((issue) => issue.id === anomaly.provenance.sourceId);
-    if (anomaly.cancelled) {
+    if (anomaly.cancelled && !normalizedIssueById.get(anomaly.issueId)?.review) {
       if (anomaly.pullRequestRefs.length > 0)
         add(
           'DQ-008',

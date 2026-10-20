@@ -64,3 +64,4 @@ Les stocks conservent une issue dont le délai est exclu. L'inconnue et l'estima
 | --------------------------------- | ------------------------------------------- | -------- | ----------------------------------- |
 | [DQ-033](quality-rules/DQ-033.md) | Borne package absente ou invalide           | WARNING  | include / fiabilité partielle       |
 | [DQ-034](quality-rules/DQ-034.md) | Versions futures exclues de l’accessibilité | INFO     | include pour l’activité des équipes |
+| [DQ-035](quality-rules/DQ-035.md) | Qualification ou rattachement à vérifier    | WARNING  | include                             |

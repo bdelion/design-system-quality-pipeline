@@ -136,3 +136,7 @@ rules:
     severity: INFO
     action: include
     message: "Versions futures exclues des analyses accessibilité et conformité ; activité des issues conservée."
+  - id: DQ-035
+    severity: WARNING
+    action: include
+    message: "Qualification, rattachement ou motif de résolution à vérifier selon la revue métier."

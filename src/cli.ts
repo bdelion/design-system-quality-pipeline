@@ -83,6 +83,7 @@ program
   });
 program
   .command('pipeline')
+  .option('--issue-policy <file>', 'conventions locales JSON des labels et résolutions')
   .option('--dataset <path>', 'dataset autonome à rejouer', 'examples/demo/dataset.json')
   .option('--output <directory>', 'sorties isolées du dataset', 'data/output/demo')
   .option('--historical-catalogue <file...>', 'référentiels historiques ou fichiers d’identités locaux')
@@ -96,12 +97,14 @@ program
       output: string;
       historicalCatalogue?: string[];
       historicalRepository?: string;
+      issuePolicy?: string;
     }) => {
       const snapshot = await runPipeline(
         options.dataset,
         options.output,
         options.historicalCatalogue ?? [],
-        options.historicalRepository
+        options.historicalRepository,
+        options.issuePolicy
       );
       console.log(pipelineSummary(snapshot, 'Pipeline', pipelineStatus(snapshot), options.output));
     }
