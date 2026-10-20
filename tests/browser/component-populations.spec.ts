@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { generateDashboard } from '../../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../../src/dashboard/generate.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 import { componentPopulationsSnapshot } from '../support/component-populations.js';
 

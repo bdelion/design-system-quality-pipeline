@@ -1,5 +1,12 @@
 # Changelog
 
+## Double présentation du dashboard — non publiée
+
+- Génération automatique d’un accueil de choix, du dashboard classique et d’une présentation synthétique.
+- Synthèse, composants, activité, repositories et équipe, audits par version ; preuves accessibles sur place et liens sources GitHub.
+- Recherche, tris avant pagination et détails paginés ; délais mesurables et inconnues explicites.
+- Conservation des budgets historiques du classique ; première référence synthétique distincte proposée à la validation.
+
 ## Revue métier des bugs et audits — non publiée
 
 - Labels et préfixes configurables pour les catégories de bugs, les demandes d’avis auditeur et les motifs d’annulation.

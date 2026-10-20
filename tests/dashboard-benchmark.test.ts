@@ -10,7 +10,7 @@ import {
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 
 describe('benchmark synthétique #81', () => {
   it('reproduit la capture et les identités avec la même graine', () => {

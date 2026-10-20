@@ -6,7 +6,7 @@ import {
   benchmarkCounts,
   type BenchmarkScenario
 } from '../tests/support/dashboard-load.js';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { digest, measureHtml } from './benchmark-metrics.js';
 
 // Un processus par génération : les caches et allocations du générateur ne survivent pas au passage.

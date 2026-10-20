@@ -2,7 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { generateDashboard } from '../../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../../src/dashboard/generate.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 import { measureBrowserPage } from '../../scripts/dashboard-benchmark.js';
 import { benchmarkSnapshot } from '../support/dashboard-load.js';

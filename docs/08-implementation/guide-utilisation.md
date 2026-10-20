@@ -33,6 +33,8 @@ npm.cmd run dashboard:serve
 
 Ouvrir http://127.0.0.1:4174/ et arrêter le serveur avec Ctrl+C. La démonstration est `examples/demo/dataset.json`, entièrement autonome ; ses sorties se trouvent dans `data/output/demo`. Elle ne fait aucun appel GitHub.
 
+Chaque génération fournit automatiquement un accueil de choix et deux présentations : `dashboard/classic/` (détaillée) et `dashboard/simplified/` (synthétique). Voir [les parcours, filtres, délais et limites](dashboard-double-presentation.md). Aucun argument supplémentaire n’est requis.
+
 ## 3. Collecter vos repositories
 
 Créer une liste JSON de noms complets :

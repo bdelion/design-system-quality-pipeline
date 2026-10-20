@@ -4,7 +4,7 @@ import { expect, it } from 'vitest';
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { consolidationSnapshot } from './support/consolidation.js';
 
 for (const state of ['current', 'legacy', 'absent'] as const) {

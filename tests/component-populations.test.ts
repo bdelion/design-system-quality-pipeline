@@ -1,7 +1,7 @@
 import { it, expect } from 'vitest';
 import { componentPopulationRows } from '../src/dashboard/component-populations.js';
 import { componentPopulationsSnapshot } from './support/component-populations.js';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';

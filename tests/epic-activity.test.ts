@@ -109,7 +109,7 @@ it('embarque le suivi dans le snapshot et génère la page après préparation d
     await prepareDataset(input, join(directory, 'fixture'), 'test-seed');
     const snapshot = await runPipeline(join(directory, 'fixture'), join(directory, 'output'));
     expect(snapshot.analytics.epicActivity?.epics[0]?.rows[0]?.elapsedHours).toBe(72);
-    const html = await readFile(join(directory, 'output/dashboard/epics.html'), 'utf8');
+    const html = await readFile(join(directory, 'output/dashboard/classic/epics.html'), 'utf8');
     expect(html).toContain('dashboard-page-data');
     expect(html).toContain('data-epic-export');
     expect(html).not.toContain('example/ui:issue:1');

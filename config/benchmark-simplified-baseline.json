@@ -1,0 +1,24 @@
+{
+  "status": "proposed",
+  "maxGrowthPercent": 0,
+  "fixtureHash": "92944855a6f1de050e2677f17b19cd8200242ca557a18e90e8a8f15318e46597",
+  "description": "Première référence distincte des deux nouvelles pages ; maximum DOM sur les cinq espaces, taille de page initiale 25. Aucun budget classique modifié.",
+  "pages": [
+    {
+      "page": "index.html",
+      "htmlBytes": 799,
+      "jsonBytes": 0,
+      "initialTableRows": 0,
+      "domNodes": 30,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "simplified/index.html",
+      "htmlBytes": 31605,
+      "jsonBytes": 29576,
+      "initialTableRows": 0,
+      "domNodes": 686,
+      "renderedTableRows": 24
+    }
+  ]
+}

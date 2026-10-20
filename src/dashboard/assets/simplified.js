@@ -1,0 +1,380 @@
+﻿/* Restitution de faits Analytics : filtres et tris précèdent toujours la pagination. */
+const model = JSON.parse(document.getElementById('simplified-data').textContent);
+const state = new Map();
+const issueById = new Map(model.issues.map((issue) => [issue.id, issue]));
+const content = document.getElementById('content');
+const form = document.getElementById('context');
+const spaces = {
+  summary: ['priorities'],
+  components: ['components'],
+  activity: ['activity'],
+  team: ['repositories', 'delays'],
+  versions: ['campaigns']
+};
+const labels = {
+  summary: 'Que faut-il faire maintenant ?',
+  components: 'Composants',
+  activity: 'Activité des équipes',
+  team: 'Repositories et équipe',
+  versions: 'Audits par version'
+};
+let space = 'summary';
+let detailRows = [];
+let detailPage = 0;
+let detailSize = 25;
+/** Crée un élément et insère du texte sans interpréter de HTML source. */
+function element(tag, text, parent) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = text;
+  if (parent) parent.append(node);
+  return node;
+}
+/** Formate les valeurs inconnues et numériques sans masquer les vrais zéros. */
+function display(value) {
+  return value === null
+    ? 'Indisponible'
+    : typeof value === 'number'
+      ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(value)
+      : String(value);
+}
+/** Accepte uniquement les liens web sources, sans protocoles exécutables. */
+function sourceLink(url, label, parent) {
+  if (!url || !/^https?:\/\//i.test(url)) return;
+  const link = element('a', label, parent);
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+}
+/** Expose les éléments exacts d’une cellule, paginés sur place. */
+function details(cell, title) {
+  detailRows = (cell.refs || []).map((id) => issueById.get(id)).filter(Boolean);
+  detailPage = 0;
+  document.getElementById('detail-title').textContent = title;
+  const note = document.getElementById('detail-note');
+  note.replaceChildren();
+  element(
+    'span',
+    cell.note ||
+      (cell.value === null
+        ? 'Population indisponible.'
+        : 'Les liens ouvrent les sources GitHub ; leur état actuel peut différer du snapshot.'),
+    note
+  );
+  if (cell.url) {
+    element('span', ' ', note);
+    sourceLink(cell.url, 'Ouvrir la recherche GitHub ↗', note);
+  }
+  renderDetails();
+  document.getElementById('detail').showModal();
+}
+/** Affiche la liste exacte de preuves sans fabriquer de lien à partir d’un identifiant anonymisé. */
+function renderDetails() {
+  const target = document.getElementById('detail-content');
+  target.replaceChildren();
+  const table = element('table', undefined, target);
+  const head = element('tr', undefined, element('thead', undefined, table));
+  for (const label of ['Issue', 'GitHub', 'Correction', 'Signalements']) {
+    const th = element('th', label, head);
+    th.scope = 'col';
+  }
+  const body = element('tbody', undefined, table);
+  for (const issue of detailRows.slice(detailPage * detailSize, (detailPage + 1) * detailSize)) {
+    const tr = element('tr', undefined, body);
+    const td = element('td', undefined, tr);
+    if (issue.url) sourceLink(issue.url, issue.title + ' ↗', td);
+    else element('span', issue.title + ' — lien indisponible', td);
+    element('td', issue.state, tr);
+    element('td', issue.correction, tr);
+    element('td', issue.warnings.join(' ; ') || 'Aucun signalement métier', tr);
+  }
+  if (!detailRows.length)
+    element(
+      'p',
+      'Aucune issue source disponible pour cette valeur. Le compteur peut représenter des composants ou des PR, pas des issues.',
+      target
+    );
+  pager(
+    document.getElementById('detail-pagination'),
+    detailRows.length,
+    detailPage,
+    detailSize,
+    (page, size) => {
+      detailPage = page;
+      detailSize = size;
+      renderDetails();
+    }
+  );
+}
+/** Construit un contrôle de pagination et annonce la population filtrée. */
+function pager(target, count, page, size, change) {
+  target.replaceChildren();
+  const total = Math.max(1, Math.ceil(count / size));
+  for (const [name, value] of [
+    ['Première', 0],
+    ['Précédente', page - 1],
+    ['Suivante', page + 1],
+    ['Dernière', total - 1]
+  ]) {
+    const button = element('button', name, target);
+    button.type = 'button';
+    button.disabled = value < 0 || value >= total || value === page;
+    button.addEventListener('click', () => change(value, size));
+  }
+  const info = element(
+    'span',
+    count ? 'Page ' + (page + 1) + ' / ' + total + ' · ' + count + ' résultats' : '0 résultat',
+    target
+  );
+  info.setAttribute('aria-live', 'polite');
+  const label = element('label', 'Lignes par page ', target);
+  const select = element('select', undefined, label);
+  for (const n of [10, 25, 50, 100]) {
+    const option = element('option', String(n), select);
+    option.value = n;
+    option.selected = size === n;
+  }
+  select.addEventListener('change', () => change(0, Number(select.value)));
+}
+/** Compare numériquement ou textuellement, en maintenant les inconnus à la fin. */
+function compare(a, b, direction) {
+  if (a === null || b === null) return a === b ? 0 : a === null ? 1 : -1;
+  return (
+    direction *
+    (typeof a === 'number' && typeof b === 'number'
+      ? a - b
+      : String(a).localeCompare(String(b), 'fr', { numeric: true, sensitivity: 'base' }))
+  );
+}
+/** Filtre toutes les lignes avant de les trier et découper en pages. */
+function selected(table, local) {
+  const repo = form.elements.repository.value;
+  const version = form.elements.version.value.toLowerCase();
+  return table.rows
+    .filter(
+      (row) =>
+        (!repo || row.repository === repo) &&
+        (!version ||
+          ['repositories', 'delays'].includes(table.id) ||
+          row.version.toLowerCase().includes(version)) &&
+        row.cells.some((cell) => display(cell.value).toLowerCase().includes(local.search.toLowerCase())) &&
+        (!local.from || String(row.cells.at(-1)?.value) >= local.from) &&
+        (!local.to || String(row.cells.at(-1)?.value) < local.to + 'T99')
+    )
+    .sort((a, b) =>
+      compare(a.cells[local.sort]?.value ?? null, b.cells[local.sort]?.value ?? null, local.direction)
+    );
+}
+/** Installe un tableau avec outils, sans recréer les champs lors de la saisie. */
+function mount(table) {
+  const local = state.get(table.id) || {
+    page: 0,
+    size: 25,
+    search: '',
+    sort: 0,
+    direction: 1,
+    from: '',
+    to: ''
+  };
+  state.set(table.id, local);
+  const panel = element('section', undefined, content);
+  panel.className = 'panel';
+  element('h2', table.title, panel);
+  element('p', table.description, panel).className = 'description';
+  const tools = element('div', undefined, panel);
+  tools.className = 'toolbar';
+  const label = element('label', 'Filtrer ce tableau', tools);
+  const search = element('input', undefined, label);
+  search.type = 'search';
+  search.value = local.search;
+  search.placeholder = 'Toutes les lignes';
+  const sortLabel = element('label', 'Trier par', tools);
+  const sort = element('select', undefined, sortLabel);
+  sort.setAttribute('aria-label', 'Trier par');
+  table.headers.forEach((name, index) => {
+    const option = element('option', name, sort);
+    option.value = index;
+    option.selected = index === local.sort;
+  });
+  const orderLabel = element('label', 'Ordre', tools);
+  const order = element('select', undefined, orderLabel);
+  order.setAttribute('aria-label', 'Ordre');
+  for (const [name, value] of [
+    ['Croissant', 1],
+    ['Décroissant', -1]
+  ]) {
+    const option = element('option', name, order);
+    option.value = value;
+    option.selected = value === local.direction;
+  }
+  if (table.id === 'activity')
+    for (const [name, key] of [
+      ['Créées à partir du', 'from'],
+      ['Créées jusqu’au', 'to']
+    ]) {
+      const dateLabel = element('label', name, tools);
+      const date = element('input', undefined, dateLabel);
+      date.type = 'date';
+      date.value = local[key];
+      date.addEventListener('input', () => {
+        local[key] = date.value;
+        local.page = 0;
+        draw();
+      });
+    }
+  const reset = element('button', 'Réinitialiser', tools);
+  reset.type = 'button';
+  reset.addEventListener('click', () => {
+    state.delete(table.id);
+    render();
+  });
+  const scroll = element('div', undefined, panel);
+  scroll.className = 'scroll';
+  scroll.tabIndex = 0;
+  scroll.setAttribute('role', 'region');
+  scroll.setAttribute('aria-label', table.title);
+  const grid = element('table', undefined, scroll);
+  const headers = element('tr', undefined, element('thead', undefined, grid));
+  const body = element('tbody', undefined, grid);
+  const pagination = element('div', undefined, panel);
+  pagination.className = 'pager';
+  table.headers.forEach((name, index) => {
+    const th = element('th', undefined, headers);
+    th.scope = 'col';
+    const button = element('button', name + ' ↕', th);
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      local.direction = local.sort === index ? -local.direction : 1;
+      local.sort = index;
+      sort.value = index;
+      order.value = local.direction;
+      local.page = 0;
+      draw();
+    });
+  });
+  /** Rafraîchit les lignes visibles en préservant le focus du champ actif. */
+  function draw() {
+    const rows = selected(table, local);
+    local.page = Math.min(local.page, Math.max(0, Math.ceil(rows.length / local.size) - 1));
+    body.replaceChildren();
+    Array.from(headers.children).forEach((th, index) =>
+      th.setAttribute(
+        'aria-sort',
+        index === local.sort ? (local.direction === 1 ? 'ascending' : 'descending') : 'none'
+      )
+    );
+    for (const row of rows.slice(local.page * local.size, (local.page + 1) * local.size)) {
+      const tr = element('tr', undefined, body);
+      row.cells.forEach((cell, index) => {
+        const td = element('td', undefined, tr);
+        if (cell.refs || cell.url || cell.note) {
+          const button = element('button', display(cell.value), td);
+          button.type = 'button';
+          button.addEventListener('click', () => details(cell, table.headers[index]));
+        } else element('span', display(cell.value), td);
+      });
+    }
+    if (!rows.length) {
+      const td = element('td', 'Aucun résultat pour ces filtres.', element('tr', undefined, body));
+      td.colSpan = table.headers.length;
+    }
+    pager(pagination, rows.length, local.page, local.size, (page, size) => {
+      local.page = page;
+      local.size = size;
+      draw();
+    });
+  }
+  search.addEventListener('input', () => {
+    local.search = search.value;
+    local.page = 0;
+    draw();
+  });
+  sort.addEventListener('change', () => {
+    local.sort = Number(sort.value);
+    local.page = 0;
+    draw();
+  });
+  order.addEventListener('change', () => {
+    local.direction = Number(order.value);
+    local.page = 0;
+    draw();
+  });
+  draw();
+}
+/** Affiche uniquement les espaces demandés avec un contexte visible et partagé. */
+function render() {
+  form.elements.version.disabled = space === 'team';
+  content.replaceChildren();
+  document.getElementById('heading').textContent = labels[space];
+  document.getElementById('scope').textContent =
+    (form.elements.repository.value || 'Tous les repositories') +
+    ' · ' +
+    (space === 'team'
+      ? 'Toutes dates et versions — stocks et délais'
+      : form.elements.version.value || 'Toutes les versions');
+  document.querySelectorAll('[data-space]').forEach((link) => {
+    if (link.dataset.space === space) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+  if (space === 'summary') {
+    const table = model.tables.find((item) => item.id === 'components');
+    const rows = selected(table, { search: '', sort: 0, direction: 1 });
+    const cards = element('div', undefined, content);
+    cards.className = 'cards summary-cards';
+    for (const [title, value, link] of [
+      [
+        'Composants à examiner',
+        selected(
+          model.tables.find((item) => item.id === 'priorities'),
+          { search: '', sort: 0, direction: 1 }
+        ).length,
+        'components'
+      ],
+      [
+        'Corrections d’accessibilité confirmées · occurrences par composant',
+        rows.some((row) => row.cells[3].value === null)
+          ? null
+          : rows.reduce((sum, row) => sum + Number(row.cells[3].value), 0),
+        'components'
+      ],
+      [
+        'Bugs sans audit · occurrences par composant',
+        rows.some((row) => row.cells[4].value === null)
+          ? null
+          : rows.reduce((sum, row) => sum + Number(row.cells[4].value), 0),
+        'activity'
+      ]
+    ]) {
+      const card = element('section', undefined, cards);
+      card.className = 'panel';
+      element('h2', title, card);
+      element('p', display(value), card);
+      const anchor = element('a', 'Examiner les éléments →', card);
+      anchor.href = '#' + link;
+    }
+  }
+  for (const id of spaces[space]) {
+    const table = model.tables.find((item) => item.id === id);
+    if (table) mount(table);
+  }
+}
+/** Restaure l’espace demandé par un lien ou par l’historique du navigateur. */
+function navigate() {
+  space = Object.hasOwn(spaces, window.location.hash.slice(1)) ? window.location.hash.slice(1) : 'summary';
+  render();
+}
+form.addEventListener('submit', (event) => event.preventDefault());
+form.addEventListener('input', () => {
+  state.forEach((value) => (value.page = 0));
+  render();
+});
+form.addEventListener('reset', () => {
+  window.setTimeout(() => {
+    state.clear();
+    render();
+  }, 0);
+});
+document
+  .getElementById('close-detail')
+  .addEventListener('click', () => document.getElementById('detail').close());
+window.addEventListener('hashchange', navigate);
+navigate();
