@@ -85,11 +85,11 @@
     },
     {
       "page": "issues.html",
-      "htmlBytes": 39196,
+      "htmlBytes": 41324,
       "jsonBytes": 24120,
       "initialTableRows": 0,
       "renderedTableRows": 50,
-      "domNodes": 1968
+      "domNodes": 2375
     },
     {
       "page": "quality.html",
@@ -101,6 +101,14 @@
     }
   ],
   "validation": {
+    "status": "validated",
+    "date": "2026-10-20",
+    "approval": "Oui",
+    "scope": "Ajout fonctionnel des filtres et colonnes Activité : +2 128 octets HTML et +407 nœuds DOM explicitement approuvés. JSON et lignes inchangés ; seuil à 0 % conservé.",
+    "report": "docs/08-implementation/benchmarks/business-review-control.json",
+    "sourceCommit": "e4f8d92f689ec43cabd19899651b5d1382d5cd19"
+  },
+  "previousValidation": {
     "status": "validated",
     "date": "2026-10-19",
     "issue": 88,

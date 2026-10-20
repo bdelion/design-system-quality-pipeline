@@ -46,6 +46,6 @@ Liens après rejeu :
 
 Les champs normalisés `Issue.review` et `Analytics.businessReview` portent les algorithmes versionnés. Une ancienne capture sans ces champs reste lisible ; son évaluation détaillée exige un rejeu. Les sources ne sont jamais réécrites.
 
-## Budget de restitution — validation en attente
+## Budget de restitution — validé le 20 octobre 2026
 
-La [mesure de contrôle](benchmarks/business-review-control.md) conserve la même fixture que la référence validée : seuls les filtres et colonnes d’Activité ajoutent 2 128 octets de HTML et 407 nœuds DOM. Le JSON et les nombres de lignes restent inchangés. Le seuil d’alerte à 0 % et la référence précédente sont conservés : les contrôles de budget signalent cet ajout fonctionnel tant que la nouvelle référence n’est pas explicitement validée. Aucun succès global de `check:dashboard` n’est revendiqué dans cet état.
+La [mesure de contrôle](benchmarks/business-review-control.md) conserve la même fixture que la référence précédente. L’utilisateur a explicitement validé les 41 324 octets HTML et les 2 375 nœuds DOM d’Activité, soit +2 128 octets et +407 nœuds, comme nouvelle référence. Le JSON et les nombres de lignes restent inchangés. Le seuil d’alerte dès la moindre augmentation reste fixé à 0 % ; aucune autre page ni aucun seuil temporel n’est modifié. La validation précédente est conservée dans les métadonnées pour la traçabilité.
