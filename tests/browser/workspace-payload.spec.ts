@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { Server } from 'node:http';
 import type { DashboardPageModel } from '../../src/dashboard/page-read-model.js';
 import { dashboardPageModel } from '../../src/dashboard/page-read-model.js';
-import { generateDashboard } from '../../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../../src/dashboard/generate.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 import { consolidationSnapshot } from '../support/consolidation.js';
 

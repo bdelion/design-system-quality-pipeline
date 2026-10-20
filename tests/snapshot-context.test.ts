@@ -5,7 +5,7 @@ import { prodAndDevelopmentSnapshot } from './support/workspace-version-snapshot
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 
 it('place date, scope et fiabilité près du titre avec accès aux preuves, sans modifier le snapshot', async () => {
   const snapshot = prodAndDevelopmentSnapshot();

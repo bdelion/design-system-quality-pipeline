@@ -11,7 +11,7 @@ import { evaluateDataQuality } from '../src/quality/rules.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
 import { buildVersionHistoricalStates } from '../src/snapshots/history.js';
 import { buildSnapshot } from '../src/snapshots/snapshot.js';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 
 const fixture = 'tests/fixtures/v1-reference.json';
 

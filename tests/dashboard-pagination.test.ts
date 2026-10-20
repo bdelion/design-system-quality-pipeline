@@ -2,7 +2,7 @@ import { expect, it } from 'vitest';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { pageContract } from './support/page-contract.js';
 import { paginationSnapshot } from './support/pagination-snapshot.js';
 import { decodePageModel } from '../src/dashboard/assets/page-model.js';

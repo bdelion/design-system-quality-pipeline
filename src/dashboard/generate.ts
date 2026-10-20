@@ -1,3 +1,4 @@
+import { dashboardChoice, generateSimplifiedDashboard } from './simplified.js';
 import { paginationContent } from './assets/pagination.js';
 import { presentCaptureDate } from './assets/snapshot-context.js';
 import { componentPopulationContent } from './component-populations.js';
@@ -60,15 +61,16 @@ const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.me
  * @param outputRoot - Répertoire racine de sortie (sous-dossier `dashboard`).
  * @param githubUrl - URL de référence optionnelle pour les liens GitHub.
  */
-export async function generateDashboard(
+export async function generateClassicDashboard(
   snapshot: Snapshot,
   outputRoot: string,
   githubUrl?: string,
-  componentPrefix = 'Component:'
+  componentPrefix = 'Component:',
+  targetPath?: string
 ): Promise<void> {
   resetDashboardReadModel(snapshot);
   resetWorkspaceModel(snapshot);
-  const dashboardPath = resolve(outputRoot, 'dashboard');
+  const dashboardPath = targetPath ?? resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });
   /** Construit uniquement le contrat du parcours demandé, sans RAW ni snapshot complet. */
   const pageModel = (id: import('./page-read-model.js').DashboardPage) =>
@@ -229,10 +231,11 @@ function page(
 <body data-dashboard-page="${id}">
 <section class="panel" data-file-warning hidden role="alert"><h2>Ouvrir le dashboard sur HTTP</h2><p>Les filtres et graphiques interactifs nécessitent un serveur local. Pour la démonstration, exécuter <code>npm run dashboard:serve</code>. Pour votre dataset, préciser son dossier avec <code>npm run dashboard:serve -- chemin/du/dashboard</code>, puis ouvrir <a href="http://127.0.0.1:4174/">http://127.0.0.1:4174/</a>.</p></section>
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
-  <header class="topbar"><a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Design System Quality</span></a></header>
+  <header class="topbar"><a class="brand" href="../index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> <span>Changer de vue</span></a></header>
   <div class="dashboard-layout"><aside class="sidebar"><p class="sidebar-label">ESPACES DE PILOTAGE</p>${workspaceNavigation(title)}<div class="sidebar-footer"><span>Règles</span><strong data-rule-version></strong></div></aside><main class="shell" id="main-content" tabindex="-1"><div class="page-heading"><div><p class="eyebrow" data-snapshot-date>${escapeHtml(presentCaptureDate(snapshot.capturedAt))}</p><h1>${title === 'Analyse des issues' ? 'Activité des équipes' : title === 'Analyse des composants' ? 'Composants et versions' : title === 'Anomalies' ? 'Défauts normalisés' : title === 'Audits et composants' ? 'Audits et conformité' : title}</h1><p class="muted" data-snapshot-scope="${escapeHtml(snapshot.scope ?? '')}">Capture : ${escapeHtml(snapshot.scope || 'indisponible')} · Périmètre partagé</p><a data-snapshot-reliability href="quality.html#quality">Fiabilité globale : ${qualityLabel(snapshot.reliability) ?? 'indisponible'} · ${snapshot.dataQuality.issues.length ? `${snapshot.dataQuality.issues.length} diagnostics` : snapshot.reliability === 'reliable' ? 'aucun diagnostic' : 'causes non documentées'}</a></div></div>${workspaceSubnavigation(title)}${['Qualité des données', 'Vue d’ensemble', 'Suivi des Epics'].includes(title) ? '' : contextToolbar(snapshot, title === 'Historique' ? ['repository'] : undefined, id === 'components' ? { feedback: false, resetLabel: 'Effacer le périmètre' } : {})}${content}</main></div>
   <script type="application/json" id="dashboard-page-data">${data}</script><script>if (location.protocol === 'file:') { document.querySelector('[data-file-warning]').hidden = false; document.querySelectorAll('select, input, button').forEach(control => control.disabled = true); }</script><script type="module" src="assets/app.js"></script>${id === 'quality' ? '<script type="module" src="assets/quality.js"></script>' : ''}${id === 'audits' ? '<script type="module" src="assets/populations.js"></script>' : ''}${id === 'epics' ? '<script type="module" src="assets/epics.js"></script>' : ''}${['accessibility', 'audits', 'quality'].includes(id) ? '<script type="module" src="assets/workspaces.js"></script>' : ''}${title === 'Cartographie' ? '<script type="module" src="assets/graph.js"></script>' : ''}${title === 'Analyse des issues' ? '<script type="module" src="assets/issues.js"></script>' : ''}${title === 'Analyse des composants' ? '<script type="module" src="assets/components.js"></script>' : ''}
 </body></html>`
+    .replace(/>\s+</g, '><')
     .replace(/class="active" href=/g, 'class="active" aria-current="page" href=')
     .replace(/<\/main><\/div>\s+<script/, '</main></div><script')
     .replace(/<th>/g, '<th scope="col">')
@@ -1466,5 +1469,43 @@ function escapeHtml(value: string): string {
     /[&<>"']/g,
     (character) =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character] ?? character
+  );
+}
+
+/** Génère systématiquement les deux présentations et leur page de choix à partir du même snapshot. */
+export async function generateDashboard(
+  snapshot: Snapshot,
+  outputRoot: string,
+  githubUrl?: string,
+  componentPrefix = 'Component:'
+): Promise<void> {
+  const root = resolve(outputRoot, 'dashboard');
+  await generateClassicDashboard(snapshot, outputRoot, githubUrl, componentPrefix, resolve(root, 'classic'));
+  await generateSimplifiedDashboard(snapshot, root);
+  await writeFile(resolve(root, 'index.html'), dashboardChoice(snapshot.capturedAt), 'utf8');
+  // Les anciens liens profonds restent utilisables, avec leurs filtres et leur ancre.
+  await Promise.all(
+    [
+      'issues',
+      'anomalies',
+      'audits',
+      'components',
+      'graph',
+      'history',
+      'accessibility',
+      'quality',
+      'epics'
+    ].map(async (name) => {
+      const target = 'classic/' + name + '.html';
+      await writeFile(
+        resolve(root, name + '.html'),
+        '<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Ouvrir la vue détaillée</title></head><body><a href="' +
+          target +
+          '">Ouvrir la vue détaillée</a><script>window.location.replace(' +
+          JSON.stringify(target) +
+          '+window.location.search+window.location.hash)</script></body></html>',
+        'utf8'
+      );
+    })
   );
 }

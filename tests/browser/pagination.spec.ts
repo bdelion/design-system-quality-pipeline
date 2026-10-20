@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Server } from 'node:http';
-import { generateDashboard } from '../../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../../src/dashboard/generate.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 import { paginationSnapshot } from '../support/pagination-snapshot.js';
 

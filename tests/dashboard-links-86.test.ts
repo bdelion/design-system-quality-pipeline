@@ -2,7 +2,7 @@
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { componentGithubLinks } from '../src/dashboard/component-links.js';
 import { consolidationSnapshot } from './support/consolidation.js';
 

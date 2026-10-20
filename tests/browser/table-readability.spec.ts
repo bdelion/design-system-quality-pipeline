@@ -4,7 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Server } from 'node:http';
-import { generateDashboard } from '../../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../../src/dashboard/generate.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 import { consolidationSnapshot } from '../support/consolidation.js';
 import { repositoryActivity } from '../../src/analytics/repository-activity.js';

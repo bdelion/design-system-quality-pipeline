@@ -7,7 +7,7 @@ import { calculateKpis } from '../src/analytics/kpis.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
 import { buildSnapshot } from '../src/snapshots/snapshot.js';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { loadConfig } from './support/fixtures.js';
 
 // Vérifie le contrat HTML public du dashboard sans dépendre d'un navigateur.
@@ -51,7 +51,7 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).not.toContain('Count of anomalies retained after DQ exclusions.');
   expect(html).toContain('dashboard-page-data');
   expect(html).toContain('class="sidebar"');
-  expect(html).toContain('<span>Design System Quality</span>');
+  expect(html).toContain('<span>Changer de vue</span>');
   expect(html).toContain('assets/logo.svg');
   const auditsHtml = await readFile(resolve(output, 'dashboard/audits.html'), 'utf8');
   expect(auditsHtml).toContain('Périmètre auditable');

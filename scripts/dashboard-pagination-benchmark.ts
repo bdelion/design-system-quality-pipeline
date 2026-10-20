@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { Command } from 'commander';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { paginationSnapshot } from '../tests/support/pagination-snapshot.js';
 import { measureBrowserPage } from './dashboard-benchmark.js';
 import { digest, measureHtml } from './benchmark-metrics.js';

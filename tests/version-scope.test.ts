@@ -12,7 +12,7 @@ import { evaluateDataQuality } from '../src/quality/rules.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
 import { applyComponentVersionVerdicts } from '../src/analytics/component-versions.js';
 import { buildSnapshot } from '../src/snapshots/snapshot.js';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { projectIssueFacts } from '../src/analytics/issues.js';
 import { anonymizeDataset } from '../src/anonymization/anonymizer.js';
 import type { RawDataset, RawIssue, RawPackageManifest } from '../src/domain/types.js';

@@ -2,7 +2,7 @@ import { createServer, type Server } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { consolidationSnapshot } from '../tests/support/consolidation.js';
-import { generateDashboard } from '../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../src/dashboard/generate.js';
 import { diffSnapshots } from '../src/snapshots/diff.js';
 import { calculateFlowMetrics } from '../src/analytics/flows.js';
 

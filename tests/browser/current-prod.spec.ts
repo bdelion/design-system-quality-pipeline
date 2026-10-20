@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Server } from 'node:http';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
-import { generateDashboard } from '../../src/dashboard/generate.js';
+import { generateClassicDashboard as generateDashboard } from '../../src/dashboard/generate.js';
 import { prodAndDevelopmentSnapshot } from '../support/workspace-version-snapshot.js';
 
 for (const published of [true, false]) {
