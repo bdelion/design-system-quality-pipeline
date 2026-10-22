@@ -1,4 +1,5 @@
-﻿import type { Snapshot, Issue, PullRequest } from '../domain/types.js';
+import { componentActivityTable } from './component-activity.js';
+import type { Snapshot, Issue, PullRequest } from '../domain/types.js';
 import { auditProgress, currentProjectStatus, lastDoneAt } from '../domain/business.js';
 import { repositoryActivity } from './repository-activity.js';
 import { projectIssueFacts } from './issues.js';
@@ -11,6 +12,7 @@ export interface SimpleCell {
   refs?: string[];
   url?: string;
   note?: string;
+  sortValue?: string | number | null;
 }
 /** Ligne filtrable dont les preuves restent dans le même écran. */
 export interface SimpleRow {
@@ -47,7 +49,8 @@ function delays(values: { id: string; value: number | null }[]) {
     median: quantile(numbers, 0.5),
     p90: quantile(numbers, 0.9),
     refs: measured.map((row) => row.id),
-    excluded: values.length - measured.length
+    excluded: values.length - measured.length,
+    excludedRefs: values.filter((row) => !measured.includes(row)).map((row) => row.id)
   };
 }
 /** Mesure un intervalle daté sans reconstituer une date absente. */
@@ -64,7 +67,7 @@ export function simplifiedModel(snapshot: Snapshot) {
   const review = snapshot.analytics.businessReview ?? businessReview(data);
   const repositories =
     snapshot.analytics.repositoryActivity ?? repositoryActivity(data, snapshot.dataQuality.issues);
-  const tables: SimpleTable[] = [];
+  const tables: SimpleTable[] = [componentActivityTable(snapshot)];
   /** Résout le repository d’une librairie normalisée. */
   const repo = (id: string) =>
     data.libraries.find((row) => row.libraryId === id)?.repository ?? 'Repository inconnu';
@@ -274,7 +277,7 @@ export function simplifiedModel(snapshot: Snapshot) {
           cell(summary.median, summary.refs),
           cell(summary.p90, summary.refs),
           cell(summary.refs.length, summary.refs),
-          cell(summary.excluded)
+          cell(summary.excluded, summary.excludedRefs)
         ]
       });
     }
@@ -364,40 +367,103 @@ export function simplifiedModel(snapshot: Snapshot) {
           .map((item) => item.issueId)
       )
     ];
-    /** Restitue une population de composants à partir des verdicts calculés, jamais du nombre d’audits. */
-    const verdict = (name: string) =>
-      relations.length
-        ? cell(
-            relations.filter((item) => (item.verdict ?? 'NON_COUVERT') === name).length,
-            ids(
-              audits.filter((audit) =>
-                relations.some(
-                  (item) => item.componentId === audit.componentId && (item.verdict ?? 'NON_COUVERT') === name
-                )
-              )
-            )
+    /** Liste les preuves applicables, y compris les audits hérités d’une version antérieure. */
+    const verdict = (name: string) => {
+      const members = relations.filter((item) => (item.verdict ?? 'NON_COUVERT') === name);
+      const proofIds = new Set(members.flatMap((item) => item.applicableAuditIds ?? []));
+      const sources = data.audits.filter(
+        (audit) =>
+          proofIds.has(audit.auditId) ||
+          audits.some(
+            (item) =>
+              item.auditId === audit.auditId &&
+              members.some((member) => member.componentId === item.componentId)
           )
-        : cell(null);
+      );
+      const names = members.map(
+        (item) =>
+          data.components.find((component) => component.componentId === item.componentId)?.name ??
+          item.componentId
+      );
+      return {
+        ...cell(relations.length ? members.length : null, ids(sources)),
+        note: relations.length
+          ? 'Composants : ' +
+            (names.join(', ') || 'aucun') +
+            '. Les issues ci-dessous sont les audits justificatifs, avec héritage si applicable.'
+          : 'Catalogue historique indisponible : aucun total de composants ne peut être établi.'
+      };
+    };
+    const completed = state('completed');
+    const completedComponents = new Set(completed.map((audit) => audit.componentId));
+    const conformAudited = relations.filter(
+      (item) => item.verdict === 'CONFORME' && completedComponents.has(item.componentId)
+    );
+    const conform = verdict('CONFORME');
+    const nonConform = verdict('NON_CONFORME');
+    const waitingAudits = [...state('pending'), ...waiting];
+    const proofOfAuditedConform = ids(
+      completed.filter((audit) => conformAudited.some((item) => item.componentId === audit.componentId))
+    );
+    const allAuditRefs = ids(audits);
+    /** Garde un ratio numérique et ses deux populations, sans faux zéro ni plafonnement. */
+    const ratio = (
+      numerator: number | null,
+      denominator: number,
+      refs: string[],
+      explanation: string
+    ): SimpleCell => ({
+      ...cell(numerator !== null && denominator > 0 ? (100 * numerator) / denominator : null, refs),
+      note:
+        explanation +
+        ' Numérateur : ' +
+        (numerator ?? 'indisponible') +
+        ' ; dénominateur : ' +
+        denominator +
+        '.'
+    });
     campaigns.push({
       repository: repo(libraryId),
       version,
       cells: [
-        cell(repo(libraryId)),
-        cell(version),
-        cell(state('pending').length, ids(state('pending'))),
-        cell(waiting.length, ids(waiting)),
+        cell(repo(libraryId), allAuditRefs),
+        cell(version, allAuditRefs),
+        {
+          ...cell(relations.length ? relations.length : null, allAuditRefs),
+          note: 'Nombre de composants connus dans le catalogue de cette version ; les issues liées sont les audits de la version, pas une issue par composant.'
+        },
+        cell(audits.length, allAuditRefs),
+        cell(waitingAudits.length, ids(waitingAudits)),
         cell(
           state('ongoing').length - waiting.length,
           ids(state('ongoing').filter((audit) => !waiting.includes(audit)))
         ),
-        cell(state('completed').length, ids(state('completed'))),
-        cell(state('cancelled').length, ids(state('cancelled'))),
-        cell(unknown.length, ids(unknown)),
-        verdict('CONFORME'),
-        verdict('NON_CONFORME'),
-        verdict('NON_COUVERT'),
+        cell(completed.length, ids(completed)),
+        ratio(
+          audits.length,
+          relations.length,
+          allAuditRefs,
+          'Nombre total d’audits / nombre de composants de la version. Plusieurs audits d’un même composant peuvent donner plus de 100 %.'
+        ),
+        conform,
+        nonConform,
+        ratio(
+          relations.length ? conformAudited.length : null,
+          completed.length,
+          proofOfAuditedConform,
+          'Composants conformes audités sur cette version / audits terminés sur cette version. Les conformités héritées seules sont exclues du numérateur.'
+        ),
+        ratio(
+          relations.length ? Number(conform.value) : null,
+          relations.length,
+          conform.refs ?? [],
+          'Composants conformes cumulés / tous les composants de la version. Comprend les conformités héritées calculées par le pipeline.'
+        ),
         cell(bugs.length, bugs),
-        cell(improvements.length, improvements)
+        cell(improvements.length, improvements),
+        verdict('NON_COUVERT'),
+        cell(state('cancelled').length, ids(state('cancelled'))),
+        cell(unknown.length, ids(unknown))
       ]
     });
   }
@@ -405,21 +471,25 @@ export function simplifiedModel(snapshot: Snapshot) {
     id: 'campaigns',
     title: 'Audits et composants par version',
     description:
-      'À faire : audits planifiés non démarrés ; en attente : Project Blocked. Les composants utilisent les verdicts déjà calculés, avec héritage si applicable. Indisponible signifie qu’aucun catalogue historique exploitable ne permet ce comptage. Les bugs sont des issues d’accessibilité liées aux audits de cette version, y compris corrigées.',
+      'En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
     headers: [
-      'Repository',
+      'Librairie',
       'Version',
-      'À faire',
-      'En attente',
-      'En cours',
-      'Faits',
-      'Annulés',
-      'Statut inconnu',
-      'Composants conformes',
-      'Non conformes',
-      'Non couverts',
-      'Bugs remontés',
-      'Améliorations'
+      'Composants',
+      'Audits total',
+      'Audits en attente',
+      'Audits en cours',
+      'Audits terminés',
+      'Audits / composants (%)',
+      'Composants conformes cumulés',
+      'Composants non conformes cumulés',
+      'Conformes audités / audits terminés (%)',
+      'Conformes cumulés / composants (%)',
+      'Anomalies liées aux audits',
+      'Améliorations liées aux audits',
+      'Composants non couverts',
+      'Audits annulés',
+      'Statuts inconnus'
     ],
     rows: campaigns
   });

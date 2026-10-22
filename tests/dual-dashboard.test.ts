@@ -54,7 +54,7 @@ it('sépare les audits des composants et conserve les versions sans catalogue', 
   const model = simplifiedModel(snapshot);
   const campaign = model.campaigns.find((row) => row.version === first.version)!;
   expect(campaign.cells[8]?.value).toBeNull();
-  expect(campaign.cells[5]?.value).toBeGreaterThanOrEqual(2);
+  expect(campaign.cells[6]?.value).toBeGreaterThanOrEqual(2);
 });
 
 it('exclut les dates inversées et les URL exécutables sans remplacer leur absence par zéro', () => {

@@ -1,5 +1,15 @@
 # Changelog
 
+## Vue synthétique compacte — non publiée
+
+- Nouvelle référence de taille explicitement validée le 22 octobre 2026 ; alerte à 0 % conservée, budgets classiques inchangés.
+
+- En-tête et menu fixes, polices et lignes de tableaux plus compactes.
+- Export CSV de toutes les lignes filtrées/triées et des listes de preuves, avec URL GitHub.
+- Synthèse librairie/composant : états Project, délais moyen/médian/P90 et plus ancienne issue ouverte.
+- Synthèse librairie/version : audits, composants, ratios de couverture et conformité auditée/cumulée distincts.
+- Preuves des verdicts hérités accessibles depuis les versions concernées ; inconnues et exclusions conservées.
+
 ## Double présentation du dashboard — non publiée
 
 - Génération automatique d’un accueil de choix, du dashboard classique et d’une présentation synthétique.
