@@ -32,7 +32,7 @@ Une version sans relation historique de composants affiche des compteurs de conf
 
 Chaque tableau propose une recherche, un tri numérique ou textuel, le choix du sens et une pagination première/précédente/suivante/dernière. Filtrage et tri portent sur toute la population avant pagination. Les inconnues restent à la fin. La taille initiale est de 25 lignes ; les listes de preuves ont leur propre pagination.
 
-Les valeurs avec des issues sources ouvrent leurs preuves dans une fenêtre accessible sans quitter l’écran ; chaque URL source HTTP(S) disponible est proposée. Les valeurs de composants peuvent renvoyer aux issues liées et non à une liste de composants : la définition de la colonne fait foi. Les recherches de PR sont des recherches actuelles de contexte et ne reproduisent pas un snapshot historique. Les liens anonymisés ne sont pas réinventés. Les espaces du dashboard classique restent accessibles pour les CSV, graphiques et investigations approfondies.
+Les valeurs avec des issues sources ouvrent leurs preuves dans une fenêtre accessible sans quitter l’écran ; chaque URL source HTTP(S) disponible est proposée. Les valeurs de composants peuvent renvoyer aux issues liées et non à une liste de composants : la définition de la colonne fait foi. Les recherches de PR sont des recherches actuelles de contexte et ne reproduisent pas un snapshot historique. Les liens anonymisés ne sont pas réinventés. Chaque tableau synthétique et chaque liste de preuves dispose d’un export CSV UTF-8 (BOM), avec protection des formules. L’export contient toute la sélection filtrée et triée, avant pagination, ainsi que les liens GitHub disponibles. Les espaces classiques restent accessibles pour les graphiques et investigations approfondies.
 
 ## Délais et limites connues
 
@@ -44,4 +44,30 @@ Le contrat actuel de collecte ne conserve pas la date d’ouverture des PR ni un
 
 `generateDashboard` orchestre les deux présentations. `generateClassicDashboard` reste le générateur ciblé du classique, utilisé par ses tests et son benchmark pour conserver les références antérieures. `analytics/simplified-dashboard.ts` projette les faits métier ; le navigateur ne recalcule aucun verdict. La nouvelle page embarque uniquement son contrat de restitution versionné, jamais le RAW ou le snapshot complet.
 
-Les tests couvrent l’absence de mutation du snapshot, les deux sorties, les inconnues, les liens sources, les filtres avant pagination, le tri, les preuves, le clavier, l’accessibilité automatique et le mobile. Les budgets classiques à 0 % restent inchangés. La première référence de la page d’entrée et de la vue synthétique est distincte et proposée à validation ; elle ne modifie pas implicitement la référence classique approuvée.
+Les tests couvrent l’absence de mutation du snapshot, les deux sorties, les inconnues, les liens sources, les filtres avant pagination, le tri, les preuves, le clavier, l’accessibilité automatique et le mobile. Les budgets classiques à 0 % restent inchangés. La référence de la page d’entrée et de la vue synthétique est distincte de la référence classique. Sa mise à jour pour la présentation compacte est validée le 22 octobre 2026 ; le budget classique reste inchangé.
+
+## Présentation compacte et compteurs détaillés — 22 octobre 2026
+
+L’en-tête et le menu partagent un bandeau fixe au défilement. Sa hauteur réelle est mesurée pour conserver le contenu et le focus visibles, notamment au zoom. Police de base : 13 px ; cellules de tableau : 12 px, avec 6 px de marge verticale. Le contenu utilise toute la largeur de la fenêtre, sans plafond ; les compteurs d’accueil sont une bande compacte plutôt que de grandes cartes. Le défilement horizontal des grands tableaux reste local au tableau.
+
+Le tableau **Activité par librairie et composant**, dans Composants, présente les issues distinctes par ligne : total, en cours, Done, Cancelled, moyenne, médiane, P90 et plus ancienne issue ouverte. Une issue multi-composants contribue à chaque ligne concernée ; les lignes ne s’additionnent donc pas en un total d’issues distinctes. Cette synthèse couvre toutes les versions ; son filtre de recherche et celui de repository s’appliquent avant le tri et la pagination.
+
+**Validé par l’utilisateur** : en cours comprend Backlog et Ready, hors Done et Cancelled. Les statuts Project inconnus ou contradictoires sont affichés séparément ; Closed seul ne devient pas Done. Done est un état Project et ne prouve pas une correction. Les délais restent ceux admissibles dans les faits Analytics du pipeline, avec leurs exclusions DQ : leur effectif mesurable peut différer du nombre de Done. Le détail donne les issues retenues et les limites de cohorte.
+
+La plus ancienne issue ouverte est choisie parmi les issues GitHub OPEN hors Project Done/Cancelled, à la date du snapshot. Une date de création absente, future ou incohérente empêche de garantir le plus ancien ticket ; le résultat reste alors indisponible. Son tri porte sur l’âge, pas sur le numéro du ticket.
+
+Le tableau **Audits et composants par version** ajoute le nombre de composants, le total des audits, les audits en attente (non démarrés ou Blocked), en cours, terminés et les deux lectures de conformité demandées :
+
+- **Audits / composants** : total d’audits de la version divisé par ses composants connus ; plusieurs audits d’un composant peuvent porter ce rapport au-delà de 100 %.
+- **Conformes audités / audits terminés** : composants distincts conformes effectivement audités sur cette version, divisés par les audits terminés sur cette version. Une conformité uniquement héritée n’entre pas au numérateur.
+- **Conformes cumulés / composants** : tous les composants conformes de la version, y compris les verdicts hérités calculés par le pipeline, divisés par tous ses composants connus.
+
+Ces deux lectures de conformité sont **validées par l’utilisateur**. Les compteurs de composants conformes/non conformes restent cumulatifs. Chaque ratio explique son numérateur et son dénominateur dans le détail. Un dénominateur nul ou inconnu donne « Indisponible ». Les colonnes d’anomalies et d’améliorations recensent les issues distinctes explicitement liées aux audits concernés. Les preuves de conformité héritée renvoient aussi aux audits des versions précédentes, au lieu d’afficher une liste vide.
+
+Les nombres des cartes et les cellules disposant de preuves ouvrent une liste paginée avec les liens individuels GitHub et un export complet. Les cellules de libellé peuvent ouvrir les issues associées à la ligne ; les cellules numériques conservent leur propre population. Les liens GitHub utilisent les URL collectées, sans créer d’URL à partir d’un numéro anonymisé ni convertir une recherche courante en preuve historique.
+
+## Référence de taille — validée le 22 octobre 2026
+
+L’utilisateur a validé : « Oui, conserver ces ajouts et actualiser la référence ». Sur le jeu de contrôle synthétique, la vue compacte passe de 31 605 à 44 079 octets de HTML, de 29 576 à 42 010 octets de JSON et de 686 à 689 nœuds DOM. Les lignes initiales (0) et les lignes montées au maximum par défaut (24 sur ce jeu) restent inchangées.
+
+`config/benchmark-simplified-baseline.json` conserve la même empreinte de fixture et une croissance autorisée de **0 %**. Cette validation concerne les ajouts mesurés de cette version ; toute augmentation suivante reste signalée. La page de choix et les budgets du dashboard classique sont inchangés.

@@ -1,4 +1,5 @@
-﻿/* Restitution de faits Analytics : filtres et tris précèdent toujours la pagination. */
+import { downloadCsv } from './csv.js';
+/* Restitution de faits Analytics : filtres et tris précèdent toujours la pagination. */
 const model = JSON.parse(document.getElementById('simplified-data').textContent);
 const state = new Map();
 const issueById = new Map(model.issues.map((issue) => [issue.id, issue]));
@@ -6,7 +7,7 @@ const content = document.getElementById('content');
 const form = document.getElementById('context');
 const spaces = {
   summary: ['priorities'],
-  components: ['components'],
+  components: ['component-activity', 'components'],
   activity: ['activity'],
   team: ['repositories', 'delays'],
   versions: ['campaigns']
@@ -71,6 +72,24 @@ function details(cell, title) {
 function renderDetails() {
   const target = document.getElementById('detail-content');
   target.replaceChildren();
+  const tools = element('div', undefined, target);
+  tools.className = 'details-tools';
+  const exportButton = element('button', 'Exporter les issues en CSV', tools);
+  exportButton.type = 'button';
+  exportButton.addEventListener('click', () =>
+    downloadCsv('issues-associees.csv', [
+      ['Repository', 'Issue', 'État GitHub', 'Correction', 'Création', 'URL GitHub', 'Signalements'],
+      ...detailRows.map((issue) => [
+        issue.repository,
+        issue.title,
+        issue.state,
+        issue.correction,
+        issue.createdAt,
+        issue.url,
+        issue.warnings.join(' ; ')
+      ])
+    ])
+  );
   const table = element('table', undefined, target);
   const head = element('tr', undefined, element('thead', undefined, table));
   for (const label of ['Issue', 'GitHub', 'Correction', 'Signalements']) {
@@ -154,14 +173,22 @@ function selected(table, local) {
       (row) =>
         (!repo || row.repository === repo) &&
         (!version ||
-          ['repositories', 'delays'].includes(table.id) ||
+          ['repositories', 'delays', 'component-activity'].includes(table.id) ||
           row.version.toLowerCase().includes(version)) &&
         row.cells.some((cell) => display(cell.value).toLowerCase().includes(local.search.toLowerCase())) &&
         (!local.from || String(row.cells.at(-1)?.value) >= local.from) &&
         (!local.to || String(row.cells.at(-1)?.value) < local.to + 'T99')
     )
     .sort((a, b) =>
-      compare(a.cells[local.sort]?.value ?? null, b.cells[local.sort]?.value ?? null, local.direction)
+      compare(
+        (a.cells[local.sort]?.sortValue !== undefined
+          ? a.cells[local.sort].sortValue
+          : a.cells[local.sort]?.value) ?? null,
+        (b.cells[local.sort]?.sortValue !== undefined
+          ? b.cells[local.sort].sortValue
+          : b.cells[local.sort]?.value) ?? null,
+        local.direction
+      )
     );
 }
 /** Installe un tableau avec outils, sans recréer les champs lors de la saisie. */
@@ -178,6 +205,7 @@ function mount(table) {
   state.set(table.id, local);
   const panel = element('section', undefined, content);
   panel.className = 'panel';
+  panel.dataset.tableId = table.id;
   element('h2', table.title, panel);
   element('p', table.description, panel).className = 'description';
   const tools = element('div', undefined, panel);
@@ -221,6 +249,29 @@ function mount(table) {
         draw();
       });
     }
+  const exportButton = element('button', 'Exporter en CSV', tools);
+  exportButton.type = 'button';
+  exportButton.className = 'export';
+  exportButton.addEventListener('click', () => {
+    const rows = selected(table, local);
+    downloadCsv(table.id + '.csv', [
+      [...table.headers, 'Issues associées', 'URL GitHub'],
+      ...rows.map((row) => {
+        const sources = [...new Set(row.cells.flatMap((cell) => cell.refs || []))]
+          .map((id) => issueById.get(id))
+          .filter(Boolean);
+        return [
+          ...row.cells.map((cell) => display(cell.value)),
+          sources.map((issue) => issue.title).join(' | '),
+          [
+            ...new Set(
+              [...sources.map((issue) => issue.url), ...row.cells.map((cell) => cell.url)].filter(Boolean)
+            )
+          ].join(' | ')
+        ];
+      })
+    ]);
+  });
   const reset = element('button', 'Réinitialiser', tools);
   reset.type = 'button';
   reset.addEventListener('click', () => {
@@ -266,10 +317,17 @@ function mount(table) {
       const tr = element('tr', undefined, body);
       row.cells.forEach((cell, index) => {
         const td = element('td', undefined, tr);
-        if (cell.refs || cell.url || cell.note) {
+        const labelRefs =
+          typeof cell.value === 'string' && !cell.refs && !cell.url
+            ? [...new Set(row.cells.flatMap((item) => item.refs || []))]
+            : undefined;
+        const presented = labelRefs?.length
+          ? { ...cell, refs: labelRefs, note: cell.note || 'Issues associées à cette ligne.' }
+          : cell;
+        if (presented.refs || presented.url || presented.note) {
           const button = element('button', display(cell.value), td);
           button.type = 'button';
-          button.addEventListener('click', () => details(cell, table.headers[index]));
+          button.addEventListener('click', () => details(presented, table.headers[index]));
         } else element('span', display(cell.value), td);
       });
     }
@@ -330,14 +388,14 @@ function render() {
         'components'
       ],
       [
-        'Corrections d’accessibilité confirmées · occurrences par composant',
+        'Corrections d’accessibilité confirmées',
         rows.some((row) => row.cells[3].value === null)
           ? null
           : rows.reduce((sum, row) => sum + Number(row.cells[3].value), 0),
         'components'
       ],
       [
-        'Bugs sans audit · occurrences par composant',
+        'Bugs sans audit',
         rows.some((row) => row.cells[4].value === null)
           ? null
           : rows.reduce((sum, row) => sum + Number(row.cells[4].value), 0),
@@ -346,9 +404,37 @@ function render() {
     ]) {
       const card = element('section', undefined, cards);
       card.className = 'panel';
+      card.title =
+        title === 'Composants à examiner'
+          ? 'Nombre de composants à examiner.'
+          : 'Occurrences par composant ; une issue peut concerner plusieurs composants.';
       element('h2', title, card);
-      element('p', display(value), card);
-      const anchor = element('a', 'Examiner les éléments →', card);
+      const metric = element('button', display(value), card);
+      metric.type = 'button';
+      metric.className = 'card-metric';
+      const index = title.startsWith('Corrections') ? 3 : 4;
+      const references =
+        title === 'Composants à examiner'
+          ? selected(
+              model.tables.find((item) => item.id === 'priorities'),
+              { search: '', sort: 0, direction: 1 }
+            ).flatMap((row) => row.cells[0].refs || [])
+          : rows.flatMap((row) => row.cells[index].refs || []);
+      metric.addEventListener('click', () =>
+        details(
+          {
+            value,
+            refs: [...new Set(references)],
+            note:
+              title === 'Composants à examiner'
+                ? 'Ce compteur représente des composants ; voici leurs issues associées.'
+                : 'Occurrences par composant ; la liste ci-dessous déduplique les issues multi-composants.'
+          },
+          title
+        )
+      );
+      const anchor = element('a', 'Voir →', card);
+      anchor.setAttribute('aria-label', 'Voir : ' + title);
       anchor.href = '#' + link;
     }
   }
@@ -378,3 +464,14 @@ document
   .addEventListener('click', () => document.getElementById('detail').close());
 window.addEventListener('hashchange', navigate);
 navigate();
+
+/** Maintient le contenu et le focus sous la hauteur réelle du bandeau, y compris au zoom. */
+function updateStickyHeight() {
+  const height = document.querySelector('.sticky-shell')?.getBoundingClientRect().height || 0;
+  document.documentElement.style.setProperty('--sticky-height', height + 8 + 'px');
+}
+if (window.ResizeObserver) {
+  const observer = new window.ResizeObserver(updateStickyHeight);
+  observer.observe(document.querySelector('.sticky-shell'));
+}
+updateStickyHeight();
