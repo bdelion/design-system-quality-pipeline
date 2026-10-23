@@ -1,5 +1,9 @@
 # Changelog
 
+## Liens GitHub explicites — non publiée
+
+- Les liens affichent « Ouvrir la recherche dans GitHub » ou « Ouvrir l’issue dans GitHub » dans tous les espaces simplifiés, compteurs, tableaux et fenêtres ; les icônes seules sont remplacées et les recherches de contexte ne sont plus dupliquées dans les fenêtres.
+
 ## Accès GitHub — vue synthétique — non publiée
 
 - Ajout de raccourcis ↗ distincts des fenêtres locales pour les compteurs, cellules et listes filtrées complètes.

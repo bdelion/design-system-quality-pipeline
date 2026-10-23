@@ -30,10 +30,12 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
     await panel.getByLabel('Lignes par page').selectOption('10');
     const selection = panel.locator('.github-selection .github-shortcut');
     await expect(selection).toHaveCount(4);
+    await expect(selection.first()).toContainText('Ouvrir la recherche dans GitHub');
     const urls = await selection.evaluateAll((links) => links.map((link) => link.getAttribute('href')));
     expect(urls.some((url) => decodeURIComponent(url!).includes('24'))).toBe(true);
     const cell = panel.locator('tbody tr').first().locator('td').first();
     const arrow = cell.locator('.github-shortcut');
+    await expect(arrow).toHaveText('Ouvrir l’issue dans GitHub ↗');
     await expect(arrow).toHaveAttribute('target', '_blank');
     await expect(arrow).toHaveAttribute('rel', 'noopener noreferrer');
     const href = await arrow.getAttribute('href');
@@ -56,6 +58,22 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
     await panel.getByLabel('Filtrer ce tableau').fill('');
     await expect(selection).toHaveCount(4);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    for (const name of [
+      'Synthèse',
+      'Composants',
+      'Activité',
+      'Repositories et équipe',
+      'Audits par version'
+    ]) {
+      await page.getByRole('link', { name, exact: true }).click();
+      const links = page.locator('#content .github-shortcut');
+      expect(await links.count()).toBeGreaterThan(0);
+      for (const link of await links.all()) {
+        await expect(link).toContainText(/Ouvrir (la recherche|l’issue) dans GitHub/);
+        const text = await link.textContent();
+        expect(await link.getAttribute('aria-label')).toContain(text);
+      }
+    }
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(errors).toEqual([]);

@@ -74,7 +74,7 @@ L’utilisateur a validé : « Oui, conserver ces ajouts et actualiser la réfé
 
 ## Accès GitHub dans la vue synthétique
 
-Les compteurs et cellules ouvrant une liste de preuves possèdent un accès **↗**
+Les compteurs et cellules ouvrant une liste de preuves possèdent un lien textuel **Ouvrir la recherche dans GitHub ↗** (ou **Ouvrir l’issue dans GitHub ↗** pour un ticket unique)
 quand des URL GitHub sources sont disponibles. Ces accès existent aussi dans les
 fenêtres et près des outils des tableaux : à cet endroit ils portent sur toutes
 les issues associées aux lignes filtrées, avant pagination. Les libellés de ligne
@@ -95,3 +95,5 @@ sélection partiellement accessible est annoncée dans l’intitulé et la fenê
 Sans source exploitable, la fenêtre reste disponible, sans flèche trompeuse.
 Les compteurs de PR sans références individuelles conservent un accès explicitement
 nommé « recherche de contexte », distinct d’une liste de preuves exacte.
+
+Les libellés GitHub sont visibles dans les cinq espaces, les tableaux filtrés, les cellules, les compteurs et les fenêtres ; la flèche complète le texte et ne le remplace pas. Dans une fenêtre, la recherche de contexte n’est affichée qu’une fois.
