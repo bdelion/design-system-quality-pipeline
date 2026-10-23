@@ -81,7 +81,7 @@ les issues associées aux lignes filtrées, avant pagination. Les libellés de l
 utilisent leurs preuves associées ; un compteur de composants ne devient pas un
 compteur d’issues. Les CSV et les listes locales restent les populations de référence.
 
-Le lien de la fenêtre ouvre toujours une recherche, même pour une source unique. Les liens individuels des lignes restent des accès directs aux tickets. Les sources sont regroupées
+L’en-tête de la fenêtre propose « Ouvrir dans GitHub ». Une source unique, complète et dédupliquée ouvre directement le ticket ; plusieurs sources ouvrent une recherche. Les liens individuels des lignes restent des accès directs aux tickets. Les sources sont regroupées
 par dépôt et type, puis par lots de six numéros au maximum (requêtes de 256 caractères
 au maximum). Les liens numérotés ouvrent chacun un seul nouvel onglet. Les recherches
 utilisent les opérateurs [GitHub documentés](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/filtering-and-searching-issues-and-pull-requests).
@@ -100,7 +100,7 @@ Les libellés GitHub sont visibles dans les cinq espaces, les tableaux filtrés,
 
 ### Recherches des compteurs et états
 
-Chaque fenêtre possédant des sources GitHub exploitables propose **Ouvrir la recherche dans GitHub**. Lorsqu’un compteur définit une recherche de périmètre, celle-ci est prioritaire sur les lots de numéros :
+Chaque fenêtre possédant des sources GitHub exploitables propose **Ouvrir dans GitHub** dans son en-tête. Lorsqu’un compteur définit une recherche de périmètre, celle-ci est prioritaire sur les lots de numéros :
 
 | Compteur du repository | Recherche explicite               | États inclus                    |
 | ---------------------- | --------------------------------- | ------------------------------- |
@@ -112,3 +112,19 @@ Chaque fenêtre possédant des sources GitHub exploitables propose **Ouvrir la r
 Les pages `/issues` ou `/pulls` sans requête ne sont pas utilisées pour un total, car leur filtre par défaut peut limiter aux éléments ouverts. Les recherches des autres listes utilisent leurs références collectées, sans ajouter un filtre d’état implicite. Les fenêtres conservent les liens individuels vers les sources et leur CSV.
 
 Le snapshot normalisé ne fournit pas de sources individuelles de PR dans le modèle simplifié : les fenêtres PR donnent accès à la recherche GitHub du compteur sans fabriquer une liste locale. L’état actuel de GitHub peut différer de la capture. Les URL anonymisées ne sont jamais transformées en liens GitHub.
+
+### Fenêtres Actions et activité par composant (#115)
+
+**IMPLÉMENTÉ.** Le groupe d’actions est placé immédiatement sous le titre, avant les explications et la liste. Les fenêtres « Composant », « Situation » et « Prochaine action » d’« Actions à examiner » utilisent chacune leurs propres références, sans leur substituer toutes les issues du composant. Le libellé est **Ouvrir dans GitHub** ; une liste complète d’un seul ticket ouvre son URL source directe. Une sélection partielle n’est pas présentée comme une source unique.
+
+Dans « Activité par librairie et composant », les liens conservent les références exactes de chaque cellule. Pour une recherche de plusieurs tickets, les labels effectivement communs aux sources sont ajoutés tant que la requête reste dans la limite de longueur. Aucun préfixe de composant ni label de statut n’est inventé.
+
+| Fenêtre                       | Filtre GitHub ajouté à la recherche                        |
+| ----------------------------- | ---------------------------------------------------------- |
+| Composant, Issues total       | Aucun filtre ouvert/fermé                                  |
+| Issues en cours               | `is:open`, uniquement si toutes les sources sont ouvertes  |
+| Issues Done, Issues Cancelled | `is:closed`, uniquement si toutes les sources sont fermées |
+
+Les statuts Project Done/Cancelled déterminent toujours les listes du pipeline ; ils ne sont pas remplacés par Closed, conformément à D-163. Si un état GitHub est absent ou divergent, le filtre d’état serait réducteur : il est omis et une réserve l’explique dans la fenêtre. Aucun `reason:completed` ou `reason:"not planned"` n’est déduit d’un statut Project ; la sélection des références conserve les cohortes Done et Cancelled distinctes.
+
+Les recherches GitHub ne permettent pas de garantir l’égalité stricte d’un ensemble arbitraire de numéros : elles peuvent aussi retrouver des mentions. Cette limite, l’état actuel de GitHub, les droits d’accès et les lots bornés restent annoncés. Les listes et CSV locaux constituent les preuves exactes du snapshot ; aucune requête externe n’est exécutée automatiquement. Les tests synthétiques couvrent les huit cellules demandées par #115, les filtres, les sources uniques et les divergences, sans envoyer de données métier à GitHub.
