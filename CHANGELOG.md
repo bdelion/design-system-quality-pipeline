@@ -1,5 +1,10 @@
 # Changelog
 
+## Accès GitHub — vue synthétique — non publiée
+
+- Ajout de raccourcis ↗ distincts des fenêtres locales pour les compteurs, cellules et listes filtrées complètes.
+- Liens directs pour une issue, recherches par numéros réparties en lots pour plusieurs sources ; limites et sources absentes signalées, sans reconstruction des URL anonymisées.
+
 ## Vue synthétique compacte — non publiée
 
 - Nouvelle référence de taille explicitement validée le 22 octobre 2026 ; alerte à 0 % conservée, budgets classiques inchangés.

@@ -1,4 +1,5 @@
 import { downloadCsv } from './csv.js';
+import { githubTargets } from './github-links.js';
 /* Restitution de faits Analytics : filtres et tris précèdent toujours la pagination. */
 const model = JSON.parse(document.getElementById('simplified-data').textContent);
 const state = new Map();
@@ -46,6 +47,54 @@ function sourceLink(url, label, parent) {
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
 }
+/** Ajoute des accès externes distincts du bouton de détail, sans ouvrir plusieurs onglets automatiquement. */
+function githubLinks(cell, title, parent, explain = false) {
+  const refs = [...new Set(cell.refs || [])];
+  const sources = refs.map((id) => issueById.get(id) || { url: '' });
+  const result = githubTargets(sources);
+  for (const [index, target] of result.links.entries()) {
+    const label = '↗' + (result.links.length > 1 ? ' ' + (index + 1) : '');
+    const link = element('a', label, parent);
+    link.href = target.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'github-shortcut';
+    const description =
+      title +
+      ' — ' +
+      target.repository +
+      ' — ' +
+      target.count +
+      ' issue(s)' +
+      (result.links.length > 1 ? ' — lot ' + (index + 1) + '/' + result.links.length : '') +
+      (target.search
+        ? ' — recherche par numéros, résultats à vérifier (des mentions peuvent apparaître)'
+        : '') +
+      (result.unavailable
+        ? ' — sélection partielle : ' + result.unavailable + ' source(s) sans lien GitHub'
+        : '') +
+      ' — nouvel onglet';
+    link.title = description;
+    link.setAttribute('aria-label', description);
+  }
+  if (!refs.length && cell.url && /^https:\/\/github\.com\//.test(cell.url)) {
+    const link = element('a', '↗', parent);
+    link.href = cell.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'github-shortcut';
+    link.title = title + ' — recherche de contexte GitHub, état actuel — nouvel onglet';
+    link.setAttribute('aria-label', link.title);
+  }
+  if (explain && (result.links.length || result.unavailable))
+    element(
+      'span',
+      ' GitHub : état actuel, distinct du snapshot. Les recherches par numéros peuvent inclure des mentions.' +
+        (result.links.length > 1 ? ' La sélection est répartie en ' + result.links.length + ' lots.' : '') +
+        (result.unavailable ? ' ' + result.unavailable + ' source(s) sans lien GitHub exploitable.' : ''),
+      parent
+    );
+}
 /** Expose les éléments exacts d’une cellule, paginés sur place. */
 function details(cell, title) {
   detailRows = (cell.refs || []).map((id) => issueById.get(id)).filter(Boolean);
@@ -65,6 +114,7 @@ function details(cell, title) {
     element('span', ' ', note);
     sourceLink(cell.url, 'Ouvrir la recherche GitHub ↗', note);
   }
+  githubLinks(cell, title, note, true);
   renderDetails();
   document.getElementById('detail').showModal();
 }
@@ -272,6 +322,8 @@ function mount(table) {
       })
     ]);
   });
+  const githubTools = element('span');
+  githubTools.className = 'github-selection';
   const reset = element('button', 'Réinitialiser', tools);
   reset.type = 'button';
   reset.addEventListener('click', () => {
@@ -307,6 +359,14 @@ function mount(table) {
     const rows = selected(table, local);
     local.page = Math.min(local.page, Math.max(0, Math.ceil(rows.length / local.size) - 1));
     body.replaceChildren();
+    githubTools.replaceChildren();
+    githubLinks(
+      { refs: rows.flatMap((row) => row.cells.flatMap((cell) => cell.refs || [])) },
+      table.title + ' — toutes les issues associées aux lignes filtrées, avant pagination',
+      githubTools
+    );
+    if (githubTools.childElementCount) tools.insertBefore(githubTools, reset);
+    else githubTools.remove();
     Array.from(headers.children).forEach((th, index) =>
       th.setAttribute(
         'aria-sort',
@@ -328,6 +388,7 @@ function mount(table) {
           const button = element('button', display(cell.value), td);
           button.type = 'button';
           button.addEventListener('click', () => details(presented, table.headers[index]));
+          githubLinks(presented, table.headers[index], td);
         } else element('span', display(cell.value), td);
       });
     }
@@ -420,19 +481,16 @@ function render() {
               { search: '', sort: 0, direction: 1 }
             ).flatMap((row) => row.cells[0].refs || [])
           : rows.flatMap((row) => row.cells[index].refs || []);
-      metric.addEventListener('click', () =>
-        details(
-          {
-            value,
-            refs: [...new Set(references)],
-            note:
-              title === 'Composants à examiner'
-                ? 'Ce compteur représente des composants ; voici leurs issues associées.'
-                : 'Occurrences par composant ; la liste ci-dessous déduplique les issues multi-composants.'
-          },
-          title
-        )
-      );
+      const cardCell = {
+        value,
+        refs: [...new Set(references)],
+        note:
+          title === 'Composants à examiner'
+            ? 'Ce compteur représente des composants ; voici leurs issues associées.'
+            : 'Occurrences par composant ; la liste ci-dessous déduplique les issues multi-composants.'
+      };
+      metric.addEventListener('click', () => details(cardCell, title));
+      githubLinks(cardCell, title, card);
       const anchor = element('a', 'Voir →', card);
       anchor.setAttribute('aria-label', 'Voir : ' + title);
       anchor.href = '#' + link;

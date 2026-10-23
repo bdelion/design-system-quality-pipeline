@@ -71,3 +71,27 @@ Les nombres des cartes et les cellules disposant de preuves ouvrent une liste pa
 L’utilisateur a validé : « Oui, conserver ces ajouts et actualiser la référence ». Sur le jeu de contrôle synthétique, la vue compacte passe de 31 605 à 44 079 octets de HTML, de 29 576 à 42 010 octets de JSON et de 686 à 689 nœuds DOM. Les lignes initiales (0) et les lignes montées au maximum par défaut (24 sur ce jeu) restent inchangées.
 
 `config/benchmark-simplified-baseline.json` conserve la même empreinte de fixture et une croissance autorisée de **0 %**. Cette validation concerne les ajouts mesurés de cette version ; toute augmentation suivante reste signalée. La page de choix et les budgets du dashboard classique sont inchangés.
+
+## Accès GitHub dans la vue synthétique
+
+Les compteurs et cellules ouvrant une liste de preuves possèdent un accès **↗**
+quand des URL GitHub sources sont disponibles. Ces accès existent aussi dans les
+fenêtres et près des outils des tableaux : à cet endroit ils portent sur toutes
+les issues associées aux lignes filtrées, avant pagination. Les libellés de ligne
+utilisent leurs preuves associées ; un compteur de composants ne devient pas un
+compteur d’issues. Les CSV et les listes locales restent les populations de référence.
+
+Une source unique ouvre directement son issue. Plusieurs sources sont regroupées
+par dépôt et type, puis par lots de six numéros au maximum (requêtes de 256 caractères
+au maximum). Les liens numérotés ouvrent chacun un seul nouvel onglet. Les recherches
+utilisent les opérateurs [GitHub documentés](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/filtering-and-searching-issues-and-pull-requests).
+Une recherche par numéros peut aussi retrouver des tickets mentionnant ces numéros :
+son intitulé l’indique et la fenêtre rappelle cette limite. Les résultats dépendent
+aussi des droits, de l’indexation et de l’état actuel de GitHub, distinct du snapshot.
+
+Aucun lien n’est déduit d’un identifiant anonymisé ou d’un nom de repository : seules
+les URL sources `https://github.com/.../issues/N` ou `/pull/N` sont exploitées. Une
+sélection partiellement accessible est annoncée dans l’intitulé et la fenêtre.
+Sans source exploitable, la fenêtre reste disponible, sans flèche trompeuse.
+Les compteurs de PR sans références individuelles conservent un accès explicitement
+nommé « recherche de contexte », distinct d’une liste de preuves exacte.
