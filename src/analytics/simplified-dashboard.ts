@@ -10,6 +10,7 @@ import { quantile } from './statistics.js';
 export interface SimpleCell {
   value: string | number | null;
   refs?: string[];
+  /** Recherche GitHub du périmètre du compteur, prioritaire sur la recherche par références. */
   url?: string;
   note?: string;
   sortValue?: string | number | null;
@@ -196,15 +197,21 @@ export function simplifiedModel(snapshot: Snapshot) {
             ...cell(row.components, ids(selected.filter((issue) => issue.componentIds.length > 0))),
             note: 'Ce nombre compte les composants du catalogue ; la liste présente les issues liées aux composants de ce repository, pas une issue par composant.'
           },
-          cell(row.issues === 'unknown' ? null : row.issues, data.issues ? ids(selected) : undefined),
-          cell(
-            row.openIssues === 'unknown' ? null : row.openIssues,
-            data.issues ? ids(selected.filter((issue) => issue.state === 'OPEN')) : undefined
-          ),
+          {
+            ...cell(row.issues === 'unknown' ? null : row.issues, data.issues ? ids(selected) : undefined),
+            url: repositoryUrl(snapshot, row.repository, 'issues?q=is%3Aissue')
+          },
+          {
+            ...cell(
+              row.openIssues === 'unknown' ? null : row.openIssues,
+              data.issues ? ids(selected.filter((issue) => issue.state === 'OPEN')) : undefined
+            ),
+            url: repositoryUrl(snapshot, row.repository, 'issues?q=is%3Aissue%20is%3Aopen')
+          },
           {
             value: row.pullRequests,
             note: 'Stock de PR distinctes dans le snapshot. Le lien GitHub affiche leur état actuel.',
-            url: repositoryUrl(snapshot, row.repository, 'pulls')
+            url: repositoryUrl(snapshot, row.repository, 'pulls?q=is%3Apr')
           },
           {
             value: row.mergedPullRequests,
@@ -516,13 +523,17 @@ export function simplifiedModel(snapshot: Snapshot) {
 }
 /** Construit uniquement un lien de recherche courant pour un repository source effectivement identifié. */
 function repositoryUrl(snapshot: Snapshot, repository: string, suffix: string): string {
-  const source = snapshot.normalizedData.issues?.find((issue) =>
-    snapshot.normalizedData.libraries.some(
-      (library) => library.libraryId === issue.libraryId && library.repository === repository
-    )
+  const source = snapshot.normalizedData.issues?.find(
+    (issue) =>
+      /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(safeSourceUrl(issue.url)) &&
+      snapshot.normalizedData.libraries.some(
+        (library) => library.libraryId === issue.libraryId && library.repository === repository
+      )
   );
   const url = safeSourceUrl(source?.url);
-  return url && /\/issues\/\d+$/.test(url) ? url.replace(/\/issues\/\d+$/, '/' + suffix) : '';
+  return /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(url)
+    ? url.replace(/\/issues\/\d+$/, '/' + suffix)
+    : '';
 }
 
 /** Retient la date où Done et la fusion sont tous deux prouvés ; aucune date manquante n’est estimée. */

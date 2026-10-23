@@ -74,14 +74,14 @@ L’utilisateur a validé : « Oui, conserver ces ajouts et actualiser la réfé
 
 ## Accès GitHub dans la vue synthétique
 
-Les compteurs et cellules ouvrant une liste de preuves possèdent un lien textuel **Ouvrir la recherche dans GitHub ↗** (ou **Ouvrir l’issue dans GitHub ↗** pour un ticket unique)
+Les compteurs et cellules ouvrant une liste de preuves possèdent un lien textuel **Ouvrir la recherche dans GitHub ↗**
 quand des URL GitHub sources sont disponibles. Ces accès existent aussi dans les
 fenêtres et près des outils des tableaux : à cet endroit ils portent sur toutes
 les issues associées aux lignes filtrées, avant pagination. Les libellés de ligne
 utilisent leurs preuves associées ; un compteur de composants ne devient pas un
 compteur d’issues. Les CSV et les listes locales restent les populations de référence.
 
-Une source unique ouvre directement son issue. Plusieurs sources sont regroupées
+Le lien de la fenêtre ouvre toujours une recherche, même pour une source unique. Les liens individuels des lignes restent des accès directs aux tickets. Les sources sont regroupées
 par dépôt et type, puis par lots de six numéros au maximum (requêtes de 256 caractères
 au maximum). Les liens numérotés ouvrent chacun un seul nouvel onglet. Les recherches
 utilisent les opérateurs [GitHub documentés](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/filtering-and-searching-issues-and-pull-requests).
@@ -93,7 +93,22 @@ Aucun lien n’est déduit d’un identifiant anonymisé ou d’un nom de reposi
 les URL sources `https://github.com/.../issues/N` ou `/pull/N` sont exploitées. Une
 sélection partiellement accessible est annoncée dans l’intitulé et la fenêtre.
 Sans source exploitable, la fenêtre reste disponible, sans flèche trompeuse.
-Les compteurs de PR sans références individuelles conservent un accès explicitement
-nommé « recherche de contexte », distinct d’une liste de preuves exacte.
+Les compteurs de PR sans références individuelles proposent une recherche du périmètre
+du compteur, distincte d’une liste de preuves exacte.
 
 Les libellés GitHub sont visibles dans les cinq espaces, les tableaux filtrés, les cellules, les compteurs et les fenêtres ; la flèche complète le texte et ne le remplace pas. Dans une fenêtre, la recherche de contexte n’est affichée qu’une fois.
+
+### Recherches des compteurs et états
+
+Chaque fenêtre possédant des sources GitHub exploitables propose **Ouvrir la recherche dans GitHub**. Lorsqu’un compteur définit une recherche de périmètre, celle-ci est prioritaire sur les lots de numéros :
+
+| Compteur du repository | Recherche explicite               | États inclus                    |
+| ---------------------- | --------------------------------- | ------------------------------- |
+| Issues total           | `issues?q=is%3Aissue`             | Ouvertes et fermées             |
+| Issues ouvertes        | `issues?q=is%3Aissue%20is%3Aopen` | Ouvertes                        |
+| PR total               | `pulls?q=is%3Apr`                 | Ouvertes, fermées et fusionnées |
+| PR fusionnées          | `pulls?q=is%3Apr%20is%3Amerged`   | Fusionnées                      |
+
+Les pages `/issues` ou `/pulls` sans requête ne sont pas utilisées pour un total, car leur filtre par défaut peut limiter aux éléments ouverts. Les recherches des autres listes utilisent leurs références collectées, sans ajouter un filtre d’état implicite. Les fenêtres conservent les liens individuels vers les sources et leur CSV.
+
+Le snapshot normalisé ne fournit pas de sources individuelles de PR dans le modèle simplifié : les fenêtres PR donnent accès à la recherche GitHub du compteur sans fabriquer une liste locale. L’état actuel de GitHub peut différer de la capture. Les URL anonymisées ne sont jamais transformées en liens GitHub.

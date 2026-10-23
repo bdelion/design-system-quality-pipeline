@@ -112,3 +112,21 @@ it('compare les corrections et bugs de même nature sans y ajouter les correctio
   expect(row.cells[3]?.value).toBe(1);
   expect(row.cells[3]?.refs).toEqual(['anomaly-a']);
 });
+
+it('sépare les recherches des totaux de celles des issues ouvertes et PR fusionnées', () => {
+  const snapshot = benchmarkSnapshot('control', 81);
+  for (const issue of snapshot.normalizedData.issues || [])
+    issue.url = issue.url.replace('example.invalid', 'github.com');
+  const table = simplifiedModel(snapshot).tables.find((item) => item.id === 'repositories')!;
+  const row = table.rows[0]!;
+  expect(new URL(row.cells[2]!.url!).searchParams.get('q')).toBe('is:issue');
+  expect(new URL(row.cells[3]!.url!).searchParams.get('q')).toBe('is:issue is:open');
+  expect(new URL(row.cells[4]!.url!).searchParams.get('q')).toBe('is:pr');
+  expect(new URL(row.cells[5]!.url!).searchParams.get('q')).toBe('is:pr is:merged');
+  snapshot.normalizedData.issues![0]!.url = 'https://example.invalid/opaque';
+  snapshot.normalizedData.pullRequests = [];
+  delete snapshot.analytics.repositoryActivity;
+  const zero = simplifiedModel(snapshot).tables.find((item) => item.id === 'repositories')!.rows[0]!;
+  expect(zero.cells[4]!.value).toBe(0);
+  expect(new URL(zero.cells[4]!.url!).searchParams.get('q')).toBe('is:pr');
+});

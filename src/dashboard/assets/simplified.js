@@ -49,12 +49,32 @@ function sourceLink(url, label, parent) {
 }
 /** Ajoute des accès externes distincts du bouton de détail, sans ouvrir plusieurs onglets automatiquement. */
 function githubLinks(cell, title, parent, explain = false) {
+  if (cell.url && /^https:\/\/github\.com\/[^/]+\/[^/]+\/(issues|pulls)(?:\?|$)/.test(cell.url)) {
+    const label = 'Ouvrir la recherche dans GitHub ↗';
+    const link = element('a', label, parent);
+    const url = new window.URL(cell.url);
+    if (!url.searchParams.has('q'))
+      url.searchParams.set('q', url.pathname.endsWith('/pulls') ? 'is:pr' : 'is:issue');
+    link.href = url.href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.className = 'github-shortcut';
+    link.title = title + ' — recherche GitHub du compteur, état actuel — nouvel onglet';
+    link.setAttribute('aria-label', label + ' — ' + link.title);
+    if (explain)
+      element(
+        'span',
+        ' La recherche GitHub affiche l’état actuel du périmètre du compteur, distinct du snapshot.',
+        parent
+      );
+    return;
+  }
   const refs = [...new Set(cell.refs || [])];
   const sources = refs.map((id) => issueById.get(id) || { url: '' });
   const result = githubTargets(sources);
   for (const [index, target] of result.links.entries()) {
     const label =
-      (target.search ? 'Ouvrir la recherche dans GitHub' : 'Ouvrir l’issue dans GitHub') +
+      'Ouvrir la recherche dans GitHub' +
       (result.links.length > 1 ? ' — lot ' + (index + 1) + '/' + result.links.length : '') +
       ' ↗';
     const link = element('a', label, parent);
@@ -79,16 +99,6 @@ function githubLinks(cell, title, parent, explain = false) {
       ' — nouvel onglet';
     link.title = description;
     link.setAttribute('aria-label', label + ' — ' + description);
-  }
-  if (!refs.length && cell.url && /^https:\/\/github\.com\//.test(cell.url)) {
-    const label = 'Ouvrir la recherche dans GitHub ↗';
-    const link = element('a', label, parent);
-    link.href = cell.url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.className = 'github-shortcut';
-    link.title = title + ' — recherche de contexte GitHub, état actuel — nouvel onglet';
-    link.setAttribute('aria-label', label + ' — ' + link.title);
   }
   if (explain && (result.links.length || result.unavailable))
     element(
@@ -163,7 +173,7 @@ function renderDetails() {
   if (!detailRows.length)
     element(
       'p',
-      'Aucune issue source disponible pour cette valeur. Le compteur peut représenter des composants ou des PR, pas des issues.',
+      'Aucun élément source individuel disponible dans ce snapshot. Utilisez la recherche GitHub lorsqu’elle est proposée ; un compteur de PR ne contient pas une liste d’issues.',
       target
     );
   pager(
