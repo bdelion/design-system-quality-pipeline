@@ -48,7 +48,11 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
     await cell.getByRole('button').click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator('.github-shortcut')).toHaveAttribute('href', href!);
+    await expect(dialog.locator('#detail-actions .github-shortcut')).toHaveAttribute(
+      'href',
+      snapshot.normalizedData.issues![0]!.url!
+    );
+    await expect(dialog.locator('#detail-actions .github-shortcut')).toHaveText('Ouvrir dans GitHub');
     await page.keyboard.press('Escape');
     await panel.getByLabel('Filtrer ce tableau').fill(snapshot.normalizedData.issues![0]!.title);
     await expect(selection).toHaveCount(1);
@@ -66,11 +70,9 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
       [5, 'is:pr is:merged']
     ] as const) {
       await repository.locator('td').nth(index).getByRole('button').click();
-      const search = page
-        .locator('#detail-note')
-        .getByRole('link', { name: /Ouvrir la recherche dans GitHub/ });
+      const search = page.locator('#detail-actions').getByRole('link', { name: /Ouvrir dans GitHub/ });
       await expect(search).toHaveCount(1);
-      await expect(search).toHaveText('Ouvrir la recherche dans GitHub ↗');
+      await expect(search).toHaveText('Ouvrir dans GitHub');
       expect(new URL((await search.getAttribute('href'))!).searchParams.get('q')).toBe(query);
       await expect(search).toHaveAttribute('target', '_blank');
       await page.keyboard.press('Escape');
@@ -91,11 +93,12 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
           const dialog = document.querySelector<HTMLDialogElement>('#detail')!;
           if (!dialog.open) continue;
           if (dialog.querySelector('#detail-content tbody tr')) {
-            const search = dialog.querySelector<HTMLAnchorElement>('#detail-note .github-shortcut');
+            const search = dialog.querySelector<HTMLAnchorElement>('#detail-actions .github-shortcut');
             if (
               !search ||
-              !search.textContent?.includes('Ouvrir la recherche dans GitHub') ||
-              !new URL(search.href).searchParams.has('q')
+              !search.textContent?.includes('Ouvrir dans GitHub') ||
+              (dialog.querySelectorAll('#detail-content tbody tr').length > 1 &&
+                !new URL(search.href).searchParams.has('q'))
             )
               failures.push(document.getElementById('detail-title')!.textContent || 'Titre absent');
           }

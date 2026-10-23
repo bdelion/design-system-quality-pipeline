@@ -394,3 +394,12 @@ select {
 .github-selection:empty {
   display: none;
 }
+
+/* Les actions de la liste sont rapprochées du titre, avant les notes et le tableau. */
+#detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+}

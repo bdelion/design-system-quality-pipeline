@@ -1,5 +1,11 @@
 # Changelog
 
+## Liens d’en-tête des fenêtres (#115) — non publiée
+
+- « Ouvrir dans GitHub » dans l’en-tête des fenêtres ; ouverture directe d’une source unique complète.
+- Références propres à Composant/Situation/Prochaine action et aux compteurs par composant, labels collectés partagés, filtres ouverts/fermés lorsque les états les justifient.
+- Divergences Project/GitHub signalées sans masquer de ticket ni modifier les métriques ; aucune déduction du motif de fermeture.
+
 ## Recherches GitHub des fenêtres — non publiée
 
 - Recherche GitHub explicite dans les fenêtres de listes, même pour une seule issue ; parcours des fenêtres des cinq espaces vérifié.
