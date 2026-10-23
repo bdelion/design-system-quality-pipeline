@@ -35,7 +35,7 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
     expect(urls.some((url) => decodeURIComponent(url!).includes('24'))).toBe(true);
     const cell = panel.locator('tbody tr').first().locator('td').first();
     const arrow = cell.locator('.github-shortcut');
-    await expect(arrow).toHaveText('Ouvrir l’issue dans GitHub ↗');
+    await expect(arrow).toHaveText('Ouvrir la recherche dans GitHub ↗');
     await expect(arrow).toHaveAttribute('target', '_blank');
     await expect(arrow).toHaveAttribute('rel', 'noopener noreferrer');
     const href = await arrow.getAttribute('href');
@@ -52,11 +52,29 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
     await page.keyboard.press('Escape');
     await panel.getByLabel('Filtrer ce tableau').fill(snapshot.normalizedData.issues![0]!.title);
     await expect(selection).toHaveCount(1);
-    await expect(selection).toHaveAttribute('href', snapshot.normalizedData.issues![0]!.url!);
+    expect(new URL((await selection.getAttribute('href'))!).searchParams.get('q')).toMatch(/is:issue \(1\)$/);
     await panel.getByLabel('Filtrer ce tableau').fill('aucun-resultat');
     await expect(selection).toHaveCount(0);
     await panel.getByLabel('Filtrer ce tableau').fill('');
     await expect(selection).toHaveCount(4);
+    await page.getByRole('link', { name: 'Repositories et équipe', exact: true }).click();
+    const repository = page.locator('[data-table-id="repositories"] tbody tr').first();
+    for (const [index, query] of [
+      [2, 'is:issue'],
+      [3, 'is:issue is:open'],
+      [4, 'is:pr'],
+      [5, 'is:pr is:merged']
+    ] as const) {
+      await repository.locator('td').nth(index).getByRole('button').click();
+      const search = page
+        .locator('#detail-note')
+        .getByRole('link', { name: /Ouvrir la recherche dans GitHub/ });
+      await expect(search).toHaveCount(1);
+      await expect(search).toHaveText('Ouvrir la recherche dans GitHub ↗');
+      expect(new URL((await search.getAttribute('href'))!).searchParams.get('q')).toBe(query);
+      await expect(search).toHaveAttribute('target', '_blank');
+      await page.keyboard.press('Escape');
+    }
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     for (const name of [
       'Synthèse',
@@ -66,6 +84,26 @@ test('accès GitHub distincts des dialogues, filtres complets et sources absente
       'Audits par version'
     ]) {
       await page.getByRole('link', { name, exact: true }).click();
+      const missing = await page.evaluate(() => {
+        const failures: string[] = [];
+        for (const button of document.querySelectorAll<HTMLButtonElement>('tbody button, .card-metric')) {
+          button.click();
+          const dialog = document.querySelector<HTMLDialogElement>('#detail')!;
+          if (!dialog.open) continue;
+          if (dialog.querySelector('#detail-content tbody tr')) {
+            const search = dialog.querySelector<HTMLAnchorElement>('#detail-note .github-shortcut');
+            if (
+              !search ||
+              !search.textContent?.includes('Ouvrir la recherche dans GitHub') ||
+              !new URL(search.href).searchParams.has('q')
+            )
+              failures.push(document.getElementById('detail-title')!.textContent || 'Titre absent');
+          }
+          dialog.close();
+        }
+        return failures;
+      });
+      expect(missing, 'Chaque fenêtre contenant des issues doit proposer une recherche').toEqual([]);
       const links = page.locator('#content .github-shortcut');
       expect(await links.count()).toBeGreaterThan(0);
       for (const link of await links.all()) {

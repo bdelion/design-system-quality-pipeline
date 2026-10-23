@@ -29,18 +29,15 @@ export function githubTargets(sources) {
   for (const { repository, type, items } of groups.values()) {
     const prefix = 'repo:' + repository + (type === 'pull' ? ' is:pr ' : ' is:issue ');
     let batch = [];
-    /** Conserve un lien direct pour une source seule, sinon une recherche explicitement indicative. */
+    /** Construit toujours une recherche explicite, y compris pour une seule source. */
     function flush() {
       if (!batch.length) return;
       const query = prefix + '(' + batch.map((item) => item.number).join(' OR ') + ')';
       links.push({
-        url:
-          batch.length === 1
-            ? batch[0].url
-            : 'https://github.com/search?type=issues&q=' + encodeURIComponent(query),
+        url: 'https://github.com/search?type=issues&q=' + encodeURIComponent(query),
         count: batch.length,
         repository,
-        search: batch.length > 1
+        search: true
       });
       batch = [];
     }

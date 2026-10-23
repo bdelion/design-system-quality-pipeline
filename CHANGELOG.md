@@ -1,5 +1,11 @@
 # Changelog
 
+## Recherches GitHub des fenêtres — non publiée
+
+- Recherche GitHub explicite dans les fenêtres de listes, même pour une seule issue ; parcours des fenêtres des cinq espaces vérifié.
+- Totaux issues et PR tous états, sans filtre implicite « ouvertes » ; recherches ouvertes et fusionnées séparées.
+- Recherche du périmètre du compteur prioritaire sur les lots de numéros ; absence de sources individuelles de PR explicitée.
+
 ## Liens GitHub explicites — non publiée
 
 - Les liens affichent « Ouvrir la recherche dans GitHub » ou « Ouvrir l’issue dans GitHub » dans tous les espaces simplifiés, compteurs, tableaux et fenêtres ; les icônes seules sont remplacées et les recherches de contexte ne sont plus dupliquées dans les fenêtres.
