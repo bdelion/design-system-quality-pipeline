@@ -53,7 +53,10 @@ function githubLinks(cell, title, parent, explain = false) {
   const sources = refs.map((id) => issueById.get(id) || { url: '' });
   const result = githubTargets(sources);
   for (const [index, target] of result.links.entries()) {
-    const label = '↗' + (result.links.length > 1 ? ' ' + (index + 1) : '');
+    const label =
+      (target.search ? 'Ouvrir la recherche dans GitHub' : 'Ouvrir l’issue dans GitHub') +
+      (result.links.length > 1 ? ' — lot ' + (index + 1) + '/' + result.links.length : '') +
+      ' ↗';
     const link = element('a', label, parent);
     link.href = target.url;
     link.target = '_blank';
@@ -75,16 +78,17 @@ function githubLinks(cell, title, parent, explain = false) {
         : '') +
       ' — nouvel onglet';
     link.title = description;
-    link.setAttribute('aria-label', description);
+    link.setAttribute('aria-label', label + ' — ' + description);
   }
   if (!refs.length && cell.url && /^https:\/\/github\.com\//.test(cell.url)) {
-    const link = element('a', '↗', parent);
+    const label = 'Ouvrir la recherche dans GitHub ↗';
+    const link = element('a', label, parent);
     link.href = cell.url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.className = 'github-shortcut';
     link.title = title + ' — recherche de contexte GitHub, état actuel — nouvel onglet';
-    link.setAttribute('aria-label', link.title);
+    link.setAttribute('aria-label', label + ' — ' + link.title);
   }
   if (explain && (result.links.length || result.unavailable))
     element(
@@ -110,9 +114,9 @@ function details(cell, title) {
         : 'Les liens ouvrent les sources GitHub ; leur état actuel peut différer du snapshot.'),
     note
   );
-  if (cell.url) {
+  if (cell.url && !/^https:\/\/github\.com\//.test(cell.url)) {
     element('span', ' ', note);
-    sourceLink(cell.url, 'Ouvrir la recherche GitHub ↗', note);
+    sourceLink(cell.url, 'Ouvrir la source ↗', note);
   }
   githubLinks(cell, title, note, true);
   renderDetails();
