@@ -27,6 +27,7 @@ test('vue compacte : bandeau fixe, exports complets et preuves GitHub', async ({
     await page.setViewportSize({ width: 1440, height: 720 });
     await page.goto(`http://127.0.0.1:${address.port}/simplified/index.html#activity`);
     const panel = page.locator('#content section');
+    await expect(panel.locator('.github-shortcut')).toHaveCount(0);
     await panel.getByLabel('Lignes par page').selectOption('10');
     await expect(panel.locator('tbody tr')).toHaveCount(10);
     const allDownload = page.waitForEvent('download');

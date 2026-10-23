@@ -379,3 +379,15 @@ select {
     padding: 5px 8px;
   }
 }
+
+/* Les accès GitHub restent compacts et distincts des boutons de preuve locaux. */
+.github-shortcut {
+  display: inline-block;
+  margin-inline-start: 4px;
+  padding: 2px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.github-selection:empty {
+  display: none;
+}
