@@ -1,5 +1,7 @@
 ﻿# Deux présentations du même dashboard
 
+> **Cible de présentation validée le 24 octobre 2026 :** [maquette A des fenêtres GitHub](dashboard-fenetres-github-maquette-a.md). Elle demande un seul accès dans l’en-tête de la fenêtre, sans liens supplémentaires dans les pages/tableaux et sans lots. La correction fonctionnelle reste à implémenter. Les descriptions ci-dessous des liens distribués et par lots retracent le comportement existant, que l’utilisateur a rejeté ; elles ne constituent pas la cible validée.
+
 **FAIT / IMPLÉMENTÉ** : chaque exécution de `pipeline` produit les deux présentations, sans option de sélection. Le snapshot, les conventions métier et les verdicts sont communs ; aucune source du dataset n’est modifiée.
 
 ```text

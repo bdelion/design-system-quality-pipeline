@@ -1,5 +1,11 @@
 # Changelog
 
+## Maquette A des fenêtres GitHub (#115) — conception validée
+
+- Versionnement du choix utilisateur du 24 octobre 2026 et du prototype HTML fictif de comparaison A/B ; seule la variante A est retenue.
+- Demande formalisée : un accès global dans l’en-tête de chaque fenêtre, aucun ajout dans les pages/tableaux, aucun lien par lot.
+- Correction fonctionnelle et vérification sur données non anonymisées restant à réaliser ; aucune modification de l’application dans cette livraison.
+
 ## Liens d’en-tête des fenêtres (#115) — non publiée
 
 - « Ouvrir dans GitHub » dans l’en-tête des fenêtres ; ouverture directe d’une source unique complète.
