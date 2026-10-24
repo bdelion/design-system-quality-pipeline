@@ -112,4 +112,13 @@ describe('synthèse compacte et cohortes', () => {
       simplifiedModel(snapshot).campaigns.find((item) => item.version === '2.0.0')?.cells[7]?.value
     ).toBeNull();
   });
+  it('préserve les liens de compteurs Enterprise et tous les états d’un total', () => {
+    const snapshot = consolidationSnapshot();
+    for (const issue of snapshot.normalizedData.issues ?? [])
+      issue.url = `https://git.acme.internal/acme/ds-react/issues/${issue.number}`;
+    const repository = simplifiedModel(snapshot).tables.find((table) => table.id === 'repositories')!
+      .rows[0]!;
+    expect(repository.cells[2]!.url).toBe('https://git.acme.internal/acme/ds-react/issues?q=is%3Aissue');
+    expect(repository.cells[4]!.url).toBe('https://git.acme.internal/acme/ds-react/pulls?q=is%3Apr');
+  });
 });

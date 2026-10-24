@@ -1,69 +1,167 @@
+/** Extrait l’hôte et le dépôt d’une URL source HTTPS, en écartant les hôtes réservés aux exemples. */
+function githubSource(source) {
+  const match =
+    /^https:\/\/([^/@?#:\s]+(?::[0-9]+)?)\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(issues|pull)\/([1-9][0-9]*)$/.exec(
+      source.url || ''
+    );
+  if (!match) return undefined;
+  let hostname;
+  try {
+    hostname = new globalThis.URL(source.url).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
+  if (
+    /\.(invalid|test|example)$/.test(hostname) ||
+    ['example.com', 'example.org', 'example.net'].includes(hostname)
+  )
+    return undefined;
+  return { origin: 'https://' + match[1], repository: match[2], type: match[3] };
+}
+
 /**
- * Prépare des accès GitHub depuis les seules URL sources, jamais depuis des identifiants anonymisés.
- * Les recherches par numéros peuvent aussi retrouver des mentions : elles ne sont pas des listes exactes.
- * @param {{url?: string, state?: string, labels?: string[]}[]} sources - Population complète de preuves du snapshot.
- * @param {{directSingle?: boolean, matchLabels?: boolean, state?: "open"|"closed"}} [options] - Présentation de la liste, sans modifier sa population.
- * @returns {{links: {url: string, count: number, repository: string, search: boolean}[], unavailable: number, stateMismatch?: boolean}} Accès répartis par dépôt et lots bornés.
+ * Construit un seul accès GitHub depuis les URL et labels sources, sans lots ni recherche par numéros.
+ * Vérifie la sélection contre les issues connues du snapshot avant de proposer une recherche par filtres.
+ * @param {{url?: string, state?: string, labels?: string[]}[]} sources - Population complète, avant pagination.
+ * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[]}[]}} [options] - Sources connues et état explicitement demandé.
+ * @returns {{links: {url: string, count: number, repository: string, search: boolean}[], unavailable: number, stateMismatch?: boolean, reason?: string, approximate?: boolean}} Destination unique ou motif explicite d’indisponibilité.
  */
 export function githubTargets(sources, options = {}) {
+  const items = [...new Map(sources.map((source) => [source.url, source])).values()];
+  const unavailable = sources.filter((source) => !githubSource(source)).length;
   const stateMismatch = Boolean(
-    options.state && sources.some((source) => source.state?.toLowerCase() !== options.state)
+    options.state && items.some((source) => source.state?.toLowerCase() !== options.state)
   );
+  const base = { links: [], unavailable, ...(stateMismatch ? { stateMismatch: true } : {}) };
+  if (!sources.length) return base;
+  if (unavailable)
+    return {
+      ...base,
+      reason: 'Recherche GitHub indisponible : certaines URL sources sont absentes ou anonymisées.'
+    };
+  if (items.length === 1 && options.directSingle) {
+    return {
+      ...base,
+      links: [{ url: items[0].url, count: 1, repository: githubSource(items[0]).repository, search: false }]
+    };
+  }
   const groups = new Map();
-  const seen = new Set();
-  let unavailable = 0;
-  for (const source of sources) {
-    const match =
-      /^https:\/\/github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/(issues|pull)\/([1-9][0-9]*)$/.exec(
-        source.url || ''
-      );
-    if (!match) {
-      unavailable++;
-      continue;
-    }
-    const [, repository, type, number] = match;
-    const key = repository.toLowerCase() + '/' + type;
-    const identity = key + '/' + number;
-    if (seen.has(identity)) continue;
-    seen.add(identity);
-    if (!groups.has(key)) groups.set(key, { repository, type, items: [] });
-    groups.get(key).items.push({ number, url: source.url, labels: source.labels || [] });
+  for (const source of items) {
+    const { origin, repository, type } = githubSource(source);
+    const key = origin.toLowerCase() + '/' + repository.toLowerCase() + '/' + type;
+    if (!groups.has(key)) groups.set(key, { origin, repository, type, sources: [] });
+    groups.get(key).sources.push(source);
   }
-  const links = [];
-  for (const { repository, type, items } of groups.values()) {
-    let prefix = 'repo:' + repository + (type === 'pull' ? ' is:pr' : ' is:issue');
-    if (options.state && !stateMismatch) prefix += ' is:' + options.state;
-    if (options.matchLabels) {
-      const shared = [...new Set(items[0].labels)].filter((label) =>
-        items.every((item) => item.labels.includes(label))
+  const origins = new Set([...groups.values()].map((group) => group.origin));
+  if (origins.size > 1)
+    return {
+      ...base,
+      reason: 'Les sources dépendent de plusieurs serveurs GitHub : aucune recherche unique ne les rassemble.'
+    };
+  /** Conserve un accès unique plus large uniquement lorsque ce repli est explicitement autorisé. */
+  function broader(reason) {
+    if (!options.allowBroader) return { ...base, reason };
+    const scopes = [...groups.values()].map((group) => {
+      const common = options.matchLabels
+        ? [...new Set(group.sources[0].labels || [])].filter((label) =>
+            group.sources.every((source) =>
+              source.labels?.some((value) => value.toLowerCase() === label.toLowerCase())
+            )
+          )
+        : [];
+      return (
+        'repo:' +
+        group.repository +
+        (group.type === 'pull' ? ' is:pr' : ' is:issue') +
+        (options.state && !stateMismatch ? ' is:' + options.state : '') +
+        common.map((label) => ' label:' + JSON.stringify(label)).join('')
       );
-      const longest = items.reduce((maximum, item) => Math.max(maximum, item.number.length), 0);
-      for (const label of shared) {
-        const qualifier = ' label:' + JSON.stringify(label);
-        if (prefix.length + qualifier.length + longest + 3 <= 256) prefix += qualifier;
+    });
+    let query = scopes.length === 1 ? scopes[0] : scopes.map((scope) => '(' + scope + ')').join(' OR ');
+    if (query.length > 256 || scopes.length > 6) {
+      const types = new Set([...groups.values()].map((group) => group.type));
+      query =
+        [...new Set([...groups.values()].map((group) => 'repo:' + group.repository))].join(' ') +
+        (types.size === 1 ? (types.has('pull') ? ' is:pr' : ' is:issue') : '') +
+        (options.state && !stateMismatch ? ' is:' + options.state : '');
+    }
+    if (query.length > 256) return { ...base, reason };
+    return {
+      ...base,
+      approximate: true,
+      reason,
+      links: [
+        {
+          url: [...origins][0] + '/search?type=issues&q=' + encodeURIComponent(query),
+          count: items.length,
+          repository: [...groups.values()].map((group) => group.repository).join(', '),
+          search: true
+        }
+      ]
+    };
+  }
+  const queries = [];
+  for (const { origin, repository, type, sources: selected } of groups.values()) {
+    const labels = options.matchLabels
+      ? [...new Set(selected[0].labels || [])].filter((label) =>
+          selected.every((source) =>
+            source.labels?.some((value) => value.toLowerCase() === label.toLowerCase())
+          )
+        )
+      : [];
+    const requestedState = stateMismatch ? undefined : options.state;
+    const known = (options.universe || sources).filter((source) => {
+      const match = githubSource(source);
+      return (
+        match &&
+        match.origin === origin &&
+        match.repository.toLowerCase() === repository.toLowerCase() &&
+        match.type === type
+      );
+    });
+    const selectedUrls = new Set(selected.map((source) => source.url));
+    /** Vérifie une conjonction de labels contre toutes les sources connues du même périmètre. */
+    function matches(source, candidate) {
+      return (
+        candidate.every((label) =>
+          source.labels?.some((value) => value.toLowerCase() === label.toLowerCase())
+        ) &&
+        (!requestedState || source.state?.toLowerCase() === requestedState)
+      );
+    }
+    const candidates = [
+      labels,
+      ...selected.map((source) => (options.matchLabels ? [...new Set(source.labels || [])] : []))
+    ];
+    const covered = new Set();
+    for (const candidate of candidates) {
+      if (known.some((source) => !selectedUrls.has(source.url) && matches(source, candidate))) continue;
+      const matching = selected.filter((source) => matches(source, candidate));
+      if (!matching.some((source) => !covered.has(source.url))) continue;
+      queries.push(
+        'repo:' +
+          repository +
+          (type === 'pull' ? ' is:pr' : ' is:issue') +
+          (requestedState ? ' is:' + requestedState : '') +
+          candidate.map((label) => ' label:' + JSON.stringify(label)).join('')
+      );
+      matching.forEach((source) => covered.add(source.url));
+    }
+    if (covered.size !== selectedUrls.size)
+      return broader('Cette sélection ne correspond pas exactement aux filtres disponibles dans GitHub.');
+  }
+  const query = queries.length === 1 ? queries[0] : queries.map((part) => '(' + part + ')').join(' OR ');
+  if (query.length > 256 || queries.length > 6)
+    return broader('La sélection exacte dépasse les limites d’une recherche GitHub unique.');
+  return {
+    ...base,
+    links: [
+      {
+        url: [...origins][0] + '/search?type=issues&q=' + encodeURIComponent(query),
+        count: items.length,
+        repository: [...groups.values()].map((group) => group.repository).join(', '),
+        search: true
       }
-    }
-    prefix += ' ';
-    let batch = [];
-    /** Ouvre la source unique sur demande, sinon une recherche bornée des références sélectionnées. */
-    function flush() {
-      if (!batch.length) return;
-      const query = prefix + '(' + batch.map((item) => item.number).join(' OR ') + ')';
-      const direct = Boolean(options.directSingle && seen.size === 1 && unavailable === 0);
-      links.push({
-        url: direct ? batch[0].url : 'https://github.com/search?type=issues&q=' + encodeURIComponent(query),
-        count: batch.length,
-        repository,
-        search: !direct
-      });
-      batch = [];
-    }
-    for (const item of items) {
-      const query = prefix + '(' + [...batch, item].map((entry) => entry.number).join(' OR ') + ')';
-      if (batch.length && (batch.length === 6 || query.length > 256)) flush();
-      batch.push(item);
-    }
-    flush();
-  }
-  return { links, unavailable, ...(stateMismatch ? { stateMismatch: true } : {}) };
+    ]
+  };
 }

@@ -192,8 +192,14 @@ dialog {
 dialog::backdrop {
   background: #10233e70;
 }
-#close-detail {
-  float: right;
+.detail-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.detail-header h2 {
+  margin: 0 auto 0 0;
 }
 details summary {
   font-weight: 600;
@@ -391,9 +397,6 @@ select {
   white-space: normal;
   text-decoration: underline;
 }
-.github-selection:empty {
-  display: none;
-}
 
 /* Les actions de la liste sont rapprochées du titre, avant les notes et le tableau. */
 #detail-actions {
@@ -401,5 +404,5 @@ select {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  margin: 0 0 12px;
+  margin: 0;
 }

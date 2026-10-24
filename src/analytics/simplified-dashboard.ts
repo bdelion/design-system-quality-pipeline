@@ -525,13 +525,14 @@ export function simplifiedModel(snapshot: Snapshot) {
 function repositoryUrl(snapshot: Snapshot, repository: string, suffix: string): string {
   const source = snapshot.normalizedData.issues?.find(
     (issue) =>
-      /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(safeSourceUrl(issue.url)) &&
+      /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(safeSourceUrl(issue.url)) &&
+      !/\.(invalid|test|example)$/.test(new URL(issue.url!).hostname) &&
       snapshot.normalizedData.libraries.some(
         (library) => library.libraryId === issue.libraryId && library.repository === repository
       )
   );
   const url = safeSourceUrl(source?.url);
-  return /^https:\/\/github\.com\/[^/]+\/[^/]+\/issues\/\d+$/.test(url)
+  return /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(url)
     ? url.replace(/\/issues\/\d+$/, '/' + suffix)
     : '';
 }
