@@ -47,67 +47,63 @@ function sourceLink(url, label, parent) {
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
 }
-/** Ajoute des accès externes distincts du bouton de détail, sans ouvrir plusieurs onglets automatiquement. */
-function githubLinks(cell, title, parent, explain = false, options = {}) {
+/** Ajoute au seul en-tête une destination GitHub, ou explique son indisponibilité. */
+function githubLinks(cell, title, parent, note, options = {}) {
   const refs = [...new Set(cell.refs || [])];
-  const sources = refs.map((id) => issueById.get(id) || { url: '' });
-  const result = githubTargets(sources, options);
-  const single = options.directSingle && result.links.length === 1 && !result.links[0].search;
-  if (!single && cell.url && /^https:\/\/github\.com\/[^/]+\/[^/]+\/(issues|pulls)(?:\?|$)/.test(cell.url)) {
-    const label = options.label || 'Ouvrir la recherche dans GitHub ↗';
-    const link = element('a', label, parent);
-    const url = new window.URL(cell.url);
-    if (!url.searchParams.has('q'))
-      url.searchParams.set('q', url.pathname.endsWith('/pulls') ? 'is:pr' : 'is:issue');
-    link.href = url.href;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+  const result = githubTargets(
+    refs.map((id) => issueById.get(id) || { url: '' }),
+    {
+      ...options,
+      universe: model.issues,
+      allowBroader: true
+    }
+  );
+  const direct = result.links.length === 1 && !result.links[0].search;
+  let url = result.links[0]?.url;
+  let approximate = result.approximate;
+  if (!direct && cell.url && /^https:\/\/[^/@?#\s]+\/[^/]+\/[^/]+\/(issues|pulls)(?:\?|$)/.test(cell.url)) {
+    const source = new window.URL(cell.url);
+    if (!source.searchParams.has('q'))
+      source.searchParams.set('q', source.pathname.endsWith('/pulls') ? 'is:pr' : 'is:issue');
+    url = source.href;
+    approximate = false;
+  }
+  if (url) {
+    sourceLink(url, 'Ouvrir dans GitHub ↗', parent);
+    const link = parent.lastElementChild;
     link.className = 'github-shortcut';
-    link.title = title + ' — recherche GitHub du compteur, état actuel — nouvel onglet';
-    link.setAttribute('aria-label', label + ' — ' + link.title);
-    if (explain)
+    link.setAttribute(
+      'aria-label',
+      'Ouvrir dans GitHub — ' +
+        title +
+        (approximate ? ' — recherche élargie au composant ou au dépôt' : '') +
+        ' — nouvel onglet'
+    );
+    if (approximate)
       element(
         'span',
-        ' La recherche GitHub affiche l’état actuel du périmètre du compteur, distinct du snapshot.',
-        parent
+        ' Recherche GitHub élargie au composant ou au dépôt : elle peut contenir des issues absentes de cette liste. La liste locale et son CSV conservent la sélection exacte.',
+        note
       );
-    return result;
-  }
-  for (const [index, target] of result.links.entries()) {
-    const label =
-      (options.label || 'Ouvrir la recherche dans GitHub') +
-      (result.links.length > 1 ? ' — lot ' + (index + 1) + '/' + result.links.length : '') +
-      (options.label ? '' : ' ↗');
-    const link = element('a', label, parent);
-    link.href = target.url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.className = 'github-shortcut';
-    const description =
-      title +
-      ' — ' +
-      target.repository +
-      ' — ' +
-      target.count +
-      ' issue(s)' +
-      (result.links.length > 1 ? ' — lot ' + (index + 1) + '/' + result.links.length : '') +
-      (target.search
-        ? ' — recherche par numéros, résultats à vérifier (des mentions peuvent apparaître)'
-        : '') +
-      (result.unavailable
-        ? ' — sélection partielle : ' + result.unavailable + ' source(s) sans lien GitHub'
-        : '') +
-      ' — nouvel onglet';
-    link.title = description;
-    link.setAttribute('aria-label', label + ' — ' + description);
-  }
-  if (explain && (result.links.length || result.unavailable))
+    if (!direct)
+      element(
+        'span',
+        ' La recherche GitHub affiche l’état actuel ; la liste locale conserve les faits du snapshot.',
+        note
+      );
+  } else {
+    element('span', 'Accès GitHub indisponible', parent).className = 'unavailable';
     element(
       'span',
-      ' GitHub : état actuel, distinct du snapshot. Les recherches par numéros peuvent inclure des mentions.' +
-        (result.links.length > 1 ? ' La sélection est répartie en ' + result.links.length + ' lots.' : '') +
-        (result.unavailable ? ' ' + result.unavailable + ' source(s) sans lien GitHub exploitable.' : ''),
-      parent
+      ' ' + (result.reason || 'Aucune destination GitHub disponible pour cette sélection.'),
+      note
+    );
+  }
+  if (result.stateMismatch)
+    element(
+      'span',
+      ' Le statut Project diffère de l’état GitHub : aucun filtre d’état réducteur n’est ajouté.',
+      note
     );
   return result;
 }
@@ -126,46 +122,34 @@ function details(cell, title) {
         : 'Les liens ouvrent les sources GitHub ; leur état actuel peut différer du snapshot.'),
     note
   );
-  if (cell.url && !/^https:\/\/github\.com\//.test(cell.url)) {
-    element('span', ' ', note);
-    sourceLink(cell.url, 'Ouvrir la source ↗', note);
+  if (!document.getElementById('detail-actions')) {
+    // Regroupe les actions sur la ligne du titre, conformément à la maquette A.
+    const detailHeader = element('div');
+    detailHeader.className = 'detail-header';
+    const detailActions = element('div');
+    detailActions.id = 'detail-actions';
+    detailActions.setAttribute('role', 'group');
+    detailActions.setAttribute('aria-label', 'Actions de la fenêtre');
+    detailHeader.append(
+      document.getElementById('detail-title'),
+      detailActions,
+      document.getElementById('close-detail')
+    );
+    document.getElementById('detail').prepend(detailHeader);
   }
-  let actions = document.getElementById('detail-actions');
-  if (!actions) {
-    actions = element('div');
-    actions.id = 'detail-actions';
-    actions.setAttribute('role', 'group');
-    actions.setAttribute('aria-label', 'Actions de la fenêtre');
-    note.before(actions);
-  }
+  const actions = document.getElementById('detail-actions');
   actions.replaceChildren();
-  const state =
+  const requestedState =
     title === 'Issues en cours'
       ? 'open'
       : ['Issues Done', 'Issues Cancelled'].includes(title)
         ? 'closed'
         : undefined;
-  const result = githubLinks(cell, title, actions, false, {
-    label: 'Ouvrir dans GitHub',
+  githubLinks(cell, title, actions, note, {
     directSingle: true,
     matchLabels: true,
-    ...(state ? { state } : {})
+    ...(requestedState ? { state: requestedState } : {})
   });
-  if (!actions.childElementCount) actions.remove();
-  if (result.stateMismatch)
-    element(
-      'span',
-      ' État GitHub absent ou divergent du statut Project : aucun filtre ouvert/fermé n’est ajouté afin de conserver toutes les issues affichées.',
-      note
-    );
-  if (result.links.some((link) => link.search))
-    element(
-      'span',
-      ' La recherche utilise les références et labels communs de toute la liste, avant pagination. GitHub peut aussi trouver des mentions de numéros ; son état actuel peut différer du snapshot.',
-      note
-    );
-  if (result.unavailable)
-    element('span', ' ' + result.unavailable + ' source(s) sans URL GitHub exploitable.', note);
   renderDetails();
   document.getElementById('detail').showModal();
 }
@@ -191,7 +175,8 @@ function renderDetails() {
       ])
     ])
   );
-  const table = element('table', undefined, target);
+  const table = element('table');
+  if (detailRows.length) target.append(table);
   const head = element('tr', undefined, element('thead', undefined, table));
   for (const label of ['Issue', 'GitHub', 'Correction', 'Signalements']) {
     const th = element('th', label, head);
@@ -373,8 +358,6 @@ function mount(table) {
       })
     ]);
   });
-  const githubTools = element('span');
-  githubTools.className = 'github-selection';
   const reset = element('button', 'Réinitialiser', tools);
   reset.type = 'button';
   reset.addEventListener('click', () => {
@@ -410,14 +393,6 @@ function mount(table) {
     const rows = selected(table, local);
     local.page = Math.min(local.page, Math.max(0, Math.ceil(rows.length / local.size) - 1));
     body.replaceChildren();
-    githubTools.replaceChildren();
-    githubLinks(
-      { refs: rows.flatMap((row) => row.cells.flatMap((cell) => cell.refs || [])) },
-      table.title + ' — toutes les issues associées aux lignes filtrées, avant pagination',
-      githubTools
-    );
-    if (githubTools.childElementCount) tools.insertBefore(githubTools, reset);
-    else githubTools.remove();
     Array.from(headers.children).forEach((th, index) =>
       th.setAttribute(
         'aria-sort',
@@ -439,7 +414,6 @@ function mount(table) {
           const button = element('button', display(cell.value), td);
           button.type = 'button';
           button.addEventListener('click', () => details(presented, table.headers[index]));
-          githubLinks(presented, table.headers[index], td);
         } else element('span', display(cell.value), td);
       });
     }
@@ -541,7 +515,6 @@ function render() {
             : 'Occurrences par composant ; la liste ci-dessous déduplique les issues multi-composants.'
       };
       metric.addEventListener('click', () => details(cardCell, title));
-      githubLinks(cardCell, title, card);
       const anchor = element('a', 'Voir →', card);
       anchor.setAttribute('aria-label', 'Voir : ' + title);
       anchor.href = '#' + link;

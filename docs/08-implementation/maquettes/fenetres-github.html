@@ -272,16 +272,16 @@
           <table>
             <thead>
               <tr>
-                <th>Librairie</th>
-                <th>Composant</th>
-                <th>Issues total</th>
-                <th>Issues en cours</th>
-                <th>Issues Done</th>
-                <th>Issues Cancelled</th>
-                <th>Temps moyen</th>
-                <th>Temps médian</th>
-                <th>P90</th>
-                <th>Plus ancienne issue ouverte</th>
+                <th scope="col">Librairie</th>
+                <th scope="col">Composant</th>
+                <th scope="col">Issues total</th>
+                <th scope="col">Issues en cours</th>
+                <th scope="col">Issues Done</th>
+                <th scope="col">Issues Cancelled</th>
+                <th scope="col">Temps moyen</th>
+                <th scope="col">Temps médian</th>
+                <th scope="col">P90</th>
+                <th scope="col">Plus ancienne issue ouverte</th>
               </tr>
             </thead>
             <tbody>
@@ -348,13 +348,20 @@
           <table>
             <thead>
               <tr>
-                <th>Issue</th>
-                <th>État GitHub</th>
-                <th>Statut Project</th>
-                <th>Correction</th>
+                <th scope="col">Issue</th>
+                <th scope="col">État GitHub</th>
+                <th scope="col">Statut Project</th>
+                <th scope="col">Correction</th>
               </tr>
             </thead>
-            <tbody id="rows"></tbody>
+            <tbody id="rows">
+              <tr>
+                <td>#1001 · Navigation au clavier dans les cellules</td>
+                <td>OPEN</td>
+                <td>In progress</td>
+                <td>Restant à corriger</td>
+              </tr>
+            </tbody>
           </table>
         </div>
         <div class="pager">

@@ -1,3 +1,9 @@
+## Fenêtres GitHub — application de la maquette A (#115)
+
+- Suppression des raccourcis GitHub dans les cartes, outils et cellules des tableaux synthétiques ; une seule action dans la ligne du titre de la fenêtre.
+- Remplacement des recherches par lots de numéros par une destination unique fondée sur les filtres sources et vérifiée contre le snapshot ; repli vers une recherche élargie du composant/dépôt, avec avertissement, conformément au choix utilisateur.
+- Conservation des états explicites des totaux et des hôtes sources GitHub Enterprise. Correction des tableaux sans cellules dans les fenêtres sans preuves et dans le HTML initial de la maquette.
+
 # Changelog
 
 ## Maquette A des fenêtres GitHub (#115) — conception validée

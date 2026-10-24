@@ -2,7 +2,7 @@
 
 **DÉCISION DE PRÉSENTATION VALIDÉE — 24 octobre 2026.** L’utilisateur a choisi : « Je choisi A. »
 
-**ÉTAT : demande enregistrée, correction de l’application à implémenter et à vérifier.** Ce document ne constitue pas une preuve que le dashboard généré respecte déjà la demande. Il précise la cible de [l’issue #115](https://github.com/bdelion/design-system-quality-pipeline/issues/115) après le rejet des présentations précédentes.
+**ÉTAT : présentation appliquée au code le 24 octobre 2026 ; limites de traduction des sélections en recherche GitHub documentées dans le [contrat courant](dashboard-double-presentation.md#accès-github-dans-la-vue-synthétique).** Ce document ne constitue pas une preuve que le dashboard généré respecte déjà la demande. Il précise la cible de [l’issue #115](https://github.com/bdelion/design-system-quality-pipeline/issues/115) après le rejet des présentations précédentes.
 
 ## Référence visuelle
 
@@ -32,6 +32,10 @@ Le prototype utilise uniquement des données fictives. Le lien GitHub y est simu
 - Les liens individuels des tickets de la liste restent distincts de cet accès global ; la demande rejette les ajouts qui encombrent les pages et les tableaux principaux.
 - Préserver les exports CSV, les filtres, les tris, la pagination, l’accessibilité et la présentation compacte.
 
+## Arbitrage complémentaire — 24 octobre 2026
+
+**VALIDÉ par l’utilisateur :** « Proposer une recherche plus large du composant ou du dépôt, avec un avertissement » lorsque les filtres GitHub ne reproduisent pas la sélection métier exacte. Le lien reste unique dans l’en-tête A. La fenêtre indique explicitement le périmètre élargi ; la liste locale et son CSV restent les références exactes. Cet arbitrage ne réautorise ni les lots ni les recherches approximatives par numéros.
+
 ## Points fonctionnels restant à traiter
 
 La construction d’une recherche GitHub unique et adéquate **n’est pas validée par le choix de la maquette**. Les recherches approximatives par numéros et les liens par lots des versions précédentes ne sont pas une solution acceptée pour cette cible.
@@ -52,4 +56,4 @@ Les URL sources restent la référence (D-161). Aucun lien ne doit être fabriqu
 6. Vérifier les comportements sur une fixture déterministe, puis sur les données non anonymisées disponibles localement, sans les committer ni les transmettre à un service externe.
 7. Exécuter les contrôles du projet avant de publier la correction fonctionnelle. En l’absence de vérification du cas réel, conserver cette limite dans le compte rendu.
 
-La présente livraison versionne la demande et le prototype uniquement. **L’issue #115 reste à traiter fonctionnellement ; ce commit ne demande pas sa clôture automatique.**
+Le commit initial versionnait la demande et le prototype uniquement. La correction suivante applique la présentation A. **La validation des recherches sur les données réelles reste à réaliser ; le choix de la maquette ne vaut pas validation de ces recherches ni clôture automatique de #115.**
