@@ -1,3 +1,9 @@
+/**
+ * @module lib.ids
+ * Construit des identifiants stables pour les entités du pipeline.
+ * @remarks Documentation des contrats et responsabilités du module.
+ */
+
 import { createHash } from 'node:crypto';
 
 /** Produit un identifiant déterministe pour relier les entités entre snapshots. */

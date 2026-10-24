@@ -1,0 +1,34 @@
+{
+  "status": "validated",
+  "maxGrowthPercent": 0,
+  "fixtureHash": "92944855a6f1de050e2677f17b19cd8200242ca557a18e90e8a8f15318e46597",
+  "description": "Référence validée de la présentation compacte ; maximum DOM sur les cinq espaces, pagination initiale 25. Les budgets classiques restent inchangés.",
+  "pages": [
+    {
+      "page": "index.html",
+      "htmlBytes": 799,
+      "jsonBytes": 0,
+      "initialTableRows": 0,
+      "domNodes": 30,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "simplified/index.html",
+      "htmlBytes": 44079,
+      "jsonBytes": 42010,
+      "initialTableRows": 0,
+      "domNodes": 689,
+      "renderedTableRows": 24
+    }
+  ],
+  "validation": {
+    "date": "2026-10-22",
+    "approval": "Oui, conserver ces ajouts et actualiser la référence",
+    "scope": "Tableaux librairie/composant et librairie/version, CSV et bandeau fixe ; HTML 44079 octets, JSON 42010 octets, DOM 689 nœuds.",
+    "previous": {
+      "htmlBytes": 31605,
+      "jsonBytes": 29576,
+      "domNodes": 686
+    }
+  }
+}

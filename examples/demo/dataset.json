@@ -1,0 +1,574 @@
+{
+  "schemaVersion": 1,
+  "kind": "demo",
+  "profileId": "dsq-demo",
+  "config": {
+    "modelVersion": "2.3",
+    "ruleVersion": "dq-2026.10-dataset-workflow",
+    "auditVersion": "2026.09",
+    "scope": "configured-github-repositories",
+    "githubOwner": "example",
+    "repositories": ["design-system-core", "design-system-react", "design-system-docs"],
+    "github": {
+      "labels": {
+        "componentPrefix": "🧩 Component:",
+        "accessibilityCriticalityPrefix": "🚦 rgaa:",
+        "accessibilityCategoryPrefix": "♿ a11y:",
+        "unknown": "label:unknown",
+        "criticalityValues": {
+          "bloquante": "blocking",
+          "majeure": "major",
+          "mineure": "minor"
+        }
+      },
+      "issueTypes": {
+        "anomaly": "BUG",
+        "keywords": {
+          "AUDIT": ["audit"],
+          "EPIC": ["epic"],
+          "NEW_COMPONENT": ["new_component", "new component"],
+          "FEATURE": ["feature"],
+          "BUG": ["bug", "rgaa", "a11y"]
+        }
+      },
+      "projectStatuses": {
+        "keywords": {
+          "BACKLOG": ["Backlog", "📋 Backlog"],
+          "READY": ["Ready", "🔖 Ready"],
+          "IN_PROGRESS": ["In progress", "🏗 In progress"],
+          "IN_REVIEW": ["In review", "👀 In review"],
+          "DONE": ["Done", "✅ Done"],
+          "BLOCKED": ["Blocked", "✋ Blocked"],
+          "CANCELLED": ["Cancelled", "🛑 Cancelled"]
+        }
+      },
+      "auditDetection": {
+        "strategies": [
+          {
+            "issueTypes": ["Audit"],
+            "requireComponent": true
+          },
+          {
+            "issueTypes": ["Task"],
+            "requiredLabels": ["Audit RGAA"],
+            "requireComponent": true
+          }
+        ]
+      },
+      "closingKeywords": [
+        "close",
+        "closed",
+        "closes",
+        "fix",
+        "fixed",
+        "fixes",
+        "resolve",
+        "resolved",
+        "resolves"
+      ],
+      "cancelledProjectStatuses": ["Cancelled"]
+    }
+  },
+  "catalogue": {
+    "version": "1.0",
+    "components": [
+      {
+        "name": "Button",
+        "repository": "design-system-core",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "stable",
+        "rgaaLevel": "AA",
+        "figmaUrl": "https://figma.example.com/button",
+        "documentationUrl": "https://eventail.example.com/button",
+        "tags": ["form", "action"],
+        "audit": {
+          "frequency": "quarterly",
+          "lastAuditDate": "2026-08-12"
+        }
+      },
+      {
+        "name": "Modal",
+        "repository": "design-system-core",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "stable",
+        "rgaaLevel": "AA",
+        "figmaUrl": "https://figma.example.com/modal",
+        "documentationUrl": "https://eventail.example.com/modal",
+        "tags": ["overlay", "dialog"],
+        "audit": {
+          "frequency": "quarterly",
+          "lastAuditDate": "2026-08-01"
+        }
+      },
+      {
+        "name": "DatePicker",
+        "repository": "design-system-react",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "stable",
+        "rgaaLevel": "AA",
+        "figmaUrl": "https://figma.example.com/datepicker",
+        "documentationUrl": "https://eventail.example.com/datepicker",
+        "tags": ["form", "date"],
+        "audit": {
+          "frequency": "monthly",
+          "lastAuditDate": "2026-07-15"
+        }
+      },
+      {
+        "name": "Alert",
+        "repository": "design-system-docs",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "stable",
+        "rgaaLevel": "AA",
+        "tags": ["feedback"],
+        "audit": {
+          "frequency": "quarterly"
+        }
+      },
+      {
+        "name": "Card",
+        "repository": "design-system-docs",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "stable",
+        "rgaaLevel": "AA",
+        "tags": ["layout"]
+      },
+      {
+        "name": "Toast",
+        "repository": "design-system-react",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "experimental",
+        "rgaaLevel": "AA",
+        "tags": ["feedback"]
+      },
+      {
+        "name": "Tabs",
+        "repository": "design-system-react",
+        "stream": "React",
+        "owner": "Front",
+        "squad": "eventail",
+        "status": "stable",
+        "rgaaLevel": "AA",
+        "tags": ["navigation"]
+      },
+      {
+        "name": "TreeView",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Radio",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Label",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Switch",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "NotificationStack",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Dialog",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Badge",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Table",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "CopyString",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Loader",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Tag",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "MediaCard",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "Input",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "LinkButton",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "StringFormFragment",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      },
+      {
+        "name": "LoadingIndicator",
+        "stream": "TODO",
+        "owner": "TODO",
+        "squad": "TODO",
+        "status": "stable",
+        "rgaaLevel": "TODO",
+        "tags": []
+      }
+    ]
+  },
+  "rawData": {
+    "collectedAt": "2026-09-08T09:00:00.000Z",
+    "nexusAvailable": false,
+    "catalogueComponents": ["Button", "Modal", "Select", "DatePicker", "Alert", "Card", "Toast"],
+    "repositories": [
+      {
+        "id": "repo-core",
+        "name": "design-system-core",
+        "owner": "example",
+        "defaultBranch": "main",
+        "issues": [
+          {
+            "id": "issue-101",
+            "number": 101,
+            "title": "Button: focus indicator is insufficient",
+            "state": "CLOSED",
+            "issueType": "BUG",
+            "labels": ["Component:Button", "♿ a11y:focus", "rgaa:majeure"],
+            "component": "Button",
+            "criticities": ["major"],
+            "parents": ["audit-button-1"],
+            "createdAt": "2026-08-01T10:00:00.000Z",
+            "closedAt": "2026-08-06T10:00:00.000Z",
+            "firstDoneAt": "2026-08-05T10:00:00.000Z",
+            "linkedPullRequestIds": ["pr-201"],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Done",
+                "statusHistory": [
+                  {
+                    "status": "Done",
+                    "transitionedAt": "2026-08-05T10:00:00.000Z"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "issue-102",
+            "number": 102,
+            "title": "Modal: keyboard trap",
+            "state": "OPEN",
+            "issueType": "BUG",
+            "labels": ["Component:Modal", "♿ a11y:keyboard", "rgaa:bloquante"],
+            "component": "Modal",
+            "criticities": ["blocking"],
+            "parents": ["audit-modal-1"],
+            "createdAt": "2026-08-10T10:00:00.000Z",
+            "linkedPullRequestIds": [],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Backlog",
+                "statusHistory": []
+              }
+            ]
+          },
+          {
+            "id": "issue-103",
+            "number": 103,
+            "title": "Tooltip: missing accessible name",
+            "state": "CLOSED",
+            "issueType": "BUG",
+            "labels": ["Component:Tooltip", "♿ a11y:name"],
+            "component": "Tooltip",
+            "criticities": [],
+            "parents": ["audit-tooltip-1"],
+            "createdAt": "2026-08-12T10:00:00.000Z",
+            "closedAt": "2026-08-14T10:00:00.000Z",
+            "firstDoneAt": "2026-08-14T10:00:00.000Z",
+            "linkedPullRequestIds": [],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Done",
+                "statusHistory": [
+                  {
+                    "status": "Done",
+                    "transitionedAt": "2026-08-14T10:00:00.000Z"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "pullRequests": [
+          {
+            "id": "pr-201",
+            "number": 201,
+            "state": "MERGED",
+            "mergedAt": "2026-08-05T09:00:00.000Z",
+            "relatedIssueIds": ["issue-101"]
+          }
+        ]
+      },
+      {
+        "id": "repo-react",
+        "name": "design-system-react",
+        "owner": "example",
+        "defaultBranch": "main",
+        "issues": [
+          {
+            "id": "issue-201",
+            "number": 201,
+            "title": "Select: le focus n'est pas visible au clavier",
+            "state": "CLOSED",
+            "issueType": "BUG",
+            "labels": ["Component:Select", "♿ a11y:focus", "rgaa:majeure"],
+            "component": "Select",
+            "criticities": ["major"],
+            "parents": ["audit-select-1"],
+            "createdAt": "2026-08-03T09:00:00.000Z",
+            "closedAt": "2026-08-12T15:00:00.000Z",
+            "firstDoneAt": "2026-08-11T15:00:00.000Z",
+            "linkedPullRequestIds": ["pr-301"],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Done",
+                "statusHistory": [
+                  {
+                    "status": "Done",
+                    "transitionedAt": "2026-08-11T15:00:00.000Z"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "issue-202",
+            "number": 202,
+            "title": "DatePicker: le nom accessible manque sur le champ",
+            "state": "OPEN",
+            "issueType": "BUG",
+            "labels": ["Component:DatePicker", "♿ a11y:name", "rgaa:mineure"],
+            "component": "DatePicker",
+            "criticities": ["minor"],
+            "parents": ["audit-datepicker-1"],
+            "createdAt": "2026-08-15T11:00:00.000Z",
+            "linkedPullRequestIds": [],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Backlog",
+                "statusHistory": []
+              }
+            ]
+          },
+          {
+            "id": "issue-204",
+            "number": 204,
+            "title": "Audit du composant Toast",
+            "state": "CLOSED",
+            "issueType": "AUDIT",
+            "labels": ["Component:Toast", "audit:completed"],
+            "component": "Toast",
+            "criticities": [],
+            "parents": [],
+            "createdAt": "2026-08-01T09:00:00.000Z",
+            "closedAt": "2026-08-04T16:00:00.000Z",
+            "auditStatus": "conform",
+            "auditResult": "conform",
+            "linkedPullRequestIds": [],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Done",
+                "statusHistory": [
+                  {
+                    "status": "Done",
+                    "transitionedAt": "2026-08-04T16:00:00.000Z"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "pullRequests": [
+          {
+            "id": "pr-301",
+            "number": 301,
+            "state": "MERGED",
+            "mergedAt": "2026-08-11T14:00:00.000Z",
+            "relatedIssueIds": ["issue-201"]
+          }
+        ]
+      },
+      {
+        "id": "repo-docs",
+        "name": "design-system-docs",
+        "owner": "example",
+        "defaultBranch": "main",
+        "issues": [
+          {
+            "id": "issue-301",
+            "number": 301,
+            "title": "Alert: contraste insuffisant dans la documentation",
+            "state": "CLOSED",
+            "issueType": "BUG",
+            "labels": ["Component:Alert", "♿ a11y:contrast", "rgaa:bloquante"],
+            "component": "Alert",
+            "criticities": ["blocking"],
+            "parents": ["audit-alert-1"],
+            "createdAt": "2026-08-05T08:30:00.000Z",
+            "closedAt": "2026-08-20T13:00:00.000Z",
+            "firstDoneAt": "2026-08-19T13:00:00.000Z",
+            "linkedPullRequestIds": ["pr-401"],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Done",
+                "statusHistory": [
+                  {
+                    "status": "Done",
+                    "transitionedAt": "2026-08-19T13:00:00.000Z"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "issue-302",
+            "number": 302,
+            "title": "Card: ordre de lecture à vérifier",
+            "state": "OPEN",
+            "issueType": "BUG",
+            "labels": ["Component:Card", "♿ a11y:structure", "label:unknown"],
+            "component": "Card",
+            "criticities": ["minor"],
+            "parents": ["audit-card-1"],
+            "createdAt": "2026-08-22T14:00:00.000Z",
+            "linkedPullRequestIds": [],
+            "projectStatuses": [
+              {
+                "projectId": "fixture-quality",
+                "projectName": "Qualité (scénario de référence)",
+                "status": "Backlog",
+                "statusHistory": []
+              }
+            ]
+          }
+        ],
+        "pullRequests": [
+          {
+            "id": "pr-401",
+            "number": 401,
+            "state": "MERGED",
+            "mergedAt": "2026-08-19T12:00:00.000Z",
+            "relatedIssueIds": ["issue-301"]
+          }
+        ]
+      }
+    ]
+  }
+}

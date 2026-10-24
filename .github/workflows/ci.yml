@@ -18,15 +18,63 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Formatting
+        run: npm run format:check
+      - name: AI instructions and decision index
+        run: npm run check:ai
       - name: Typecheck
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: French TSDoc
+        run: npm run check:tsdoc
       - name: Tests
         run: npm test
       - name: Build
         run: npm run build
+      - name: API documentation
+        run: npm run docs:api
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser interactions and accessibility
+        run: npm run test:browser
+      - name: Browser validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-browser-report
+          path: |
+            data/browser-report
+            data/browser-results
+
+  release:
+    name: Tag and release after complete CI
+    needs: [quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.quality.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Publish version and release notes
+        run: node --import tsx scripts/publish-release.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}

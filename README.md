@@ -1,488 +1,112 @@
-# Design System Quality Pipeline
+﻿# Design System Quality Pipeline
 
-Pipeline Node.js + TypeScript de collecte, contrôle et analyse de la
-qualité de Design Systems à partir de données GitHub.
+Collecter des repositories GitHub, préparer un dataset autonome et rejouer son dashboard hors réseau. GitHub reste en lecture seule. Les conventions DSQ sont livrées dans `config/profiles/dsq.json` ; les informations absentes restent inconnues.
 
-Le projet collecte les données en lecture seule, les projette dans un
-modèle métier minimal, contrôle leur qualité, calcule les indicateurs,
-produit des snapshots et génère un dashboard HTML statique.
+Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)** regroupe les commandes, toutes leurs options, les fichiers requis et les recettes : dashboard GitHub à jour, rejeu privé, jeu anonymisé, catalogues et historiques.
 
-La documentation détaillée est disponible dans [`docs/`](docs/index.md).
+## Démarrer sans GitHub
 
-------------------------------------------------------------------------
+Le [diagnostic des calculs d’audit (#49)](docs/08-implementation/issue-49-audit-diagnostic.md) distingue la campagne courante, les relations parent collectées et les preuves historiques nécessaires aux verdicts par version.
 
-## Vue d'ensemble
+Les [conventions d’affichage du dashboard](docs/08-implementation/dashboard-coherence.md#référentiel-commun) précisent notamment les tris des tableaux et répartitions.
 
-``` text
-GitHub / Fixture
-       │
-       ▼
-     RAW
-       │
-       ▼
- Normalisation
-       │
-       ▼
- Data Quality
-       │
-       ▼
- KPI / Analytics
-       │
-       ▼
- Snapshot
-       │
-       ▼
- Dashboard statique
+Node.js >= 22.15.0, référence 22.23.3 dans `.nvmrc`.
+
+```powershell
+npm.cmd ci
+npm.cmd run pipeline
+npm.cmd run dashboard:serve
 ```
 
-Les principes structurants sont :
+Ouvrir [le dashboard local](http://127.0.0.1:4174/). La démonstration utilise uniquement `examples/demo/dataset.json` et écrit dans `data/output/demo/`. Elle est distincte des références de tests et de vos collectes.
 
--   le modèle RAW ne conserve que les données utiles au pipeline ;
--   les données inconnues ou invalides ne sont pas transformées
-    silencieusement en `0`, `false` ou « conforme » ;
--   les contrôles de qualité sont associés à leur impact réel sur les
-    indicateurs ;
--   les KPI exposent leur périmètre et leur fiabilité ;
--   les snapshots permettent de comparer les états successifs et de
-    calculer les flux ;
--   le pipeline reste déterministe et rejouable à partir des données
-    collectées et des versions de règles.
+Chaque génération produit désormais **les deux présentations**, sans option supplémentaire : une [vue synthétique et une vue détaillée](docs/08-implementation/dashboard-double-presentation.md). L’accueil permet de choisir et de changer de vue. Les données et les verdicts sont communs. La vue synthétique propose une présentation compacte à navigation fixe, des CSV complets et les synthèses librairie/composant et librairie/version.
 
-## Prérequis
+## Partir d’une liste de dépôts
 
--   Node.js 20 ou supérieur ;
--   npm ;
--   terminal ouvert à la racine du projet.
+Créer `repositories.json` :
 
-Vérification :
-
-``` bash
-node --version
-npm --version
+```json
+["mon-organisation/librairie-react", "mon-organisation/librairie-web"]
 ```
 
-## Installation
+Fournir `GITHUB_TOKEN` dans le shell ou dans `.env`, puis :
 
-``` bash
-npm install
+Pour GitHub Enterprise, consulter la [configuration des endpoints et des liens web](docs/08-implementation/guide-utilisation.md#3-collecter-vos-repositories) avant la collecte.
+
+Les appels GitHub utilisent le transport Octokit ; la pagination, les quotas et les reprises restent pilotés par le pipeline. Le [bilan de l’intégration (#72)](docs/08-implementation/octokit.md) explique ses bénéfices et les limites concernant les performances et la consommation de quota.
+
+```powershell
+npm.cmd run collect -- --repositories repositories.json --output data/local/mon-jeu/raw.json
+npm.cmd run fixture:prepare -- --input data/local/mon-jeu/raw.json --output datasets/mon-jeu
+npm.cmd run fixture:validate -- --dataset datasets/mon-jeu
+npm.cmd run pipeline -- --dataset datasets/mon-jeu --output data/output/mon-jeu
+npm.cmd run dashboard:serve -- data/output/mon-jeu/dashboard
 ```
 
-Vérifier ensuite le projet :
+Pour consulter les identités réelles et leurs liens GitHub, le RAW contextualisé est également rejouable hors réseau : `npm.cmd run pipeline -- --dataset data/local/mon-jeu/raw.json --output data/output/mon-jeu-local`. Ces sorties restent privées ; la graine locale n’est pas copiée dans le snapshot ou le dashboard.
 
-``` bash
-npm run typecheck
-npm test
-npm run lint
-```
+Aucun `system.yaml`, `catalogue.yaml` ou fichier V1 n’est à fabriquer. La capture conserve une graine privée générée localement, utilisée automatiquement par la préparation et exclue du dataset partageable. `ANONYMIZATION_SEED` permet de choisir une graine stable pour plusieurs collectes. La préparation produit `dataset.json` et `manifest.json` dans un dossier autonome, contrôle les relations avant publication et refuse une destination existante. Sans `--catalogue`, elle crée aussi `<chemin-du-RAW>.catalogue.draft.yaml`, un brouillon privé à compléter ; les métadonnées métier ne sont pas inventées. Après revue et retrait de `draft: true`, fournir ce catalogue avec `--catalogue` pour préparer un nouveau dataset enrichi. Voir [les étapes et précautions](docs/08-implementation/datasets.md#enrichissements-facultatifs).
 
-## Exécution du pipeline
+## Commandes
 
-La commande principale est :
+| Script                             | Fonction                                                                                                                                           |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `collect`                          | Capturer GitHub depuis une liste JSON de repositories, avec le profil DSQ livré et les [options de quota](docs/08-implementation/quotas-github.md) |
+| `fixture:prepare`                  | Préparer depuis un RAW ou enrichir une fixture ; `--input` et `--output` requis ; catalogues facultatifs                                           |
+| `fixture:validate`                 | Contrôler le dataset et exécuter son pipeline dans un dossier temporaire ; `--dataset`                                                             |
+| `pipeline`                         | Rejouer le dataset hors réseau ; `--dataset`, `--output` ; démonstration par défaut                                                                |
+| `dashboard:serve`                  | Consulter le dashboard local ; dossier facultatif après `--`                                                                                       |
+| `test`, `check`, `check:dashboard` | Vérifier le code avec des scénarios versionnés dans `tests/fixtures`, sans collecte préalable                                                      |
 
-``` bash
-npm run pipeline
-```
+`analyze`, `snapshot`, `dashboard`, `validate`, `fixture:anonymize`, `reference:prepare`, `catalogue:generate` et `system:generate` sont supprimés. Le [guide de migration et le contrat des datasets](docs/08-implementation/datasets.md) décrivent le nouveau parcours.
 
-Elle enchaîne les principales étapes du pipeline :
+Pour suivre la présence et la qualité des composants par version, `fixture:prepare --historical-catalogue <fichier.yaml>` embarque un référentiel historique. Une fixture existante peut être enrichie en fournissant son `dataset.json` avec `--input`, vers un nouveau dossier, sans réanonymiser ses faits. Voir le [parcours historique et ses règles d'identité](docs/08-implementation/datasets.md#historique-des-composants-par-version).
 
-1.  chargement de la configuration ;
-2.  collecte de la source ;
-3.  normalisation ;
-4.  contrôles de qualité ;
-5.  calcul des KPI ;
-6.  création du snapshot ;
-7.  génération du dashboard.
+## Données et tests
 
-Une exécution peut être `COMPLETE` ou `PARTIAL`. `PARTIAL` signifie que
-le traitement est terminé mais que certaines données ou métriques sont
-affectées par des réserves de qualité.
+Les cartes d’accessibilité affichent l’unité, la population et les réserves près de chaque KPI, y compris après filtrage. Voir le [contrat de présentation](docs/08-implementation/dashboard-coherence.md#présentation-des-kpi-daccessibilité-79).
 
-### Exécuter les étapes séparément
+Le bandeau des versions indique les PROD réellement démontrées par repository pour la couverture/conformité et précise le périmètre des anomalies. Sans tag PROD exact, les ratios courants restent indisponibles ; une sélection explicite distingue développement et publication non démontrée. Voir le [contrat des versions PROD](docs/08-implementation/dashboard-coherence.md#versions-prod-réellement-évaluées-80).
 
-``` bash
-npm run collect
-npm run validate
-npm run analyze
-npm run snapshot
-npm run dashboard
-```
+Dans « Composants et versions », les compteurs distinguent composants visibles, sélection et issues distinctes. Les règles de filtrage et les états sans données sont décrits dans le [contrat des compteurs](docs/08-implementation/dashboard-coherence.md#compteurs-de-lexplorateur-composants-78).
 
-## Dashboard
+Le [parcours Composants](docs/08-implementation/components-workflow.md) utilise un seul périmètre repository/composant/version. La recherche locale affine ce résultat ; « Réinitialiser la vue » efface aussi la sélection et les filtres. Le tableau précède les délais et l’aide détaillée, dépliables au clavier.
 
-Après une exécution du pipeline, le dashboard statique est disponible
-dans :
+Le [contrat des populations](docs/08-implementation/component-populations.md) distingue identités historiques, actifs, présences par version, couples couverts et conformes. Le détail nominatif dans Audits et conformité expose les identités, alias, preuves et exclusions ; les effectifs et formules restent inchangés.
 
-``` text
-data/dashboard/index.html
-```
+Le dashboard est destiné aux PC. Les tests navigateur couvrent l’usage desktop, l’accessibilité et les interactions au clavier et à la souris ; les scénarios mobiles ont été retirés (#74). Voir le [périmètre des validations](docs/08-implementation/tests.md#validation-intégrale-du-dashboard).
 
-Il comprend notamment :
+Les tableaux utilisent une typographie courante, des nombres alignés et un défilement au clavier. Voir la [revue de lisibilité PC et ses captures à 200 %](docs/08-implementation/dashboard-table-readability.md).
 
--   **Vue d'ensemble** : principaux KPI, criticités, qualité des données
-    et délais ;
--   **Anomalies** : détail des anomalies et de leur qualité de données ;
--   **Audits** : composants, audits et résultats ;
--   **Cartographie** : relations repository → composant → audit →
-    anomalie → PR ;
--   **Historique** : évolution entre snapshots comparables.
+`npm run benchmark:dashboard -- --scenario control --runs 3 --output data/output/benchmarks/control-before` mesure un jeu entièrement synthétique (parent à créer, sortie neuve). Le scénario `load`, les rapports par page et les budgets validés sans croissance sont décrits dans le [protocole de benchmark PC](docs/08-implementation/dashboard-benchmark.md).
 
-Le dashboard ne nécessite ni serveur applicatif ni base de données.
+Le dashboard embarque un [JSON versionné propre à chaque page](docs/07-decisions/ADR-005-modeles-lecture-dashboard.md), sans snapshot complet ni RAW. Les filtres et CSV conservent leurs faits et qualifications ; les anciennes captures compatibles sont projetées sans réécriture. Distribuer le dossier complet avec ses assets et le servir en HTTP ; une erreur de contrat est signalée explicitement.
 
-## Sources de données
+Activité et Qualité des données affichent 50 lignes par page. Filtres, tris et CSV portent sur tous les résultats ; la sélection d’Activité sert aux KPI et couvre les issues distinctes de toutes les pages filtrées. Voir le [contrat de pagination et ses mesures](docs/08-implementation/dashboard-pagination.md).
 
-### Fixture locale
+Qualité des données regroupe les occurrences par cause, sévérité et impacts, avec une prochaine vérification lorsqu'elle est documentée et une source résolue. Chaque groupe ouvre ses occurrences et leur export complet ; ces décomptes décrivent la fiabilité des données. Voir le [contrat des causes DQ](docs/08-implementation/dashboard-quality-causes.md).
 
-Une fixture permet d'exécuter le pipeline sans accès à GitHub.
+Près du titre, la capture est datée en UTC, le périmètre partagé suit les filtres et la fiabilité globale donne accès aux diagnostics et à leurs preuves. Une capture récente peut être partielle ; un résultat non conforme peut être fiable. Voir le [contrat du résumé de capture](docs/08-implementation/dashboard-coherence.md#résumé-de-capture-près-du-titre-89).
 
-``` bash
-npm run pipeline
-```
+Pour un RAW non anonymisé, `pipeline --dataset <raw.json> --historical-catalogue <identites.yaml> --historical-repository <owner/repository>` importe l'historique local sans passer par `fixture:prepare`. Le fichier d'identités désigne son référentiel de présences via `historicalCatalogue`. Voir le [parcours local détaillé](docs/08-implementation/datasets.md#collecte-non-anonymisée--historique-local-et-fichier-didentités).
 
-La configuration de démonstration utilise les fichiers de configuration
-et fixtures présents dans le dépôt.
+Le dashboard propose **Activité des équipes → Suivi des Epics** : choix d'une Epic, durées calendaires par composant/issue et export CSV. Une nouvelle collecte est nécessaire pour récupérer les mentions présentes dans les descriptions. Voir [le contrat et les limites du suivi](docs/08-implementation/dashboard-coherence.md#suivi-des-epics-69).
 
-### GitHub
+Les tests utilisent leurs propres références stables ; modifier une collecte ou la démonstration ne les remplace pas. `fixture:validate` contrôle votre dataset, tandis que `npm test` vérifie le logiciel. Une réserve Data Quality peut rendre le dashboard partiel sans invalider la structure du dataset. Les sorties sont écrites dans le dossier choisi, avec un historique limité aux scopes et versions compatibles. Les faits RAW ne sont pas réécrits par le pipeline.
 
-Un collecteur GitHub REST est disponible en lecture seule.
+Les tokens, graines, captures et correspondances restent locaux. Les dossiers `data/local/`, `data/output/` et `datasets/` sont ignorés par Git. Une fixture préparée nécessite une revue avant partage : labels, types, statuts et tags métier peuvent conserver des informations sensibles.
 
-Définir le token uniquement dans l'environnement :
+- [Guide débutant](docs/08-implementation/guide-utilisation.md)
+- [Datasets et migration](docs/08-implementation/datasets.md)
+- [Tests et configurations](docs/08-implementation/configurations-et-tests.md)
+- [Documentation métier et gouvernance](docs/README.md)
+- [Développer](docs/08-implementation/guide-developpement.md)
 
-``` powershell
-$env:GITHUB_TOKEN = "..."
-```
+Les compteurs restent figés à la date du snapshot. Dans les tableaux de repositories et de composants, « GitHub actuel ≈ » ouvre une recherche actuelle et approchée : son résultat peut différer du compteur et ne le justifie pas. Les [liens d’entités résolues](docs/08-implementation/dashboard-links.md) ouvrent leur issue ou PR ; une référence non résolue reste du texte.
 
-Puis :
+## Revue métier des bugs et corrections
 
-``` bash
-npm run collect -- --source github
-npm run pipeline -- --source github
-```
+Les [décisions et conventions de labels du 19 octobre 2026](docs/08-implementation/validation-metier-20261019.md) distinguent bugs fonctionnels, accessibilité, améliorations, corrections confirmées et vérification par audit. Le rejeu accepte `--issue-policy config/issue-policy.example.json`, sans modifier les JSON sources. Les filtres de la page Activité permettent notamment de retrouver les issues sans Project, sans audit, sans composant ou demandant un avis auditeur.
 
-Pour GitHub Enterprise, les URLs API/web sont configurées dans `.env` :
-
-``` text
-GITHUB_API_URL=...
-GITHUB_GRAPHQL_URL=...
-GITHUB_URL=...
-```
-
-Le token n'est pas écrit dans les snapshots, les logs ou le dashboard.
-
-La collecte gère notamment la pagination et les retries contrôlés. Les
-relations entre issues et pull requests sont également exploitées
-lorsqu'elles sont disponibles.
-
-## Anonymisation des données réelles
-
-Le projet fournit une chaîne dédiée pour transformer un RAW réel en
-fixture partageable.
-
-``` bash
-npm run fixture:anonymize -- \
-  --input data/raw/my-real-dataset.json \
-  --output fixtures/github-real-anonymized.json
-```
-
-L'anonymisation est déterministe à partir d'une seed.
-
-Elle anonymise notamment :
-
--   identifiants ;
--   noms et propriétaires de repositories ;
--   numéros techniques ;
--   dates ;
--   textes libres ;
--   noms de projets ;
--   relations associées.
-
-Certaines données métier sont volontairement conservées exactement car
-elles ont une signification analytique :
-
--   `labels` ;
--   `state` ;
--   `issueType` ;
--   `projectStatuses[].status` ;
--   `milestone.title` ;
--   `milestone.state`.
-
-Le collecteur et l'anonymiseur reconstruisent explicitement le modèle
-RAW : les objets riches provenant de l'API GitHub ne sont pas recopiés
-tels quels.
-
-### Manifeste de traçabilité RAW
-
-Depuis V7, l'anonymisation produit par défaut un manifeste local :
-
-``` text
-fixtures/github-real-anonymized.json.trace.json
-```
-
-Il permet de relier :
-
-``` text
-fixture anonymisée
-      ↓
-sourcePath JSON
-      ↓
-identifiant de l'entité RAW
-```
-
-Il contient également les relations entre issues et pull requests et
-indique si une cible existait dans le RAW source.
-
-Ce fichier peut contenir des identifiants issus de la source réelle. Il
-est donc **local uniquement** et ne doit pas être partagé ou versionné.
-
-Les fichiers `*.trace.json` sont exclus du dépôt par `.gitignore`.
-
-Pour désactiver sa génération :
-
-``` bash
-npm run fixture:anonymize -- \
-  --input <raw.json> \
-  --output <fixture.json> \
-  --no-trace
-```
-
-Un chemin explicite peut être fourni avec :
-
-``` bash
---trace-output <path>
-```
-
-## Validation d'une fixture
-
-``` bash
-npm run fixture:validate -- \
-  --input fixtures/github-real-anonymized.json
-```
-
-La validation contrôle notamment :
-
--   la présence de données sensibles résiduelles ;
--   les relations entre entités ;
--   la cohérence des références ;
--   les éléments susceptibles d'empêcher une fixture d'être considérée
-    comme partageable.
-
-Un rapport Markdown est généré par défaut à côté de la fixture :
-
-``` text
-fixtures/github-real-anonymized.json.validation.md
-```
-
-Un emplacement peut être précisé avec :
-
-``` bash
---report <path>
-```
-
-### Rapport enrichi avec la trace RAW
-
-Pour analyser une anomalie de fixture avec son origine dans les données
-réelles :
-
-``` bash
-npm run fixture:validate -- \
-  --input fixtures/github-real-anonymized.json \
-  --trace fixtures/github-real-anonymized.json.trace.json
-```
-
-Le rapport peut alors indiquer :
-
--   le chemin JSON dans la fixture ;
--   le fichier RAW source ;
--   le `sourcePath` correspondant ;
--   l'identifiant RAW de l'entité ;
--   l'identifiant RAW de la référence ;
--   si la cible était présente ou absente du RAW.
-
-Cela permet notamment de distinguer une référence réellement absente de
-la source d'un problème introduit pendant l'anonymisation.
-
-### Détection des données sensibles
-
-La détection est désormais consciente du contexte des champs.
-
-Les valeurs structurées connues, notamment les timestamps ISO, ne sont
-pas interprétées comme des numéros de téléphone. Les champs libres
-restent analysés afin de ne pas masquer un véritable numéro présent dans
-un texte.
-
-Le contrôle distingue ainsi mieux :
-
-``` text
-date structurée
-≠
-numéro de téléphone
-```
-
-tout en conservant une détection des données sensibles dans les textes
-qui peuvent réellement en contenir.
-
-## Architecture du code
-
-``` text
-config/                 Configuration du système et des règles
-fixtures/               Fixtures locales et données de démonstration
-src/
-  collectors/           Collecte RAW
-  normalizers/          Normalisation vers le modèle métier
-  quality/               Contrôles Data Quality
-  analytics/             Calcul des KPI
-  snapshots/             Snapshots et comparaison historique
-  dashboard/             Génération du dashboard statique
-  anonymization/         Anonymisation et validation des fixtures
-  cli.ts                 Interface en ligne de commande
-tests/                  Tests unitaires et contractuels
-data/current/            Résultats courants
-data/runs/               Historique des snapshots
-docs/                   Documentation technique détaillée
-```
-
-## Commandes disponibles
-
-  -----------------------------------------------------------------------
-  Commande                            Rôle
-  ----------------------------------- -----------------------------------
-  `npm run collect`                   Collecte les données RAW
-
-  `npm run validate`                  Valide configuration et données
-
-  `npm run analyze`                   Normalise, contrôle la qualité et
-                                      calcule les KPI
-
-  `npm run snapshot`                  Produit un snapshot
-
-  `npm run dashboard`                 Génère le dashboard
-
-  `npm run pipeline`                  Exécute le pipeline complet
-
-  `npm run fixture:anonymize`         Génère une fixture anonymisée
-
-  `npm run fixture:validate`          Valide une fixture anonymisée
-
-  `npm run typecheck`                 Vérifie les types TypeScript
-
-  `npm test`                          Exécute les tests
-
-  `npm run lint`                      Exécute ESLint
-  -----------------------------------------------------------------------
-
-## Historique et flux
-
-Les métriques d'état courant et les métriques d'évolution sont
-distinguées.
-
-Les métriques de **stock** décrivent l'état à la date du snapshot :
-anomalies ouvertes, en cours, corrigées, etc.
-
-Les métriques de **flux** décrivent les évolutions entre deux snapshots
-comparables : éléments créés, corrigés, rouverts ou annulés.
-
-Les flux ne sont calculés que lorsqu'un snapshot précédent comparable
-est disponible.
-
-## Data Quality
-
-Les contrôles `DQ-*` ne rendent pas automatiquement tous les KPI
-invalides.
-
-Une anomalie de qualité peut :
-
--   exclure certaines données d'un indicateur ;
--   réduire la fiabilité d'une métrique ;
--   laisser les autres métriques inchangées ;
--   rendre une métrique indisponible lorsqu'elle ne peut plus être
-    calculée correctement.
-
-Le détail des règles, sévérités, périmètres et impacts est documenté
-dans [`docs/quality-rules.md`](docs/quality-rules.md).
-
-## Documentation
-
-Le README reste volontairement synthétique. Pour les détails techniques
-:
-
--   [`docs/index.md`](docs/index.md) --- index de la documentation ;
--   [`docs/architecture.md`](docs/architecture.md) --- architecture ;
--   [`docs/workflow.md`](docs/workflow.md) --- déroulement d'une
-    exécution ;
--   [`docs/data-flows.md`](docs/data-flows.md) --- flux de données ;
--   [`docs/data-model.md`](docs/data-model.md) --- modèle de données ;
--   [`docs/catalogue.md`](docs/catalogue.md) --- catalogue ;
--   [`docs/github-collector.md`](docs/github-collector.md) --- collecte
-    GitHub ;
--   [`docs/analytics.md`](docs/analytics.md) --- calcul des KPI ;
--   [`docs/snapshots-dashboard.md`](docs/snapshots-dashboard.md) ---
-    snapshots et dashboard ;
--   [`docs/testing.md`](docs/testing.md) --- stratégie de tests ;
--   [`docs/quality-rules.md`](docs/quality-rules.md) --- règles Data
-    Quality.
-
-Les fichiers de configuration et le code restent les sources de vérité
-exécutables ; la documentation décrit leurs contrats et leur intention.
-
-## Dépannage
-
-### `npm` ou `node` n'est pas reconnu
-
-Installer Node.js 20+ et rouvrir le terminal.
-
-### Le typecheck échoue
-
-``` bash
-npm run typecheck
-```
-
-Corriger les erreurs TypeScript avant de relancer le pipeline.
-
-### Le dashboard semble ancien
-
-Regénérer le dashboard :
-
-``` bash
-npm run dashboard
-```
-
-Puis rouvrir :
-
-``` text
-data/dashboard/index.html
-```
-
-### Le pipeline retourne `PARTIAL`
-
-Ce n'est pas nécessairement une erreur d'exécution. Consulter les
-alertes Data Quality dans le dashboard et la documentation des règles
-`DQ-*`.
-
-### Une fixture est déclarée invalide
-
-Générer ou consulter le rapport :
-
-``` bash
-npm run fixture:validate -- \
-  --input <fixture.json> \
-  --report <fixture.json.validation.md>
-```
-
-Pour remonter jusqu'aux données d'origine, utiliser également le
-manifeste `.trace.json`.
-
-## Sécurité et données sensibles
-
-Ne jamais versionner :
-
--   tokens GitHub ;
--   fichiers RAW issus d'un environnement réel ;
--   manifestes de trace RAW ;
--   fichiers contenant des données personnelles ou confidentielles.
-
-Utiliser `.env` pour les secrets et conserver les traces RAW localement.
-
-------------------------------------------------------------------------
-
-**Version du projet :** `0.1.0`\
-**Stack :** Node.js · TypeScript · Commander · Vitest · ESLint\
-**Modèle :** Design System Quality V2.1
+La vue synthétique place un seul accès **Ouvrir dans GitHub ↗** dans l’en-tête des fenêtres, à côté du titre (maquette A, #115), avec ouverture directe pour un ticket unique. Aucun raccourci supplémentaire n’encombre les cartes ou tableaux ; aucun lot n’est généré. Les totaux issues/PR incluent tous les états. Si la sélection exacte n’est pas reproductible dans GitHub, le lien ouvre une recherche plus large du composant ou du dépôt, signalée par un avertissement. Voir [les accès et leurs limites](docs/08-implementation/dashboard-double-presentation.md#accès-github-dans-la-vue-synthétique).
