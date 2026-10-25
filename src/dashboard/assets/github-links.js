@@ -58,6 +58,21 @@ export function githubTargets(sources, options = {}) {
       ...base,
       reason: 'Les sources dépendent de plusieurs serveurs GitHub : aucune recherche unique ne les rassemble.'
     };
+  const repositoryScope = groups.size === 1 ? [...groups.values()][0] : undefined;
+  /** Ouvre l’onglet du dépôt lorsqu’il est unique, en gardant les filtres et leurs labels sources. */
+  function searchUrl(query) {
+    const url = new globalThis.URL(
+      repositoryScope
+        ? repositoryScope.origin +
+            '/' +
+            repositoryScope.repository +
+            (repositoryScope.type === 'pull' ? '/pulls' : '/issues')
+        : [...origins][0] + '/search'
+    );
+    if (!repositoryScope) url.searchParams.set('type', 'issues');
+    url.searchParams.set('q', query);
+    return url.href;
+  }
   /** Conserve un accès unique plus large uniquement lorsque ce repli est explicitement autorisé. */
   function broader(reason) {
     if (!options.allowBroader) return { ...base, reason };
@@ -70,9 +85,8 @@ export function githubTargets(sources, options = {}) {
           )
         : [];
       return (
-        'repo:' +
-        group.repository +
-        (group.type === 'pull' ? ' is:pr' : ' is:issue') +
+        (repositoryScope ? '' : 'repo:' + group.repository + ' ') +
+        (group.type === 'pull' ? 'is:pr' : 'is:issue') +
         (options.state && !stateMismatch ? ' is:' + options.state : '') +
         common.map((label) => ' label:' + JSON.stringify(label)).join('')
       );
@@ -81,8 +95,10 @@ export function githubTargets(sources, options = {}) {
     if (query.length > 256 || scopes.length > 6) {
       const types = new Set([...groups.values()].map((group) => group.type));
       query =
-        [...new Set([...groups.values()].map((group) => 'repo:' + group.repository))].join(' ') +
-        (types.size === 1 ? (types.has('pull') ? ' is:pr' : ' is:issue') : '') +
+        (repositoryScope
+          ? ''
+          : [...new Set([...groups.values()].map((group) => 'repo:' + group.repository))].join(' ') + ' ') +
+        (types.size === 1 ? (types.has('pull') ? 'is:pr' : 'is:issue') : '') +
         (options.state && !stateMismatch ? ' is:' + options.state : '');
     }
     if (query.length > 256) return { ...base, reason };
@@ -92,7 +108,7 @@ export function githubTargets(sources, options = {}) {
       reason,
       links: [
         {
-          url: [...origins][0] + '/search?type=issues&q=' + encodeURIComponent(query),
+          url: searchUrl(query),
           count: items.length,
           repository: [...groups.values()].map((group) => group.repository).join(', '),
           search: true
@@ -139,9 +155,8 @@ export function githubTargets(sources, options = {}) {
       const matching = selected.filter((source) => matches(source, candidate));
       if (!matching.some((source) => !covered.has(source.url))) continue;
       queries.push(
-        'repo:' +
-          repository +
-          (type === 'pull' ? ' is:pr' : ' is:issue') +
+        (repositoryScope ? '' : 'repo:' + repository + ' ') +
+          (type === 'pull' ? 'is:pr' : 'is:issue') +
           (requestedState ? ' is:' + requestedState : '') +
           candidate.map((label) => ' label:' + JSON.stringify(label)).join('')
       );
@@ -157,7 +172,7 @@ export function githubTargets(sources, options = {}) {
     ...base,
     links: [
       {
-        url: [...origins][0] + '/search?type=issues&q=' + encodeURIComponent(query),
+        url: searchUrl(query),
         count: items.length,
         repository: [...groups.values()].map((group) => group.repository).join(', '),
         search: true

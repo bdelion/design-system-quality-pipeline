@@ -4,6 +4,12 @@
 - Inspecteur local optionnel : sélection souris/clavier, copie de l’identifiant ou du contexte, recherche exacte et signalement des collisions.
 - Origines distinctes des fenêtres réutilisées ; titres et URL exclus de la copie par défaut. Évolution indépendante de #118, toujours en attente de validation utilisateur.
 
+## Liens GitHub v2 (#118)
+
+- Ouverture des recherches d’un repository unique dans sa page Issues/PR, avec les labels sources complets.
+- Liens Done/Cancelled vers une vue Projects paramétrée par `.env`, avec les statuts du profil ; suppression de la substitution par Closed.
+- Correspondances facultatives de repositories explicites et maintien de l’avertissement de recherche élargie, des listes exactes et de leurs CSV.
+
 ## Fenêtres GitHub — application de la maquette A (#115)
 
 - Suppression des raccourcis GitHub dans les cartes, outils et cellules des tableaux synthétiques ; une seule action dans la ligne du titre de la fenêtre.

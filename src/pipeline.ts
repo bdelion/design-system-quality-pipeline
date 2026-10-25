@@ -114,7 +114,13 @@ export async function runPipeline(
   completeSnapshotComparison(previousSnapshot, snapshot);
   await writeJson(`${runPath}/${snapshot.snapshotId}.json`, snapshot);
   await writeJson(resolve(outputPath, 'current/snapshot.json'), snapshot);
-  await generateDashboard(snapshot, outputPath, config.githubUrl, config.github.labels.componentPrefix);
+  await generateDashboard(
+    snapshot,
+    outputPath,
+    config.githubUrl,
+    config.github.labels.componentPrefix,
+    config.github
+  );
   return snapshot;
 }
 

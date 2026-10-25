@@ -78,9 +78,7 @@ test('issue #115 : en-têtes des actions et listes par composant, filtres et sou
       ).map((url) => new URL(url).searchParams.get('q')!);
       expect(
         queries.every(
-          (query) =>
-            query.includes('repo:benchmark/repo-0') &&
-            query.includes('label:"Component:' + component.name + '"')
+          (query) => !query.includes('repo:') && query.includes('label:"Component:' + component.name + '"')
         )
       ).toBe(true);
       expect(await actions.evaluate((element) => element.getBoundingClientRect().bottom)).toBeLessThanOrEqual(
@@ -95,7 +93,7 @@ test('issue #115 : en-têtes des actions et listes par composant, filtres et sou
     const activityModel = model.tables
       .find((table) => table.id === 'component-activity')!
       .rows.find((item) => item.cells[1]!.value === component.name)!;
-    for (const [index, state] of [
+    for (const [index] of [
       [1, null],
       [2, null],
       [3, 'open'],
@@ -110,8 +108,7 @@ test('issue #115 : en-têtes des actions et listes par composant, filtres et sou
       ).map((url) => new URL(url).searchParams.get('q')!);
       expect(queries.length).toBeGreaterThan(0);
       for (const query of queries) {
-        if (state) expect(query).toContain('is:' + state);
-        else expect(query).not.toMatch(/is:(open|closed)/);
+        expect(query).not.toMatch(/is:(open|closed)/);
         expect(query).toContain('label:"Component:' + component.name + '"');
       }
       const expected = activityModel.cells[index]!.refs!.map(
@@ -142,6 +139,76 @@ test('issue #115 : en-têtes des actions et listes par composant, filtres et sou
     await page.goto('about:blank');
     server.closeAllConnections();
     await new Promise<void>((done, reject) => server.close((error) => (error ? reject(error) : done())));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('issue #118 : vue Project issue de .env et statuts personnalisés du profil', async ({ page }) => {
+  const directory = await mkdtemp(join(tmpdir(), 'dsq-118-'));
+  const variables = {
+    GITHUB_URL: 'https://git.acme.internal',
+    GITHUB_PROJECT_OWNER_TYPE: 'orgs',
+    GITHUB_PROJECT_OWNER: 'acme',
+    GITHUB_PROJECT_NUMBER: '12',
+    GITHUB_PROJECT_VIEW_NUMBER: '3',
+    GITHUB_PROJECT_REPOSITORY_OWNER: '',
+    GITHUB_PROJECT_REPOSITORIES: ''
+  };
+  const saved = Object.fromEntries(Object.keys(variables).map((name) => [name, process.env[name]]));
+  Object.assign(process.env, variables);
+  const snapshot = benchmarkSnapshot('control', 81);
+  for (const [index, issue] of snapshot.normalizedData.issues!.entries()) {
+    issue.state = index % 2 ? 'CLOSED' : 'OPEN';
+    issue.projectContexts = [
+      {
+        projectId: 'project',
+        projectName: 'Projet',
+        status: index % 2 ? 'CANCELLED' : 'DONE',
+        statusHistory: []
+      }
+    ];
+  }
+  const profile = structuredClone(rules);
+  profile.projectStatuses.keywords.DONE = ['Fait', '✅ Terminé'];
+  profile.projectStatuses.keywords.CANCELLED = ['Abandonné', '🛑 Annulé'];
+  let server: Awaited<ReturnType<typeof startDashboardServer>> | undefined;
+  try {
+    await generateDashboard(snapshot, directory, undefined, 'Component:', profile);
+    server = await startDashboardServer(join(directory, 'dashboard'), 0);
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Port indisponible');
+    await page.goto(`http://127.0.0.1:${address.port}/simplified/index.html#components`);
+    const row = page.locator('[data-table-id="component-activity"] tbody tr').first();
+    const repository = await row.locator('td').first().innerText();
+    for (const [index, aliases] of [
+      [4, profile.projectStatuses.keywords.DONE],
+      [5, profile.projectStatuses.keywords.CANCELLED]
+    ] as const) {
+      await row.locator('td').nth(index).getByRole('button').click();
+      const dialog = page.getByRole('dialog');
+      const link = dialog.locator('#detail-actions a');
+      await expect(link).toHaveCount(1);
+      const url = new URL((await link.getAttribute('href'))!);
+      expect(url.origin + url.pathname).toBe('https://git.acme.internal/orgs/acme/projects/12/views/3');
+      expect(url.searchParams.get('filterQuery')).toBe(
+        'status:' + aliases!.map((value) => JSON.stringify(value)).join(',') + ' repo:' + repository
+      );
+      expect(url.href).not.toContain('is%3Aclosed');
+      await expect(dialog.locator('#detail-note')).toContainText('tous ses composants');
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      await page.keyboard.press('Escape');
+    }
+    await expect(page.locator('#content .github-shortcut')).toHaveCount(0);
+  } finally {
+    for (const [name, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+    await page.goto('about:blank');
+    if (server) {
+      server.closeAllConnections();
+      await new Promise<void>((done, reject) => server!.close((error) => (error ? reject(error) : done())));
+    }
     await rm(directory, { recursive: true, force: true });
   }
 });

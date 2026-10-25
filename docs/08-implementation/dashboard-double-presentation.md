@@ -98,3 +98,13 @@ Lorsqu’un compteur possède déjà une URL de recherche de périmètre, celle-
 Les totaux n’ajoutent aucun filtre ouvert/fermé implicite. Les cohortes Done et Cancelled restent des cohortes Project (D-163) ; Closed n’en est pas une preuve. Un filtre d’état n’est ajouté que s’il est explicitement demandé et compatible avec toutes les sources ; sinon il est omis et la recherche doit encore représenter la sélection parmi les faits connus. Aucun motif de fermeture n’est inventé.
 
 Le modèle simplifié ne contient pas les PR individuelles : leur fenêtre propose la recherche du compteur et explique l’absence de preuves individuelles. Elle n’affiche pas de tableau vide d’en-têtes. Les contrôles axe couvrent ces fenêtres, les listes d’issues et les tableaux filtrés sans résultat ; ils ne constituent pas un audit RGAA manuel.
+
+### Liens v2 — issue #118
+
+**IMPLÉMENTÉ — 25 octobre 2026.** Une recherche portant sur un seul repository ouvre directement `/<owner>/<repository>/issues?q=…` (ou `/pulls` pour les PR), sans recherche globale ni qualificateur `repo:` redondant. Les préfixes et emojis des labels sources sont conservés. Une sélection de plusieurs repositories conserve un accès global unique.
+
+Les fenêtres **Issues Done** et **Issues Cancelled** utilisent la vue Project explicitement configurée dans `.env`, avec `filterQuery=status:… repo:…`. Les valeurs viennent de `github.projectStatuses.keywords.DONE` et `.CANCELLED` du profil appliqué au pipeline ; toutes les variantes sont réunies avec la syntaxe OR par virgules de GitHub Projects. Aucun `is:closed`, motif de fermeture ou nom de statut anglais n’est substitué au profil. Ces liens sont prioritaires même si la liste contient un seul ticket. Les autres listes conservent l’ouverture directe d’une source unique.
+
+La vue Project est filtrée sur le repository et les statuts, et couvre donc tous ses composants : l’avertissement de recherche élargie reste affiché. Les liens individuels et CSV conservent les preuves exactes du composant. Sans configuration Project, la fenêtre explique le paramétrage manquant ; un éventuel lien élargi vers Issues ne prétend pas filtrer le statut Project.
+
+Voir [les variables Projects et leurs exemples](guide-utilisation.md#liens-vers-les-vues-github-projects). Elles sont lues au moment de la génération, y compris pour un dataset déjà collecté, sans modifier ses sources. Une prévisualisation sans profil explicite utilise le profil DSQ livré. Les générations classiques ne changent pas.

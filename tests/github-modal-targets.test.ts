@@ -24,7 +24,7 @@ describe('issue #115 : destination unique des fenêtres', () => {
     });
     expect(result.links).toHaveLength(1);
     expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe(
-      'repo:acme/ui is:issue is:closed label:"Component:Table" label:"a11y"'
+      'is:issue is:closed label:"Component:Table" label:"a11y"'
     );
   });
   it('ne limite pas un total aux issues ouvertes ou fermées', () => {
@@ -87,13 +87,13 @@ describe('issue #115 : destination unique des fenêtres', () => {
     expect(result.links).toHaveLength(1);
     expect(result.approximate).toBe(true);
     expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe(
-      'repo:acme/ui is:issue label:"Component:Table" label:"a11y"'
+      'is:issue label:"Component:Table" label:"a11y"'
     );
   });
   it('replie une requête trop longue sur son seul dépôt sans limiter un total aux ouvertes', () => {
     const sources = rows.map((row) => ({ ...row, labels: ['x'.repeat(300)] }));
     const result = githubTargets(sources, { matchLabels: true, allowBroader: true });
     expect(result.approximate).toBe(true);
-    expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe('repo:acme/ui is:issue');
+    expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe('is:issue');
   });
 });

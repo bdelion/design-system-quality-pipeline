@@ -70,6 +70,13 @@ function githubLinks(cell, title, parent, note, options = {}) {
     url = source.href;
     approximate = false;
   }
+  const projectView =
+    cell.url &&
+    /^https:\/\/[^/@?#\s]+\/(orgs|users)\/[\w.-]+\/projects\/[1-9]\d*\/views\/[1-9]\d*\?/.test(cell.url);
+  if (projectView) {
+    url = cell.url;
+    approximate = true;
+  }
   if (url) {
     sourceLink(url, 'Ouvrir dans GitHub ↗', parent);
     const link = parent.lastElementChild;
@@ -156,17 +163,13 @@ function details(cell, title) {
   }
   const actions = document.getElementById('detail-actions');
   actions.replaceChildren();
-  const requestedState =
-    title === 'Issues en cours'
-      ? 'open'
-      : ['Issues Done', 'Issues Cancelled'].includes(title)
-        ? 'closed'
-        : undefined;
-  githubLinks(cell, title, actions, note, {
-    directSingle: true,
-    matchLabels: true,
-    ...(requestedState ? { state: requestedState } : {})
-  });
+  githubLinks(cell, title, actions, note, { directSingle: true, matchLabels: true });
+  if (['Issues Done', 'Issues Cancelled'].includes(title) && !cell.url)
+    element(
+      'span',
+      ' Le filtre de statut Project n’est pas configuré : renseigner GITHUB_PROJECT_* dans .env. Aucun filtre Closed ne remplace Done ou Cancelled.',
+      note
+    );
   renderDetails();
   document.getElementById('detail').showModal();
 }

@@ -1499,11 +1499,12 @@ export async function generateDashboard(
   snapshot: Snapshot,
   outputRoot: string,
   githubUrl?: string,
-  componentPrefix = 'Component:'
+  componentPrefix = 'Component:',
+  githubRules?: import('../config.js').GithubProcessingConfig
 ): Promise<void> {
   const root = resolve(outputRoot, 'dashboard');
   await generateClassicDashboard(snapshot, outputRoot, githubUrl, componentPrefix, resolve(root, 'classic'));
-  await generateSimplifiedDashboard(snapshot, root);
+  await generateSimplifiedDashboard(snapshot, root, githubRules);
   await writeFile(resolve(root, 'index.html'), dashboardChoice(snapshot.capturedAt), 'utf8');
   await writeFile(
     resolve(root, 'review-choice.js'),
