@@ -1,3 +1,4 @@
+import { componentProjectLabels } from '../../src/dashboard/project-links.js';
 import { test, expect } from '@playwright/test';
 import { AxeBuilder } from '@axe-core/playwright';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -180,6 +181,8 @@ test('issue #118 : vue Project issue de .env et statuts personnalisés du profil
     await page.goto(`http://127.0.0.1:${address.port}/simplified/index.html#components`);
     const row = page.locator('[data-table-id="component-activity"] tbody tr').first();
     const repository = await row.locator('td').first().innerText();
+    const sourceLabels = componentProjectLabels(snapshot, profile.labels.componentPrefix);
+    const componentKey = (await row.getAttribute('data-review-key'))!;
     for (const [index, aliases] of [
       [4, profile.projectStatuses.keywords.DONE],
       [5, profile.projectStatuses.keywords.CANCELLED]
@@ -191,10 +194,15 @@ test('issue #118 : vue Project issue de .env et statuts personnalisés du profil
       const url = new URL((await link.getAttribute('href'))!);
       expect(url.origin + url.pathname).toBe('https://git.acme.internal/orgs/acme/projects/12/views/3');
       expect(url.searchParams.get('filterQuery')).toBe(
-        'status:' + aliases!.map((value) => JSON.stringify(value)).join(',') + ' repo:' + repository
+        'status:' +
+          aliases!.map((value) => JSON.stringify(value)).join(',') +
+          ' repo:' +
+          repository +
+          ' label:' +
+          sourceLabels[componentKey]!.map((label) => JSON.stringify(label)).join(',')
       );
       expect(url.href).not.toContain('is%3Aclosed');
-      await expect(dialog.locator('#detail-note')).toContainText('tous ses composants');
+      await expect(dialog.locator('#detail-note')).toContainText('labels sources du composant');
       expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
       await page.keyboard.press('Escape');
     }

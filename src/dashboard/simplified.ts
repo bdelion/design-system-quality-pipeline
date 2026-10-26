@@ -1,7 +1,7 @@
 import { reviewContext } from './review-output.js';
 
 import type { GithubProcessingConfig } from '../config.js';
-import { applyProjectLinks, projectLinkSettings } from './project-links.js';
+import { applyProjectLinks, projectLinkSettings, componentProjectLabels } from './project-links.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Snapshot } from '../domain/types.js';
@@ -50,7 +50,12 @@ export async function generateSimplifiedDashboard(
         }
       ).github;
     const settings = projectLinkSettings(rules.projectStatuses.keywords);
-    if (settings) applyProjectLinks(model.tables, settings);
+    if (settings)
+      applyProjectLinks(
+        model.tables,
+        settings,
+        componentProjectLabels(snapshot, rules.labels.componentPrefix)
+      );
   }
   const data = JSON.stringify({ version: model.version, tables: model.tables, issues: model.issues }).replace(
     /</g,

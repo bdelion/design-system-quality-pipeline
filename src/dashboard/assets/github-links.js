@@ -23,7 +23,7 @@ function githubSource(source) {
  * Construit un seul accès GitHub depuis les URL et labels sources, sans lots ni recherche par numéros.
  * Vérifie la sélection contre les issues connues du snapshot avant de proposer une recherche par filtres.
  * @param {{url?: string, state?: string, labels?: string[]}[]} sources - Population complète, avant pagination.
- * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[]}[]}} [options] - Sources connues et état explicitement demandé.
+ * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, requireState?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[]}[]}} [options] - Sources connues et état explicitement demandé.
  * @returns {{links: {url: string, count: number, repository: string, search: boolean}[], unavailable: number, stateMismatch?: boolean, reason?: string, approximate?: boolean}} Destination unique ou motif explicite d’indisponibilité.
  */
 export function githubTargets(sources, options = {}) {
@@ -33,13 +33,16 @@ export function githubTargets(sources, options = {}) {
     options.state && items.some((source) => source.state?.toLowerCase() !== options.state)
   );
   const base = { links: [], unavailable, ...(stateMismatch ? { stateMismatch: true } : {}) };
+  /** Conserve un filtre expressément requis, en signalant séparément les divergences du snapshot. */
+  const stateQuery = (state) => (state ? ' ' + (options.requireState ? 'state:' : 'is:') + state : '');
+
   if (!sources.length) return base;
   if (unavailable)
     return {
       ...base,
       reason: 'Recherche GitHub indisponible : certaines URL sources sont absentes ou anonymisées.'
     };
-  if (items.length === 1 && options.directSingle) {
+  if (items.length === 1 && options.directSingle && !options.requireState) {
     return {
       ...base,
       links: [{ url: items[0].url, count: 1, repository: githubSource(items[0]).repository, search: false }]
@@ -87,7 +90,7 @@ export function githubTargets(sources, options = {}) {
       return (
         (repositoryScope ? '' : 'repo:' + group.repository + ' ') +
         (group.type === 'pull' ? 'is:pr' : 'is:issue') +
-        (options.state && !stateMismatch ? ' is:' + options.state : '') +
+        stateQuery(options.state && (options.requireState || !stateMismatch) ? options.state : undefined) +
         common.map((label) => ' label:' + JSON.stringify(label)).join('')
       );
     });
@@ -99,7 +102,7 @@ export function githubTargets(sources, options = {}) {
           ? ''
           : [...new Set([...groups.values()].map((group) => 'repo:' + group.repository))].join(' ') + ' ') +
         (types.size === 1 ? (types.has('pull') ? 'is:pr' : 'is:issue') : '') +
-        (options.state && !stateMismatch ? ' is:' + options.state : '');
+        stateQuery(options.state && (options.requireState || !stateMismatch) ? options.state : undefined);
     }
     if (query.length > 256) return { ...base, reason };
     return {
@@ -125,7 +128,7 @@ export function githubTargets(sources, options = {}) {
           )
         )
       : [];
-    const requestedState = stateMismatch ? undefined : options.state;
+    const requestedState = stateMismatch && !options.requireState ? undefined : options.state;
     const known = (options.universe || sources).filter((source) => {
       const match = githubSource(source);
       return (
@@ -157,7 +160,7 @@ export function githubTargets(sources, options = {}) {
       queries.push(
         (repositoryScope ? '' : 'repo:' + repository + ' ') +
           (type === 'pull' ? 'is:pr' : 'is:issue') +
-          (requestedState ? ' is:' + requestedState : '') +
+          stateQuery(requestedState) +
           candidate.map((label) => ' label:' + JSON.stringify(label)).join('')
       );
       matching.forEach((source) => covered.add(source.url));
