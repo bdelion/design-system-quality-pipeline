@@ -1,3 +1,9 @@
+## Cohortes GitHub des composants (#121) — non publiée
+
+- Filtre `state:open` conservé sur les recherches En cours, même pour une source unique ; divergences avec les statuts Project annoncées sans changer les compteurs.
+- Labels complets des composants et alias collectés dans les vues Projects Done/Cancelled, avec le préfixe du profil ; aucun label manquant n’est inventé.
+- Accès GitHub des délais limité aux cohortes reproductibles parmi les sources connues. Sinon, explication et maintien de la liste locale et du CSV exacts, sans recherche élargie.
+
 ## Identifiants de revue du dashboard — non publiée
 
 - Références stables par site, présentation, écran, rôle et entité pour les pages, chiffres, tableaux, contrôles, liens et fenêtres dynamiques.

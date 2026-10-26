@@ -1,4 +1,5 @@
-﻿import type { SimpleTable } from '../analytics/simplified-dashboard.js';
+import type { Snapshot } from '../domain/types.js';
+import type { SimpleTable } from '../analytics/simplified-dashboard.js';
 
 import 'dotenv/config';
 
@@ -82,17 +83,45 @@ export function projectLinkSettings(
   };
 }
 
+/** Résout les labels de composant réellement collectés, selon le préfixe configuré et les alias explicites. */
+export function componentProjectLabels(snapshot: Snapshot, prefix: string): Record<string, string[]> {
+  return Object.fromEntries(
+    snapshot.normalizedData.components.map((component) => {
+      const names = new Set(
+        [component.name, ...component.aliases].map((name) => name.toLocaleLowerCase('fr'))
+      );
+      const labels = (snapshot.normalizedData.issues ?? [])
+        .filter(
+          (issue) =>
+            issue.libraryId === component.libraryId && issue.componentIds.includes(component.componentId)
+        )
+        .flatMap((issue) => issue.labels)
+        .filter(
+          (label) =>
+            label.toLocaleLowerCase('fr').startsWith(prefix.toLocaleLowerCase('fr')) &&
+            names.has(label.slice(prefix.length).trim().toLocaleLowerCase('fr'))
+        );
+      return [component.componentId, [...new Set(labels)]];
+    })
+  );
+}
+
 /** Prépare les seuls liens de cohortes Project, sans modifier les métriques ni les références sources. */
-export function applyProjectLinks(tables: SimpleTable[], settings: ProjectLinkSettings): void {
+export function applyProjectLinks(
+  tables: SimpleTable[],
+  settings: ProjectLinkSettings,
+  componentLabels: Record<string, string[]>
+): void {
   const table = tables.find((item) => item.id === 'component-activity');
   if (!table) return;
   for (const row of table.rows) {
+    const labels = componentLabels[row.reviewKey] ?? [];
     for (const [index, status] of [
       [4, 'DONE'],
       [5, 'CANCELLED']
     ] as const) {
       const values = [...new Set(settings.keywords[status] ?? [])].filter((value) => value.trim());
-      if (!values.length) continue;
+      if (!values.length || !labels.length) continue;
       const repository =
         settings.repositories?.[row.repository] ??
         (settings.repositoryOwner
@@ -102,14 +131,19 @@ export function applyProjectLinks(tables: SimpleTable[], settings: ProjectLinkSe
       const url = new URL(settings.url);
       url.searchParams.set(
         'filterQuery',
-        'status:' + values.map((value) => JSON.stringify(value)).join(',') + ' repo:' + repository
+        'status:' +
+          values.map((value) => JSON.stringify(value)).join(',') +
+          ' repo:' +
+          repository +
+          ' label:' +
+          labels.map((label) => JSON.stringify(label)).join(',')
       );
       const cell = row.cells[index];
       if (!cell) continue;
       cell.url = url.href;
       cell.note =
         (cell.note ? cell.note + ' ' : '') +
-        'La vue Project configurée est filtrée sur les statuts du profil et le repository ; elle couvre tous ses composants. La liste locale conserve la sélection exacte du composant.';
+        'La vue Project configurée est filtrée sur les statuts du profil et le repository ; elle conserve les labels sources du composant. La liste locale reste la preuve exacte du snapshot.';
     }
   }
 }

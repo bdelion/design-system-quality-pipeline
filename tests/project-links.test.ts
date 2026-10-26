@@ -1,5 +1,9 @@
 ﻿import { describe, expect, it } from 'vitest';
-import { projectLinkSettings, applyProjectLinks } from '../src/dashboard/project-links.js';
+import {
+  projectLinkSettings,
+  applyProjectLinks,
+  componentProjectLabels
+} from '../src/dashboard/project-links.js';
 import { simplifiedModel } from '../src/analytics/simplified-dashboard.js';
 import { benchmarkSnapshot } from './support/dashboard-load.js';
 
@@ -27,9 +31,15 @@ describe('issue #118 : liens Projects locaux', () => {
     expect(() => projectLinkSettings(keywords, { ...env, GITHUB_PROJECT_OWNER: '..' })).toThrow();
   });
   it('utilise les statuts du profil sans déduire Done de Closed, ni modifier les références', () => {
-    const model = simplifiedModel(benchmarkSnapshot('control', 81));
+    const snapshot = benchmarkSnapshot('control', 81);
+    const model = simplifiedModel(snapshot);
     const original = structuredClone(model.tables);
-    applyProjectLinks(model.tables, projectLinkSettings(keywords, env)!);
+    const sourceLabels = componentProjectLabels(snapshot, 'Component:');
+    applyProjectLinks(
+      model.tables,
+      projectLinkSettings(keywords, env)!,
+      componentProjectLabels(snapshot, 'Component:')
+    );
     const row = model.tables.find((table) => table.id === 'component-activity')!.rows[0]!;
     for (const [index, values] of [
       [4, keywords.DONE],
@@ -38,7 +48,12 @@ describe('issue #118 : liens Projects locaux', () => {
       const url = new URL(row.cells[index]!.url!);
       expect(url.origin + url.pathname).toBe('https://git.acme.internal/users/acme/projects/12/views/3');
       expect(url.searchParams.get('filterQuery')).toBe(
-        'status:' + values.map((value) => JSON.stringify(value)).join(',') + ' repo:' + row.repository
+        'status:' +
+          values.map((value) => JSON.stringify(value)).join(',') +
+          ' repo:' +
+          row.repository +
+          ' label:' +
+          sourceLabels[row.reviewKey]!.map((label) => JSON.stringify(label)).join(',')
       );
       expect(url.searchParams.get('filterQuery')).not.toMatch(/is:(closed|open)|reason:/);
       expect(row.cells[index]!.refs).toEqual(original[0]!.rows[0]!.cells[index]!.refs);
@@ -46,7 +61,8 @@ describe('issue #118 : liens Projects locaux', () => {
     expect(row.cells[2]!.url).toBeUndefined();
   });
   it('applique seulement les alias explicitement configurés', () => {
-    const model = simplifiedModel(benchmarkSnapshot('control', 81));
+    const snapshot = benchmarkSnapshot('control', 81);
+    const model = simplifiedModel(snapshot);
     const row = model.tables[0]!.rows[0]!;
     const settings = projectLinkSettings(keywords, {
       ...env,
@@ -54,7 +70,7 @@ describe('issue #118 : liens Projects locaux', () => {
       GITHUB_PROJECT_REPOSITORY_OWNER: 'fallback',
       GITHUB_PROJECT_REPOSITORIES: JSON.stringify({ [row.repository]: 'real-org/real-repo' })
     })!;
-    applyProjectLinks(model.tables, settings);
+    applyProjectLinks(model.tables, settings, componentProjectLabels(snapshot, 'Component:'));
     expect(new URL(row.cells[4]!.url!).searchParams.get('filterQuery')).toContain('repo:real-org/real-repo');
     expect(() => projectLinkSettings(keywords, { ...env, GITHUB_PROJECT_REPOSITORIES: '[]' })).toThrow();
     expect(() => projectLinkSettings(keywords, { ...env, GITHUB_PROJECT_REPOSITORIES: '{' })).toThrow();
