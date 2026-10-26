@@ -6,10 +6,20 @@ const source = (number: number, repository = 'acme/ui') => ({
 });
 
 describe('recherches GitHub sans lots', () => {
+  it('préserve les labels préfixés et leurs emojis dans la page Issues du dépôt', () => {
+    const result = githubTargets([{ ...source(12), labels: ['🧩 Component:Input Pagination'] }], {
+      matchLabels: true
+    });
+    const url = new URL(result.links[0]!.url);
+    expect(url.origin + url.pathname).toBe('https://github.com/acme/ui/issues');
+    expect(url.searchParams.get('q')).toBe('is:issue label:"🧩 Component:Input Pagination"');
+    expect(url.searchParams.has('type')).toBe(false);
+  });
   it('déduplique les références et utilise un filtre de dépôt', () => {
     const result = githubTargets([source(12), source(12)]);
     expect(result.links).toHaveLength(1);
-    expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe('repo:acme/ui is:issue');
+    expect(new URL(result.links[0]!.url).pathname).toBe('/acme/ui/issues');
+    expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe('is:issue');
   });
   it('rassemble plusieurs dépôts en une seule recherche', () => {
     const result = githubTargets([source(12), source(1, 'acme/core')]);
@@ -38,7 +48,8 @@ describe('recherches GitHub sans lots', () => {
       { url: 'https://github.com/acme/ui/pull/10' },
       { url: 'https://github.com/acme/ui/pull/11' }
     ]);
-    expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe('repo:acme/ui is:pr');
+    expect(new URL(result.links[0]!.url).pathname).toBe('/acme/ui/pulls');
+    expect(new URL(result.links[0]!.url).searchParams.get('q')).toBe('is:pr');
   });
   it('refuse les requêtes trop longues au lieu de les répartir en lots', () => {
     expect(githubTargets([{ ...source(1), labels: ['x'.repeat(300)] }], { matchLabels: true }).links).toEqual(

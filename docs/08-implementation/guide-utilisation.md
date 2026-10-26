@@ -232,3 +232,25 @@ npm.cmd run pipeline -- --help
 | Relations manquantes à la préparation    | Ouvrir le rapport privé `fixture-diagnostics-…/relations.json` annoncé ; vérifier périmètre et accès, puis recollecter si nécessaire ; ne pas supprimer les relations pour masquer l’erreur |
 | Manifeste invalide                       | Retrouver le couple `dataset.json`/`manifest.json` d’origine ou repréparer une destination neuve ; ne pas modifier les faits à la main                                                      |
 | Dataset valide mais résultats partiels   | Consulter les diagnostics et preuves des KPI ; validité structurelle et conformité/accessibilité sont distinctes                                                                            |
+
+## Liens vers les vues GitHub Projects
+
+Pour les fenêtres Done/Cancelled de la vue synthétique, compléter le groupe suivant dans `.env`, puis relancer `pipeline` pour régénérer le dashboard. Les paramètres sont locaux, distincts du contexte de collecte enregistré ; les fichiers du dataset restent inchangés.
+
+```dotenv
+GITHUB_URL=https://github.com
+GITHUB_PROJECT_OWNER_TYPE=orgs
+GITHUB_PROJECT_OWNER=mon-organisation
+GITHUB_PROJECT_NUMBER=12
+GITHUB_PROJECT_VIEW_NUMBER=3
+```
+
+Utiliser `users` au lieu de `orgs` pour un Project personnel. Les numéros se lisent dans l’URL `/orgs/mon-organisation/projects/12/views/3`. Tous les champs du groupe sont requis lorsqu’il est activé ; une configuration partielle ou une base non HTTPS est refusée. Le champ `Status` est filtré avec les variantes `DONE` ou `CANCELLED` de `github.projectStatuses.keywords` du profil du dataset, sans déduire ces statuts de Closed.
+
+Par défaut, `repo:` utilise le repository de chaque ligne. Si seul son owner diffère, renseigner `GITHUB_PROJECT_REPOSITORY_OWNER`. Si les noms ont aussi été anonymisés, fournir les correspondances explicitement, par exemple :
+
+```dotenv
+GITHUB_PROJECT_REPOSITORIES='{"demo/demo-react":"mon-organisation/design-system-react"}'
+```
+
+Ce mapping est prioritaire sur l’owner facultatif. Aucun nom réel n’est deviné et les liens individuels des sources ne sont pas réécrits. Les URL configurées sont présentes dans le dashboard généré : conserver cette sortie dans votre espace privé si elle révèle vos identités réelles. Le token n’est jamais embarqué. La vue Project couvre le repository entier, avec un avertissement de recherche élargie ; le CSV et la liste locale restent propres au composant sélectionné.

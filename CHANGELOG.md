@@ -1,8 +1,26 @@
+## Preuves des cumuls d’audit (#122) — non publiée
+
+- Suppression des audits non applicables dans les justificatifs des composants conformes/non conformes cumulés ; maintien des preuves héritées et des décomptes métier.
+- Recherches GitHub affinées par les milestones sources lorsqu’elles distinguent la sélection ; aucun filtre Closed ou sous-issue substitué au verdict calculé.
+- Documentation de la différence entre composants cumulés, audits et campagnes GitHub actuelles ; tests unitaires et navigateur dédiés.
+
+## Cohortes GitHub des composants (#121) — non publiée
+
+- Filtre `state:open` conservé sur les recherches En cours, même pour une source unique ; divergences avec les statuts Project annoncées sans changer les compteurs.
+- Labels complets des composants et alias collectés dans les vues Projects Done/Cancelled, avec le préfixe du profil ; aucun label manquant n’est inventé.
+- Accès GitHub des délais limité aux cohortes reproductibles parmi les sources connues. Sinon, explication et maintien de la liste locale et du CSV exacts, sans recherche élargie.
+
 ## Identifiants de revue du dashboard — non publiée
 
 - Références stables par site, présentation, écran, rôle et entité pour les pages, chiffres, tableaux, contrôles, liens et fenêtres dynamiques.
 - Inspecteur local optionnel : sélection souris/clavier, copie de l’identifiant ou du contexte, recherche exacte et signalement des collisions.
 - Origines distinctes des fenêtres réutilisées ; titres et URL exclus de la copie par défaut. Évolution indépendante de #118, toujours en attente de validation utilisateur.
+
+## Liens GitHub v2 (#118)
+
+- Ouverture des recherches d’un repository unique dans sa page Issues/PR, avec les labels sources complets.
+- Liens Done/Cancelled vers une vue Projects paramétrée par `.env`, avec les statuts du profil ; suppression de la substitution par Closed.
+- Correspondances facultatives de repositories explicites et maintien de l’avertissement de recherche élargie, des listes exactes et de leurs CSV.
 
 ## Fenêtres GitHub — application de la maquette A (#115)
 

@@ -21,9 +21,9 @@ function githubSource(source) {
 
 /**
  * Construit un seul accès GitHub depuis les URL et labels sources, sans lots ni recherche par numéros.
- * Vérifie la sélection contre les issues connues du snapshot avant de proposer une recherche par filtres.
- * @param {{url?: string, state?: string, labels?: string[]}[]} sources - Population complète, avant pagination.
- * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[]}[]}} [options] - Sources connues et état explicitement demandé.
+ * Vérifie labels et milestones sources contre les issues connues avant de proposer une recherche par filtres.
+ * @param {{url?: string, state?: string, labels?: string[], milestone?: string}[]} sources - Population complète, avant pagination.
+ * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, requireState?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[], milestone?: string}[]}} [options] - Sources connues et état explicitement demandé.
  * @returns {{links: {url: string, count: number, repository: string, search: boolean}[], unavailable: number, stateMismatch?: boolean, reason?: string, approximate?: boolean}} Destination unique ou motif explicite d’indisponibilité.
  */
 export function githubTargets(sources, options = {}) {
@@ -33,13 +33,16 @@ export function githubTargets(sources, options = {}) {
     options.state && items.some((source) => source.state?.toLowerCase() !== options.state)
   );
   const base = { links: [], unavailable, ...(stateMismatch ? { stateMismatch: true } : {}) };
+  /** Conserve un filtre expressément requis, en signalant séparément les divergences du snapshot. */
+  const stateQuery = (state) => (state ? ' ' + (options.requireState ? 'state:' : 'is:') + state : '');
+
   if (!sources.length) return base;
   if (unavailable)
     return {
       ...base,
       reason: 'Recherche GitHub indisponible : certaines URL sources sont absentes ou anonymisées.'
     };
-  if (items.length === 1 && options.directSingle) {
+  if (items.length === 1 && options.directSingle && !options.requireState) {
     return {
       ...base,
       links: [{ url: items[0].url, count: 1, repository: githubSource(items[0]).repository, search: false }]
@@ -58,6 +61,21 @@ export function githubTargets(sources, options = {}) {
       ...base,
       reason: 'Les sources dépendent de plusieurs serveurs GitHub : aucune recherche unique ne les rassemble.'
     };
+  const repositoryScope = groups.size === 1 ? [...groups.values()][0] : undefined;
+  /** Ouvre l’onglet du dépôt lorsqu’il est unique, en gardant les filtres et leurs labels sources. */
+  function searchUrl(query) {
+    const url = new globalThis.URL(
+      repositoryScope
+        ? repositoryScope.origin +
+            '/' +
+            repositoryScope.repository +
+            (repositoryScope.type === 'pull' ? '/pulls' : '/issues')
+        : [...origins][0] + '/search'
+    );
+    if (!repositoryScope) url.searchParams.set('type', 'issues');
+    url.searchParams.set('q', query);
+    return url.href;
+  }
   /** Conserve un accès unique plus large uniquement lorsque ce repli est explicitement autorisé. */
   function broader(reason) {
     if (!options.allowBroader) return { ...base, reason };
@@ -70,10 +88,9 @@ export function githubTargets(sources, options = {}) {
           )
         : [];
       return (
-        'repo:' +
-        group.repository +
-        (group.type === 'pull' ? ' is:pr' : ' is:issue') +
-        (options.state && !stateMismatch ? ' is:' + options.state : '') +
+        (repositoryScope ? '' : 'repo:' + group.repository + ' ') +
+        (group.type === 'pull' ? 'is:pr' : 'is:issue') +
+        stateQuery(options.state && (options.requireState || !stateMismatch) ? options.state : undefined) +
         common.map((label) => ' label:' + JSON.stringify(label)).join('')
       );
     });
@@ -81,9 +98,11 @@ export function githubTargets(sources, options = {}) {
     if (query.length > 256 || scopes.length > 6) {
       const types = new Set([...groups.values()].map((group) => group.type));
       query =
-        [...new Set([...groups.values()].map((group) => 'repo:' + group.repository))].join(' ') +
-        (types.size === 1 ? (types.has('pull') ? ' is:pr' : ' is:issue') : '') +
-        (options.state && !stateMismatch ? ' is:' + options.state : '');
+        (repositoryScope
+          ? ''
+          : [...new Set([...groups.values()].map((group) => 'repo:' + group.repository))].join(' ') + ' ') +
+        (types.size === 1 ? (types.has('pull') ? 'is:pr' : 'is:issue') : '') +
+        stateQuery(options.state && (options.requireState || !stateMismatch) ? options.state : undefined);
     }
     if (query.length > 256) return { ...base, reason };
     return {
@@ -92,7 +111,7 @@ export function githubTargets(sources, options = {}) {
       reason,
       links: [
         {
-          url: [...origins][0] + '/search?type=issues&q=' + encodeURIComponent(query),
+          url: searchUrl(query),
           count: items.length,
           repository: [...groups.values()].map((group) => group.repository).join(', '),
           search: true
@@ -109,7 +128,7 @@ export function githubTargets(sources, options = {}) {
           )
         )
       : [];
-    const requestedState = stateMismatch ? undefined : options.state;
+    const requestedState = stateMismatch && !options.requireState ? undefined : options.state;
     const known = (options.universe || sources).filter((source) => {
       const match = githubSource(source);
       return (
@@ -120,18 +139,24 @@ export function githubTargets(sources, options = {}) {
       );
     });
     const selectedUrls = new Set(selected.map((source) => source.url));
-    /** Vérifie une conjonction de labels contre toutes les sources connues du même périmètre. */
+    /** Vérifie les labels et la milestone source contre toutes les issues connues du même périmètre. */
     function matches(source, candidate) {
       return (
-        candidate.every((label) =>
+        candidate.labels.every((label) =>
           source.labels?.some((value) => value.toLowerCase() === label.toLowerCase())
         ) &&
+        (!candidate.milestone || source.milestone === candidate.milestone) &&
         (!requestedState || source.state?.toLowerCase() === requestedState)
       );
     }
+    const milestones = [...new Set(selected.map((source) => source.milestone).filter(Boolean))];
     const candidates = [
-      labels,
-      ...selected.map((source) => (options.matchLabels ? [...new Set(source.labels || [])] : []))
+      { labels },
+      ...milestones.map((milestone) => ({ labels, milestone })),
+      ...selected.flatMap((source) => {
+        const labels = options.matchLabels ? [...new Set(source.labels || [])] : [];
+        return [{ labels }, ...(source.milestone ? [{ labels, milestone: source.milestone }] : [])];
+      })
     ];
     const covered = new Set();
     for (const candidate of candidates) {
@@ -139,11 +164,11 @@ export function githubTargets(sources, options = {}) {
       const matching = selected.filter((source) => matches(source, candidate));
       if (!matching.some((source) => !covered.has(source.url))) continue;
       queries.push(
-        'repo:' +
-          repository +
-          (type === 'pull' ? ' is:pr' : ' is:issue') +
-          (requestedState ? ' is:' + requestedState : '') +
-          candidate.map((label) => ' label:' + JSON.stringify(label)).join('')
+        (repositoryScope ? '' : 'repo:' + repository + ' ') +
+          (type === 'pull' ? 'is:pr' : 'is:issue') +
+          stateQuery(requestedState) +
+          candidate.labels.map((label) => ' label:' + JSON.stringify(label)).join('') +
+          (candidate.milestone ? ' milestone:' + JSON.stringify(candidate.milestone) : '')
       );
       matching.forEach((source) => covered.add(source.url));
     }
@@ -157,7 +182,7 @@ export function githubTargets(sources, options = {}) {
     ...base,
     links: [
       {
-        url: [...origins][0] + '/search?type=issues&q=' + encodeURIComponent(query),
+        url: searchUrl(query),
         count: items.length,
         repository: [...groups.values()].map((group) => group.repository).join(', '),
         search: true

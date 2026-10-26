@@ -63,6 +63,13 @@ function elapsed(start: string | undefined, end: string | undefined): number | n
 }
 /** Projette les métriques existantes en cinq espaces sans modifier le snapshot ni ses verdicts. */
 export function simplifiedModel(snapshot: Snapshot) {
+  const sourceMilestones = new Map(
+    snapshot.rawData.repositories.flatMap((repository) =>
+      repository.issues.flatMap((issue) =>
+        issue.url && issue.milestone ? [[issue.url, issue.milestone.title] as const] : []
+      )
+    )
+  );
   const data = snapshot.normalizedData;
   const issues = data.issues ?? [];
   const issueMap = new Map(issues.map((row) => [row.issueId, row]));
@@ -389,15 +396,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     const verdict = (name: string) => {
       const members = relations.filter((item) => (item.verdict ?? 'NON_COUVERT') === name);
       const proofIds = new Set(members.flatMap((item) => item.applicableAuditIds ?? []));
-      const sources = data.audits.filter(
-        (audit) =>
-          proofIds.has(audit.auditId) ||
-          audits.some(
-            (item) =>
-              item.auditId === audit.auditId &&
-              members.some((member) => member.componentId === item.componentId)
-          )
-      );
+      const sources = data.audits.filter((audit) => proofIds.has(audit.auditId));
       const names = members.map(
         (item) =>
           data.components.find((component) => component.componentId === item.componentId)?.name ??
@@ -406,9 +405,7 @@ export function simplifiedModel(snapshot: Snapshot) {
       return {
         ...cell(relations.length ? members.length : null, ids(sources)),
         note: relations.length
-          ? 'Composants : ' +
-            (names.join(', ') || 'aucun') +
-            '. Les issues ci-dessous sont les audits justificatifs, avec héritage si applicable.'
+          ? 'Composants : ' + (names.join(', ') || 'aucun') + '. Audits directs ou hérités.'
           : 'Catalogue historique indisponible : aucun total de composants ne peut être établi.'
       };
     };
@@ -528,6 +525,7 @@ export function simplifiedModel(snapshot: Snapshot) {
       createdAt: issue.createdAt,
       state: issue.state,
       labels: issue.labels,
+      ...(sourceMilestones.has(issue.url) ? { milestone: sourceMilestones.get(issue.url)! } : {}),
       correction: issue.review?.correctionLabel ?? 'Non confirmée',
       warnings: issue.review?.warnings ?? []
     }))

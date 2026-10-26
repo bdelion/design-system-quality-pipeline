@@ -57,18 +57,30 @@ function githubLinks(cell, title, parent, note, options = {}) {
     {
       ...options,
       universe: model.issues,
-      allowBroader: true
+      allowBroader: options.allowBroader ?? true
     }
   );
   const direct = result.links.length === 1 && !result.links[0].search;
   let url = result.links[0]?.url;
   let approximate = result.approximate;
-  if (!direct && cell.url && /^https:\/\/[^/@?#\s]+\/[^/]+\/[^/]+\/(issues|pulls)(?:\?|$)/.test(cell.url)) {
+  if (
+    options.allowBroader !== false &&
+    !direct &&
+    cell.url &&
+    /^https:\/\/[^/@?#\s]+\/[^/]+\/[^/]+\/(issues|pulls)(?:\?|$)/.test(cell.url)
+  ) {
     const source = new window.URL(cell.url);
     if (!source.searchParams.has('q'))
       source.searchParams.set('q', source.pathname.endsWith('/pulls') ? 'is:pr' : 'is:issue');
     url = source.href;
     approximate = false;
+  }
+  const projectView =
+    cell.url &&
+    /^https:\/\/[^/@?#\s]+\/(orgs|users)\/[\w.-]+\/projects\/[1-9]\d*\/views\/[1-9]\d*\?/.test(cell.url);
+  if (projectView && options.allowBroader !== false) {
+    url = cell.url;
+    approximate = true;
   }
   if (url) {
     sourceLink(url, 'Ouvrir dans GitHub ↗', parent);
@@ -110,19 +122,30 @@ function githubLinks(cell, title, parent, note, options = {}) {
       )
     );
   }
+  if (!url && options.allowBroader === false)
+    markReview(
+      'review-measurable-limit',
+      element(
+        'span',
+        ' La cohorte de délais mesurables ne peut pas être reproduite par ces filtres GitHub. La liste locale et son CSV conservent exactement les issues mesurables.',
+        note
+      )
+    );
   if (result.stateMismatch)
     markReview(
       's22',
       element(
         'span',
-        ' Le statut Project diffère de l’état GitHub : aucun filtre d’état réducteur n’est ajouté.',
+        options.requireState
+          ? ' La recherche GitHub est limitée aux issues ouvertes ; elle peut différer des statuts Project du snapshot.'
+          : ' Le statut Project diffère de l’état GitHub : aucun filtre d’état réducteur n’est ajouté.',
         note
       )
     );
   return result;
 }
 /** Expose les éléments exacts d’une cellule, paginés sur place. */
-function details(cell, title) {
+function details(cell, title, options = {}) {
   detailRows = (cell.refs || []).map((id) => issueById.get(id)).filter(Boolean);
   detailPage = 0;
   document.getElementById('detail-title').textContent = title;
@@ -156,17 +179,13 @@ function details(cell, title) {
   }
   const actions = document.getElementById('detail-actions');
   actions.replaceChildren();
-  const requestedState =
-    title === 'Issues en cours'
-      ? 'open'
-      : ['Issues Done', 'Issues Cancelled'].includes(title)
-        ? 'closed'
-        : undefined;
-  githubLinks(cell, title, actions, note, {
-    directSingle: true,
-    matchLabels: true,
-    ...(requestedState ? { state: requestedState } : {})
-  });
+  githubLinks(cell, title, actions, note, { directSingle: true, matchLabels: true, ...options });
+  if (['Issues Done', 'Issues Cancelled'].includes(title) && !cell.url)
+    element(
+      'span',
+      ' Le filtre Project du composant n’est pas disponible : vérifier GITHUB_PROJECT_* dans .env et le label source du composant. Aucun filtre Closed ne remplace Done ou Cancelled.',
+      note
+    );
   renderDetails();
   document.getElementById('detail').showModal();
 }
@@ -472,7 +491,17 @@ function mount(table) {
           const button = markReview('s3f', element('button', undefined, td));
           markReview('review-cell-value', element('span', display(cell.value), button));
           button.type = 'button';
-          button.addEventListener('click', () => details(presented, table.headers[index]));
+          button.addEventListener('click', () =>
+            details(
+              presented,
+              table.headers[index],
+              table.id === 'component-activity' && index === 3
+                ? { state: 'open', requireState: true, directSingle: false }
+                : table.id === 'component-activity' && [6, 7, 8, 11].includes(index)
+                  ? { allowBroader: false }
+                  : {}
+            )
+          );
         } else markReview('s3g', element('span', display(cell.value), td));
       });
     }
