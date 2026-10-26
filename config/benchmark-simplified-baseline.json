@@ -2,22 +2,22 @@
   "status": "validated",
   "maxGrowthPercent": 0,
   "fixtureHash": "92944855a6f1de050e2677f17b19cd8200242ca557a18e90e8a8f15318e46597",
-  "description": "Référence validée de la présentation compacte ; maximum DOM sur les cinq espaces, pagination initiale 25. Les budgets classiques restent inchangés.",
+  "description": "Référence validée de la présentation compacte ; maximum DOM sur les cinq espaces, pagination initiale 25. Références des identifiants de revue validées séparément ci-dessous ; croissance ultérieure à 0 %.",
   "pages": [
     {
       "page": "index.html",
-      "htmlBytes": 799,
+      "htmlBytes": 1330,
       "jsonBytes": 0,
       "initialTableRows": 0,
-      "domNodes": 30,
+      "domNodes": 31,
       "renderedTableRows": 0
     },
     {
       "page": "simplified/index.html",
-      "htmlBytes": 44079,
-      "jsonBytes": 42010,
+      "htmlBytes": 46623,
+      "jsonBytes": 43524,
       "initialTableRows": 0,
-      "domNodes": 689,
+      "domNodes": 857,
       "renderedTableRows": 24
     }
   ],
@@ -30,5 +30,28 @@
       "jsonBytes": 29576,
       "domNodes": 686
     }
+  },
+  "reviewIdentifiersValidation": {
+    "date": "2026-10-26",
+    "approval": "Oui, actualiser ces références",
+    "scope": "Identifiants permanents et valeurs distinctes des contrôles ; croissance ultérieure interdite (0 %). Maximum DOM des cinq espaces synthétiques ; limites antérieures conservées lorsqu’elles restent supérieures.",
+    "previousPages": [
+      {
+        "page": "index.html",
+        "htmlBytes": 799,
+        "jsonBytes": 0,
+        "initialTableRows": 0,
+        "domNodes": 30,
+        "renderedTableRows": 0
+      },
+      {
+        "page": "simplified/index.html",
+        "htmlBytes": 44079,
+        "jsonBytes": 42010,
+        "initialTableRows": 0,
+        "domNodes": 689,
+        "renderedTableRows": 24
+      }
+    ]
   }
 }

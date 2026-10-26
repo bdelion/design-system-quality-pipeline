@@ -16,7 +16,10 @@ it('place date, scope et fiabilité près du titre avec accès aux preuves, sans
   const output = await mkdtemp(join(tmpdir(), 'dsq-header-89-'));
   try {
     await generateDashboard(snapshot, output);
-    const html = await readFile(join(output, 'dashboard/index.html'), 'utf8');
+    const html = (await readFile(join(output, 'dashboard/index.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const heading = html.match(/<div class="page-heading">([\s\S]*?)<\/div><\/div>/)![1]!;
     expect(heading).toContain('Snapshot du 01/10/2026 10:00:00 UTC');
     expect(heading).toContain('&lt;jeu-synthétique&gt;');

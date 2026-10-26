@@ -70,7 +70,10 @@ it('génère deux tableaux puis huit cartes et restitue les nouvelles informatio
   const output = await mkdtemp(join(tmpdir(), 'dsq-dashboard-issues-'));
   try {
     await generateDashboard(snapshot, output);
-    const overview = await readFile(join(output, 'dashboard/index.html'), 'utf8');
+    const overview = (await readFile(join(output, 'dashboard/index.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     expect(overview).not.toContain('data-context-filter');
     expect(overview).not.toContain('data-workspace-cards');
     expect(overview).not.toContain('data-global-only');
@@ -81,14 +84,20 @@ it('génère deux tableaux puis huit cartes et restitue les nouvelles informatio
       overview.indexOf('<h2>Patrimoine et activité globale')
     );
     expect(overview.match(/class="kpi-card metric-card"/g)).toHaveLength(8);
-    const activity = await readFile(join(output, 'dashboard/issues.html'), 'utf8');
+    const activity = (await readFile(join(output, 'dashboard/issues.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     expect(activity).toContain('data-team-count="issues">8');
     expect(activity).toContain('data-team-count="merged-prs">1');
     for (const label of ['Composants', 'Statut Project', 'Itération', 'Velocity source'])
       expect(activity).toContain(`Trier par ${label}`);
     const payload = pageContract(activity).data.issues!;
     expect(payload.items[0]!.projectContexts[0]!.projectName).toBe('Qualité');
-    const components = await readFile(join(output, 'dashboard/components.html'), 'utf8');
+    const components = (await readFile(join(output, 'dashboard/components.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const rows = pageContract(components).data.components!;
     expect(rows[0]!.latestAuditUrl).toContain('/issues/1');
     expect(

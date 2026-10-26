@@ -136,7 +136,7 @@ test('issue #87 : un contrat DQ absent désactive pagination et export sans faux
   await page.route('**/quality.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /<script type="application\/json" id="dashboard-page-data">([\s\S]*?)<\/script>/,
+      /<script[^>]* type="application\/json" id="dashboard-page-data">([\s\S]*?)<\/script>/,
       (tag, json: string) => {
         const model = JSON.parse(json);
         delete model.data.quality;
@@ -156,7 +156,7 @@ test('issue #87 : le focus reste sur la même occurrence d’une issue multi-lab
   await page.route('**/issues.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /<script type="application\/json" id="dashboard-page-data">([\s\S]*?)<\/script>/,
+      /<script[^>]* type="application\/json" id="dashboard-page-data">([\s\S]*?)<\/script>/,
       (tag, json: string) => {
         const model = JSON.parse(json);
         model.data.issues.items[0].labels = ['Lot A', 'Lot B'];

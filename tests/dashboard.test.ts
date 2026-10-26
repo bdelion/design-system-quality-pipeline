@@ -33,12 +33,18 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   );
   const output = resolve(process.cwd(), 'data/test-dashboard');
   await generateDashboard(snapshot, output, 'https://github.test');
-  const html = await readFile(resolve(output, 'dashboard/index.html'), 'utf8');
+  const html = (await readFile(resolve(output, 'dashboard/index.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(html).toContain('Vue d’ensemble');
   expect(html).toContain('design-system-react');
   expect(html).toContain('design-system-docs');
   expect(html).toContain('Moyenne');
-  const diagnostics = await readFile(resolve(output, 'dashboard/quality.html'), 'utf8');
+  const diagnostics = (await readFile(resolve(output, 'dashboard/quality.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(diagnostics).toContain('Temps de traitement des issues par repository');
   expect(diagnostics).toContain('Critères d’accessibilité');
   expect(html).toContain('focus');
@@ -53,7 +59,10 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(html).toContain('class="sidebar"');
   expect(html).toContain('<span>Changer de vue</span>');
   expect(html).toContain('assets/logo.svg');
-  const auditsHtml = await readFile(resolve(output, 'dashboard/audits.html'), 'utf8');
+  const auditsHtml = (await readFile(resolve(output, 'dashboard/audits.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(auditsHtml).toContain('Périmètre auditable');
   expect(auditsHtml).toContain('Composant → audit → anomalies');
   expect(auditsHtml).toContain('Composants actifs');
@@ -66,7 +75,10 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(auditsHtml).toContain('data-component-version-verdict');
   expect(auditsHtml).toContain('NON_COUVERT reste distinct de NON_CONFORME');
   expect(auditsHtml).toContain('design-system-react');
-  const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
+  const issuesHtml = (await readFile(resolve(output, 'dashboard/issues.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(issuesHtml).toContain('Analyse des issues');
   for (const source of ['global', 'done', 'estimated']) {
     for (const statistic of ['average', 'median', 'p90']) {
@@ -79,14 +91,20 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(issuesHtml).toContain('assets/issues.js');
   expect(issuesHtml).toContain('dashboard-page-data');
   expect(html).toContain('href="issues.html"');
-  const graphHtml = await readFile(resolve(output, 'dashboard/graph.html'), 'utf8');
+  const graphHtml = (await readFile(resolve(output, 'dashboard/graph.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(graphHtml).toContain('Issues (tous types)');
   expect(graphHtml.includes('npm run dashboard:serve -- chemin/du/dashboard')).toBe(true);
   expect(graphHtml).toContain('data-map-kind="issue"');
   expect(graphHtml).toContain('href="https://github.test/example/design-system-react/issues/204"');
   expect(/href="https:\/\/github\.test\/[^" ]+\/pull\/\d+"/.test(graphHtml)).toBe(true);
   expect(graphHtml.includes('href="https://github.com/')).toBe(false);
-  const historyHtml = await readFile(resolve(output, 'dashboard/history.html'), 'utf8');
+  const historyHtml = (await readFile(resolve(output, 'dashboard/history.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(auditsHtml).toContain('Audits en cours');
   expect(auditsHtml).toContain('Audits non évalués');
   expect(auditsHtml).toContain('Traçabilité de chaque audit, par version');
@@ -102,7 +120,10 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(historyHtml).toContain('<strong>3</strong> ouvertes');
   expect(historyHtml).toContain('<strong>5</strong> traitées');
   expect(historyHtml).toContain('<strong>0</strong> annulées');
-  const anomaliesHtml = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+  const anomaliesHtml = (await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(anomaliesHtml).toContain('Anomalies suivies');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/issues/101"');
   expect(anomaliesHtml).toContain('href="https://github.test/example/design-system-core/pull/201"');
@@ -131,10 +152,16 @@ it('generates static dashboard pages from the snapshot contract', async () => {
   expect(graphHtml).toContain('map-component');
   expect(graphHtml).toContain('map-node');
   expect(graphHtml).toContain('<option value="pr">Pull requests</option>');
-  const graphScript = await readFile(resolve(output, 'dashboard/assets/graph.js'), 'utf8');
+  const graphScript = (await readFile(resolve(output, 'dashboard/assets/graph.js'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(graphScript).toContain('data-map-node');
   expect(graphScript).toContain('data-map-kind-filter');
-  const logo = await readFile(resolve(output, 'dashboard/assets/logo.svg'), 'utf8');
+  const logo = (await readFile(resolve(output, 'dashboard/assets/logo.svg'), 'utf8')).replace(
+    / data-review-(?:slot|key)="[^"]*"/g,
+    ''
+  );
   expect(logo).toContain('<svg');
   await rm(output, { recursive: true, force: true });
 });
@@ -165,7 +192,10 @@ it('shows source repository and first correction even when anomaly has no compon
   const output = resolve(process.cwd(), 'data/test-dashboard-regression');
   try {
     await generateDashboard(snapshot, output);
-    const html = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+    const html = (await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const row = html.match(new RegExp(`<tr[^>]*>[\\s\\S]*?${anomaly.anomalyId}[\\s\\S]*?<\\/tr>`))?.[0];
     expect(row).toBeDefined();
     expect(row).toContain(library.name);
@@ -200,7 +230,10 @@ it('renders cancelled status as a separate filter value and excludes it from don
   const output = resolve(process.cwd(), 'data/test-dashboard-cancelled');
   try {
     await generateDashboard(snapshot, output);
-    const html = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+    const html = (await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const row = html
       .match(/<tr[^>]*>[\s\S]*?<\/tr>/g)
       ?.find((candidate) => candidate.includes(anomaly.anomalyId));
@@ -235,7 +268,10 @@ it('does not display a negative correction delay for an inconsistent estimated c
   const output = resolve(process.cwd(), 'data/test-dashboard-negative-date');
   try {
     await generateDashboard(snapshot, output);
-    const html = await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8');
+    const html = (await readFile(resolve(output, 'dashboard/anomalies.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const row = html.match(new RegExp(`<tr[^>]*>[\\s\\S]*?${anomaly.anomalyId}[\\s\\S]*?<\\/tr>`))?.[0];
     expect(row).toContain('Date incohérente');
     expect(row).not.toContain('-56.0 j');
@@ -279,9 +315,18 @@ it('uses the same treatment dates for Task issues across issues, components and 
   const output = resolve(process.cwd(), 'data/test-dashboard-consistency');
   try {
     await generateDashboard(snapshot, output, 'https://github.test');
-    const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
-    const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
-    const overviewHtml = await readFile(resolve(output, 'dashboard/quality.html'), 'utf8');
+    const issuesHtml = (await readFile(resolve(output, 'dashboard/issues.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
+    const componentsHtml = (await readFile(resolve(output, 'dashboard/components.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
+    const overviewHtml = (await readFile(resolve(output, 'dashboard/quality.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const issuePayload = pageContract(issuesHtml).data.issues!;
     const componentRows = pageContract(componentsHtml).data.components!;
     const projectedIssue = issuePayload.items.find(
@@ -334,8 +379,14 @@ it('uses the last dated Project transition for reopened issues in both explorers
   const output = resolve(process.cwd(), 'data/test-dashboard-last-transition');
   try {
     await generateDashboard(snapshot, output, 'https://github.test');
-    const issuesHtml = await readFile(resolve(output, 'dashboard/issues.html'), 'utf8');
-    const componentsHtml = await readFile(resolve(output, 'dashboard/components.html'), 'utf8');
+    const issuesHtml = (await readFile(resolve(output, 'dashboard/issues.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
+    const componentsHtml = (await readFile(resolve(output, 'dashboard/components.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     const issuePayload = pageContract(issuesHtml).data.issues!;
     const componentRows = pageContract(componentsHtml).data.components!;
     const projected = issuePayload.items.find((item: { number: number }) => item.number === issue.number);

@@ -17,6 +17,8 @@ export interface SimpleCell {
 }
 /** Ligne filtrable dont les preuves restent dans le même écran. */
 export interface SimpleRow {
+  /** Identité métier permanente, indépendante des libellés et du tri. */
+  reviewKey: string;
   repository: string;
   version: string;
   cells: SimpleCell[];
@@ -82,6 +84,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     const audit = data.audits.find((item) => item.auditId === row.latestAuditId);
     const reviewed = data.issues !== undefined && bugs.every((issue) => issue.review !== undefined);
     return {
+      reviewKey: row.componentId,
       repository: repo(row.libraryId),
       version: audit?.version ?? '',
       cells: [
@@ -157,6 +160,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     rows: componentRows
       .filter((row) => row.cells[5]?.value === null || Number(row.cells[5]?.value) > 0)
       .map((row) => ({
+        reviewKey: row.reviewKey,
         repository: row.repository,
         version: row.version,
         cells: [
@@ -189,6 +193,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     rows: repositories.map((row) => {
       const selected = issues.filter((issue) => issue.libraryId === row.libraryId);
       return {
+        reviewKey: row.repository,
         repository: row.repository,
         version: '',
         cells: [
@@ -229,6 +234,7 @@ export function simplifiedModel(snapshot: Snapshot) {
       'Issues du snapshot. Le statut Project est distinct de la fermeture GitHub ; les filtres de dates portent sur la création de l’issue.',
     headers: ['Issue', 'Nature', 'Composants', 'GitHub', 'Project', 'Correction', 'Création'],
     rows: facts.map((fact) => ({
+      reviewKey: fact.id,
       repository: fact.repo,
       version: fact.versions.join(', '),
       cells: [
@@ -251,18 +257,21 @@ export function simplifiedModel(snapshot: Snapshot) {
     const selected = issues.filter((issue) => issue.libraryId === library.libraryId);
     const cohorts = [
       {
+        key: 'github-closure',
         name: 'Fermeture des issues',
         values: selected
           .filter((issue) => issue.state === 'CLOSED')
           .map((issue) => ({ id: issue.issueId, value: elapsed(issue.createdAt, issue.closedAt) }))
       },
       {
+        key: 'business-treatment',
         name: 'Traitement métier — dates Done / estimées',
         values: facts
           .filter((fact) => fact.repo === library.repository && fact.status === 'closed')
           .map((fact) => ({ id: fact.id, value: fact.delay }))
       },
       {
+        key: 'confirmed-correction',
         name: 'Correction confirmée des bugs',
         values: selected
           .filter(
@@ -276,6 +285,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     for (const cohort of cohorts) {
       const summary = delays(cohort.values);
       delayRows.push({
+        reviewKey: library.libraryId + ':' + cohort.key,
         repository: library.repository,
         version: '',
         cells: [
@@ -288,11 +298,12 @@ export function simplifiedModel(snapshot: Snapshot) {
         ]
       });
     }
-    for (const name of [
-      'Fusion des PR — date d’ouverture absente',
-      'Réalisation des audits — date de début absente'
-    ])
+    for (const [cohortKey, name] of [
+      ['pr-fusion', 'Fusion des PR — date d’ouverture absente'],
+      ['audit-completion', 'Réalisation des audits — date de début absente']
+    ] as const)
       delayRows.push({
+        reviewKey: library.libraryId + ':' + cohortKey,
         repository: library.repository,
         version: '',
         cells: [cell(library.repository), cell(name), cell(null), cell(null), cell(0), cell(null)]
@@ -430,6 +441,7 @@ export function simplifiedModel(snapshot: Snapshot) {
         '.'
     });
     campaigns.push({
+      reviewKey: JSON.stringify([libraryId, version]),
       repository: repo(libraryId),
       version,
       cells: [

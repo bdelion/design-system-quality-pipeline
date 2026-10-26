@@ -1,3 +1,4 @@
+import { markReview } from './review-core.js';
 /** Vérifie un dictionnaire JSON sans assimiler une absence à un objet vide. */
 function record(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -210,7 +211,7 @@ let cached;
 function showPageError(message) {
   const main = document.querySelector('main');
   if (!main) return;
-  const error = document.createElement('p');
+  const error = markReview('s12', document.createElement('p'));
   error.className = 'panel';
   error.setAttribute('role', 'alert');
   error.dataset.pageDataError = '';

@@ -15,14 +15,23 @@ it('date les compteurs figés et distingue les recherches Enterprise sans change
   const output = await mkdtemp(join(tmpdir(), 'dsq-links-86-'));
   try {
     await generateDashboard(snapshot, output, 'https://github.enterprise.test');
-    const home = await readFile(join(output, 'dashboard/index.html'), 'utf8');
+    const home = (await readFile(join(output, 'dashboard/index.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     expect(home).toContain('Snapshot du 2026-10-01. Compteurs figés');
     expect(home).toContain('GitHub actuel ≈ : recherche approchée, sans preuve du compte');
     expect(home).toContain('· GitHub actuel ≈ ↗</a>');
     expect(home).toContain('https://github.enterprise.test/acme/ds-react/issues?q=is%3Aissue');
-    const components = await readFile(join(output, 'dashboard/components.html'), 'utf8');
+    const components = (await readFile(join(output, 'dashboard/components.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     expect(components).toContain('Snapshot du 2026-10-01');
-    const graph = await readFile(join(output, 'dashboard/graph.html'), 'utf8');
+    const graph = (await readFile(join(output, 'dashboard/graph.html'), 'utf8')).replace(
+      / data-review-(?:slot|key)="[^"]*"/g,
+      ''
+    );
     expect(graph).not.toMatch(/class="map-node pr-node"[^>]*href="#"/);
     expect(graph).not.toContain('href="#traceability" target="_blank"');
     expect(graph).toContain(

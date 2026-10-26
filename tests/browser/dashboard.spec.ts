@@ -15,7 +15,7 @@ test('issue #79 : unités, populations et réserves des KPI après filtrage', as
   await page.route('**/accessibility.html*', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, json, end) => {
         const snapshot = JSON.parse(json);
         const model = snapshot.data.workspaces;
@@ -140,7 +140,7 @@ async function mockComponentCounters(page: Page, payload: unknown): Promise<void
   await page.route('**/components.html*', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const envelope = JSON.parse(content);
         envelope.data.components = payload;
@@ -265,7 +265,7 @@ test('issue #69 : suivi des Epics et export CSV accessibles', async ({ page }) =
       ]
     };
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const envelope = JSON.parse(content);
         envelope.data.epics = model;
@@ -644,7 +644,7 @@ test('la présence inconnue rend les ratios et le stock non couvert indisponible
   await page.route('**/accessibility.html', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_match, start, content, end) => {
         const current = JSON.parse(content);
         current.data.workspaces = model;
@@ -705,7 +705,7 @@ test('issue #49 : résultat par version auditée sans catalogue historique ni h�
   await page.route('**/components.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const envelope = JSON.parse(content);
         const row = envelope.data.components[0];
@@ -754,7 +754,7 @@ test('historique : affiche les preuves et la conformité héritée sans inventer
   await page.route('**/components.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const envelope = JSON.parse(content);
         const row = envelope.data.components[0];
@@ -832,7 +832,7 @@ test('tris indépendants des répartitions : intitulés, nombres, égalités et 
   await page.route('**/accessibility.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const snapshot = JSON.parse(content);
         const model = snapshot.data.workspaces;
@@ -875,7 +875,7 @@ test('issue #65 : ordre initial repository puis composant indépendant de l’or
   await page.route('**/components.html', async (route) => {
     const response = await route.fetch();
     const html = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, content, end) => {
         const envelope = JSON.parse(content);
         envelope.data.components.reverse();
@@ -934,7 +934,7 @@ test('revue métier : filtres Project, nature, URL, export et réinitialisation'
   await page.route('**/issues.html*', async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      /(<script type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
+      /(<script[^>]* type="application\/json" id="dashboard-page-data">)([\s\S]*?)(<\/script>)/,
       (_, start, json, end) => {
         const model = JSON.parse(json);
         const original = model.data.issues.items[0];

@@ -19,7 +19,7 @@ test('explique un contrat absent, illisible, inconnu ou incomplet sans faux zér
       await page.route('**/issues.html', async (route) => {
         const response = await route.fetch();
         const html = (await response.text()).replace(
-          /<script type="application\/json" id="dashboard-page-data">([\s\S]*?)<\/script>/,
+          /<script[^>]* type="application\/json" id="dashboard-page-data">([\s\S]*?)<\/script>/,
           (tag, text: string) => {
             if (variant === 'absent') return '';
             if (variant === 'json') return tag.replace(text, '{');

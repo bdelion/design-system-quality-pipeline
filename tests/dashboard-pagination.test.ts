@@ -15,7 +15,7 @@ it('borne le HTML initial DQ à 50 lignes en conservant 3 000 diagnostics dans l
   try {
     await generateDashboard(snapshot, output, 'https://github.enterprise.test');
     const html = await readFile(join(output, 'dashboard/quality.html'), 'utf8');
-    expect([...html.matchAll(/<tr data-quality-row/g)]).toHaveLength(50);
+    expect([...html.matchAll(/<tr[^>]* data-quality-row/g)]).toHaveLength(50);
     const model = pageContract(html);
     expect(model.data.quality).toHaveLength(3000);
     expect(model.data.quality!.at(-1)!.id).toBe('pagination-diagnostic-3000');

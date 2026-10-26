@@ -22,6 +22,8 @@ Ouvrir [le dashboard local](http://127.0.0.1:4174/). La démonstration utilise u
 
 Chaque génération produit désormais **les deux présentations**, sans option supplémentaire : une [vue synthétique et une vue détaillée](docs/08-implementation/dashboard-double-presentation.md). L’accueil permet de choisir et de changer de vue. Les données et les verdicts sont communs. La vue synthétique propose une présentation compacte à navigation fixe, des CSV complets et les synthèses librairie/composant et librairie/version.
 
+Pour signaler précisément un chiffre ou un lien, activez le [mode de revue](docs/08-implementation/dashboard-review-identifiers.md#utilisation) avec **Alt+Maj+R**, sélectionnez l’élément par **Alt+clic**, puis copiez son identifiant ou son contexte. Il fonctionne dans les deux présentations, leurs tableaux et leurs fenêtres.
+
 ## Partir d’une liste de dépôts
 
 Créer `repositories.json` :

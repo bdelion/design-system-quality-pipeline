@@ -1,3 +1,4 @@
+import { markReview } from './review-core.js';
 import { readPageModel } from './page-model.js';
 /* global URL, Blob */
 import { durationStatistics } from './statistics.js';
@@ -60,7 +61,7 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
         known.textContent = value;
         continue;
       }
-      const option = document.createElement('option');
+      const option = markReview('s3', document.createElement('option'));
       option.value = value;
       option.textContent = value;
       control.append(option);
@@ -72,7 +73,7 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
       a.localeCompare(b, 'fr')
     );
     for (const value of values) {
-      const option = document.createElement('option');
+      const option = markReview('s4', document.createElement('option'));
       option.value = value;
       option.textContent = value;
       $(`[data-component-filter="${field}"]`).append(option);
@@ -119,9 +120,9 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
     };
   }
   /** Rend uniquement les URL HTTPS résolues, avec ouverture externe explicite. */
-  function externalLink(url, value, title) {
+  function externalLink(url, value, title, identity = 'source') {
     return /^https:\/\/[^\s]+$/.test(url ?? '')
-      ? `<a href="${escape(url)}" target="_blank" rel="noopener noreferrer"${title ? ` title="${escape(title)}"` : ''}>${escape(value)} ↗</a>`
+      ? `<a data-review-slot="s5" data-review-key="${escape(identity)}" href="${escape(url)}" target="_blank" rel="noopener noreferrer"${title ? ` title="${escape(title)}"` : ''}>${escape(value)} ↗</a>`
       : escape(value);
   }
   /** Associe les recherches GitHub et les audits justificatifs aux colonnes correspondantes. */
@@ -134,7 +135,7 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
       );
       return (
         escape(value) +
-        `<details data-component-history><summary>Qualité par version (${history.length})</summary><dl>${history.map((item) => `<div><dt><strong>${escape(item.version)}</strong> · ${escape(item.channel === 'development' ? 'Développement' : item.publication)}</dt><dd>Conformité : ${escape({ CONFORME: 'Conforme', NON_CONFORME: 'Non conforme', NON_COUVERT: 'Non couvert' }[item.conformity] ?? 'Indéterminée')}<br>Audits justificatifs : ${(item.auditSources ?? []).map((audit) => externalLink(audit.url, audit.id)).join('<br>') || 'Aucun'}<br>Preuve de présence : ${escape(item.provenance)}</dd></div>`).join('')}</dl></details>`
+        `<details data-review-slot="s6" data-component-history><summary data-review-slot="s7">Qualité par version (${history.length})</summary><dl data-review-slot="s8">${history.map((item) => `<div data-review-slot="s9" data-review-key="${escape(item.versionId || item.version)}"><dt data-review-slot="sa"><strong data-review-slot="sb">${escape(item.version)}</strong> · ${escape(item.channel === 'development' ? 'Développement' : item.publication)}</dt><dd data-review-slot="sc">Conformité : ${escape({ CONFORME: 'Conforme', NON_CONFORME: 'Non conforme', NON_COUVERT: 'Non couvert' }[item.conformity] ?? 'Indéterminée')}<br data-review-slot="sd">Audits justificatifs : ${(item.auditSources ?? []).map((audit) => externalLink(audit.url, audit.id, undefined, audit.id)).join('<br data-review-slot="se">') || 'Aucun'}<br data-review-slot="sf">Preuve de présence : ${escape(item.provenance)}</dd></div>`).join('')}</dl></details>`
       );
     }
     const field = { 2: 'issues', 3: 'open', 4: 'treated', 5: 'cancelled', 6: 'prs', 7: 'audits' }[index];
@@ -145,11 +146,11 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
           `${value} · GitHub actuel ≈`,
           'Recherche approchée par références d’issues.'
         ) +
-        '<small>' +
+        '<small data-review-slot="sg">' +
         row.githubLinks.prSearches
           .slice(1)
-          .map((url, i) => externalLink(url, `GitHub actuel ≈ · PR ${i + 2}`))
-          .join('<br>') +
+          .map((url, i) => externalLink(url, `GitHub actuel ≈ · PR ${i + 2}`, undefined, 'pr-search:' + i))
+          .join('<br data-review-slot="sh">') +
         '</small>'
       );
     }
@@ -165,7 +166,9 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
         (audit) => row.auditIds.includes(audit.id) && /^https:\/\/[^\s]+$/.test(audit.url)
       );
       return audits.length
-        ? audits.map((audit, i) => externalLink(audit.url, i === 0 ? value : audit.id)).join('<br>')
+        ? audits
+            .map((audit, i) => externalLink(audit.url, i === 0 ? value : audit.id, undefined, audit.id))
+            .join('<br data-review-slot="si">')
         : escape(value);
     }
     if (index === 10 && oldest) return externalLink(oldest.url, value);
@@ -173,6 +176,7 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
   }
   /** Rend les résultats et annonce séparément composants visibles, sélection et issues Analytics distinctes. */
   function render() {
+    root.dataset.reviewState = JSON.stringify({ sort, descending });
     const query = $('[data-component-search]').value.toLocaleLowerCase('fr');
     const visible = rows
       .map(projectRow)
@@ -261,7 +265,7 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
     $('[data-component-rows]').innerHTML = visible
       .map(
         ({ row, oldest, values }) =>
-          `<tr><td><input type="checkbox" data-component-check="${escape(row.id)}" aria-label="Sélectionner ${escape(row.name)}" ${selected.has(row.id) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${linkedValue(row, oldest, value, index)}</td>`).join('')}</tr>`
+          `<tr data-review-slot="sj" data-review-key="${escape(row.id)}"><td data-review-slot="sk"><input data-review-slot="sl" type="checkbox" data-component-check="${escape(row.id)}" aria-label="Sélectionner ${escape(row.name)}" ${selected.has(row.id) ? 'checked' : ''}></td>${values.map((value, index) => `<td data-review-slot="sm" data-review-key="field:${index}">${linkedValue(row, oldest, value, index)}</td>`).join('')}</tr>`
       )
       .join('');
     return visible;
@@ -354,7 +358,7 @@ import { matchesFact, currentContext, setContext, contextKeys } from './context.
         .map((record) => record.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(';'))
         .join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })),
-      link = document.createElement('a');
+      link = markReview('sn', document.createElement('a'));
     link.href = url;
     link.download = 'analyse-composants.csv';
     link.click();

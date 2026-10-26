@@ -1,3 +1,4 @@
+import { markReview } from './review-core.js';
 import { paginate, updatePagination } from './pagination.js';
 import { downloadCsv } from './csv.js';
 import { readPageModel } from './page-model.js';
@@ -38,7 +39,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
   /** Remplit un filtre avec les valeurs effectivement présentes dans les faits. */
   const fill = (control, values) => {
     values.forEach((value) => {
-      const option = document.createElement('option');
+      const option = markReview('su', document.createElement('option'));
       option.value = value;
       option.textContent = value;
       control.append(option);
@@ -60,13 +61,13 @@ import { matchesFact, currentContext, setContext } from './context.js';
   /** Rend les références GitHub vérifiées en conservant les valeurs textuelles échappées. */
   const cell = (item, value, index) => {
     if (index === 1 && item.url && /^https:\/\/[^\s]+$/.test(item.url))
-      return `<a href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>`;
+      return `<a data-review-slot="sv" href="${escape(item.url)}" target="_blank" rel="noopener noreferrer">#${escape(value)} ↗</a>`;
     if (index === 6 && item.pullRequestLinks?.length)
       return item.pullRequestLinks
         .filter((pr) => /^https:\/\/[^\s]+$/.test(pr.url))
         .map(
           (pr) =>
-            `<a href="${escape(pr.url)}" target="_blank" rel="noopener noreferrer">#${escape(pr.number)} · ${escape(pr.state)}</a>`
+            `<a data-review-slot="sw" data-review-key="${escape(pr.id || pr.number)}" href="${escape(pr.url)}" target="_blank" rel="noopener noreferrer">#${escape(pr.number)} · ${escape(pr.state)}</a>`
         )
         .join(' ; ');
     return escape(value);
@@ -255,6 +256,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     $('[data-issue-select-all]').checked = displayed.length > 0 && displayed.every((id) => selection.has(id));
     const state = paginate(visible, page);
     page = state.page;
+    root.dataset.reviewState = JSON.stringify({ sort: sortIndex, descending, page, dedupe });
     const focused = document.activeElement?.dataset.issueCheck;
     const focusedIndex = [...root.querySelectorAll('[data-issue-check]')].indexOf(document.activeElement);
     updatePagination(root.querySelector('[data-pagination]'), state);
@@ -263,7 +265,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     $('[data-issue-rows]').innerHTML = state.rows
       .map(
         ({ item, values }) =>
-          `<tr><td><input type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td>${cell(item, value, index)}</td>`).join('')}</tr>`
+          `<tr data-review-slot="sx" data-review-key="${escape(JSON.stringify([key(item), item.label]))}"><td data-review-slot="sy"><input data-review-slot="sz" type="checkbox" data-issue-check="${escape(key(item))}" aria-label="Sélectionner ${escape(key(item))}" ${selection.has(key(item)) ? 'checked' : ''}></td>${values.map((value, index) => `<td data-review-slot="s10" data-review-key="field:${index}">${cell(item, value, index)}</td>`).join('')}</tr>`
       )
       .join('');
     const focusTarget = root.querySelectorAll('[data-issue-check]')[focusedIndex];
@@ -279,7 +281,7 @@ import { matchesFact, currentContext, setContext } from './context.js';
     for (const dimension of ['project', 'kind', 'review']) {
       const value = params.get(dimension) || '';
       if (value && ![...filters[dimension].options].some((option) => option.value === value)) {
-        const option = document.createElement('option');
+        const option = markReview('s11', document.createElement('option'));
         option.value = value;
         option.textContent = 'Valeur inconnue : ' + value;
         filters[dimension].append(option);

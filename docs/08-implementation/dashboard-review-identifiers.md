@@ -2,7 +2,7 @@
 
 **EXIGENCE CONFIRMÉE — 26 octobre 2026 :** disposer d’un identifiant unique pour tout élément du dashboard afin de désigner sans confusion un chiffre, une fenêtre, un lien GitHub ou un autre élément à valider.
 
-**ÉTAT : demande de conception enregistrée, non implémentée.** Le présent document décrit l’évolution attendue ; il ne prouve pas que les dashboards générés disposent déjà de ces identifiants. L’algorithme et le format technique définitifs restent des propositions à préciser lors de l’implémentation.
+**ÉTAT : implémenté sur la branche dédiée `feat/dashboard-review-identifiers`.** Le mode de revue couvre la page de choix, les dix écrans détaillés et les cinq espaces synthétiques, ainsi que leurs éléments dynamiques. Cette livraison reste distincte de la validation métier de #118.
 
 La branche `fix/118-github-repository-project-links` reste **en attente de validation utilisateur**. Cette demande ne valide ni ses liens ni ses résultats et ne clôt aucune issue existante.
 
@@ -39,7 +39,7 @@ DSQ-SITE-SIMPLE-COMPONENTS-ACTIVITY-REPOSITORY-COMPONENT-DONE-GITHUB
 
 Ces références désignent respectivement le chiffre, son action d’ouverture, la fenêtre logique et son accès GitHub. Les mêmes rôles dans une autre présentation ou sur un autre repository ont d’autres références. Une cellule de version ajoute la clé de version nécessaire.
 
-## Mode de revue proposé
+## Mode de revue implémenté
 
 Tous les éléments portent leur identité dans le rendu ; le mode de revue permet de la consulter sans encombrer la consultation normale. Une sélection doit pouvoir viser précisément une cellule, son lien ou son conteneur, y compris au clavier. Afficher des identifiants ne doit pas déplacer les tableaux, perturber le focus ou déclencher la navigation sélectionnée.
 
@@ -56,7 +56,7 @@ L’identifiant seul doit être copiable. La copie contextuelle est une action d
 
 Un accès local permettant de retrouver et surligner un élément par sa référence est proposé. Si une référence est ancienne, absente du snapshot ou masquée par les filtres, l’outil l’explique ; il ne sélectionne pas silencieusement un autre élément.
 
-## Critères d’acceptation de l’implémentation future
+## Critères d’acceptation
 
 1. Une vérification de couverture recense tous les types d’éléments et espaces des deux présentations ; aucun espace n’est limité aux seuls exemples initiaux.
 2. Aucun doublon n’existe dans un rendu ni entre les pages d’un même site ; les sites indépendants disposent d’espaces d’identité distincts. Une collision détectée fait échouer le contrôle au lieu de recevoir un suffixe dépendant de l’ordre de rendu.
@@ -67,4 +67,45 @@ Un accès local permettant de retrouver et surligner un élément par sa référ
 7. Les tests couvrent les éléments dynamiques, les tableaux sans résultat, les valeurs indisponibles et les fenêtres réutilisant un même composant de rendu.
 8. Les budgets de taille et DOM à croissance nulle restent les références existantes. Tout surcoût est mesuré et soumis à validation avant une éventuelle mise à jour des budgets ; aucun seuil n’est relevé silencieusement.
 
-L’implémentation future inclura ses tests, sa documentation et les contrôles du dashboard. Aucun code applicatif, compteur, lien GitHub ou budget n’est modifié par l’enregistrement de cette demande.
+## Utilisation
+
+1. Régénérer le dashboard avec la commande habituelle, puis le servir localement.
+2. Sur la page à examiner, appuyer sur **Alt+Maj+R** ou ajouter `?review=1` avant le fragment `#components`, par exemple `simplified/index.html?review=1#components`.
+3. Faire **Alt+clic** sur le chiffre, le lien ou le conteneur. Au clavier, placer le focus sur le contrôle puis utiliser **Alt+Maj+I**. « Remonter » sélectionne son conteneur parent.
+4. Utiliser **Copier l’identifiant** pour désigner l’élément, ou **Copier le contexte** pour joindre les métadonnées de génération, les filtres et les états de tri/pagination. Ces deux actions sont distinctes.
+5. Coller un identifiant dans le champ et choisir **Retrouver** sur le même écran. Un élément absent ou masqué est annoncé ; l’outil ne navigue pas automatiquement vers une autre page de résultats.
+
+Le panneau ne s’affiche pas en consultation normale. Ses contrôles restent accessibles lorsqu’une fenêtre est ouverte et après sa fermeture. L’inspection par Alt+clic évite d’activer le lien sélectionné.
+
+## Contrat technique maintenu
+
+- `data-review-slot` conserve un rôle source permanent. Ces clés sont opaques ; ne pas les renuméroter lors d’un déplacement ou d’une traduction du modèle.
+- `data-review-key` porte l’identité explicite d’une entité répétée. Les clés de colonne désignent le schéma du tableau, jamais l’ordre des lignes triées. Les compteurs synthétiques possèdent un élément de valeur distinct de leur bouton.
+- `data-review-id` est attribué au DOM courant et actualisé après les rendus. Le format versionné `DSQ1` encode séparément l’espace de site, la présentation, l’écran et les rôles/identités des conteneurs. Les séparateurs sont encodés sans perte ; aucun suffixe de position n’est ajouté en cas de collision.
+- L’espace de site utilise le périmètre déclaré et les identités sources des repositories, triées, indépendamment du dossier de sortie et de la date. Un changement de ce périmètre définit un autre espace ; une correspondance anonymisé/réel n’est pas inventée.
+- La génération distingue la référence du snapshot, sa capture et une empreinte des sources du générateur accompagnée de sa version package. Le fichier local `review-context.js` ne contient pas de RAW ni de titres de tickets.
+- Une fenêtre réutilisée inclut la référence de l’élément qui l’a ouverte. Les actions de son en-tête, ses colonnes et ses lignes héritent de cette origine.
+- Les valeurs, titres affichés, URL navigables et tris ne deviennent pas des clés d’élément. Les identités de labels sources et de causes DQ restent celles des populations métier ; changer la population définit une autre entité.
+- Toute collision est remontée par l’inventaire et empêche la copie et la recherche. Les tests navigateur échouent sur une collision ; aucun compteur de doublons n’est caché.
+
+La copie contextuelle omet les recherches en texte libre et les titres/corps de tickets. La case **Inclure la valeur visible et l’URL**, désactivée par défaut, autorise explicitement leur copie pour l’élément sélectionné. Les références peuvent contenir des clés techniques de repositories/composants : elles restent à partager selon les règles du dataset.
+
+Les changements CSS de disposition ne réassignent pas les rôles. Lors d’une refonte du modèle DOM ou du schéma de colonnes, préserver explicitement les clés et leur portée ; toute modification de ces identités exige une migration documentée. Un identifiant d’un élément supprimé reste introuvable et n’est pas réaffecté.
+
+## Vérification
+
+`tests/review-identifiers.test.ts` vérifie les espaces et générations. `tests/browser/review-identifiers.spec.ts` inventorie les pages, les données anciennes et les grandes listes ; il contrôle les tris, retours de pagination, fenêtres réutilisées, copie, recherche et collisions. Les tests existants conservent leurs assertions de contenu, de métriques et d’accessibilité.
+
+Les surcoûts sont mesurés séparément des seuils : aucune augmentation de budget n’est acceptée implicitement par l’implémentation.
+
+## Budgets validés le 26 octobre 2026
+
+Accord utilisateur : « Oui, actualiser ces références ». Le seuil reste à **0 %** pour les changements suivants.
+
+| Périmètre             |                          Ajout HTML |    Dont JSON | Dépassement du plafond DOM antérieur |
+| --------------------- | ----------------------------------: | -----------: | -----------------------------------: |
+| Choix de présentation |                          531 octets |            0 |                               1 nœud |
+| Vue synthétique       |                        2 544 octets | 1 514 octets | 168 nœuds (maximum des cinq espaces) |
+| Pages détaillées      | 2 187 à 75 793 octets selon la page |            0 |                                Aucun |
+
+Les lignes initiales et rendues ne changent pas. Les plafonds DOM antérieurs restent conservés lorsqu’ils sont supérieurs aux nouvelles mesures. Les fichiers `config/benchmark-control-baseline.json` et `config/benchmark-simplified-baseline.json` conservent les valeurs précédentes et la validation. Le panneau de revue est créé uniquement après activation et reste exclu des mesures de consultation normale.
