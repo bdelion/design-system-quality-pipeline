@@ -20,11 +20,12 @@ export function paginate(rows, requested = 1) {
 
 /** Produit des contrôles stables, conservés lors du remplacement des lignes du tableau. */
 export function paginationContent(kind) {
-  return `<nav class="issue-actions" data-pagination="${kind}" aria-label="Pagination ${kind === 'issues' ? 'des issues' : kind === 'quality-causes' ? 'des causes DQ' : 'des diagnostics'}"><button type="button" data-page-previous disabled>Précédent</button><span data-page-range role="status" aria-live="polite" tabindex="-1">Pagination indisponible</span><button type="button" data-page-next disabled>Suivant</button></nav>`;
+  return `<nav data-review-slot="s13" class="issue-actions" data-pagination="${kind}" aria-label="Pagination ${kind === 'issues' ? 'des issues' : kind === 'quality-causes' ? 'des causes DQ' : 'des diagnostics'}"><button data-review-slot="s14" type="button" data-page-previous disabled>Précédent</button><span data-review-slot="s15" data-page-range role="status" aria-live="polite" tabindex="-1">Pagination indisponible</span><button data-review-slot="s16" type="button" data-page-next disabled>Suivant</button></nav>`;
 }
 
 /** Actualise le compteur et maintient le focus utilisable lorsqu’un bouton devient indisponible. */
 export function updatePagination(root, state) {
+  root.dataset.reviewState = JSON.stringify({ page: state.page, size: pageSize });
   const previous = root.querySelector('[data-page-previous]');
   const next = root.querySelector('[data-page-next]');
   const range = root.querySelector('[data-page-range]');

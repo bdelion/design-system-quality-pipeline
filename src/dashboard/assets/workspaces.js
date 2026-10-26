@@ -1,3 +1,4 @@
+import { markReview } from './review-core.js';
 import { readPageModel } from './page-model.js';
 import { currentContext, matchesFact } from './context.js';
 /* global Blob, URL */
@@ -53,13 +54,15 @@ function canonicalContext() {
 function distributionChart(title, entries, note, dimension) {
   const maximum = Math.max(0, ...entries.map(([, value]) => value));
   return (
-    '<figure class="distribution-chart" data-distribution="' +
+    '<figure data-review-slot="s3o" data-review-key="' +
     dimension +
-    '"><figcaption>' +
+    '" class="distribution-chart" data-distribution="' +
+    dimension +
+    '"><figcaption data-review-slot="s3p">' +
     escape(title) +
     '</figcaption>' +
     (dimension in distributionSorts
-      ? `<label>Trier par <select data-distribution-sort="${dimension}" aria-label="Tri : ${escape(title)}">${Object.entries(
+      ? `<label data-review-slot="s3q">Trier par <select data-review-slot="s3r" data-distribution-sort="${dimension}" aria-label="Tri : ${escape(title)}">${Object.entries(
           {
             'label-asc': 'Intitulé croissant',
             'label-desc': 'Intitulé décroissant',
@@ -69,26 +72,28 @@ function distributionChart(title, entries, note, dimension) {
         )
           .map(
             ([value, label]) =>
-              `<option value="${value}"${distributionSorts[dimension] === value ? ' selected' : ''}>${label}</option>`
+              `<option data-review-slot="s3s" value="${value}"${distributionSorts[dimension] === value ? ' selected' : ''}>${label}</option>`
           )
           .join('')}</select></label>`
       : '') +
-    '<ul class="distribution-bars">' +
+    '<ul data-review-slot="s3t" class="distribution-bars">' +
     (entries.length
       ? entries
           .map(
             ([label, value]) =>
-              '<li class="distribution-row"><span class="distribution-label">' +
+              '<li data-review-slot="s3u" data-review-key="' +
               escape(label) +
-              '</span><span class="bar-track" aria-hidden="true"><i style="width:' +
+              '" class="distribution-row"><span data-review-slot="s3v" class="distribution-label">' +
+              escape(label) +
+              '</span><span data-review-slot="s3w" class="bar-track" aria-hidden="true"><i data-review-slot="s3x" style="width:' +
               (maximum > 0 ? (value / maximum) * 100 : 0) +
-              '%"></i></span><strong>' +
+              '%"></i></span><strong data-review-slot="s3y">' +
               format(value) +
               '</strong></li>'
           )
           .join('')
-      : '<li>Aucune donnée de répartition disponible.</li>') +
-    '</ul><p class="panel-note">' +
+      : '<li data-review-slot="s3z">Aucune donnée de répartition disponible.</li>') +
+    '</ul><p data-review-slot="s40" class="panel-note">' +
     escape(note) +
     '</p></figure>'
   );
@@ -148,7 +153,7 @@ function renderWorkspace() {
   const breakdowns = document.querySelector('[data-workspace-breakdowns]');
   if (breakdowns)
     breakdowns.innerHTML = summary
-      ? '<div class="distribution-grid">' +
+      ? '<div data-review-slot="s41" class="distribution-grid">' +
         distributionChart(
           'Répartition par criticité',
           Object.entries(summary.criticalities).map(([key, item]) => [
@@ -170,24 +175,32 @@ function renderWorkspace() {
           'Relations explicites uniquement ; une anomalie peut concerner plusieurs composants.',
           'component'
         ) +
-        '</div><details class="distribution-details"><summary>Voir les détails des répartitions</summary>' +
-        `<h3>Par criticité</h3><div class="table-wrap" tabindex="0" role="region" aria-label="Répartition par criticité"><table><thead><tr><th scope="col">Criticité</th><th scope="col">Déclarées</th><th scope="col">Traitées</th><th scope="col">Délai moyen</th><th scope="col">Calculables</th></tr></thead><tbody>${Object.entries(
+        '</div><details data-review-slot="s42" class="distribution-details"><summary data-review-slot="s43">Voir les détails des répartitions</summary>' +
+        `<h3 data-review-slot="s44">Par criticité</h3><div data-review-slot="s45" class="table-wrap" tabindex="0" role="region" aria-label="Répartition par criticité"><table data-review-slot="s46"><thead data-review-slot="s47"><tr data-review-slot="s48"><th data-review-slot="s49" scope="col">Criticité</th><th data-review-slot="s4a" scope="col">Déclarées</th><th data-review-slot="s4b" scope="col">Traitées</th><th data-review-slot="s4c" scope="col">Délai moyen</th><th data-review-slot="s4d" scope="col">Calculables</th></tr></thead><tbody data-review-slot="s4e">${Object.entries(
           summary.criticalities
         )
           .map(
             ([key, item]) =>
-              `<tr><td>${escape({ blocking: 'Bloquante', major: 'Majeure', minor: 'Mineure', unknown: 'Inconnue' }[key])}</td><td>${item.declared}</td><td>${item.treated}</td><td>${format(item.average)} j</td><td>${item.count}</td></tr>`
+              `<tr data-review-slot="s4f" data-review-key="${key}"><td data-review-slot="s4g">${escape({ blocking: 'Bloquante', major: 'Majeure', minor: 'Mineure', unknown: 'Inconnue' }[key])}</td><td data-review-slot="s4h">${item.declared}</td><td data-review-slot="s4i">${item.treated}</td><td data-review-slot="s4j">${format(item.average)} j</td><td data-review-slot="s4k">${item.count}</td></tr>`
           )
-          .join('')}</tbody></table></div><h3>Par catégorie</h3><ul>${
+          .join(
+            ''
+          )}</tbody></table></div><h3 data-review-slot="s4l">Par catégorie</h3><ul data-review-slot="s4m">${
           sortedEntries(summary.categories, 'category')
-            .map(([key, count]) => `<li>${escape(key)} : ${count}</li>`)
-            .join('') || '<li>Aucune catégorie reconnue</li>'
-        }</ul><h3>Par composant</h3><ul>${
+            .map(
+              ([key, count]) =>
+                `<li data-review-slot="s4n" data-review-key="${escape(key)}">${escape(key)} : ${count}</li>`
+            )
+            .join('') || '<li data-review-slot="s4o">Aucune catégorie reconnue</li>'
+        }</ul><h3 data-review-slot="s4p">Par composant</h3><ul data-review-slot="s4q">${
           sortedEntries(summary.byComponent, 'component')
-            .map(([key, count]) => `<li>${escape(key)} : ${count}</li>`)
-            .join('') || '<li>Aucun composant explicitement relié</li>'
+            .map(
+              ([key, count]) =>
+                `<li data-review-slot="s4r" data-review-key="${escape(key)}">${escape(key)} : ${count}</li>`
+            )
+            .join('') || '<li data-review-slot="s4s">Aucun composant explicitement relié</li>'
         }</ul></details>`
-      : '<p>Ventilations indisponibles pour ce périmètre.</p>';
+      : '<p data-review-slot="s4t">Ventilations indisponibles pour ce périmètre.</p>';
   document.querySelectorAll('[data-workspace-row]').forEach((row) => {
     const fact = JSON.parse(row.dataset.context);
     const detailsMatch = ['criticality', 'category', 'status', 'progress', 'result'].every((key) => {
@@ -281,7 +294,7 @@ function exportPopulation(kind) {
     .map((row) => row.map(cell).join(';'))
     .join('\r\n');
   const url = URL.createObjectURL(new Blob(['\ufeff' + content], { type: 'text/csv;charset=utf-8' }));
-  const link = document.createElement('a');
+  const link = markReview('s4u', document.createElement('a'));
   link.href = url;
   link.download = `accessibilite-${kind}.csv`;
   link.click();

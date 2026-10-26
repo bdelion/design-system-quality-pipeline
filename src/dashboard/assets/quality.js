@@ -1,3 +1,4 @@
+import { markReview } from './review-core.js';
 import { readPageModel } from './page-model.js';
 import { currentContext, setContext } from './context.js';
 import { paginate, updatePagination } from './pagination.js';
@@ -39,7 +40,7 @@ function render(reset = true) {
       value &&
       ![...control.options].some((option) => option.value === value)
     ) {
-      const option = document.createElement('option');
+      const option = markReview('s1v', document.createElement('option'));
       option.value = value;
       option.textContent = 'Référence inconnue : ' + value;
       control.append(option);

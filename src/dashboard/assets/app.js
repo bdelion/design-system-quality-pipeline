@@ -1,3 +1,5 @@
+import { startReview } from './review.js';
+import { markReview } from './review-core.js';
 import { contextKeys, contextualHref, currentContext, matchesRow, setContext } from './context.js';
 
 import { readPageModel } from './page-model.js';
@@ -94,7 +96,7 @@ function initializePage() {
     for (const control of contextControls) {
       const value = params.get(control.dataset.contextFilter) || '';
       if (value && ![...control.options].some((option) => option.value === value)) {
-        const option = document.createElement('option');
+        const option = markReview('s1', document.createElement('option'));
         option.value = value;
         option.textContent = `Référence inconnue : ${value}`;
         control.append(option);
@@ -168,7 +170,7 @@ function initializePage() {
     try {
       if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(yaml);
       else {
-        const textarea = document.createElement('textarea');
+        const textarea = markReview('s2', document.createElement('textarea'));
         textarea.value = yaml;
         document.body.appendChild(textarea);
         textarea.select();
@@ -228,3 +230,5 @@ function initializePage() {
   }
 }
 initializePage();
+
+startReview('classic');

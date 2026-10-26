@@ -39,16 +39,16 @@ export function qualityRowHtml(row) {
   const values = qualityValues(row);
   values[4] =
     (/^https:\/\/[^\s"<>]+$/.test(row.sourceUrl)
-      ? `<a href="${escape(row.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escape(row.entityId)} ↗</a>`
+      ? `<a data-review-slot="s1o" href="${escape(row.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escape(row.entityId)} ↗</a>`
       : escape(row.entityId)) +
     (row.issueId
-      ? `<br><a href="graph.html?issue=${encodeURIComponent(row.issueId)}#traceability">Voir les relations explicites</a>`
+      ? `<br data-review-slot="s1p"><a data-review-slot="s1q" href="graph.html?issue=${encodeURIComponent(row.issueId)}#traceability">Voir les relations explicites</a>`
       : '');
   values[7] = row.impacts
     .map(
       (impact) =>
-        `${escape(impact.metricId)} · ${escape(impact.action)}<small>${escape(impact.reason)}</small>`
+        `<span data-review-slot="review-quality-impact" data-review-key="${escape(JSON.stringify([impact.metricId, impact.action]))}">${escape(impact.metricId)} · ${escape(impact.action)}<small data-review-slot="s1r">${escape(impact.reason)}</small></span>`
     )
-    .join('<br>');
-  return `<tr data-quality-row>${values.map((value, index) => `<td>${index === 4 || index === 7 ? value : escape(value)}</td>`).join('')}</tr>`;
+    .join('');
+  return `<tr data-review-slot="s1t" data-quality-row data-review-key="${escape(row.id)}">${values.map((value, index) => `<td data-review-slot="s1u" data-review-key="field:${index}">${index === 4 || index === 7 ? value : escape(value)}</td>`).join('')}</tr>`;
 }

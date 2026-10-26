@@ -74,6 +74,7 @@ export function componentActivityTable(snapshot: Snapshot): SimpleTable {
               }
             : { ...evidence('Aucun', []), sortValue: null };
       rows.push({
+        reviewKey: component.componentId,
         repository: library.repository,
         version: '',
         cells: [

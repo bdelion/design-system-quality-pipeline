@@ -1,3 +1,5 @@
+import { startReview } from './review.js';
+import { markReview } from './review-core.js';
 import { downloadCsv } from './csv.js';
 import { githubTargets } from './github-links.js';
 /* Restitution de faits Analytics : filtres et tris précèdent toujours la pagination. */
@@ -26,7 +28,7 @@ let detailPage = 0;
 let detailSize = 25;
 /** Crée un élément et insère du texte sans interpréter de HTML source. */
 function element(tag, text, parent) {
-  const node = document.createElement(tag);
+  const node = markReview('s1w', document.createElement(tag));
   if (text !== undefined) node.textContent = text;
   if (parent) parent.append(node);
   return node;
@@ -42,7 +44,7 @@ function display(value) {
 /** Accepte uniquement les liens web sources, sans protocoles exécutables. */
 function sourceLink(url, label, parent) {
   if (!url || !/^https?:\/\//i.test(url)) return;
-  const link = element('a', label, parent);
+  const link = markReview('s1x', element('a', label, parent));
   link.href = url;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
@@ -80,30 +82,42 @@ function githubLinks(cell, title, parent, note, options = {}) {
         ' — nouvel onglet'
     );
     if (approximate)
-      element(
-        'span',
-        ' Recherche GitHub élargie au composant ou au dépôt : elle peut contenir des issues absentes de cette liste. La liste locale et son CSV conservent la sélection exacte.',
-        note
+      markReview(
+        's1y',
+        element(
+          'span',
+          ' Recherche GitHub élargie au composant ou au dépôt : elle peut contenir des issues absentes de cette liste. La liste locale et son CSV conservent la sélection exacte.',
+          note
+        )
       );
     if (!direct)
-      element(
-        'span',
-        ' La recherche GitHub affiche l’état actuel ; la liste locale conserve les faits du snapshot.',
-        note
+      markReview(
+        's1z',
+        element(
+          'span',
+          ' La recherche GitHub affiche l’état actuel ; la liste locale conserve les faits du snapshot.',
+          note
+        )
       );
   } else {
-    element('span', 'Accès GitHub indisponible', parent).className = 'unavailable';
-    element(
-      'span',
-      ' ' + (result.reason || 'Aucune destination GitHub disponible pour cette sélection.'),
-      note
+    markReview('s20', element('span', 'Accès GitHub indisponible', parent)).className = 'unavailable';
+    markReview(
+      's21',
+      element(
+        'span',
+        ' ' + (result.reason || 'Aucune destination GitHub disponible pour cette sélection.'),
+        note
+      )
     );
   }
   if (result.stateMismatch)
-    element(
-      'span',
-      ' Le statut Project diffère de l’état GitHub : aucun filtre d’état réducteur n’est ajouté.',
-      note
+    markReview(
+      's22',
+      element(
+        'span',
+        ' Le statut Project diffère de l’état GitHub : aucun filtre d’état réducteur n’est ajouté.',
+        note
+      )
     );
   return result;
 }
@@ -114,19 +128,22 @@ function details(cell, title) {
   document.getElementById('detail-title').textContent = title;
   const note = document.getElementById('detail-note');
   note.replaceChildren();
-  element(
-    'span',
-    cell.note ||
-      (cell.value === null
-        ? 'Population indisponible.'
-        : 'Les liens ouvrent les sources GitHub ; leur état actuel peut différer du snapshot.'),
-    note
+  markReview(
+    's23',
+    element(
+      'span',
+      cell.note ||
+        (cell.value === null
+          ? 'Population indisponible.'
+          : 'Les liens ouvrent les sources GitHub ; leur état actuel peut différer du snapshot.'),
+      note
+    )
   );
   if (!document.getElementById('detail-actions')) {
     // Regroupe les actions sur la ligne du titre, conformément à la maquette A.
-    const detailHeader = element('div');
+    const detailHeader = markReview('s24', element('div'));
     detailHeader.className = 'detail-header';
-    const detailActions = element('div');
+    const detailActions = markReview('s25', element('div'));
     detailActions.id = 'detail-actions';
     detailActions.setAttribute('role', 'group');
     detailActions.setAttribute('aria-label', 'Actions de la fenêtre');
@@ -156,10 +173,11 @@ function details(cell, title) {
 /** Affiche la liste exacte de preuves sans fabriquer de lien à partir d’un identifiant anonymisé. */
 function renderDetails() {
   const target = document.getElementById('detail-content');
+  target.dataset.reviewState = JSON.stringify({ page: detailPage + 1, size: detailSize });
   target.replaceChildren();
-  const tools = element('div', undefined, target);
+  const tools = markReview('s26', element('div', undefined, target));
   tools.className = 'details-tools';
-  const exportButton = element('button', 'Exporter les issues en CSV', tools);
+  const exportButton = markReview('s27', element('button', 'Exporter les issues en CSV', tools));
   exportButton.type = 'button';
   exportButton.addEventListener('click', () =>
     downloadCsv('issues-associees.csv', [
@@ -175,28 +193,41 @@ function renderDetails() {
       ])
     ])
   );
-  const table = element('table');
+  const table = markReview('s28', element('table'));
   if (detailRows.length) target.append(table);
-  const head = element('tr', undefined, element('thead', undefined, table));
-  for (const label of ['Issue', 'GitHub', 'Correction', 'Signalements']) {
-    const th = element('th', label, head);
+  const head = markReview(
+    's29',
+    element('tr', undefined, markReview('s2a', element('thead', undefined, table)))
+  );
+  for (const [field, label] of [
+    ['issue', 'Issue'],
+    ['github', 'GitHub'],
+    ['correction', 'Correction'],
+    ['warnings', 'Signalements']
+  ]) {
+    const th = markReview('s2b', element('th', label, head));
     th.scope = 'col';
+    th.dataset.reviewKey = field;
   }
-  const body = element('tbody', undefined, table);
+  const body = markReview('s2c', element('tbody', undefined, table));
   for (const issue of detailRows.slice(detailPage * detailSize, (detailPage + 1) * detailSize)) {
-    const tr = element('tr', undefined, body);
-    const td = element('td', undefined, tr);
+    const tr = markReview('s2d', element('tr', undefined, body));
+    tr.dataset.reviewKey = issue.id;
+    const td = markReview('s2e', element('td', undefined, tr));
     if (issue.url) sourceLink(issue.url, issue.title + ' ↗', td);
-    else element('span', issue.title + ' — lien indisponible', td);
-    element('td', issue.state, tr);
-    element('td', issue.correction, tr);
-    element('td', issue.warnings.join(' ; ') || 'Aucun signalement métier', tr);
+    else markReview('s2f', element('span', issue.title + ' — lien indisponible', td));
+    markReview('s2g', element('td', issue.state, tr));
+    markReview('s2h', element('td', issue.correction, tr));
+    markReview('s2i', element('td', issue.warnings.join(' ; ') || 'Aucun signalement métier', tr));
   }
   if (!detailRows.length)
-    element(
-      'p',
-      'Aucun élément source individuel disponible dans ce snapshot. Utilisez la recherche GitHub lorsqu’elle est proposée ; un compteur de PR ne contient pas une liste d’issues.',
-      target
+    markReview(
+      's2j',
+      element(
+        'p',
+        'Aucun élément source individuel disponible dans ce snapshot. Utilisez la recherche GitHub lorsqu’elle est proposée ; un compteur de PR ne contient pas une liste d’issues.',
+        target
+      )
     );
   pager(
     document.getElementById('detail-pagination'),
@@ -214,27 +245,31 @@ function renderDetails() {
 function pager(target, count, page, size, change) {
   target.replaceChildren();
   const total = Math.max(1, Math.ceil(count / size));
-  for (const [name, value] of [
-    ['Première', 0],
-    ['Précédente', page - 1],
-    ['Suivante', page + 1],
-    ['Dernière', total - 1]
+  for (const [action, name, value] of [
+    ['first', 'Première', 0],
+    ['previous', 'Précédente', page - 1],
+    ['next', 'Suivante', page + 1],
+    ['last', 'Dernière', total - 1]
   ]) {
-    const button = element('button', name, target);
+    const button = markReview('s2k', element('button', name, target));
     button.type = 'button';
+    button.dataset.reviewKey = action;
     button.disabled = value < 0 || value >= total || value === page;
     button.addEventListener('click', () => change(value, size));
   }
-  const info = element(
-    'span',
-    count ? 'Page ' + (page + 1) + ' / ' + total + ' · ' + count + ' résultats' : '0 résultat',
-    target
+  const info = markReview(
+    's2l',
+    element(
+      'span',
+      count ? 'Page ' + (page + 1) + ' / ' + total + ' · ' + count + ' résultats' : '0 résultat',
+      target
+    )
   );
   info.setAttribute('aria-live', 'polite');
-  const label = element('label', 'Lignes par page ', target);
-  const select = element('select', undefined, label);
+  const label = markReview('s2m', element('label', 'Lignes par page ', target));
+  const select = markReview('s2n', element('select', undefined, label));
   for (const n of [10, 25, 50, 100]) {
-    const option = element('option', String(n), select);
+    const option = markReview('s2o', element('option', String(n), select));
     option.value = n;
     option.selected = size === n;
   }
@@ -289,34 +324,34 @@ function mount(table) {
     to: ''
   };
   state.set(table.id, local);
-  const panel = element('section', undefined, content);
+  const panel = markReview('s2p', element('section', undefined, content));
   panel.className = 'panel';
   panel.dataset.tableId = table.id;
-  element('h2', table.title, panel);
-  element('p', table.description, panel).className = 'description';
-  const tools = element('div', undefined, panel);
+  markReview('s2q', element('h2', table.title, panel));
+  markReview('s2r', element('p', table.description, panel)).className = 'description';
+  const tools = markReview('s2s', element('div', undefined, panel));
   tools.className = 'toolbar';
-  const label = element('label', 'Filtrer ce tableau', tools);
-  const search = element('input', undefined, label);
+  const label = markReview('s2t', element('label', 'Filtrer ce tableau', tools));
+  const search = markReview('s2u', element('input', undefined, label));
   search.type = 'search';
   search.value = local.search;
   search.placeholder = 'Toutes les lignes';
-  const sortLabel = element('label', 'Trier par', tools);
-  const sort = element('select', undefined, sortLabel);
+  const sortLabel = markReview('s2v', element('label', 'Trier par', tools));
+  const sort = markReview('s2w', element('select', undefined, sortLabel));
   sort.setAttribute('aria-label', 'Trier par');
   table.headers.forEach((name, index) => {
-    const option = element('option', name, sort);
+    const option = markReview('s2x', element('option', name, sort));
     option.value = index;
     option.selected = index === local.sort;
   });
-  const orderLabel = element('label', 'Ordre', tools);
-  const order = element('select', undefined, orderLabel);
+  const orderLabel = markReview('s2y', element('label', 'Ordre', tools));
+  const order = markReview('s2z', element('select', undefined, orderLabel));
   order.setAttribute('aria-label', 'Ordre');
   for (const [name, value] of [
     ['Croissant', 1],
     ['Décroissant', -1]
   ]) {
-    const option = element('option', name, order);
+    const option = markReview('s30', element('option', name, order));
     option.value = value;
     option.selected = value === local.direction;
   }
@@ -325,9 +360,10 @@ function mount(table) {
       ['Créées à partir du', 'from'],
       ['Créées jusqu’au', 'to']
     ]) {
-      const dateLabel = element('label', name, tools);
-      const date = element('input', undefined, dateLabel);
+      const dateLabel = markReview('s31', element('label', name, tools));
+      const date = markReview('s32', element('input', undefined, dateLabel));
       date.type = 'date';
+      dateLabel.dataset.reviewKey = key;
       date.value = local[key];
       date.addEventListener('input', () => {
         local[key] = date.value;
@@ -335,11 +371,19 @@ function mount(table) {
         draw();
       });
     }
-  const exportButton = element('button', 'Exporter en CSV', tools);
+  const exportButton = markReview('s33', element('button', 'Exporter en CSV', tools));
   exportButton.type = 'button';
   exportButton.className = 'export';
   exportButton.addEventListener('click', () => {
     const rows = selected(table, local);
+    panel.dataset.reviewState = JSON.stringify({
+      page: local.page + 1,
+      size: local.size,
+      sort: local.sort,
+      direction: local.direction,
+      from: local.from,
+      to: local.to
+    });
     downloadCsv(table.id + '.csv', [
       [...table.headers, 'Issues associées', 'URL GitHub'],
       ...rows.map((row) => {
@@ -358,26 +402,30 @@ function mount(table) {
       })
     ]);
   });
-  const reset = element('button', 'Réinitialiser', tools);
+  const reset = markReview('s34', element('button', 'Réinitialiser', tools));
   reset.type = 'button';
   reset.addEventListener('click', () => {
     state.delete(table.id);
     render();
   });
-  const scroll = element('div', undefined, panel);
+  const scroll = markReview('s35', element('div', undefined, panel));
   scroll.className = 'scroll';
   scroll.tabIndex = 0;
   scroll.setAttribute('role', 'region');
   scroll.setAttribute('aria-label', table.title);
-  const grid = element('table', undefined, scroll);
-  const headers = element('tr', undefined, element('thead', undefined, grid));
-  const body = element('tbody', undefined, grid);
-  const pagination = element('div', undefined, panel);
+  const grid = markReview('s36', element('table', undefined, scroll));
+  const headers = markReview(
+    's37',
+    element('tr', undefined, markReview('s38', element('thead', undefined, grid)))
+  );
+  const body = markReview('s39', element('tbody', undefined, grid));
+  const pagination = markReview('s3a', element('div', undefined, panel));
   pagination.className = 'pager';
   table.headers.forEach((name, index) => {
-    const th = element('th', undefined, headers);
+    const th = markReview('s3b', element('th', undefined, headers));
     th.scope = 'col';
-    const button = element('button', name + ' ↕', th);
+    th.dataset.reviewKey = 'field:' + index;
+    const button = markReview('s3c', element('button', name + ' ↕', th));
     button.type = 'button';
     button.addEventListener('click', () => {
       local.direction = local.sort === index ? -local.direction : 1;
@@ -391,6 +439,14 @@ function mount(table) {
   /** Rafraîchit les lignes visibles en préservant le focus du champ actif. */
   function draw() {
     const rows = selected(table, local);
+    panel.dataset.reviewState = JSON.stringify({
+      page: local.page + 1,
+      size: local.size,
+      sort: local.sort,
+      direction: local.direction,
+      from: local.from,
+      to: local.to
+    });
     local.page = Math.min(local.page, Math.max(0, Math.ceil(rows.length / local.size) - 1));
     body.replaceChildren();
     Array.from(headers.children).forEach((th, index) =>
@@ -400,9 +456,11 @@ function mount(table) {
       )
     );
     for (const row of rows.slice(local.page * local.size, (local.page + 1) * local.size)) {
-      const tr = element('tr', undefined, body);
+      const tr = markReview('s3d', element('tr', undefined, body));
+      tr.dataset.reviewKey = row.reviewKey;
       row.cells.forEach((cell, index) => {
-        const td = element('td', undefined, tr);
+        const td = markReview('s3e', element('td', undefined, tr));
+        td.dataset.reviewKey = 'field:' + index;
         const labelRefs =
           typeof cell.value === 'string' && !cell.refs && !cell.url
             ? [...new Set(row.cells.flatMap((item) => item.refs || []))]
@@ -411,14 +469,18 @@ function mount(table) {
           ? { ...cell, refs: labelRefs, note: cell.note || 'Issues associées à cette ligne.' }
           : cell;
         if (presented.refs || presented.url || presented.note) {
-          const button = element('button', display(cell.value), td);
+          const button = markReview('s3f', element('button', undefined, td));
+          markReview('review-cell-value', element('span', display(cell.value), button));
           button.type = 'button';
           button.addEventListener('click', () => details(presented, table.headers[index]));
-        } else element('span', display(cell.value), td);
+        } else markReview('s3g', element('span', display(cell.value), td));
       });
     }
     if (!rows.length) {
-      const td = element('td', 'Aucun résultat pour ces filtres.', element('tr', undefined, body));
+      const td = markReview(
+        's3h',
+        element('td', 'Aucun résultat pour ces filtres.', markReview('s3i', element('tr', undefined, body)))
+      );
       td.colSpan = table.headers.length;
     }
     pager(pagination, rows.length, local.page, local.size, (page, size) => {
@@ -462,10 +524,11 @@ function render() {
   if (space === 'summary') {
     const table = model.tables.find((item) => item.id === 'components');
     const rows = selected(table, { search: '', sort: 0, direction: 1 });
-    const cards = element('div', undefined, content);
+    const cards = markReview('s3j', element('div', undefined, content));
     cards.className = 'cards summary-cards';
-    for (const [title, value, link] of [
+    for (const [role, title, value, link] of [
       [
+        'components-review',
         'Composants à examiner',
         selected(
           model.tables.find((item) => item.id === 'priorities'),
@@ -474,6 +537,7 @@ function render() {
         'components'
       ],
       [
+        'confirmed-corrections',
         'Corrections d’accessibilité confirmées',
         rows.some((row) => row.cells[3].value === null)
           ? null
@@ -481,6 +545,7 @@ function render() {
         'components'
       ],
       [
+        'bugs-without-audit',
         'Bugs sans audit',
         rows.some((row) => row.cells[4].value === null)
           ? null
@@ -488,14 +553,16 @@ function render() {
         'activity'
       ]
     ]) {
-      const card = element('section', undefined, cards);
+      const card = markReview('s3k', element('section', undefined, cards));
       card.className = 'panel';
+      card.dataset.reviewKey = role;
       card.title =
         title === 'Composants à examiner'
           ? 'Nombre de composants à examiner.'
           : 'Occurrences par composant ; une issue peut concerner plusieurs composants.';
-      element('h2', title, card);
-      const metric = element('button', display(value), card);
+      markReview('s3l', element('h2', title, card));
+      const metric = markReview('s3m', element('button', undefined, card));
+      markReview('review-card-value', element('span', display(value), metric));
       metric.type = 'button';
       metric.className = 'card-metric';
       const index = title.startsWith('Corrections') ? 3 : 4;
@@ -515,7 +582,7 @@ function render() {
             : 'Occurrences par composant ; la liste ci-dessous déduplique les issues multi-composants.'
       };
       metric.addEventListener('click', () => details(cardCell, title));
-      const anchor = element('a', 'Voir →', card);
+      const anchor = markReview('s3n', element('a', 'Voir →', card));
       anchor.setAttribute('aria-label', 'Voir : ' + title);
       anchor.href = '#' + link;
     }
@@ -557,3 +624,5 @@ if (window.ResizeObserver) {
   observer.observe(document.querySelector('.sticky-shell'));
 }
 updateStickyHeight();
+
+startReview('simple');

@@ -1,3 +1,4 @@
+import { markReview } from './review-core.js';
 import { readPageModel } from './page-model.js';
 /* global Blob, URL, location, setTimeout */
 (() => {
@@ -24,7 +25,7 @@ import { readPageModel } from './page-model.js';
     row.elapsedHours ?? row.reason
   ];
   for (const epic of model.epics) {
-    const option = document.createElement('option');
+    const option = markReview('sp', document.createElement('option'));
     option.value = epic.id;
     option.textContent = `${epic.repository} · #${epic.number} · ${epic.title}`;
     select.append(option);
@@ -45,10 +46,12 @@ import { readPageModel } from './page-model.js';
     root.querySelector('[data-epic-rows]').innerHTML = (epic?.rows ?? [])
       .map(
         (row) =>
-          `<tr>${cells(row)
+          `<tr data-review-slot="sq" data-review-key="${escape(select.value + ':' + row.issueId + ':' + row.component)}">${cells(
+            row
+          )
             .map(
               (value, index) =>
-                `<td>${index === 1 && /^https:\/\/[^\s"<>]+$/.test(row.url) ? `<a href="${escape(row.url)}" target="_blank" rel="noopener noreferrer">${escape(value)}</a>` : escape(value)}</td>`
+                `<td data-review-slot="sr" data-review-key="field:${index}">${index === 1 && /^https:\/\/[^\s"<>]+$/.test(row.url) ? `<a data-review-slot="ss" href="${escape(row.url)}" target="_blank" rel="noopener noreferrer">${escape(value)}</a>` : escape(value)}</td>`
             )
             .join('')}</tr>`
       )
@@ -80,7 +83,7 @@ import { readPageModel } from './page-model.js';
       .map((row) => row.map(csvCell).join(';'))
       .join('\r\n');
     const url = URL.createObjectURL(new Blob(['\uFEFF' + content], { type: 'text/csv;charset=utf-8' }));
-    const anchor = document.createElement('a');
+    const anchor = markReview('st', document.createElement('a'));
     anchor.href = url;
     anchor.download = `epic-${epic.number}.csv`;
     anchor.click();

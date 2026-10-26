@@ -22,6 +22,8 @@ Ouvrir [le dashboard local](http://127.0.0.1:4174/). La démonstration utilise u
 
 Chaque génération produit désormais **les deux présentations**, sans option supplémentaire : une [vue synthétique et une vue détaillée](docs/08-implementation/dashboard-double-presentation.md). L’accueil permet de choisir et de changer de vue. Les données et les verdicts sont communs. La vue synthétique propose une présentation compacte à navigation fixe, des CSV complets et les synthèses librairie/composant et librairie/version.
 
+Pour signaler précisément un chiffre ou un lien, activez le [mode de revue](docs/08-implementation/dashboard-review-identifiers.md#utilisation) avec **Alt+Maj+R**, sélectionnez l’élément par **Alt+clic**, puis copiez son identifiant ou son contexte. Il fonctionne dans les deux présentations, leurs tableaux et leurs fenêtres.
+
 ## Partir d’une liste de dépôts
 
 Créer `repositories.json` :
@@ -110,3 +112,5 @@ Les compteurs restent figés à la date du snapshot. Dans les tableaux de reposi
 Les [décisions et conventions de labels du 19 octobre 2026](docs/08-implementation/validation-metier-20261019.md) distinguent bugs fonctionnels, accessibilité, améliorations, corrections confirmées et vérification par audit. Le rejeu accepte `--issue-policy config/issue-policy.example.json`, sans modifier les JSON sources. Les filtres de la page Activité permettent notamment de retrouver les issues sans Project, sans audit, sans composant ou demandant un avis auditeur.
 
 La vue synthétique place un seul accès **Ouvrir dans GitHub ↗** dans l’en-tête des fenêtres, à côté du titre (maquette A, #115), avec ouverture directe pour un ticket unique. Aucun raccourci supplémentaire n’encombre les cartes ou tableaux ; aucun lot n’est généré. Les totaux issues/PR incluent tous les états. Si la sélection exacte n’est pas reproductible dans GitHub, le lien ouvre une recherche plus large du composant ou du dépôt, signalée par un avertissement. Voir [les accès et leurs limites](docs/08-implementation/dashboard-double-presentation.md#accès-github-dans-la-vue-synthétique).
+
+**Évolution demandée, non implémentée :** des [identifiants uniques et stables pour tous les éléments du dashboard](docs/08-implementation/dashboard-review-identifiers.md) permettront de référencer précisément les chiffres, fenêtres, cellules et liens lors des validations. Cette demande ne valide pas les évolutions de la branche #118.

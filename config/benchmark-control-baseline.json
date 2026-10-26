@@ -21,7 +21,7 @@
   "pages": [
     {
       "page": "accessibility.html",
-      "htmlBytes": 308817,
+      "htmlBytes": 332024,
       "jsonBytes": 171448,
       "initialTableRows": 42,
       "renderedTableRows": 46,
@@ -29,7 +29,7 @@
     },
     {
       "page": "anomalies.html",
-      "htmlBytes": 81311,
+      "htmlBytes": 106598,
       "jsonBytes": 230,
       "initialTableRows": 21,
       "renderedTableRows": 21,
@@ -37,7 +37,7 @@
     },
     {
       "page": "audits.html",
-      "htmlBytes": 173369,
+      "htmlBytes": 198196,
       "jsonBytes": 118067,
       "initialTableRows": 30,
       "renderedTableRows": 30,
@@ -45,7 +45,7 @@
     },
     {
       "page": "components.html",
-      "htmlBytes": 50565,
+      "htmlBytes": 56185,
       "jsonBytes": 37976,
       "initialTableRows": 0,
       "renderedTableRows": 4,
@@ -53,7 +53,7 @@
     },
     {
       "page": "epics.html",
-      "htmlBytes": 5461,
+      "htmlBytes": 7648,
       "jsonBytes": 258,
       "initialTableRows": 0,
       "renderedTableRows": 0,
@@ -61,7 +61,7 @@
     },
     {
       "page": "graph.html",
-      "htmlBytes": 172341,
+      "htmlBytes": 202815,
       "jsonBytes": 226,
       "initialTableRows": 24,
       "renderedTableRows": 24,
@@ -69,7 +69,7 @@
     },
     {
       "page": "history.html",
-      "htmlBytes": 7633,
+      "htmlBytes": 11331,
       "jsonBytes": 228,
       "initialTableRows": 0,
       "renderedTableRows": 0,
@@ -77,7 +77,7 @@
     },
     {
       "page": "index.html",
-      "htmlBytes": 10841,
+      "htmlBytes": 16450,
       "jsonBytes": 226,
       "initialTableRows": 2,
       "renderedTableRows": 2,
@@ -85,7 +85,7 @@
     },
     {
       "page": "issues.html",
-      "htmlBytes": 41324,
+      "htmlBytes": 49630,
       "jsonBytes": 24120,
       "initialTableRows": 0,
       "renderedTableRows": 50,
@@ -93,7 +93,7 @@
     },
     {
       "page": "quality.html",
-      "htmlBytes": 121284,
+      "htmlBytes": 197077,
       "jsonBytes": 10234,
       "initialTableRows": 62,
       "renderedTableRows": 62,
@@ -117,5 +117,92 @@
     "report": "docs/08-implementation/benchmarks/issue-88-review.json",
     "revision": "83e633d35e05ab75af0a93e3724455cad2581202",
     "workingTreeDirty": true
+  },
+  "reviewIdentifiersValidation": {
+    "date": "2026-10-26",
+    "approval": "Oui, actualiser ces références",
+    "scope": "Identifiants permanents et valeurs distinctes des contrôles ; croissance ultérieure interdite (0 %). Maximum DOM des cinq espaces synthétiques ; limites antérieures conservées lorsqu’elles restent supérieures.",
+    "previousPages": [
+      {
+        "page": "accessibility.html",
+        "htmlBytes": 308817,
+        "jsonBytes": 171448,
+        "initialTableRows": 42,
+        "renderedTableRows": 46,
+        "domNodes": 1689
+      },
+      {
+        "page": "anomalies.html",
+        "htmlBytes": 81311,
+        "jsonBytes": 230,
+        "initialTableRows": 21,
+        "renderedTableRows": 21,
+        "domNodes": 1882
+      },
+      {
+        "page": "audits.html",
+        "htmlBytes": 173369,
+        "jsonBytes": 118067,
+        "initialTableRows": 30,
+        "renderedTableRows": 30,
+        "domNodes": 1522
+      },
+      {
+        "page": "components.html",
+        "htmlBytes": 50565,
+        "jsonBytes": 37976,
+        "initialTableRows": 0,
+        "renderedTableRows": 4,
+        "domNodes": 657
+      },
+      {
+        "page": "epics.html",
+        "htmlBytes": 5461,
+        "jsonBytes": 258,
+        "initialTableRows": 0,
+        "renderedTableRows": 0,
+        "domNodes": 143
+      },
+      {
+        "page": "graph.html",
+        "htmlBytes": 172341,
+        "jsonBytes": 226,
+        "initialTableRows": 24,
+        "renderedTableRows": 24,
+        "domNodes": 1833
+      },
+      {
+        "page": "history.html",
+        "htmlBytes": 7633,
+        "jsonBytes": 228,
+        "initialTableRows": 0,
+        "renderedTableRows": 0,
+        "domNodes": 235
+      },
+      {
+        "page": "index.html",
+        "htmlBytes": 10841,
+        "jsonBytes": 226,
+        "initialTableRows": 2,
+        "renderedTableRows": 2,
+        "domNodes": 324
+      },
+      {
+        "page": "issues.html",
+        "htmlBytes": 41324,
+        "jsonBytes": 24120,
+        "initialTableRows": 0,
+        "renderedTableRows": 50,
+        "domNodes": 2375
+      },
+      {
+        "page": "quality.html",
+        "htmlBytes": 121284,
+        "jsonBytes": 10234,
+        "initialTableRows": 62,
+        "renderedTableRows": 62,
+        "domNodes": 3977
+      }
+    ]
   }
 }

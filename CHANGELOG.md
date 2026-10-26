@@ -1,3 +1,9 @@
+## Identifiants de revue du dashboard — non publiée
+
+- Références stables par site, présentation, écran, rôle et entité pour les pages, chiffres, tableaux, contrôles, liens et fenêtres dynamiques.
+- Inspecteur local optionnel : sélection souris/clavier, copie de l’identifiant ou du contexte, recherche exacte et signalement des collisions.
+- Origines distinctes des fenêtres réutilisées ; titres et URL exclus de la copie par défaut. Évolution indépendante de #118, toujours en attente de validation utilisateur.
+
 ## Fenêtres GitHub — application de la maquette A (#115)
 
 - Suppression des raccourcis GitHub dans les cartes, outils et cellules des tableaux synthétiques ; une seule action dans la ligne du titre de la fenêtre.
