@@ -21,9 +21,9 @@ function githubSource(source) {
 
 /**
  * Construit un seul accès GitHub depuis les URL et labels sources, sans lots ni recherche par numéros.
- * Vérifie la sélection contre les issues connues du snapshot avant de proposer une recherche par filtres.
- * @param {{url?: string, state?: string, labels?: string[]}[]} sources - Population complète, avant pagination.
- * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, requireState?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[]}[]}} [options] - Sources connues et état explicitement demandé.
+ * Vérifie labels et milestones sources contre les issues connues avant de proposer une recherche par filtres.
+ * @param {{url?: string, state?: string, labels?: string[], milestone?: string}[]} sources - Population complète, avant pagination.
+ * @param {{directSingle?: boolean, matchLabels?: boolean, allowBroader?: boolean, requireState?: boolean, state?: "open"|"closed", universe?: {url?: string, state?: string, labels?: string[], milestone?: string}[]}} [options] - Sources connues et état explicitement demandé.
  * @returns {{links: {url: string, count: number, repository: string, search: boolean}[], unavailable: number, stateMismatch?: boolean, reason?: string, approximate?: boolean}} Destination unique ou motif explicite d’indisponibilité.
  */
 export function githubTargets(sources, options = {}) {
@@ -139,18 +139,24 @@ export function githubTargets(sources, options = {}) {
       );
     });
     const selectedUrls = new Set(selected.map((source) => source.url));
-    /** Vérifie une conjonction de labels contre toutes les sources connues du même périmètre. */
+    /** Vérifie les labels et la milestone source contre toutes les issues connues du même périmètre. */
     function matches(source, candidate) {
       return (
-        candidate.every((label) =>
+        candidate.labels.every((label) =>
           source.labels?.some((value) => value.toLowerCase() === label.toLowerCase())
         ) &&
+        (!candidate.milestone || source.milestone === candidate.milestone) &&
         (!requestedState || source.state?.toLowerCase() === requestedState)
       );
     }
+    const milestones = [...new Set(selected.map((source) => source.milestone).filter(Boolean))];
     const candidates = [
-      labels,
-      ...selected.map((source) => (options.matchLabels ? [...new Set(source.labels || [])] : []))
+      { labels },
+      ...milestones.map((milestone) => ({ labels, milestone })),
+      ...selected.flatMap((source) => {
+        const labels = options.matchLabels ? [...new Set(source.labels || [])] : [];
+        return [{ labels }, ...(source.milestone ? [{ labels, milestone: source.milestone }] : [])];
+      })
     ];
     const covered = new Set();
     for (const candidate of candidates) {
@@ -161,7 +167,8 @@ export function githubTargets(sources, options = {}) {
         (repositoryScope ? '' : 'repo:' + repository + ' ') +
           (type === 'pull' ? 'is:pr' : 'is:issue') +
           stateQuery(requestedState) +
-          candidate.map((label) => ' label:' + JSON.stringify(label)).join('')
+          candidate.labels.map((label) => ' label:' + JSON.stringify(label)).join('') +
+          (candidate.milestone ? ' milestone:' + JSON.stringify(candidate.milestone) : '')
       );
       matching.forEach((source) => covered.add(source.url));
     }

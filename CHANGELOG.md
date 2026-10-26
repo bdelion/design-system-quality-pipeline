@@ -1,3 +1,9 @@
+## Preuves des cumuls d’audit (#122) — non publiée
+
+- Suppression des audits non applicables dans les justificatifs des composants conformes/non conformes cumulés ; maintien des preuves héritées et des décomptes métier.
+- Recherches GitHub affinées par les milestones sources lorsqu’elles distinguent la sélection ; aucun filtre Closed ou sous-issue substitué au verdict calculé.
+- Documentation de la différence entre composants cumulés, audits et campagnes GitHub actuelles ; tests unitaires et navigateur dédiés.
+
 ## Cohortes GitHub des composants (#121) — non publiée
 
 - Filtre `state:open` conservé sur les recherches En cours, même pour une source unique ; divergences avec les statuts Project annoncées sans changer les compteurs.
