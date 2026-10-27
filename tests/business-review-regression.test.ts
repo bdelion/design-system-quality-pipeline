@@ -63,6 +63,21 @@ function dataset(issues: RawIssue[]): RawDataset {
 }
 
 describe('Régressions validées sur les attendus métier', () => {
+  it('utilise les types d’audit configurés pour les réserves de revue', () => {
+    const candidate = issue('audit1', 'AUDIT', []);
+    candidate.rawIssueType = 'Inspection';
+    const data = normalizeGithub(dataset([candidate]), {
+      ...rules,
+      issueTypes: { ...rules.issueTypes, keywords: { ...rules.issueTypes.keywords, AUDIT: ['Inspection'] } }
+    });
+    expect(data.issues![0]!.review?.auditCandidate).toBe(true);
+    candidate.rawIssueType = 'audit';
+    const excluded = normalizeGithub(dataset([candidate]), {
+      ...rules,
+      issueTypes: { ...rules.issueTypes, keywords: { ...rules.issueTypes.keywords, AUDIT: ['Inspection'] } }
+    });
+    expect(excluded.issues![0]!.review?.auditCandidate).toBe(false);
+  });
   it('respecte la désactivation explicite des marqueurs d’accessibilité', () => {
     const bug = issue('bug1', 'BUG', ['Component:Table', 'rgaa:major', 'bug:functional']);
     const data = normalizeGithub(dataset([bug]), {

@@ -1,4 +1,6 @@
-﻿/** Qualification accessibilité indépendante du type BUG et de l'origine d'audit. */
+import defaults from '../../config/defaults/accessibility-recognition.json' with { type: 'json' };
+
+/** Qualification accessibilité indépendante du type BUG et de l'origine d'audit. */
 export interface AccessibilityQualification {
   status: 'qualified' | 'presumed' | 'unqualified';
   reasons: string[];
@@ -6,16 +8,19 @@ export interface AccessibilityQualification {
 /** Convention configurable de reconnaissance des labels dans un même repository. */
 export interface AccessibilityRecognition {
   labelAllOf?: string[];
+  /** Fragments indiquant une présomption ; une liste vide désactive ce signal. */
+  labelAnyOf?: string[];
   repositories?: Record<string, string[]>;
 }
 
-/** Qualifie un défaut avec ses preuves, sans créer de relation vers un audit. */
+/** Qualifie un défaut avec ses preuves et les fragments configurés, sans créer de relation vers un audit. */
 export function accessibilityQualification(
   labels: readonly string[],
   categories: readonly string[],
   criticalities: readonly string[],
   explicitAudit = false,
-  tokens: readonly string[] = ['audit', 'rgaa']
+  tokens: readonly string[] = defaults.labelAllOf,
+  presumedTokens: readonly string[] = defaults.labelAnyOf
 ): AccessibilityQualification {
   const reasons: string[] = [];
   const explicitLabel =
@@ -27,7 +32,12 @@ export function accessibilityQualification(
   if (explicitLabel) reasons.push('label Audit + RGAA');
   if (categories.length) reasons.push('catégorie accessibilité');
   if (criticalities.length) reasons.push('criticité RGAA');
-  if (labels.some((label) => /(?:rgaa|a11y)/i.test(label))) reasons.push('label accessibilité');
+  if (
+    labels.some((label) =>
+      presumedTokens.some((token) => label.toLocaleLowerCase('fr').includes(token.toLocaleLowerCase('fr')))
+    )
+  )
+    reasons.push('label accessibilité');
   return {
     status: explicitAudit || explicitLabel ? 'qualified' : reasons.length ? 'presumed' : 'unqualified',
     reasons
@@ -58,4 +68,10 @@ export function validateAccessibilityRecognition(value: unknown): void {
     )
   )
     throw new Error('Chaque règle accessibilité doit contenir des mots non vides.');
+  if (
+    config.labelAnyOf !== undefined &&
+    (!Array.isArray(config.labelAnyOf) ||
+      config.labelAnyOf.some((token) => typeof token !== 'string' || !token.trim()))
+  )
+    throw new Error('accessibilityRecognition.labelAnyOf doit contenir des mots non vides.');
 }

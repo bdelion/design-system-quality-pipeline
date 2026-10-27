@@ -1,3 +1,9 @@
+## Configuration des conventions — non publiée
+
+- Conventions de compatibilité déplacées du TypeScript vers `config/defaults/`, sans changement de leurs valeurs ; Grooming explicite dans le profil DSQ.
+- Qualification et présomption d’accessibilité configurables ; alias des types d’audit candidats lus depuis les conventions du dataset.
+- Documentation des priorités, du remplacement local `--issue-policy` et des contrats métier qui restent dans le code ; présentation des dashboards conservée.
+
 ## Diagnostic sur le dataset anonymisé du 27 octobre — non publiée
 
 - Réconciliation des écarts #126/#127 : 153,961 j selon l’ancien calcul contre 1,012 j selon D-245 ; 12/29 reproductibles avec un périmètre strict distinct de la qualification métier.

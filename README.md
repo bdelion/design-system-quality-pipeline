@@ -2,6 +2,10 @@
 
 Collecter des repositories GitHub, préparer un dataset autonome et rejouer son dashboard hors réseau. GitHub reste en lecture seule. Les conventions DSQ sont livrées dans `config/profiles/dsq.json` ; les informations absentes restent inconnues.
 
+Les conventions de labels sont explicites dans le profil ; les replis de compatibilité
+sont dans `config/defaults/`. Pour les personnaliser au rejeu, voir les
+[priorités de configuration et l’option `--issue-policy`](docs/08-implementation/configurations-et-tests.md#conventions-configurables-et-compatibilité).
+
 Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)** regroupe les commandes, toutes leurs options, les fichiers requis et les recettes : dashboard GitHub à jour, rejeu privé, jeu anonymisé, catalogues et historiques.
 
 ## Démarrer sans GitHub

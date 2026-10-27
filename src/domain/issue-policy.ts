@@ -1,3 +1,5 @@
+import compatibilityPolicy from '../../config/defaults/issue-policy.json' with { type: 'json' };
+
 /** Correspondances explicites ; aucune recherche par sous-chaîne libre. */
 export interface LabelMatcher {
   labels: string[];
@@ -16,22 +18,8 @@ export interface IssuePolicy {
   componentLabels?: Record<string, string>;
 }
 
-export const defaultIssuePolicy = {
-  classification: {
-    accessibility: {
-      labels: ['bug:accessibility', 'Accessibility'],
-      prefixes: ['🚦 rgaa:', '♿ a11y:', 'rgaa:', 'a11y:']
-    },
-    functional: { labels: ['bug:functional'], prefixes: [] }
-  },
-  bugInference: {
-    labels: ['bug:accessibility', 'bug:functional'],
-    prefixes: ['🚦 rgaa:', '♿ a11y:', 'rgaa:', 'a11y:']
-  },
-  auditorAdvice: { labels: ['VOIR AUDITEUR'], prefixes: [] },
-  grooming: { labels: ['Grooming', '📌 Grooming'], prefixes: [] },
-  resolution: { prefix: 'resolution:', accepted: 'accepted', invalid: 'invalid' }
-} satisfies IssuePolicy;
+/** Conventions de compatibilité des profils partiels ; les valeurs explicites du profil priment. */
+export const defaultIssuePolicy = compatibilityPolicy satisfies IssuePolicy;
 
 /** Compare les labels exactement, ou au début pour les préfixes explicitement configurés. */
 export function matchesLabels(labels: readonly string[], matcher: LabelMatcher): boolean {

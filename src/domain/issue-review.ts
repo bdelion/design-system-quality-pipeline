@@ -34,7 +34,7 @@ export function compareReviewVersions(left: string, right: string): number {
   return 0;
 }
 
-/** Enrichit les issues et leurs libellés de traitement selon leur nature, puis vérifie les corrections. */
+/** Enrichit les issues selon leur nature et les conventions configurées, puis vérifie les corrections. */
 export function applyIssueReviews(
   data: NormalizedData,
   raw: RawDataset,
@@ -64,7 +64,9 @@ export function applyIssueReviews(
     const confirmed = done && merged.length > 0;
     const warnings: string[] = [];
     const auditCandidate =
-      source.rawIssueType?.toLowerCase() === 'audit' ||
+      (rules.issueTypes.keywords.AUDIT ?? []).some(
+        (type) => type.toLowerCase() === source.rawIssueType?.toLowerCase()
+      ) ||
       Boolean(
         rules.auditDetection?.strategies.some(
           (strategy) =>
