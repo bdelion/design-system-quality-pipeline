@@ -2,7 +2,7 @@ import { componentActivityTable } from './component-activity.js';
 import type { Snapshot } from '../domain/types.js';
 import { auditProgress, currentProjectStatus } from '../domain/business.js';
 import { processingDuration } from './processing-duration.js';
-import { auditChildAnomalies, auditDistributionTables } from './audit-evidence.js';
+import { auditDistributionTables } from './audit-evidence.js';
 import { repositoryActivity } from './repository-activity.js';
 import { projectIssueFacts } from './issues.js';
 import { businessReview } from './business-review.js';
@@ -387,7 +387,6 @@ export function simplifiedModel(snapshot: Snapshot) {
       ).values()
     ];
     const auditIds = new Set(audits.map((audit) => audit.auditId));
-    const bugs = auditChildAnomalies(data, audits).map((anomaly) => anomaly.issueId);
     const improvements = [
       ...new Set(
         (data.auditImprovements ?? [])
@@ -413,17 +412,20 @@ export function simplifiedModel(snapshot: Snapshot) {
       };
     };
     const completed = state('completed');
+    const declarationsKnown = completed.every((audit) => audit.declaredRgaaBugIssueIds !== undefined);
+    const declaredBugs = [...new Set(completed.flatMap((audit) => audit.declaredRgaaBugIssueIds ?? []))];
     const directGroups = [...new Set(completed.map((audit) => audit.componentId))].map((id) =>
       completed.filter((audit) => audit.componentId === id)
     );
-    const directConform = directGroups.filter((group) =>
-      group.every((audit) => audit.objectiveAuditResult === 'conform')
+    const withoutDeclaredBug = directGroups.filter((group) =>
+      group.every((audit) => audit.declaredRgaaBugIssueIds?.length === 0)
     );
-    const directNonConform = directGroups.filter((group) =>
-      group.some((audit) =>
-        ['non_conform', 'critical', 'conditional'].includes(audit.objectiveAuditResult ?? '')
-      )
+    const withDeclaredBug = directGroups.filter((group) =>
+      group.some((audit) => (audit.declaredRgaaBugIssueIds?.length ?? 0) > 0)
     );
+    const declarationNote = declarationsKnown
+      ? 'Audits terminés uniquement ; type GitHub BUG explicite et label RGAA du profil. Le lien parent est conservé même si le composant diffère. Sans BUG déclaré ne prouve pas la conformité métier.'
+      : 'Lecture déclarative absente de cet ancien snapshot : relancer le pipeline. Aucun zéro n’est déduit de cette absence.';
     const completedComponents = new Set(completed.map((audit) => audit.componentId));
     const conformAudited = relations.filter(
       (item) => item.verdict === 'CONFORME' && completedComponents.has(item.componentId)
@@ -489,13 +491,22 @@ export function simplifiedModel(snapshot: Snapshot) {
           conform.refs ?? [],
           'Composants conformes cumulés / tous les composants de la version. Comprend les conformités héritées calculées par le pipeline.'
         ),
-        cell(bugs.length, bugs),
+        {
+          ...cell(declarationsKnown ? declaredBugs.length : null, declarationsKnown ? declaredBugs : []),
+          note: declarationNote
+        },
         cell(improvements.length, improvements),
         verdict('NON_COUVERT'),
         cell(state('cancelled').length, ids(state('cancelled'))),
         cell(unknown.length, ids(unknown)),
-        cell(directConform.length, ids(directConform.flat())),
-        cell(directNonConform.length, ids(directNonConform.flat()))
+        {
+          ...cell(declarationsKnown ? withoutDeclaredBug.length : null, ids(withoutDeclaredBug.flat())),
+          note: declarationNote
+        },
+        {
+          ...cell(declarationsKnown ? withDeclaredBug.length : null, ids(withDeclaredBug.flat())),
+          note: declarationNote
+        }
       ]
     });
   }
@@ -517,13 +528,13 @@ export function simplifiedModel(snapshot: Snapshot) {
       'Composants non conformes cumulés',
       'Conformes audités / audits terminés (%)',
       'Conformes cumulés / composants (%)',
-      'Anomalies liées aux audits',
+      'BUG RGAA déclarés — audits terminés',
       'Améliorations liées aux audits',
       'Composants non couverts',
       'Audits annulés',
       'Statuts inconnus',
-      'Composants conformes sur cette version',
-      'Composants non conformes sur cette version'
+      'Composants sans BUG RGAA déclaré — version',
+      'Composants avec BUG RGAA déclaré — version'
     ],
     rows: campaigns
   });

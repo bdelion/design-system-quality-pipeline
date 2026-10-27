@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { consolidationSnapshot, rules } from '../support/consolidation.js';
 import { applyIssueReviews } from '../../src/domain/issue-review.js';
+import { applyAuditDeclarations } from '../../src/domain/audit-declarations.js';
 import { generateDashboard } from '../../src/dashboard/generate.js';
 import { startDashboardServer } from '../../scripts/serve-dashboard.js';
 
@@ -17,8 +18,9 @@ test('#124–#128 : ancienneté civile, traitement, liens de cohortes et répart
   for (const issue of data.issues!) if (issue !== opened) issue.state = 'CLOSED';
   opened.createdAt = '2026-10-26T22:55:00Z';
   snapshot.capturedAt = '2026-10-27T00:05:00Z';
-  data.issues!.find((issue) => issue.issueId === 'feature-multi')!.labels.push('Grooming');
+  data.issues!.find((issue) => issue.issueId === 'feature-multi')!.labels.push('📌 Grooming');
   applyIssueReviews(data, snapshot.rawData, rules);
+  applyAuditDeclarations(data, snapshot.rawData, rules);
   const directory = await mkdtemp(join(tmpdir(), 'dsq-124-128-'));
   await generateDashboard(snapshot, directory, undefined, rules.labels.componentPrefix, rules);
   const server = await startDashboardServer(join(directory, 'dashboard'), 0);
@@ -53,6 +55,11 @@ test('#124–#128 : ancienneté civile, traitement, liens de cohortes et répart
     ).toBe('is:issue state:closed');
     await page.keyboard.press('Escape');
     await page.getByRole('link', { name: 'Audits par version', exact: true }).click();
+    const campaign = page
+      .locator('[data-table-id="campaigns"] tbody tr')
+      .filter({ has: page.getByText('1.0.0', { exact: true }) });
+    await expect(campaign.locator('td').nth(12).getByRole('button')).toHaveText('1');
+    await expect(campaign.locator('td').nth(17).getByRole('button')).toHaveText('0');
     const criticality = page.locator('[data-table-id="audit-criticality"]');
     await expect(criticality.locator('tbody tr')).toHaveCount(1);
     await criticality.getByLabel('Population représentée').selectOption('5');

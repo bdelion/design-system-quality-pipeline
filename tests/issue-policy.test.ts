@@ -9,12 +9,14 @@ import {
 describe('Décisions de qualification des issues', () => {
   it('refuse les règles vides et mal structurées sans interdire une liste désactivée', () => {
     expect(() => validateIssuePolicy({ bugInference: { labels: [], prefixes: [''] } })).toThrow();
+    expect(() => validateIssuePolicy({ grooming: { labels: [], prefixes: [''] } })).toThrow();
     expect(() => validateIssuePolicy({ classification: [] })).toThrow();
     expect(() => validateIssuePolicy({ componentLabels: null })).toThrow();
     expect(() =>
       validateIssuePolicy({ resolution: { prefix: 'x:', accepted: 'same', invalid: 'same' } })
     ).toThrow();
     expect(() => validateIssuePolicy({ bugInference: { labels: [], prefixes: [] } })).not.toThrow();
+    expect(() => validateIssuePolicy({ grooming: { labels: [], prefixes: [] } })).not.toThrow();
   });
   it('reconnaît les catégories par labels exacts ou préfixes et autorise leur recouvrement', () => {
     expect(classifyLabels(['bug:accessibility', 'bug:functional'])).toEqual(['accessibility', 'functional']);

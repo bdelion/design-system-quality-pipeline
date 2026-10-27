@@ -9,6 +9,8 @@ export interface IssuePolicy {
   classification?: { accessibility?: LabelMatcher; functional?: LabelMatcher };
   bugInference?: LabelMatcher;
   auditorAdvice?: LabelMatcher;
+  /** Labels de préparation du travail ; aucune correspondance approximative. */
+  grooming?: LabelMatcher;
   resolution?: { prefix: string; accepted: string; invalid: string };
   /** Exceptions explicites au préfixe composant ; jamais de rapprochement approximatif. */
   componentLabels?: Record<string, string>;
@@ -27,6 +29,7 @@ export const defaultIssuePolicy = {
     prefixes: ['🚦 rgaa:', '♿ a11y:', 'rgaa:', 'a11y:']
   },
   auditorAdvice: { labels: ['VOIR AUDITEUR'], prefixes: [] },
+  grooming: { labels: ['Grooming', '📌 Grooming'], prefixes: [] },
   resolution: { prefix: 'resolution:', accepted: 'accepted', invalid: 'invalid' }
 } satisfies IssuePolicy;
 
@@ -63,7 +66,7 @@ export function resolutionReason(
   return accepted ? 'accepted' : invalid ? 'invalid' : 'missing';
 }
 
-/** Refuse les conventions vides ou invalides avant toute interprétation des données. */
+/** Valide les conventions et les correspondances de labels, y compris celles de préparation Grooming. */
 export function validateIssuePolicy(value: unknown): void {
   if (value === undefined) return;
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -85,7 +88,8 @@ export function validateIssuePolicy(value: unknown): void {
     policy.classification?.accessibility,
     policy.classification?.functional,
     policy.bugInference,
-    policy.auditorAdvice
+    policy.auditorAdvice,
+    policy.grooming
   ]) {
     if (matcher === undefined) continue;
     if (

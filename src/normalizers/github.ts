@@ -5,6 +5,7 @@
  */
 
 import { isFutureVersion, milestoneVersionNumber } from '../domain/version-scope.js';
+import { applyAuditDeclarations } from '../domain/audit-declarations.js';
 import { applyIssueReviews } from '../domain/issue-review.js';
 import { defaultIssuePolicy, matchesLabels, validateIssuePolicy } from '../domain/issue-policy.js';
 import { stableId } from '../lib/ids.js';
@@ -858,7 +859,10 @@ export function normalizeGithub(
     auditImprovements,
     pullRequests
   };
-  if (strictReview) applyIssueReviews(normalized, raw, rules, catalogue);
+  if (strictReview) {
+    applyIssueReviews(normalized, raw, rules, catalogue);
+    applyAuditDeclarations(normalized, raw, rules);
+  }
   for (const audit of strictReview ? audits : []) {
     if (audit.lifecycle !== 'completed') continue;
     const blockers = anomalies.some(

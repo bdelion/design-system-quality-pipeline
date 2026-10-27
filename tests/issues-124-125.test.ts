@@ -40,4 +40,13 @@ it('#125 : distingue tâche, grooming, amélioration indépendante et bug', () =
   feature.projectContexts = [];
   applyIssueReviews(data, consolidationRaw(), rules);
   expect(feature.review!.correctionLabel).toBe('Traitement indéterminé');
+  feature.labels.push('📌 Grooming');
+  applyIssueReviews(data, consolidationRaw(), rules);
+  expect(feature.review!.correctionLabel).toBe('À groomer');
+  const configured = { ...rules, issuePolicy: { grooming: { labels: ['Préparation'], prefixes: [] } } };
+  applyIssueReviews(data, consolidationRaw(), configured);
+  expect(feature.review!.correctionLabel).toBe('Traitement indéterminé');
+  feature.labels.push('Préparation');
+  applyIssueReviews(data, consolidationRaw(), configured);
+  expect(feature.review!.correctionLabel).toBe('À groomer');
 });

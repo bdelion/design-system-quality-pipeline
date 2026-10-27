@@ -59,6 +59,7 @@ export function applyIssueReviews(
     const cancelled = statuses.includes('CANCELLED');
     const resolution = resolutionReason(issue.labels, cancelled, rules.issuePolicy);
     const done = statuses.length > 0 && statuses.every((status) => status === 'DONE');
+    const grooming = matchesLabels(issue.labels, rules.issuePolicy?.grooming ?? defaultIssuePolicy.grooming);
     const merged = issue.linkedPullRequestIds.filter((id) => prs.get(id)?.state === 'merged');
     const confirmed = done && merged.length > 0;
     const warnings: string[] = [];
@@ -98,12 +99,12 @@ export function applyIssueReviews(
           ? 'Annulée'
           : done
             ? 'Réalisée'
-            : issue.labels.includes('Grooming')
+            : grooming
               ? 'À groomer'
               : statuses.length && statuses.every((status) => status !== undefined && status !== 'DONE')
                 ? 'Restant à faire'
                 : 'Traitement indéterminé'
-        : !cancelled && !done && issue.labels.includes('Grooming')
+        : !cancelled && !done && grooming
           ? 'À groomer'
           : cancelled
             ? resolution === 'accepted'

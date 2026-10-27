@@ -3,6 +3,7 @@ import { simplifiedModel } from '../src/analytics/simplified-dashboard.js';
 import { consolidationSnapshot } from './support/consolidation.js';
 import { applyIssueReviews } from '../src/domain/issue-review.js';
 import { rules } from './support/consolidation.js';
+import { applyAuditDeclarations } from '../src/domain/audit-declarations.js';
 
 it('#127 : le ratio utilise les audits terminés et distingue résultats directs et hérités', () => {
   const snapshot = consolidationSnapshot();
@@ -50,6 +51,7 @@ it('#127/#128 : exclut une anomalie non enfant de l’audit et répartit uniquem
   const source = data.anomalies.find((anomaly) => anomaly.issueId === 'anomaly-a')!;
   const unrelated = data.issues!.find((issue) => issue.issueId === 'bug-generic')!;
   data.anomalies.push({ ...source, anomalyId: 'wrong-link', issueId: unrelated.issueId });
+  applyAuditDeclarations(data, snapshot.rawData, rules);
   const model = simplifiedModel(snapshot);
   const campaign = model.campaigns.find((row) => row.version === '1.0.0')!;
   expect(campaign.cells[12]!.refs).toEqual(['anomaly-a']);

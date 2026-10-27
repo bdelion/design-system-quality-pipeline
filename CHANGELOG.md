@@ -1,3 +1,10 @@
+## Diagnostic sur le dataset anonymisé du 27 octobre — non publiée
+
+- Réconciliation des écarts #126/#127 : 153,961 j selon l’ancien calcul contre 1,012 j selon D-245 ; 12/29 reproductibles avec un périmètre strict distinct de la qualification métier.
+- Lecture déclarative validée D-246 : uniquement audits terminés et enfants de type GitHub BUG explicite avec label RGAA, même si leur composant diffère. Preuves matérialisées dans le pipeline ; colonnes sans/avec BUG déclaré distinctes des cumuls métier. Anciennes captures sans preuve indisponibles jusqu’au rejeu.
+- Correction du label réel `📌 Grooming`, désormais reconnu avec `Grooming` et paramétrable via `issuePolicy.grooming` ; tests de régression sur le label, sa configuration et les dates anonymisées.
+- Cumuls indisponibles lorsque les catalogues historiques sont `missing` : aucune présence de composant passée n’est inventée. Dataset source conservé.
+
 ## Revue des espaces synthétiques (#124–#128) — non publiée
 
 - Ancienneté du plus ancien ticket en jours civils à Paris, sans attendre 24 heures écoulées (#124).

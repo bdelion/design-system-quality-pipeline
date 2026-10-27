@@ -14,13 +14,18 @@
     },
     {
       "page": "simplified/index.html",
-      "htmlBytes": 59601,
-      "jsonBytes": 56502,
+      "htmlBytes": 60367,
+      "jsonBytes": 57268,
       "initialTableRows": 0,
       "domNodes": 1355,
       "renderedTableRows": 24
     }
   ],
+  "strictScopeMeasurement": {
+    "date": "2026-10-27",
+    "scope": "Lecture stricte des campagnes validée après diagnostic : notes distinguant déclaration et verdict métier, réserve pour les anciens snapshots. Même fixture, même DOM, +766 octets HTML/JSON ; aucune augmentation des références classiques.",
+    "previous": { "htmlBytes": 59601, "jsonBytes": 56502 }
+  },
   "issues124To128Measurement": {
     "date": "2026-10-27",
     "scope": "Nouvelles répartitions demandées dans #128, colonnes directes #127 et explications des cohortes #126. Mesure sur la fixture control/81 inchangée ; croissance hors fonctionnalités interdite. Aucun seuil classique modifié.",
