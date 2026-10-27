@@ -14,13 +14,19 @@
     },
     {
       "page": "simplified/index.html",
-      "htmlBytes": 46623,
-      "jsonBytes": 43524,
+      "htmlBytes": 59601,
+      "jsonBytes": 56502,
       "initialTableRows": 0,
-      "domNodes": 857,
+      "domNodes": 1355,
       "renderedTableRows": 24
     }
   ],
+  "issues124To128Measurement": {
+    "date": "2026-10-27",
+    "scope": "Nouvelles répartitions demandées dans #128, colonnes directes #127 et explications des cohortes #126. Mesure sur la fixture control/81 inchangée ; croissance hors fonctionnalités interdite. Aucun seuil classique modifié.",
+    "previous": { "htmlBytes": 46623, "jsonBytes": 43524, "domNodes": 857, "renderedTableRows": 24 },
+    "measured": { "htmlBytes": 59601, "jsonBytes": 56502, "domNodes": 1355, "renderedTableRows": 24 }
+  },
   "validation": {
     "date": "2026-10-22",
     "approval": "Oui, conserver ces ajouts et actualiser la référence",

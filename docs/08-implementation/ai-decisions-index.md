@@ -366,3 +366,4 @@ Source : `docs/00-cadrage/questions-ouvertes.md` depuis la racine.
 | 5460           | Q-113 — Futurs types de sous-Issues d'Audit                                                                   |
 | 5470           | Q-114 — Nombre d'occurrences regroupées dans une Anomalie d'Audit                                             |
 | 5505           | D-244 — Revue métier des issues, corrections et audits du 19 octobre 2026                                     |
+| 5513           | D-245 — Durée de traitement des corrections confirmées dans la vue synthétique                                |

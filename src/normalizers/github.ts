@@ -658,7 +658,15 @@ export function normalizeGithub(
     const configuredAudit = rawIssue
       ? configuredAuditIssue(rawIssue, rules, issue.componentIds.length)
       : false;
-    if ((!legacyAudit && !configuredAudit) || issue.componentIds.length !== 1) continue;
+    if (
+      issue.issueType === 'EPIC' ||
+      issue.labels.some((label) =>
+        (rules.issueTypes.keywords.EPIC ?? []).some((value) => value.toLowerCase() === label.toLowerCase())
+      ) ||
+      (!legacyAudit && !configuredAudit) ||
+      issue.componentIds.length !== 1
+    )
+      continue;
     const targetNumber =
       rawIssue?.rawIssueType !== undefined
         ? milestoneVersionNumber(rawIssue.milestone?.title, rules)

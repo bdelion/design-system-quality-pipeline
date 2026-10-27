@@ -102,7 +102,8 @@ describe('synthèse compacte et cohortes', () => {
     data.anomalies = [];
     data.auditImprovements = [];
     const row = simplifiedModel(snapshot).campaigns.find((item) => item.version === '2.0.0')!;
-    expect(row.cells.slice(2, 10).map((cell) => cell.value)).toEqual([4, 3, 1, 0, 2, 75, 3, 1]);
+    // #127 : deux audits terminés sur quatre composants, sans inclure l’audit en attente.
+    expect(row.cells.slice(2, 10).map((cell) => cell.value)).toEqual([4, 3, 1, 0, 2, 50, 3, 1]);
     expect(row.cells[10]?.value).toBe(50);
     expect(row.cells[11]?.value).toBe(75);
     expect(row.cells[8]?.refs).toContain('i4');

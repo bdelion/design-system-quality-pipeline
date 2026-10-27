@@ -1,3 +1,12 @@
+## Revue des espaces synthétiques (#124–#128) — non publiée
+
+- Ancienneté du plus ancien ticket en jours civils à Paris, sans attendre 24 heures écoulées (#124).
+- Colonne Traitement : tâches restantes/réalisées, À groomer et distinction Improvement/Improvement d’audit (#125).
+- Navigation vers labels, issues Closed et cohortes Projects ; correction confirmée mesurée de premier In progress à dernier Done, repli création/clôture explicite avec bornes et provenance dans le détail/CSV (#126).
+- Ratio audits terminés/composants, exclusion des EPIC et des anomalies non enfants, résultats directs distincts des cumuls hérités (#127).
+- Répartitions par criticité, critère d’accessibilité et composant avec filtres Total/Restant/Réalisé, graphiques accessibles, liens individuels et export ; nouvelle mesure du budget synthétique, références classiques inchangées (#128).
+- Les totaux réels 6/12 et 35/29 restent à diagnostiquer avec le dataset anonymisé ; aucun total attendu n’est forcé. Les filtres Projects sur le contenu des sous-issues ne sont pas inventés.
+
 ## Preuves des cumuls d’audit (#122) — non publiée
 
 - Suppression des audits non applicables dans les justificatifs des composants conformes/non conformes cumulés ; maintien des preuves héritées et des décomptes métier.

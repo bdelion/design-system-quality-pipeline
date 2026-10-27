@@ -406,3 +406,11 @@ select {
   gap: 6px;
   margin: 0;
 }
+
+/* Le graphique complète le nombre cliquable et conserve une largeur bornée sur mobile. */
+meter {
+  width: 5rem;
+  max-width: 30vw;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
