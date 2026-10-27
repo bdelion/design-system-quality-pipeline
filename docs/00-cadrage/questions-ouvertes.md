@@ -5509,3 +5509,19 @@ Cette approche doit éviter que les contraintes actuelles de GitHub, Jenkins ou 
 Les [arbitrages consolidés](../08-implementation/validation-metier-20261019.md) définissent les catégories configurables de bugs, la priorité des labels composant, les occurrences par composant, les corrections confirmées par Done ET PR liée fusionnée, les annulations motivées et la vérification par audit ultérieur. Les améliorations restent indépendantes des anomalies et de la conformité.
 
 Cette décision amende D-047 : Done suffit à terminer une issue d’audit, sans exigence Closed ; elle ne fournit pas de date absente. Elle précise D-004 : la milestone de correction future d’un Bug ne doit pas exclure ce défaut existant. Elle conserve les identifiants et les textes historiques pour la traçabilité. L’association automatique de tout label égal à un nom du catalogue reste une proposition ; seule l’exception exacte InputPagination est validée.
+
+### D-245 — Durée de traitement des corrections confirmées dans la vue synthétique
+
+**Statut : Établi — validation utilisateur du 27 octobre 2026, issue #126**
+
+Pour la cohorte de corrections confirmées de la vue synthétique, si les transitions datées sont disponibles, le délai va du premier passage In progress au dernier passage Done. Si l’une des bornes manque, la paire entière est remplacée par la création et la clôture GitHub de l’issue. Une paire inversée ou non calculable reste indisponible et ne devient pas zéro.
+
+Les bornes et la provenance Project/repli GitHub doivent être visibles. Done et PR fusionnée restent les preuves d’appartenance à la cohorte de corrections confirmées (D-244) ; la fusion ne borne pas cette durée. Cette décision ne modifie ni les dates de réalisation d’audit ni les contrats des KPI historiques de correction et de traitement générique. Voir [la restitution et ses limites](../08-implementation/dashboard-double-presentation.md#revue-des-espaces--issues-124-à-128).
+
+### D-246 — Lecture déclarative des campagnes distincte des verdicts métier
+
+**Statut : Établi — validation utilisateur du 27 octobre 2026 après diagnostic de #127**
+
+Les colonnes propres à la campagne de version retiennent uniquement les audits terminés et leurs enfants de type GitHub BUG explicite avec un label RGAA, selon les variantes de type et le préfixe configurés. Elles distinguent les composants sans/avec BUG RGAA déclaré et le nombre d’issues BUG RGAA déclarées. Le lien parent reste compté même si le composant du Bug diffère ; son propre composant et les réserves DQ ne sont pas réécrits.
+
+L’absence de BUG déclaré dans ce périmètre ne prouve pas la conformité RGAA. Cette lecture ne remplace ni la reconnaissance de BUG par labels ni les verdicts métier cumulés de D-244. Une preuve déclarative absente d’un ancien snapshot est indisponible, pas zéro. Le [diagnostic et les compteurs reproduits](../08-implementation/diagnostic-124-128-20261027.md) expliquent les 12 composants sans BUG déclaré et 29 issues du cas fourni.

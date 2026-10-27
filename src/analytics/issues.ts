@@ -52,7 +52,7 @@ export function issueTreatment(issue: Issue) {
   return { cancelled: state === 'cancelled', treated: state === 'treated', delay, source };
 }
 
-/** Construit les faits Analytics des issues distinctes ; seules les versions explicitement reliées sont attribuées. */
+/** Construit les faits distincts avec la reconnaissance configurée ; distingue les améliorations liées à un audit des indépendantes. */
 export function projectIssueFacts(
   data: NormalizedData,
   quality: readonly DataQualityIssue[] = [],
@@ -95,7 +95,8 @@ export function projectIssueFacts(
       issue.accessibilityCategories,
       issue.criticalities,
       anomalies.some((anomaly) => anomaly.origin === 'AUDIT' && Boolean(anomaly.auditId)),
-      recognition.repositories?.[repo] ?? recognition.labelAllOf
+      recognition.repositories?.[repo] ?? recognition.labelAllOf,
+      recognition.labelAnyOf
     );
     return {
       id: issue.issueId,
@@ -135,7 +136,9 @@ export function projectIssueFacts(
                           ? 'Anomalie d’accessibilité présumée hors audit · à examiner'
                           : 'Bug hors audit · qualification RGAA non prouvée'
                         : 'Anomalie (origine indéterminée)',
-                    improvement: 'Improvement d’audit',
+                    improvement: data.auditImprovements?.some((item) => item.issueId === issue.issueId)
+                      ? 'Improvement d’audit'
+                      : 'Improvement',
                     other: 'Autre issue'
                   } as const
                 )[issueClassification(issue, data)],

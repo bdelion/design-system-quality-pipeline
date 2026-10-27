@@ -13,7 +13,7 @@ const spaces = {
   components: ['component-activity', 'components'],
   activity: ['activity'],
   team: ['repositories', 'delays'],
-  versions: ['campaigns']
+  versions: ['campaigns', 'audit-criticality', 'audit-category', 'audit-component']
 };
 const labels = {
   summary: 'Que faut-il faire maintenant ?',
@@ -67,13 +67,13 @@ function githubLinks(cell, title, parent, note, options = {}) {
     options.allowBroader !== false &&
     !direct &&
     cell.url &&
-    /^https:\/\/[^/@?#\s]+\/[^/]+\/[^/]+\/(issues|pulls)(?:\?|$)/.test(cell.url)
+    /^https:\/\/[^/@?#\s]+\/[^/]+\/[^/]+\/(issues|pulls|labels)(?:\?|$)/.test(cell.url)
   ) {
     const source = new window.URL(cell.url);
     if (!source.searchParams.has('q'))
       source.searchParams.set('q', source.pathname.endsWith('/pulls') ? 'is:pr' : 'is:issue');
     url = source.href;
-    approximate = false;
+    approximate = Boolean(cell.searchApproximate);
   }
   const projectView =
     cell.url &&
@@ -179,7 +179,7 @@ function details(cell, title, options = {}) {
   }
   const actions = document.getElementById('detail-actions');
   actions.replaceChildren();
-  githubLinks(cell, title, actions, note, { directSingle: true, matchLabels: true, ...options });
+  githubLinks(cell, title, actions, note, { directSingle: !cell.url, matchLabels: true, ...options });
   if (['Issues Done', 'Issues Cancelled'].includes(title) && !cell.url)
     element(
       'span',
@@ -200,7 +200,19 @@ function renderDetails() {
   exportButton.type = 'button';
   exportButton.addEventListener('click', () =>
     downloadCsv('issues-associees.csv', [
-      ['Repository', 'Issue', 'État GitHub', 'Correction', 'Création', 'URL GitHub', 'Signalements'],
+      [
+        'Repository',
+        'Issue',
+        'État GitHub',
+        'Traitement',
+        'Création',
+        'URL GitHub',
+        'Signalements',
+        'Délai correction (j)',
+        'Source du délai',
+        'Début',
+        'Fin'
+      ],
       ...detailRows.map((issue) => [
         issue.repository,
         issue.title,
@@ -208,7 +220,11 @@ function renderDetails() {
         issue.correction,
         issue.createdAt,
         issue.url,
-        issue.warnings.join(' ; ')
+        issue.warnings.join(' ; '),
+        issue.processing?.value ?? '',
+        issue.processing?.source ?? '',
+        issue.processing?.start ?? '',
+        issue.processing?.end ?? ''
       ])
     ])
   );
@@ -221,12 +237,19 @@ function renderDetails() {
   for (const [field, label] of [
     ['issue', 'Issue'],
     ['github', 'GitHub'],
-    ['correction', 'Correction'],
+    ['correction', 'Traitement'],
     ['warnings', 'Signalements']
   ]) {
     const th = markReview('s2b', element('th', label, head));
     th.scope = 'col';
     th.dataset.reviewKey = field;
+  }
+  if (detailRows.some((issue) => issue.processing)) {
+    const th = markReview(
+      'review-processing-header',
+      element('th', 'Délai de correction — bornes et provenance', head)
+    );
+    th.scope = 'col';
   }
   const body = markReview('s2c', element('tbody', undefined, table));
   for (const issue of detailRows.slice(detailPage * detailSize, (detailPage + 1) * detailSize)) {
@@ -238,6 +261,23 @@ function renderDetails() {
     markReview('s2g', element('td', issue.state, tr));
     markReview('s2h', element('td', issue.correction, tr));
     markReview('s2i', element('td', issue.warnings.join(' ; ') || 'Aucun signalement métier', tr));
+    if (detailRows.some((item) => item.processing))
+      markReview(
+        'review-processing-value',
+        element(
+          'td',
+          issue.processing
+            ? display(issue.processing.value) +
+                ' j · ' +
+                (issue.processing.source === 'project' ? 'Project' : 'Repli GitHub') +
+                ' · ' +
+                (issue.processing.start || 'début inconnu') +
+                ' → ' +
+                (issue.processing.end || 'fin inconnue')
+            : 'Non applicable',
+          tr
+        )
+      );
   }
   if (!detailRows.length)
     markReview(
@@ -304,7 +344,7 @@ function compare(a, b, direction) {
       : String(a).localeCompare(String(b), 'fr', { numeric: true, sensitivity: 'base' }))
   );
 }
-/** Filtre toutes les lignes avant de les trier et découper en pages. */
+/** Filtre contexte et population avant tri, pagination et export, sans recalcul métier. */
 function selected(table, local) {
   const repo = form.elements.repository.value;
   const version = form.elements.version.value.toLowerCase();
@@ -316,6 +356,7 @@ function selected(table, local) {
           ['repositories', 'delays', 'component-activity'].includes(table.id) ||
           row.version.toLowerCase().includes(version)) &&
         row.cells.some((cell) => display(cell.value).toLowerCase().includes(local.search.toLowerCase())) &&
+        (!table.populationColumns || Number(row.cells[local.population ?? 3]?.value) > 0) &&
         (!local.from || String(row.cells.at(-1)?.value) >= local.from) &&
         (!local.to || String(row.cells.at(-1)?.value) < local.to + 'T99')
     )
@@ -331,7 +372,7 @@ function selected(table, local) {
       )
     );
 }
-/** Installe un tableau avec outils, sans recréer les champs lors de la saisie. */
+/** Installe tableau, filtre de population et représentation des effectifs déjà calculés. */
 function mount(table) {
   const local = state.get(table.id) || {
     page: 0,
@@ -350,6 +391,27 @@ function mount(table) {
   markReview('s2r', element('p', table.description, panel)).className = 'description';
   const tools = markReview('s2s', element('div', undefined, panel));
   tools.className = 'toolbar';
+  if (table.populationColumns) {
+    const populationLabel = markReview(
+      'review-population-label',
+      element('label', 'Population représentée', tools)
+    );
+    const population = markReview('review-population-select', element('select', undefined, populationLabel));
+    for (const index of table.populationColumns) {
+      const option = markReview(
+        'review-population-option',
+        element('option', table.headers[index], population)
+      );
+      option.dataset.reviewKey = index;
+      option.value = index;
+      option.selected = index === Number(local.population ?? 3);
+    }
+    population.addEventListener('change', () => {
+      local.population = Number(population.value);
+      local.page = 0;
+      draw();
+    });
+  }
   const label = markReview('s2t', element('label', 'Filtrer ce tableau', tools));
   const search = markReview('s2u', element('input', undefined, label));
   search.type = 'search';
@@ -401,7 +463,8 @@ function mount(table) {
       sort: local.sort,
       direction: local.direction,
       from: local.from,
-      to: local.to
+      to: local.to,
+      population: local.population
     });
     downloadCsv(table.id + '.csv', [
       [...table.headers, 'Issues associées', 'URL GitHub'],
@@ -480,6 +543,13 @@ function mount(table) {
       row.cells.forEach((cell, index) => {
         const td = markReview('s3e', element('td', undefined, tr));
         td.dataset.reviewKey = 'field:' + index;
+        if (table.populationColumns && index === Number(local.population ?? 3)) {
+          const meter = markReview('review-distribution-meter', element('meter', undefined, td));
+          meter.min = 0;
+          meter.max = Math.max(1, ...rows.map((item) => Number(item.cells[index].value)));
+          meter.value = Number(cell.value);
+          meter.setAttribute('aria-label', row.cells[2].value + ' — ' + table.headers[index]);
+        }
         const labelRefs =
           typeof cell.value === 'string' && !cell.refs && !cell.url
             ? [...new Set(row.cells.flatMap((item) => item.refs || []))]

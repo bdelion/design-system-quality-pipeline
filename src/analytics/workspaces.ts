@@ -68,7 +68,7 @@ export interface WorkspaceAnalytics {
   scopes: { repository: string; component: string; version: string; summary: WorkspaceSummary }[];
 }
 
-/** Construit les populations et les références PROD ; conserve les qualifications fournies lors d'une projection historique. */
+/** Construit les populations avec la reconnaissance configurée ; conserve les qualifications des projections historiques. */
 export function workspaceAnalytics(
   data: NormalizedData,
   quality: readonly DataQualityIssue[] = [],
@@ -101,14 +101,15 @@ export function workspaceAnalytics(
         const fact = facts.find((item) => item.id === anomaly.issueId);
         if (!fact) return [];
         const issue = issueById.get(anomaly.issueId)!;
-        const tokens = recognition.repositories?.[fact.repo] ?? recognition.labelAllOf ?? ['audit', 'rgaa'];
+        const tokens = recognition.repositories?.[fact.repo] ?? recognition.labelAllOf;
         const qualification = accessibilityQualification(
           issue.labels,
           issue.accessibilityCategories,
           issue.criticalities,
           anomaly.origin === 'AUDIT' &&
             Boolean(anomaly.auditId && data.audits.some((audit) => audit.auditId === anomaly.auditId)),
-          tokens
+          tokens,
+          recognition.labelAnyOf
         );
         if (issue.review?.kinds.includes('accessibility') && qualification.status === 'unqualified') {
           qualification.status = 'presumed';

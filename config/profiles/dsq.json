@@ -103,7 +103,15 @@
       },
       "componentLabels": {
         "InputPagination": "InputPagination"
+      },
+      "grooming": {
+        "labels": ["Grooming", "📌 Grooming"],
+        "prefixes": []
       }
+    },
+    "accessibilityRecognition": {
+      "labelAllOf": ["audit", "rgaa"],
+      "labelAnyOf": ["rgaa", "a11y"]
     }
   }
 }

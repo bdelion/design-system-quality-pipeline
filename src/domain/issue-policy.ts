@@ -1,3 +1,5 @@
+import compatibilityPolicy from '../../config/defaults/issue-policy.json' with { type: 'json' };
+
 /** Correspondances explicites ; aucune recherche par sous-chaîne libre. */
 export interface LabelMatcher {
   labels: string[];
@@ -9,26 +11,15 @@ export interface IssuePolicy {
   classification?: { accessibility?: LabelMatcher; functional?: LabelMatcher };
   bugInference?: LabelMatcher;
   auditorAdvice?: LabelMatcher;
+  /** Labels de préparation du travail ; aucune correspondance approximative. */
+  grooming?: LabelMatcher;
   resolution?: { prefix: string; accepted: string; invalid: string };
   /** Exceptions explicites au préfixe composant ; jamais de rapprochement approximatif. */
   componentLabels?: Record<string, string>;
 }
 
-export const defaultIssuePolicy = {
-  classification: {
-    accessibility: {
-      labels: ['bug:accessibility', 'Accessibility'],
-      prefixes: ['🚦 rgaa:', '♿ a11y:', 'rgaa:', 'a11y:']
-    },
-    functional: { labels: ['bug:functional'], prefixes: [] }
-  },
-  bugInference: {
-    labels: ['bug:accessibility', 'bug:functional'],
-    prefixes: ['🚦 rgaa:', '♿ a11y:', 'rgaa:', 'a11y:']
-  },
-  auditorAdvice: { labels: ['VOIR AUDITEUR'], prefixes: [] },
-  resolution: { prefix: 'resolution:', accepted: 'accepted', invalid: 'invalid' }
-} satisfies IssuePolicy;
+/** Conventions de compatibilité des profils partiels ; les valeurs explicites du profil priment. */
+export const defaultIssuePolicy = compatibilityPolicy satisfies IssuePolicy;
 
 /** Compare les labels exactement, ou au début pour les préfixes explicitement configurés. */
 export function matchesLabels(labels: readonly string[], matcher: LabelMatcher): boolean {
@@ -63,7 +54,7 @@ export function resolutionReason(
   return accepted ? 'accepted' : invalid ? 'invalid' : 'missing';
 }
 
-/** Refuse les conventions vides ou invalides avant toute interprétation des données. */
+/** Valide les conventions et les correspondances de labels, y compris celles de préparation Grooming. */
 export function validateIssuePolicy(value: unknown): void {
   if (value === undefined) return;
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -85,7 +76,8 @@ export function validateIssuePolicy(value: unknown): void {
     policy.classification?.accessibility,
     policy.classification?.functional,
     policy.bugInference,
-    policy.auditorAdvice
+    policy.auditorAdvice,
+    policy.grooming
   ]) {
     if (matcher === undefined) continue;
     if (

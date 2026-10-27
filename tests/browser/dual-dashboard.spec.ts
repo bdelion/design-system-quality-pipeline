@@ -56,7 +56,7 @@ test('choix des vues, contexte, tri et pagination des preuves sans réseau exter
     await page.getByRole('link', { name: 'Repositories et équipe', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Délais de traitement', exact: true })).toBeVisible();
     await page.getByRole('link', { name: 'Audits par version', exact: true }).click();
-    await expect(page.getByRole('columnheader', { name: 'Composants conformes' })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /^Composants conformes cumulés/ })).toBeVisible();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

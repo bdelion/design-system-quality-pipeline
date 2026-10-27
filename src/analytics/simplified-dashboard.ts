@@ -1,6 +1,8 @@
 import { componentActivityTable } from './component-activity.js';
-import type { Snapshot, Issue, PullRequest } from '../domain/types.js';
-import { auditProgress, currentProjectStatus, lastDoneAt } from '../domain/business.js';
+import type { Snapshot } from '../domain/types.js';
+import { auditProgress, currentProjectStatus } from '../domain/business.js';
+import { processingDuration } from './processing-duration.js';
+import { auditDistributionTables } from './audit-evidence.js';
 import { repositoryActivity } from './repository-activity.js';
 import { projectIssueFacts } from './issues.js';
 import { businessReview } from './business-review.js';
@@ -8,6 +10,8 @@ import { quantile } from './statistics.js';
 
 /** Valeur affichée et preuves exactes ; une absence reste distincte de zéro. */
 export interface SimpleCell {
+  /** Navigation actuelle de périmètre, explicitement distincte des preuves exactes du snapshot. */
+  searchApproximate?: boolean;
   value: string | number | null;
   refs?: string[];
   /** Recherche GitHub du périmètre du compteur, prioritaire sur la recherche par références. */
@@ -25,6 +29,8 @@ export interface SimpleRow {
 }
 /** Contrat d’un tableau, indépendant de sa pagination dans le navigateur. */
 export interface SimpleTable {
+  /** Colonnes de populations proposées au filtre et au graphique de répartition. */
+  populationColumns?: number[];
   id: string;
   title: string;
   description: string;
@@ -239,7 +245,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     title: 'Travail des équipes',
     description:
       'Issues du snapshot. Le statut Project est distinct de la fermeture GitHub ; les filtres de dates portent sur la création de l’issue.',
-    headers: ['Issue', 'Nature', 'Composants', 'GitHub', 'Project', 'Correction', 'Création'],
+    headers: ['Issue', 'Nature', 'Composants', 'GitHub', 'Project', 'Traitement', 'Création'],
     rows: facts.map((fact) => ({
       reviewKey: fact.id,
       repository: fact.repo,
@@ -279,29 +285,38 @@ export function simplifiedModel(snapshot: Snapshot) {
       },
       {
         key: 'confirmed-correction',
-        name: 'Correction confirmée des bugs',
+        name: 'Correction confirmée des bugs — In progress → Done',
         values: selected
           .filter(
             (issue) =>
               issue.review?.correctionConfirmed &&
               data.anomalies.some((anomaly) => anomaly.issueId === issue.issueId)
           )
-          .map((issue) => ({ id: issue.issueId, value: confirmedCorrectionDelay(issue, data.pullRequests) }))
+          .map((issue) => ({ id: issue.issueId, value: processingDuration(issue).value }))
       }
     ];
     for (const cohort of cohorts) {
       const summary = delays(cohort.values);
+      const note =
+        cohort.key === 'confirmed-correction'
+          ? 'Premier In progress → dernier Done. Sans paire Project datée : création → clôture GitHub. PR fusionnée exigée pour la population, pas pour la date. Bornes et provenance dans le détail et le CSV.'
+          : cohort.key === 'github-closure'
+            ? 'Issues Closed : création → clôture GitHub. Les dates manquantes ou inversées sont exclues.'
+            : 'Issues Done ET Closed ; création → dernière date Done, ou clôture estimée admissible. Les annulations et exclusions DQ sont séparées. Cette population diffère des seules issues Closed.';
       delayRows.push({
         reviewKey: library.libraryId + ':' + cohort.key,
         repository: library.repository,
         version: '',
         cells: [
           cell(library.repository),
-          cell(cohort.name),
-          cell(summary.median, summary.refs),
-          cell(summary.p90, summary.refs),
-          cell(summary.refs.length, summary.refs),
-          cell(summary.excluded, summary.excludedRefs)
+          { ...cell(cohort.name, summary.refs), note },
+          { ...cell(summary.median, summary.refs), note },
+          { ...cell(summary.p90, summary.refs), note },
+          { ...cell(summary.refs.length, summary.refs), note },
+          {
+            ...cell(summary.excluded, summary.excludedRefs),
+            note: 'Dossiers de la cohorte exclus du calcul : date absente, inversée ou exclusion DQ. Aucun délai nul n’est fabriqué.'
+          }
         ]
       });
     }
@@ -338,7 +353,12 @@ export function simplifiedModel(snapshot: Snapshot) {
   ]);
   for (const key of keys) {
     const [libraryId, version] = JSON.parse(key) as [string, string];
-    const audits = data.audits.filter((audit) => audit.libraryId === libraryId && audit.version === version);
+    const audits = data.audits.filter(
+      (audit) =>
+        audit.libraryId === libraryId &&
+        audit.version === version &&
+        issueMap.get(audit.issueId)?.issueType !== 'EPIC'
+    );
     /** Sélectionne les audits selon leur progression déjà normalisée. */
     const unknown = audits.filter((audit) => {
       const source = issueMap.get(audit.issueId);
@@ -367,24 +387,6 @@ export function simplifiedModel(snapshot: Snapshot) {
       ).values()
     ];
     const auditIds = new Set(audits.map((audit) => audit.auditId));
-    const bugs = [
-      ...new Set(
-        data.anomalies
-          .filter(
-            (anomaly) =>
-              anomaly.auditId &&
-              auditIds.has(anomaly.auditId) &&
-              anomaly.accessibility !== false &&
-              (!issueMap.get(anomaly.issueId)?.review ||
-                issueMap
-                  .get(anomaly.issueId)
-                  ?.componentIds.includes(
-                    audits.find((audit) => audit.auditId === anomaly.auditId)!.componentId
-                  ))
-          )
-          .map((anomaly) => anomaly.issueId)
-      )
-    ];
     const improvements = [
       ...new Set(
         (data.auditImprovements ?? [])
@@ -410,6 +412,20 @@ export function simplifiedModel(snapshot: Snapshot) {
       };
     };
     const completed = state('completed');
+    const declarationsKnown = completed.every((audit) => audit.declaredRgaaBugIssueIds !== undefined);
+    const declaredBugs = [...new Set(completed.flatMap((audit) => audit.declaredRgaaBugIssueIds ?? []))];
+    const directGroups = [...new Set(completed.map((audit) => audit.componentId))].map((id) =>
+      completed.filter((audit) => audit.componentId === id)
+    );
+    const withoutDeclaredBug = directGroups.filter((group) =>
+      group.every((audit) => audit.declaredRgaaBugIssueIds?.length === 0)
+    );
+    const withDeclaredBug = directGroups.filter((group) =>
+      group.some((audit) => (audit.declaredRgaaBugIssueIds?.length ?? 0) > 0)
+    );
+    const declarationNote = declarationsKnown
+      ? 'Audits terminés uniquement ; type GitHub BUG explicite et label RGAA du profil. Le lien parent est conservé même si le composant diffère. Sans BUG déclaré ne prouve pas la conformité métier.'
+      : 'Lecture déclarative absente de cet ancien snapshot : relancer le pipeline. Aucun zéro n’est déduit de cette absence.';
     const completedComponents = new Set(completed.map((audit) => audit.componentId));
     const conformAudited = relations.filter(
       (item) => item.verdict === 'CONFORME' && completedComponents.has(item.componentId)
@@ -456,10 +472,10 @@ export function simplifiedModel(snapshot: Snapshot) {
         ),
         cell(completed.length, ids(completed)),
         ratio(
-          audits.length,
+          completed.length,
           relations.length,
-          allAuditRefs,
-          'Nombre total d’audits / nombre de composants de la version. Plusieurs audits d’un même composant peuvent donner plus de 100 %.'
+          ids(completed),
+          'Audits terminés / composants de la version. Plusieurs audits d’un même composant peuvent donner plus de 100 %.'
         ),
         conform,
         nonConform,
@@ -475,11 +491,22 @@ export function simplifiedModel(snapshot: Snapshot) {
           conform.refs ?? [],
           'Composants conformes cumulés / tous les composants de la version. Comprend les conformités héritées calculées par le pipeline.'
         ),
-        cell(bugs.length, bugs),
+        {
+          ...cell(declarationsKnown ? declaredBugs.length : null, declarationsKnown ? declaredBugs : []),
+          note: declarationNote
+        },
         cell(improvements.length, improvements),
         verdict('NON_COUVERT'),
         cell(state('cancelled').length, ids(state('cancelled'))),
-        cell(unknown.length, ids(unknown))
+        cell(unknown.length, ids(unknown)),
+        {
+          ...cell(declarationsKnown ? withoutDeclaredBug.length : null, ids(withoutDeclaredBug.flat())),
+          note: declarationNote
+        },
+        {
+          ...cell(declarationsKnown ? withDeclaredBug.length : null, ids(withDeclaredBug.flat())),
+          note: declarationNote
+        }
       ]
     });
   }
@@ -496,19 +523,22 @@ export function simplifiedModel(snapshot: Snapshot) {
       'Audits en attente',
       'Audits en cours',
       'Audits terminés',
-      'Audits / composants (%)',
+      'Audits terminés / composants (%)',
       'Composants conformes cumulés',
       'Composants non conformes cumulés',
       'Conformes audités / audits terminés (%)',
       'Conformes cumulés / composants (%)',
-      'Anomalies liées aux audits',
+      'BUG RGAA déclarés — audits terminés',
       'Améliorations liées aux audits',
       'Composants non couverts',
       'Audits annulés',
-      'Statuts inconnus'
+      'Statuts inconnus',
+      'Composants sans BUG RGAA déclaré — version',
+      'Composants avec BUG RGAA déclaré — version'
     ],
     rows: campaigns
   });
+  tables.push(...auditDistributionTables(data));
   return {
     version: 1,
     capturedAt: snapshot.capturedAt,
@@ -525,6 +555,9 @@ export function simplifiedModel(snapshot: Snapshot) {
       createdAt: issue.createdAt,
       state: issue.state,
       labels: issue.labels,
+      ...(issue.review?.correctionConfirmed && data.anomalies.some((item) => item.issueId === issue.issueId)
+        ? { processing: processingDuration(issue) }
+        : {}),
       ...(sourceMilestones.has(issue.url) ? { milestone: sourceMilestones.get(issue.url)! } : {}),
       correction: issue.review?.correctionLabel ?? 'Non confirmée',
       warnings: issue.review?.warnings ?? []
@@ -545,16 +578,4 @@ function repositoryUrl(snapshot: Snapshot, repository: string, suffix: string): 
   return /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(url)
     ? url.replace(/\/issues\/\d+$/, '/' + suffix)
     : '';
-}
-
-/** Retient la date où Done et la fusion sont tous deux prouvés ; aucune date manquante n’est estimée. */
-function confirmedCorrectionDelay(issue: Issue, pullRequests: PullRequest[]): number | null {
-  const done = lastDoneAt(issue);
-  const merged = (issue.review?.mergedPullRequestIds ?? []).map(
-    (id) => pullRequests.find((pr) => pr.pullRequestId === id)?.mergedAt
-  );
-  if (!done || !merged.length || merged.some((date) => !date || !Number.isFinite(Date.parse(date))))
-    return null;
-  const end = Math.max(Date.parse(done), ...merged.map((date) => Date.parse(date!)));
-  return Number.isFinite(end) ? elapsed(issue.createdAt, new Date(end).toISOString()) : null;
 }

@@ -17,7 +17,7 @@ function projectBucket(issue: Issue): 'active' | 'done' | 'cancelled' | 'unknown
 function evidence(value: SimpleCell['value'], issues: Issue[], note?: string): SimpleCell {
   return { value, refs: [...new Set(issues.map((issue) => issue.issueId))], ...(note ? { note } : {}) };
 }
-/** Liste les issues distinctes par repository et composant, avec les cohortes de délais du pipeline. */
+/** Liste les issues et cohortes par composant ; l’ancienneté compte les jours civils à Paris au snapshot. */
 export function componentActivityTable(snapshot: Snapshot): SimpleTable {
   const data = snapshot.normalizedData;
   const facts = new Map(projectIssueFacts(data, snapshot.dataQuality.issues).map((fact) => [fact.id, fact]));
@@ -54,7 +54,7 @@ export function componentActivityTable(snapshot: Snapshot): SimpleTable {
         (issue) => Number.isFinite(Date.parse(issue.createdAt)) && Date.parse(issue.createdAt) <= capture
       );
       const oldest = [...valid].sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt))[0];
-      const oldestAge = oldest ? (capture - Date.parse(oldest.createdAt)) / 86400000 : null;
+      const oldestAge = oldest ? calendarAge(oldest.createdAt, snapshot.capturedAt) : null;
       const oldestCell: SimpleCell = !known
         ? evidence(null, [])
         : valid.length !== opened.length || !Number.isFinite(capture)
@@ -68,7 +68,7 @@ export function componentActivityTable(snapshot: Snapshot): SimpleTable {
                 ...evidence(
                   `#${oldest.number} · ${Math.floor(oldestAge!)} j`,
                   [oldest],
-                  `Créé le ${oldest.createdAt}. Âge au moment du snapshot ; GitHub OPEN, hors Done et Cancelled.`
+                  `Créé le ${oldest.createdAt}. Jours civils à Paris au snapshot ; GitHub OPEN, hors Done et Cancelled.`
                 ),
                 sortValue: oldestAge
               }
@@ -131,4 +131,18 @@ export function componentActivityTable(snapshot: Snapshot): SimpleTable {
     ],
     rows
   };
+}
+
+/** Compte les changements de date à Paris, indépendamment des journées de 23 ou 25 heures. */
+function calendarAge(createdAt: string, capturedAt: string): number {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return (
+    (Date.parse(formatter.format(new Date(capturedAt))) - Date.parse(formatter.format(new Date(createdAt)))) /
+    86400000
+  );
 }

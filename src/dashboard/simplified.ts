@@ -2,6 +2,7 @@ import { reviewContext } from './review-output.js';
 
 import type { GithubProcessingConfig } from '../config.js';
 import { applyProjectLinks, projectLinkSettings, componentProjectLabels } from './project-links.js';
+import { applyReviewLinks } from './review-links.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Snapshot } from '../domain/types.js';
@@ -27,6 +28,13 @@ export async function generateSimplifiedDashboard(
   const output = resolve(dashboardRoot, 'simplified');
   await mkdir(output, { recursive: true });
   const model = simplifiedModel(snapshot);
+  const rules =
+    githubRules ??
+    (
+      JSON.parse(await readFile(new URL('../../config/profiles/dsq.json', import.meta.url), 'utf8')) as {
+        github: GithubProcessingConfig;
+      }
+    ).github;
   await writeFile(
     resolve(output, 'review-context.js'),
     'export default ' + JSON.stringify(await reviewContext(snapshot)) + ';',
@@ -42,21 +50,15 @@ export async function generateSimplifiedDashboard(
     'GITHUB_PROJECT_REPOSITORIES'
   ].some((name) => process.env[name]?.trim());
   if (configured) {
-    const rules =
-      githubRules ??
-      (
-        JSON.parse(await readFile(new URL('../../config/profiles/dsq.json', import.meta.url), 'utf8')) as {
-          github: GithubProcessingConfig;
-        }
-      ).github;
     const settings = projectLinkSettings(rules.projectStatuses.keywords);
+    applyReviewLinks(snapshot, model.tables, rules, settings);
     if (settings)
       applyProjectLinks(
         model.tables,
         settings,
         componentProjectLabels(snapshot, rules.labels.componentPrefix)
       );
-  }
+  } else applyReviewLinks(snapshot, model.tables, rules);
   const data = JSON.stringify({ version: model.version, tables: model.tables, issues: model.issues }).replace(
     /</g,
     '\\u003c'

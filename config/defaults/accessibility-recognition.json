@@ -1,0 +1,4 @@
+{
+  "labelAllOf": ["audit", "rgaa"],
+  "labelAnyOf": ["rgaa", "a11y"]
+}

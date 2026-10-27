@@ -364,6 +364,8 @@ export interface Anomaly {
 
 /** Audit normalisé à partir des données disponibles. */
 export interface Audit {
+  /** Lecture déclarative : enfants de type GitHub BUG explicite avec label RGAA du profil. Absence = ancien snapshot, pas zéro. */
+  declaredRgaaBugIssueIds?: string[];
   auditId: string;
   issueId: string;
   libraryId: string;

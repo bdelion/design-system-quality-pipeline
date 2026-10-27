@@ -5,6 +5,7 @@
  */
 
 import { isFutureVersion, milestoneVersionNumber } from '../domain/version-scope.js';
+import { applyAuditDeclarations } from '../domain/audit-declarations.js';
 import { applyIssueReviews } from '../domain/issue-review.js';
 import { defaultIssuePolicy, matchesLabels, validateIssuePolicy } from '../domain/issue-policy.js';
 import { stableId } from '../lib/ids.js';
@@ -658,7 +659,15 @@ export function normalizeGithub(
     const configuredAudit = rawIssue
       ? configuredAuditIssue(rawIssue, rules, issue.componentIds.length)
       : false;
-    if ((!legacyAudit && !configuredAudit) || issue.componentIds.length !== 1) continue;
+    if (
+      issue.issueType === 'EPIC' ||
+      issue.labels.some((label) =>
+        (rules.issueTypes.keywords.EPIC ?? []).some((value) => value.toLowerCase() === label.toLowerCase())
+      ) ||
+      (!legacyAudit && !configuredAudit) ||
+      issue.componentIds.length !== 1
+    )
+      continue;
     const targetNumber =
       rawIssue?.rawIssueType !== undefined
         ? milestoneVersionNumber(rawIssue.milestone?.title, rules)
@@ -850,7 +859,10 @@ export function normalizeGithub(
     auditImprovements,
     pullRequests
   };
-  if (strictReview) applyIssueReviews(normalized, raw, rules, catalogue);
+  if (strictReview) {
+    applyIssueReviews(normalized, raw, rules, catalogue);
+    applyAuditDeclarations(normalized, raw, rules);
+  }
   for (const audit of strictReview ? audits : []) {
     if (audit.lifecycle !== 'completed') continue;
     const blockers = anomalies.some(

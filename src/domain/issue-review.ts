@@ -34,7 +34,7 @@ export function compareReviewVersions(left: string, right: string): number {
   return 0;
 }
 
-/** Enrichit les issues sans toucher au RAW, puis vérifie les corrections sur les audits ultérieurs. */
+/** Enrichit les issues selon leur nature et les conventions configurées, puis vérifie les corrections. */
 export function applyIssueReviews(
   data: NormalizedData,
   raw: RawDataset,
@@ -59,11 +59,14 @@ export function applyIssueReviews(
     const cancelled = statuses.includes('CANCELLED');
     const resolution = resolutionReason(issue.labels, cancelled, rules.issuePolicy);
     const done = statuses.length > 0 && statuses.every((status) => status === 'DONE');
+    const grooming = matchesLabels(issue.labels, rules.issuePolicy?.grooming ?? defaultIssuePolicy.grooming);
     const merged = issue.linkedPullRequestIds.filter((id) => prs.get(id)?.state === 'merged');
     const confirmed = done && merged.length > 0;
     const warnings: string[] = [];
     const auditCandidate =
-      source.rawIssueType?.toLowerCase() === 'audit' ||
+      (rules.issueTypes.keywords.AUDIT ?? []).some(
+        (type) => type.toLowerCase() === source.rawIssueType?.toLowerCase()
+      ) ||
       Boolean(
         rules.auditDetection?.strategies.some(
           (strategy) =>
@@ -92,23 +95,36 @@ export function applyIssueReviews(
       : issue.projectContexts.some((context) => !(context.rawStatus ?? context.status ?? '').trim())
         ? 'missing-status'
         : 'with-status';
-    const correctionLabel = cancelled
-      ? resolution === 'accepted'
-        ? 'Annulée — anomalie acceptée'
-        : resolution === 'invalid'
-          ? 'Annulée — anomalie non justifiée'
-          : resolution === 'conflict'
-            ? 'Annulée — motifs contradictoires'
-            : 'Annulée — motif non renseigné'
-      : confirmed
-        ? 'Corrigée — en attente de vérification par audit'
-        : done
-          ? 'Correction non confirmée — PR fusionnée manquante'
-          : merged.length
-            ? 'Correction non confirmée — statut Project à vérifier'
-            : issue.state === 'CLOSED'
-              ? 'Fermée — résolution non déterminée'
-              : 'Restant à corriger';
+    const correctionLabel =
+      issue.issueType !== 'BUG'
+        ? cancelled
+          ? 'Annulée'
+          : done
+            ? 'Réalisée'
+            : grooming
+              ? 'À groomer'
+              : statuses.length && statuses.every((status) => status !== undefined && status !== 'DONE')
+                ? 'Restant à faire'
+                : 'Traitement indéterminé'
+        : !cancelled && !done && grooming
+          ? 'À groomer'
+          : cancelled
+            ? resolution === 'accepted'
+              ? 'Annulée — anomalie acceptée'
+              : resolution === 'invalid'
+                ? 'Annulée — anomalie non justifiée'
+                : resolution === 'conflict'
+                  ? 'Annulée — motifs contradictoires'
+                  : 'Annulée — motif non renseigné'
+            : confirmed
+              ? 'Corrigée — en attente de vérification par audit'
+              : done
+                ? 'Correction non confirmée — PR fusionnée manquante'
+                : merged.length
+                  ? 'Correction non confirmée — statut Project à vérifier'
+                  : issue.state === 'CLOSED'
+                    ? 'Fermée — résolution non déterminée'
+                    : 'Restant à corriger';
     issue.review = {
       algorithm: 'issue-review-v1',
       kinds: classifyLabels(issue.labels, rules.issuePolicy),

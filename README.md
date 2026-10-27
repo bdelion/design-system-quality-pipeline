@@ -2,6 +2,10 @@
 
 Collecter des repositories GitHub, préparer un dataset autonome et rejouer son dashboard hors réseau. GitHub reste en lecture seule. Les conventions DSQ sont livrées dans `config/profiles/dsq.json` ; les informations absentes restent inconnues.
 
+Les conventions de labels sont explicites dans le profil ; les replis de compatibilité
+sont dans `config/defaults/`. Pour les personnaliser au rejeu, voir les
+[priorités de configuration et l’option `--issue-policy`](docs/08-implementation/configurations-et-tests.md#conventions-configurables-et-compatibilité).
+
 Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)** regroupe les commandes, toutes leurs options, les fichiers requis et les recettes : dashboard GitHub à jour, rejeu privé, jeu anonymisé, catalogues et historiques.
 
 ## Démarrer sans GitHub
@@ -120,3 +124,7 @@ Les liens Done/Cancelled de la vue synthétique peuvent ouvrir une vue GitHub Pr
 Les corrections de [#121](https://github.com/bdelion/design-system-quality-pipeline/issues/121) ajoutent `state:open` à la recherche « Issues en cours » et le label source du composant aux vues Projects Done/Cancelled. Pour les délais mesurables, un lien GitHub n’est proposé que si les filtres reproduisent la cohorte parmi les issues connues ; la liste locale et son CSV restent exacts dans tous les cas. Voir [les limites et les filtres](docs/08-implementation/dashboard-double-presentation.md#corrections-des-cohortes-composants--issue-121).
 
 Les cumuls de conformité comptent des composants distincts, avec héritage. Depuis #122, leurs fenêtres ne listent que les audits applicables ; les recherches peuvent utiliser leurs milestones sources. Les filtres `Closed` avec ou sans sous-issues ne reproduisent pas ces cumuls. Voir [la justification des décomptes](docs/08-implementation/dashboard-double-presentation.md#cumuls-et-preuves-daudit--issue-122).
+
+Les corrections #124–#128 ajoutent l’ancienneté en jours civils à Paris, des libellés de traitement adaptés aux tâches et au Grooming, les accès de cohortes et les résultats d’audit propres à chaque version. Trois répartitions des anomalies d’audit (criticité, critère, composant) proposent Total/Restant/Réalisé, preuves et CSV. Le délai des corrections confirmées utilise premier In progress → dernier Done, avec repli explicite création → clôture. Voir [les contrats et limites](docs/08-implementation/dashboard-double-presentation.md#revue-des-espaces--issues-124-à-128).
+
+Le [diagnostic sur le dataset anonymisé du 27 octobre](docs/08-implementation/diagnostic-124-128-20261027.md) distingue la lecture stricte **12 composants sans BUG RGAA déclaré / 29 bugs déclarés** (D-246) des verdicts métier, explique l’indisponibilité des cumuls sans historique exploitable et le passage de 154 à 1,012 jour. Cette lecture utilise les seuls audits terminés et les types GitHub BUG explicites avec label RGAA ; une absence de déclaration ne prouve pas la conformité. `issuePolicy.grooming` permet de paramétrer les labels de préparation ; ses valeurs exactes par défaut sont `Grooming` et `📌 Grooming`.
