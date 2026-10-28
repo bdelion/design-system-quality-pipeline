@@ -100,11 +100,14 @@ it('collecte depuis la liste seule et conserve le profil appliqué sans écrire 
       return Response.json([]);
     })
   );
-  await collectRepositories(['example/ui'], path);
+  const bounds = join(root, 'bounds.json');
+  await writeFile(bounds, JSON.stringify({ 'example/ui': '1.7.1' }));
+  await collectRepositories(['example/ui'], path, {}, bounds);
   const content = await readFile(path, 'utf8');
   expect(content).not.toContain('private-token');
   expect(JSON.parse(content).collectionContext.config.githubOwner).toBe('example');
   const context = JSON.parse(content).collectionContext;
+  expect(context.config.github.auditTracking).toEqual({ 'example/ui': '1.7.1' });
   expect(typeof context.anonymizationSeed).toBe('string');
   const prepared = await prepareDataset(path, join(root, 'prepared-with-local-seed'));
   expect(JSON.stringify(prepared).includes(context.anonymizationSeed)).toBe(false);
@@ -119,6 +122,29 @@ it('collecte depuis la liste seule et conserve le profil appliqué sans écrire 
   expect(JSON.stringify(localSnapshot).includes(context.anonymizationSeed)).toBe(false);
   await expect(collectRepositories(['example/ui'], path)).rejects.toThrow('existant');
   expect(await readFile(path, 'utf8')).toBe(content);
+});
+
+it('#132 : applique les bornes locales au rejeu sans modifier le contexte collecté', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const original = JSON.stringify({
+    ...(await raw()),
+    collectionContext: {
+      profileId: 'dsq',
+      config: await dsqConfig(['example/ui'])
+    }
+  });
+  await writeFile(input, original);
+  const tracking = join(root, 'tracking.json');
+  await writeFile(tracking, JSON.stringify({ 'example/ui': '1.7.1' }));
+  const output = await directory();
+  const snapshot = await runPipeline(input, output, [], undefined, undefined, tracking);
+  expect(snapshot.normalizedData.auditTracking).toEqual({ 'example/ui': '1.7.1' });
+  expect(await readFile(input, 'utf8')).toBe(original);
+  await writeFile(tracking, JSON.stringify({ 'example/ui': 'invalid' }));
+  await expect(runPipeline(input, join(root, 'invalid'), [], undefined, undefined, tracking)).rejects.toThrow(
+    'SemVer'
+  );
 });
 
 it('prépare sans catalogue et rejoue après déplacement sans modifier les faits du dataset', async () => {

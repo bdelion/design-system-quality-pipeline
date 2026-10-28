@@ -21,22 +21,27 @@ const program = new Command()
   .version('0.1.0');
 program
   .command('collect')
+  .option('--audit-tracking <file>', 'versions minimales JSON du suivi par owner/repository')
   .requiredOption('--repositories <file>', 'fichier JSON contenant une liste owner/repository')
   .requiredOption('--output <file>', 'nouveau fichier RAW local')
   .option('--wait-for-quota', 'attendre le reset des quotas')
   .option('--rest-quota-reserve <points>', 'réserve REST', quotaInteger, 100)
   .option('--graphql-quota-reserve <points>', 'réserve GraphQL', quotaInteger, 100)
   .option('--quota-max-wait <seconds>', 'attente cumulée maximale', quotaInteger, 7200)
-  .action(async (options: GithubQuotaOptions & { repositories: string; output: string }) => {
-    validateGithubQuotaOptions(options);
-    const list = await readDatasetJson(options.repositories);
-    if (!Array.isArray(list) || !list.every((name) => typeof name === 'string'))
-      throw new Error('La liste des repositories doit être un tableau JSON de noms owner/repository.');
-    const raw = await collectRepositories(list, options.output, options);
-    console.log(
-      `Collecte terminée : ${raw.repositories.length} repositories ; ${raw.repositories.reduce((n, repo) => n + repo.issues.length, 0)} issues.\nFichier RAW : ${options.output}`
-    );
-  });
+  .action(
+    async (
+      options: GithubQuotaOptions & { repositories: string; output: string; auditTracking?: string }
+    ) => {
+      validateGithubQuotaOptions(options);
+      const list = await readDatasetJson(options.repositories);
+      if (!Array.isArray(list) || !list.every((name) => typeof name === 'string'))
+        throw new Error('La liste des repositories doit être un tableau JSON de noms owner/repository.');
+      const raw = await collectRepositories(list, options.output, options, options.auditTracking);
+      console.log(
+        `Collecte terminée : ${raw.repositories.length} repositories ; ${raw.repositories.reduce((n, repo) => n + repo.issues.length, 0)} issues.\nFichier RAW : ${options.output}`
+      );
+    }
+  );
 program
   .command('fixture:prepare')
   .requiredOption('--input <file>', 'RAW local collecté ou dataset.json d’une fixture existante')
@@ -83,6 +88,7 @@ program
   });
 program
   .command('pipeline')
+  .option('--audit-tracking <file>', 'versions minimales JSON du suivi par owner/repository')
   .option('--issue-policy <file>', 'conventions locales JSON des labels et résolutions')
   .option('--dataset <path>', 'dataset autonome à rejouer', 'examples/demo/dataset.json')
   .option('--output <directory>', 'sorties isolées du dataset', 'data/output/demo')
@@ -98,13 +104,15 @@ program
       historicalCatalogue?: string[];
       historicalRepository?: string;
       issuePolicy?: string;
+      auditTracking?: string;
     }) => {
       const snapshot = await runPipeline(
         options.dataset,
         options.output,
         options.historicalCatalogue ?? [],
         options.historicalRepository,
-        options.issuePolicy
+        options.issuePolicy,
+        options.auditTracking
       );
       console.log(pipelineSummary(snapshot, 'Pipeline', pipelineStatus(snapshot), options.output));
     }

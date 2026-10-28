@@ -59,10 +59,12 @@ export async function generateSimplifiedDashboard(
         componentProjectLabels(snapshot, rules.labels.componentPrefix)
       );
   } else applyReviewLinks(snapshot, model.tables, rules);
-  const data = JSON.stringify({ version: model.version, tables: model.tables, issues: model.issues }).replace(
-    /</g,
-    '\\u003c'
-  );
+  const data = JSON.stringify({
+    version: model.version,
+    tables: model.tables,
+    issues: model.issues,
+    auditLatestVersions: model.auditLatestVersions
+  }).replace(/</g, '\\u003c');
   const spaces = [
     ['summary', 'Synthèse'],
     ['components', 'Composants'],

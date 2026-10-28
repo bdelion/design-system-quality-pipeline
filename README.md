@@ -2,6 +2,10 @@
 
 Collecter des repositories GitHub, préparer un dataset autonome et rejouer son dashboard hors réseau. GitHub reste en lecture seule. Les conventions DSQ sont livrées dans `config/profiles/dsq.json` ; les informations absentes restent inconnues.
 
+Le [suivi des audits (#132–#134)](docs/08-implementation/suivi-audits-132-134.md)
+propose une borne minimale par dépôt (`--audit-tracking`), une vue cumulée
+« Latest version » et la liste des composants à auditer avec motifs et réserves.
+
 Les conventions de labels sont explicites dans le profil ; les replis de compatibilité
 sont dans `config/defaults/`. Pour les personnaliser au rejeu, voir les
 [priorités de configuration et l’option `--issue-policy`](docs/08-implementation/configurations-et-tests.md#conventions-configurables-et-compatibilité).

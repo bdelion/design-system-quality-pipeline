@@ -5,6 +5,7 @@
  */
 
 import { loadDataset } from './datasets.js';
+import { validateAuditTracking, type AuditTracking } from './domain/audit-tracking.js';
 import { loadHistoricalImport } from './historical-import.js';
 import { epicActivity } from './analytics/epic-activity.js';
 import { resolve, dirname, relative, isAbsolute, sep } from 'node:path';
@@ -30,15 +31,22 @@ import { readdir, lstat } from 'node:fs/promises';
  * @param historicalInputs - Référentiels de présence ou fichiers d'identités les désignant.
  * @param historicalRepositoryOverride - Dépôt réel auquel affecter explicitement l'unique import.
  * @param issuePolicyPath - Conventions locales JSON, sans réécriture du dataset source.
+ * @param auditTrackingPath - Bornes locales JSON du suivi, sans modifier les entrées.
  */
 export async function runPipeline(
   datasetPath: string,
   outputPath: string,
   historicalInputs: string[] = [],
   historicalRepositoryOverride?: string,
-  issuePolicyPath?: string
+  issuePolicyPath?: string,
+  auditTrackingPath?: string
 ): Promise<Snapshot> {
   const { config, catalogue, rawData: raw, historicalComponents: embedded } = await loadDataset(datasetPath);
+  if (auditTrackingPath) {
+    const tracking = await readJson<AuditTracking>(auditTrackingPath);
+    validateAuditTracking(tracking);
+    config.github.auditTracking = tracking;
+  }
   if (issuePolicyPath) {
     const policy = await readJson<IssuePolicy>(issuePolicyPath);
     validateIssuePolicy(policy);

@@ -1,4 +1,8 @@
 import { componentActivityTable } from './component-activity.js';
+import { auditTrackingData, latestAuditVersions, compareAuditVersions } from '../domain/audit-tracking.js';
+import { applyComponentVersionVerdicts } from './component-versions.js';
+import { auditPlanTable } from './audit-plan.js';
+import type { NormalizedData } from '../domain/types.js';
 import type { Snapshot } from '../domain/types.js';
 import { auditProgress, currentProjectStatus } from '../domain/business.js';
 import { processingDuration } from './processing-duration.js';
@@ -29,6 +33,8 @@ export interface SimpleRow {
 }
 /** Contrat d’un tableau, indépendant de sa pagination dans le navigateur. */
 export interface SimpleTable {
+  /** Agrégats cumulés préparés par Analytics, jamais recalculés dans le navigateur. */
+  latestRows?: SimpleRow[];
   /** Colonnes de populations proposées au filtre de répartition. */
   populationColumns?: number[];
   /** Colonne de progression dont le pourcentage est calculé par Analytics dans sortValue. */
@@ -80,7 +86,6 @@ export function simplifiedModel(snapshot: Snapshot) {
   );
   const data = snapshot.normalizedData;
   const issues = data.issues ?? [];
-  const issueMap = new Map(issues.map((row) => [row.issueId, row]));
   const facts = projectIssueFacts(data, snapshot.dataQuality.issues);
   const review = snapshot.analytics.businessReview ?? businessReview(data);
   const repositories =
@@ -348,6 +353,110 @@ export function simplifiedModel(snapshot: Snapshot) {
     ],
     rows: delayRows
   });
+  const scoped = data.auditTracking === undefined ? data : structuredClone(auditTrackingData(data));
+  if (data.auditTracking !== undefined) applyComponentVersionVerdicts(scoped);
+  const campaigns = campaignRows(scoped);
+  const latest = latestAuditVersions(scoped);
+  const cumulative: NormalizedData = {
+    ...scoped,
+    versions: (scoped.versions ?? []).filter((v) => latest.get(v.libraryId) === v.number),
+    audits: scoped.audits
+      .filter(
+        (audit) =>
+          latest.has(audit.libraryId) &&
+          compareAuditVersions(audit.version, latest.get(audit.libraryId)!) <= 0
+      )
+      .map((audit) => ({ ...audit, version: latest.get(audit.libraryId)! }))
+  };
+  const latestIds = new Set(cumulative.versions!.map((v) => v.versionId));
+  cumulative.componentVersions = (scoped.componentVersions ?? []).filter((r) => latestIds.has(r.versionId));
+  tables.push({
+    id: 'campaigns',
+    title: 'Audits et composants par version',
+    description:
+      'En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
+    headers: [
+      'Librairie',
+      'Version',
+      'Composants',
+      'Audits total',
+      'Audits en attente',
+      'Audits en cours',
+      'Audits terminés',
+      'Audits terminés / composants (%)',
+      'Composants conformes cumulés',
+      'Composants non conformes cumulés',
+      'Conformes audités / audits terminés (%)',
+      'Conformes cumulés / composants (%)',
+      'BUG RGAA déclarés — audits terminés',
+      'Améliorations liées aux audits',
+      'Composants non couverts',
+      'Audits annulés',
+      'Statuts inconnus',
+      'Composants sans BUG RGAA déclaré — version',
+      'Composants avec BUG RGAA déclaré — version'
+    ],
+    rows: campaigns,
+    latestRows: campaignRows(cumulative)
+  });
+  const distributions = auditDistributionTables(scoped);
+  const cumulativeDistributions = auditDistributionTables(cumulative);
+  for (const table of distributions)
+    table.latestRows = cumulativeDistributions.find((item) => item.id === table.id)!.rows;
+  tables.push(...distributions, auditPlanTable(scoped));
+  return {
+    version: 1,
+    auditLatestVersions: [...latest].map(([libraryId, version]) => ({
+      repository: repo(libraryId),
+      version
+    })),
+    capturedAt: snapshot.capturedAt,
+    reliability: snapshot.reliability,
+    diagnostics: snapshot.dataQuality.issues.length,
+    repositories,
+    campaigns,
+    tables,
+    issues: issues.map((issue) => ({
+      id: issue.issueId,
+      repository: repo(issue.libraryId),
+      title: '#' + issue.number + ' · ' + issue.title,
+      url: safeSourceUrl(issue.url),
+      createdAt: issue.createdAt,
+      state: issue.state,
+      labels: issue.labels,
+      ...(issue.review?.correctionConfirmed && data.anomalies.some((item) => item.issueId === issue.issueId)
+        ? { processing: processingDuration(issue) }
+        : {}),
+      ...(sourceMilestones.has(issue.url) ? { milestone: sourceMilestones.get(issue.url)! } : {}),
+      correction: issue.review?.correctionLabel ?? 'Non confirmée',
+      warnings: issue.review?.warnings ?? []
+    }))
+  };
+}
+/** Construit uniquement un lien de recherche courant pour un repository source effectivement identifié. */
+function repositoryUrl(snapshot: Snapshot, repository: string, suffix: string): string {
+  const source = snapshot.normalizedData.issues?.find(
+    (issue) =>
+      /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(safeSourceUrl(issue.url)) &&
+      !/\.(invalid|test|example)$/.test(new URL(issue.url!).hostname) &&
+      snapshot.normalizedData.libraries.some(
+        (library) => library.libraryId === issue.libraryId && library.repository === repository
+      )
+  );
+  const url = safeSourceUrl(source?.url);
+  return /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(url)
+    ? url.replace(/\/issues\/\d+$/, '/' + suffix)
+    : '';
+}
+
+/** Produit les campagnes et leurs preuves pour le catalogue et les audits du périmètre fourni. */
+function campaignRows(data: NormalizedData): SimpleRow[] {
+  const issues = data.issues ?? [];
+  const issueMap = new Map(issues.map((issue) => [issue.issueId, issue]));
+  /** Résout la provenance du dépôt sans inventer de nom. */
+  const repo = (id: string) => data.libraries.find((library) => library.libraryId === id)?.repository ?? id;
+  /** Déduplique les références des audits de la cellule. */
+  const ids = (audits: NormalizedData['audits']) => [...new Set(audits.map((audit) => audit.issueId))];
   const campaigns: SimpleRow[] = [];
   const keys = new Set([
     ...data.audits.map((audit) => JSON.stringify([audit.libraryId, audit.version])),
@@ -527,72 +636,5 @@ export function simplifiedModel(snapshot: Snapshot) {
       ]
     });
   }
-  tables.push({
-    id: 'campaigns',
-    title: 'Audits et composants par version',
-    description:
-      'En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
-    headers: [
-      'Librairie',
-      'Version',
-      'Composants',
-      'Audits total',
-      'Audits en attente',
-      'Audits en cours',
-      'Audits terminés',
-      'Audits terminés / composants (%)',
-      'Composants conformes cumulés',
-      'Composants non conformes cumulés',
-      'Conformes audités / audits terminés (%)',
-      'Conformes cumulés / composants (%)',
-      'BUG RGAA déclarés — audits terminés',
-      'Améliorations liées aux audits',
-      'Composants non couverts',
-      'Audits annulés',
-      'Statuts inconnus',
-      'Composants sans BUG RGAA déclaré — version',
-      'Composants avec BUG RGAA déclaré — version'
-    ],
-    rows: campaigns
-  });
-  tables.push(...auditDistributionTables(data));
-  return {
-    version: 1,
-    capturedAt: snapshot.capturedAt,
-    reliability: snapshot.reliability,
-    diagnostics: snapshot.dataQuality.issues.length,
-    repositories,
-    campaigns,
-    tables,
-    issues: issues.map((issue) => ({
-      id: issue.issueId,
-      repository: repo(issue.libraryId),
-      title: '#' + issue.number + ' · ' + issue.title,
-      url: safeSourceUrl(issue.url),
-      createdAt: issue.createdAt,
-      state: issue.state,
-      labels: issue.labels,
-      ...(issue.review?.correctionConfirmed && data.anomalies.some((item) => item.issueId === issue.issueId)
-        ? { processing: processingDuration(issue) }
-        : {}),
-      ...(sourceMilestones.has(issue.url) ? { milestone: sourceMilestones.get(issue.url)! } : {}),
-      correction: issue.review?.correctionLabel ?? 'Non confirmée',
-      warnings: issue.review?.warnings ?? []
-    }))
-  };
-}
-/** Construit uniquement un lien de recherche courant pour un repository source effectivement identifié. */
-function repositoryUrl(snapshot: Snapshot, repository: string, suffix: string): string {
-  const source = snapshot.normalizedData.issues?.find(
-    (issue) =>
-      /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(safeSourceUrl(issue.url)) &&
-      !/\.(invalid|test|example)$/.test(new URL(issue.url!).hostname) &&
-      snapshot.normalizedData.libraries.some(
-        (library) => library.libraryId === issue.libraryId && library.repository === repository
-      )
-  );
-  const url = safeSourceUrl(source?.url);
-  return /^https:\/\/[^/@?#:\s]+(?::\d+)?\/[^/]+\/[^/]+\/issues\/\d+$/.test(url)
-    ? url.replace(/\/issues\/\d+$/, '/' + suffix)
-    : '';
+  return campaigns;
 }

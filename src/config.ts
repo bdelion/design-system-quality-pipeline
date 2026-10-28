@@ -9,6 +9,8 @@ import 'dotenv/config';
 
 /** Paramètres de lecture des issues et pull requests GitHub. */
 export interface GithubProcessingConfig {
+  /** Versions minimales inclusives du suivi d’audit par owner/repository ; dépôt absent exclu. */
+  auditTracking?: import('./domain/audit-tracking.js').AuditTracking;
   /** Conventions métier validées pour les labels et les motifs de résolution. */
   issuePolicy?: import('./domain/issue-policy.js').IssuePolicy;
   /** Variantes explicites de labels accessibilité, communes ou par repository. */

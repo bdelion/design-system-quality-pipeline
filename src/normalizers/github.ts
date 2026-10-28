@@ -46,6 +46,7 @@ const collectedStatus: DataQualityStatus = 'reliable';
  * évaluées par la couche Data Quality. Le package borne les versions et populations
  * accessibilité ; l’activité des issues futures reste conservée.
  * Les stratégies d’audit explicites sont prioritaires sur les anciennes inférences de type.
+ * Les bornes de suivi et les évolutions historiques explicites sont conservées pour Analytics.
  *
  * @param raw - Données collectées, incluant les repositories et leurs événements.
  * @param rules - Règles de correspondance et de spécialisation GitHub.
@@ -354,6 +355,7 @@ export function normalizeGithub(
           componentVersionId: stableId('component-version', `${componentId}:${version.versionId}`),
           componentId,
           versionId: version.versionId,
+          change: observation.change,
           provenance,
           dataQualityStatus: 'reliable'
         });
@@ -853,6 +855,7 @@ export function normalizeGithub(
   }
 
   const normalized: NormalizedData = {
+    ...(rules.auditTracking !== undefined ? { auditTracking: structuredClone(rules.auditTracking) } : {}),
     libraries,
     components: mergeComponents(historicalComponentsById, componentsByName),
     issues,

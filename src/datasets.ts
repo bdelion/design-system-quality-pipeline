@@ -5,6 +5,7 @@ import { parse, stringify } from 'yaml';
 import type { RawDataset } from './domain/types.js';
 import type { PipelineConfig } from './config.js';
 import { validateMilestoneDetection } from './config.js';
+import { validateAuditTracking } from './domain/audit-tracking.js';
 import { validateIssuePolicy } from './domain/issue-policy.js';
 import { validateAccessibilityRecognition } from './domain/accessibility.js';
 import { validateCatalogue, type Catalogue } from './catalogue.js';
@@ -289,6 +290,7 @@ export function validateDatasetConfig(value: unknown): asserts value is Pipeline
   if (config.github.milestoneDetection === null)
     throw new Error('Conventions DSQ : règles de milestones invalides.');
   validateMilestoneDetection(config.github.milestoneDetection);
+  validateAuditTracking(config.github.auditTracking);
   validateAccessibilityRecognition(config.github.accessibilityRecognition);
   validateIssuePolicy(config.github.issuePolicy);
 }
@@ -744,11 +746,12 @@ async function publishEnrichedDataset(
   }
 }
 
-/** Collecte depuis la liste seule, conserve le profil DSQ appliqué et refuse tout écrasement du RAW. */
+/** Collecte les seuls dépôts demandés et embarque leur contexte, dont les bornes d’audit locales facultatives. */
 export async function collectRepositories(
   repositories: string[],
   output: string,
-  options: GithubQuotaOptions = {}
+  options: GithubQuotaOptions = {},
+  auditTrackingPath?: string
 ): Promise<RawDataset> {
   try {
     await lstat(output);
@@ -757,6 +760,12 @@ export async function collectRepositories(
     if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error;
   }
   const config = await dsqConfig(repositories);
+  if (auditTrackingPath) {
+    const tracking = await readDatasetJson(auditTrackingPath);
+    validateAuditTracking(tracking);
+    if (tracking === undefined) throw new Error('Fichier de bornes d’audit vide.');
+    config.github.auditTracking = tracking;
+  }
   const raw = await collectGithub({
     ...options,
     token: githubTokenFromEnvironment(),

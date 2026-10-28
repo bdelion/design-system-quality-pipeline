@@ -20,6 +20,7 @@ export type StableMapper = (namespace: string, source: string, prefix: string) =
  * Produit la configuration fixture à partir du périmètre du RAW source.
  *
  * Le périmètre provient du RAW et non de system.yaml afin de décrire exactement la fixture produite.
+ * Les bornes d’audit suivent les mêmes alias owner/repository ; aucun dépôt hors capture n’est conservé.
  */
 export function anonymizePipelineConfig(
   config: PipelineConfig,
@@ -37,6 +38,26 @@ export function anonymizePipelineConfig(
 
   return {
     ...config,
+    github: {
+      ...config.github,
+      ...(config.github.auditTracking !== undefined
+        ? {
+            auditTracking: Object.fromEntries(
+              source.repositories.flatMap((repository) => {
+                const minimum = config.github.auditTracking?.[`${repository.owner}/${repository.name}`];
+                return minimum === undefined
+                  ? []
+                  : [
+                      [
+                        `${map('owner', repository.owner, 'owner')}/${map('repository', repository.name, 'repo')}`,
+                        minimum
+                      ]
+                    ];
+              })
+            )
+          }
+        : {})
+    },
     githubOwner: map('owner', owners[0]!, 'owner'),
     repositories: source.repositories.map((repository) => map('repository', repository.name, 'repo')),
     githubApiUrl: undefined,

@@ -1,4 +1,5 @@
 import type { Audit, ComponentVersion, Issue, Snapshot } from '../domain/types.js';
+import { auditTrackingData } from '../domain/audit-tracking.js';
 import { anomaliesForAudit, auditVersionLabel } from './audit-relations.js';
 import { latestCompletedAudit } from './audit-selection.js';
 import { auditProgress, issueClassification } from '../domain/business.js';
@@ -36,9 +37,9 @@ export function auditLifecycle(
   return { progress, verdict: progress === 'completed' ? audit.objectiveAuditResult : null };
 }
 
-/** Vue partagée, traçable et stable des audits, par composant et version canonique. */
+/** Restitue les audits du périmètre suivi, avec leurs preuves et leur version canonique. */
 export function auditReadModel(snapshot: Snapshot) {
-  const { audits, issues, anomalies, versions } = snapshot.normalizedData;
+  const { audits, issues, anomalies, versions } = auditTrackingData(snapshot.normalizedData);
   const versionById = new Map((versions ?? []).map((version) => [version.versionId, version]));
   return audits.map((audit) => {
     const relation = anomaliesForAudit(audit, anomalies, issues ?? []);

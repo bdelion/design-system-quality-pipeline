@@ -1,4 +1,5 @@
 import { reviewContext } from './review-output.js';
+import { auditScopeSnapshot } from '../analytics/audit-scope.js';
 import { dashboardChoice, generateSimplifiedDashboard } from './simplified.js';
 import { paginationContent } from './assets/pagination.js';
 import { presentCaptureDate } from './assets/snapshot-context.js';
@@ -57,6 +58,7 @@ const dashboardAssetSource = resolve(fileURLToPath(new URL('./assets', import.me
  *
  * Cette couche restitue les indicateurs ; elle ne doit pas recalculer les
  * règles métier de normalisation ni les formules analytiques.
+ * La page d’audit utilise la projection Analytics du périmètre suivi ; les autres pages gardent l’historique.
  *
  * @param snapshot - Snapshot immuable à présenter.
  * @param outputRoot - Répertoire racine de sortie (sous-dossier `dashboard`).
@@ -71,11 +73,12 @@ export async function generateClassicDashboard(
 ): Promise<void> {
   resetDashboardReadModel(snapshot);
   resetWorkspaceModel(snapshot);
+  const auditSnapshot = auditScopeSnapshot(snapshot);
   const dashboardPath = targetPath ?? resolve(outputRoot, 'dashboard');
   await mkdir(resolve(dashboardPath, 'assets'), { recursive: true });
   /** Construit uniquement le contrat du parcours demandé, sans RAW ni snapshot complet. */
   const pageModel = (id: import('./page-read-model.js').DashboardPage) =>
-    dashboardPageModel(snapshot, id, githubUrl, componentPrefix);
+    dashboardPageModel(id === 'audits' ? auditSnapshot : snapshot, id, githubUrl, componentPrefix);
   // Les assets sont lus depuis des fichiers dédiés afin que le HTML reste limité à la structure et aux données.
   await Promise.all([
     writeFile(
@@ -110,12 +113,12 @@ export async function generateClassicDashboard(
     writeFile(
       resolve(dashboardPath, 'audits.html'),
       page(
-        snapshot,
+        auditSnapshot,
         'Audits et composants',
-        workspaceCards(snapshot, true) +
-          businessReviewContent(snapshot) +
-          auditsContent(snapshot, githubUrl) +
-          componentPopulationContent(snapshot),
+        workspaceCards(auditSnapshot, true) +
+          businessReviewContent(auditSnapshot) +
+          auditsContent(auditSnapshot, githubUrl) +
+          componentPopulationContent(auditSnapshot),
         pageModel
       ),
       'utf8'

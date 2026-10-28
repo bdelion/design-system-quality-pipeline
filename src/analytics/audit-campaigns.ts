@@ -1,4 +1,5 @@
 import { auditProgress, issueBusinessState } from '../domain/business.js';
+import { auditTrackingData } from '../domain/audit-tracking.js';
 import type { DataQualityIssue, DataQualityStatus, NormalizedData } from '../domain/types.js';
 
 /** Stocks d’audits pour un repository et une version cible, sans héritage ni couverture historique. */
@@ -17,11 +18,12 @@ export interface AuditCampaignSummary {
   sourceIssueIds: string[];
 }
 
-/** Agrège les audits par version cible et leurs seuls enfants explicites ; conserve les résultats incomplets sans verdict. */
+/** Agrège les audits du périmètre suivi par version cible et enfants explicites, sans verdict pour les incomplets. */
 export function auditCampaigns(
   data: NormalizedData,
   diagnostics: readonly DataQualityIssue[] = []
 ): AuditCampaignSummary[] {
+  data = auditTrackingData(data);
   const groups = new Map<string, typeof data.audits>();
   for (const audit of data.audits) {
     const key = JSON.stringify([audit.libraryId, audit.version]);
