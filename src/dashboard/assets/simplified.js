@@ -8,12 +8,15 @@ const state = new Map();
 const issueById = new Map(model.issues.map((issue) => [issue.id, issue]));
 const content = document.getElementById('content');
 const form = document.getElementById('context');
+const repositoryNames = Array.from(form.elements.repository.options)
+  .map((option) => option.value)
+  .filter(Boolean);
 const spaces = {
   summary: ['priorities'],
   components: ['component-activity', 'components'],
   activity: ['activity'],
   team: ['repositories', 'delays'],
-  versions: ['campaigns', 'audit-criticality', 'audit-category', 'audit-component']
+  versions: ['campaigns', 'audit-criticality', 'audit-category', 'audit-component', 'audit-plan']
 };
 const labels = {
   summary: 'Que faut-il faire maintenant ?',
@@ -344,15 +347,16 @@ function compare(a, b, direction) {
       : String(a).localeCompare(String(b), 'fr', { numeric: true, sensitivity: 'base' }))
   );
 }
-/** Filtre contexte et population avant tri, pagination et export, sans recalcul métier. */
+/** Sélectionne la projection par version ou latest avant filtres, tri, pagination et export, sans recalcul métier. */
 function selected(table, local) {
   const repo = form.elements.repository.value;
   const version = form.elements.version.value.toLowerCase();
-  return table.rows
+  return (local.latest && table.latestRows ? table.latestRows : table.rows)
     .filter(
       (row) =>
         (!repo || row.repository === repo) &&
         (!version ||
+          local.latest ||
           ['repositories', 'delays', 'component-activity'].includes(table.id) ||
           row.version.toLowerCase().includes(version)) &&
         row.cells.some((cell) => display(cell.value).toLowerCase().includes(local.search.toLowerCase())) &&
@@ -391,6 +395,34 @@ function mount(table) {
   markReview('s2r', element('p', table.description, panel)).className = 'description';
   const tools = markReview('s2s', element('div', undefined, panel));
   tools.className = 'toolbar';
+  if (table.latestRows) {
+    const latestLabel = markReview('audit-latest-label', element('label', 'Latest version ', tools));
+    const latest = markReview('audit-latest-checkbox', element('input', undefined, latestLabel));
+    latest.type = 'checkbox';
+    latest.checked = Boolean(local.latest);
+    const versions = markReview('audit-latest-versions', element('span', '', tools));
+    /** Affiche les versions déjà sélectionnées par Analytics sans comparaison dans le navigateur. */
+    function latestCaption() {
+      versions.textContent =
+        [
+          ...new Set(
+            (model.auditLatestVersions ?? table.latestRows)
+              .filter(
+                (row) => !form.elements.repository.value || row.repository === form.elements.repository.value
+              )
+              .map((row) => row.repository + ' : ' + row.version)
+          )
+        ].join(' · ') || 'Aucune version suivie';
+      versions.textContent += latest.checked ? ' — cumul, filtre Version ignoré pour ce tableau' : '';
+    }
+    latestCaption();
+    latest.addEventListener('change', () => {
+      local.latest = latest.checked;
+      local.page = 0;
+      latestCaption();
+      draw();
+    });
+  }
   if (table.populationColumns) {
     const populationLabel = markReview(
       'review-population-label',
@@ -462,6 +494,7 @@ function mount(table) {
       size: local.size,
       sort: local.sort,
       direction: local.direction,
+      latest: Boolean(local.latest),
       from: local.from,
       to: local.to,
       population: local.population
@@ -526,6 +559,7 @@ function mount(table) {
       size: local.size,
       sort: local.sort,
       direction: local.direction,
+      latest: Boolean(local.latest),
       from: local.from,
       to: local.to
     });
@@ -608,6 +642,32 @@ function mount(table) {
 }
 /** Affiche uniquement les espaces demandés avec un contexte visible et partagé. */
 function render() {
+  const repository = form.elements.repository;
+  const previous = repository.value;
+  const repositories =
+    space === 'versions'
+      ? [...new Set(model.tables.find((table) => table.id === 'campaigns').rows.map((row) => row.repository))]
+      : repositoryNames;
+  repository.replaceChildren();
+  element('option', 'Tous', repository).value = '';
+  for (const name of repositories) element('option', name, repository).value = name;
+  repository.value = repositories.includes(previous) ? previous : '';
+  let choices = document.getElementById('audit-version-choices');
+  if (!choices) {
+    choices = element('datalist', undefined, form);
+    choices.id = 'audit-version-choices';
+  }
+  choices.replaceChildren();
+  if (space === 'versions') {
+    form.elements.version.setAttribute('list', choices.id);
+    for (const number of new Set(
+      model.tables
+        .find((table) => table.id === 'campaigns')
+        .rows.filter((row) => !repository.value || row.repository === repository.value)
+        .map((row) => row.version)
+    ))
+      element('option', number, choices).value = number;
+  } else form.elements.version.removeAttribute('list');
   form.elements.version.disabled = space === 'team';
   content.replaceChildren();
   document.getElementById('heading').textContent = labels[space];

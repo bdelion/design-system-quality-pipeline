@@ -368,3 +368,6 @@ Source : `docs/00-cadrage/questions-ouvertes.md` depuis la racine.
 | 5505           | D-244 — Revue métier des issues, corrections et audits du 19 octobre 2026                                     |
 | 5513           | D-245 — Durée de traitement des corrections confirmées dans la vue synthétique                                |
 | 5521           | D-246 — Lecture déclarative des campagnes distincte des verdicts métier                                       |
+| 5529           | D-247 — Version minimale du suivi d’audit par dépôt                                                           |
+| 5535           | D-248 — Vue cumulée latest des audits                                                                         |
+| 5541           | D-249 — Identification des composants à auditer                                                               |

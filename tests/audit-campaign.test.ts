@@ -8,6 +8,7 @@ import type { RawDataset, RawIssue } from '../src/domain/types.js';
 
 it('issue #49 : stratégies explicites, bugs parentés et améliorations restent distincts', async () => {
   const config = await dsqConfig(['example/react']);
+  config.github.auditTracking = { 'example/react': '1.7.1' };
   /** Produit une preuve d’issue synthétique, sans données personnelles de la collecte. */
   function issue(number: number, rawIssueType: string, component: string): RawIssue {
     return {

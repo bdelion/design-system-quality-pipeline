@@ -81,6 +81,17 @@ const source: RawDataset = {
 };
 
 describe('anonymized configuration', () => {
+  it('anonymise les bornes d’audit avec les mêmes alias que les dépôts sans conserver les noms source', () => {
+    const input = structuredClone(config);
+    input.github.auditTracking = { 'source-org/source-react': '1.7.1', 'outside/repo': '1.0.0' };
+    const map = createAnonymizationMapper('seed');
+    const result = anonymizePipelineConfig(input, source, map);
+    expect(result.github.auditTracking).toEqual({
+      [`${map('owner', 'source-org', 'owner')}/${map('repository', 'source-react', 'repo')}`]: '1.7.1'
+    });
+    expect(input.github.auditTracking).toHaveProperty('source-org/source-react');
+    expect(JSON.stringify(result.github.auditTracking)).not.toContain('source-org');
+  });
   it('derives repository scope and owner from the source RAW dataset', () => {
     const map = createAnonymizationMapper('seed');
     const result = anonymizePipelineConfig(config, source, map);

@@ -41,6 +41,7 @@ it('préserve la déclaration et ne fabrique ni cellule, ni absence antérieure,
     (relation) => relation.componentId === component.componentId
   );
   expect(relations).toHaveLength(1);
+  expect(relations[0]!.change).toBe('unspecified');
   expect(relations[0]!.provenance.sourceId).toContain('local-declaration:1.1.0:confirmation-20261028');
   expect(relations[0]!.verdict).not.toBe('CONFORME');
   expect(

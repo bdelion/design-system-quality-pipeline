@@ -2,6 +2,12 @@
 
 > **Présentation A appliquée au code le 24 octobre 2026 :** [maquette validée des fenêtres GitHub](dashboard-fenetres-github-maquette-a.md). Un accès global dans l’en-tête de la fenêtre ; aucun raccourci supplémentaire dans les cartes ou tableaux, aucun lot.
 
+Le [suivi borné, le mode latest et les composants à auditer (#132–#134)](suivi-audits-132-134.md)
+complètent les tableaux. La mesure de ces ajouts sur control/81 inchangée est de
+68 972 octets HTML, 65 873 octets JSON et 1 570 nœuds DOM maximum ; le maximum de
+24 lignes initiales et les budgets classiques sont conservés. Les mesures
+antérieures ci-dessous restent historiques.
+
 **FAIT / IMPLÉMENTÉ** : chaque exécution de `pipeline` produit les deux présentations, sans option de sélection. Le snapshot, les conventions métier et les verdicts sont communs ; aucune source du dataset n’est modifiée.
 
 ```text

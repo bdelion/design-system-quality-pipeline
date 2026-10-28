@@ -293,6 +293,8 @@ export interface Version {
 
 /** Présence historique explicite d'un Component dans une Version. */
 export interface ComponentVersion {
+  /** Évolution explicitement observée ; une présence seule ne prouve pas une modification. */
+  change?: import('../historical-components.js').HistoricalComponentObservation['change'];
   componentVersionId: string;
   componentId: string;
   versionId: string;
@@ -510,6 +512,8 @@ export interface Analytics {
  * Agrégat des entités métier normalisées.
  */
 export interface NormalizedData {
+  /** Périmètre d’audit appliqué ; absent uniquement dans les contrats historiques. */
+  auditTracking?: import('./audit-tracking.js').AuditTracking;
   /** Conventions effectivement appliquées pour reproduire la qualification. */
   reviewPolicy?: { algorithm: 'issue-review-v1'; configuration: import('./issue-policy.js').IssuePolicy };
   libraries: Library[];

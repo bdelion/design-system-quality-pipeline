@@ -8,6 +8,14 @@ doivent pas être interprétées comme des décomptes de conformité.
 
 ## Les cinq fichiers locaux à sauvegarder
 
+Pour le nouveau suivi, conserver aussi les fichiers locaux de bornes d’audit
+réelles et anonymisées et passer `--audit-tracking` à la collecte/au rejeu.
+Voir le [paramétrage et les règles #132–#134](suivi-audits-132-134.md).
+Le rejeu du dataset actuel utilise `config/local/audit-tracking-anonymise.json`
+avec `commun/demo-react: 1.7.1`. Ce fichier ignoré doit être sauvegardé avec les
+autres configurations privées ; ne pas le réutiliser tel quel pour un dépôt
+réel dont l’owner diffère.
+
 Ces fichiers ont été modifiés ou créés pendant les corrections. Ils sont tous
 ignorés par `/config/local/` dans `.gitignore` : **un push ne les sauvegardera pas**.
 

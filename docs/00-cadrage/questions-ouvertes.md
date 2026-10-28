@@ -5525,3 +5525,21 @@ Les bornes et la provenance Project/repli GitHub doivent être visibles. Done et
 Les colonnes propres à la campagne de version retiennent uniquement les audits terminés et leurs enfants de type GitHub BUG explicite avec un label RGAA, selon les variantes de type et le préfixe configurés. Elles distinguent les composants sans/avec BUG RGAA déclaré et le nombre d’issues BUG RGAA déclarées. Le lien parent reste compté même si le composant du Bug diffère ; son propre composant et les réserves DQ ne sont pas réécrits.
 
 L’absence de BUG déclaré dans ce périmètre ne prouve pas la conformité RGAA. Cette lecture ne remplace ni la reconnaissance de BUG par labels ni les verdicts métier cumulés de D-244. Une preuve déclarative absente d’un ancien snapshot est indisponible, pas zéro. Le [diagnostic et les compteurs reproduits](../08-implementation/diagnostic-124-128-20261027.md) expliquent les 12 composants sans BUG déclaré et 29 issues du cas fourni.
+
+### D-247 — Version minimale du suivi d’audit par dépôt
+
+**Statut : Établi — validation utilisateur du 28 octobre 2026, issue #132**
+
+Chaque dépôt suivi déclare une version minimale SemVer inclusive. Les versions antérieures et les dépôts sans borne sont exclus du suivi d’audit, sans suppression de l’activité des équipes ni de l’historique. Le premier paramétrage demandé est demo-react à partir de 1.7.1. Les anciens snapshots sans ce paramètre gardent leur contrat historique ; un rejeu explicite applique le nouveau périmètre.
+
+### D-248 — Vue cumulée latest des audits
+
+**Statut : Établi — validation utilisateur du 28 octobre 2026, issue #133**
+
+Latest désigne la plus haute version publiée (tag PROD prouvé) ou explicitement déclarée en développement par dépôt. Une simple version future sans ces preuves ne devient pas latest : dans le dataset revu, 1.8.0 prévaut donc sur la référence future 1.9.0 sans catalogue ni audit. Les répartitions cumulent les anomalies distinctes des audits suivis jusqu’à latest ; le catalogue est celui de latest, sans additionner les composants des différentes versions. La cohorte terminée applicable détermine le verdict ; le traitement des anomalies ne rétablit pas automatiquement la conformité (D-223, D-226, D-244). Les déclarations restent séparées des verdicts (D-246).
+
+### D-249 — Identification des composants à auditer
+
+**Statut : Établi — validation utilisateur du 28 octobre 2026, issue #134**
+
+Les besoins concernent les composants sans audit terminé dans le périmètre suivi, ceux ayant évolué explicitement dans la version en développement et ceux dont tous les retours d’audit ont été traités sans audit terminé ultérieur. Les corrections confirmées et les annulations comptent comme traitées. Une inconnue empêche de conclure que tous les retours sont traités ; les dates et les évolutions absentes restent des réserves explicites. Voir la [restitution et la configuration](../08-implementation/suivi-audits-132-134.md).

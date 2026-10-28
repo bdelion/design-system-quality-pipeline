@@ -98,7 +98,7 @@ test('#124–#128 : ancienneté civile, traitement, liens de cohortes et répart
     await criticality.getByLabel('Population représentée').selectOption('4');
     await expect(criticality.locator('tbody')).toHaveText('Aucun résultat pour ces filtres.');
     await criticality.getByLabel('Population représentée').selectOption('3');
-    await page.getByRole('searchbox', { name: 'Version', exact: true }).fill('2.0.0');
+    await page.getByLabel('Version', { exact: true }).fill('2.0.0');
     await expect(criticality.locator('tbody')).toHaveText('Aucun résultat pour ces filtres.');
     await page.getByRole('button', { name: 'Effacer les filtres', exact: true }).click();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);

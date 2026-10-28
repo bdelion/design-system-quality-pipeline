@@ -4,6 +4,14 @@
 - Suppression des barres comparatives sur Total et les autres effectifs ; inconnus conservés dans le dénominateur et hors du nombre traité.
 - Nouvelle mesure de la seule fonctionnalité sur la fixture de contrôle inchangée ; budgets classiques et croissance hors fonctionnalités à 0 % conservés.
 
+## Périmètre et planification des audits (#132–#134) — non publiée
+
+- Configuration SemVer minimale par dépôt ; dépôt non configuré exclu du suivi, activité et historique conservés.
+- Mode Latest version indépendant dans les quatre tableaux : anomalies cumulées, catalogue latest sans doublons, développement inclus et verdicts applicables préservés.
+- Latest retient une publication prouvée ou une version explicitement en développement ; une référence future isolée ne suffit pas et ses audits restent hors du cumul.
+- Liste des composants à auditer : absence d’audit terminé, évolutions explicites et retours tous traités, avec audits en cours, preuves et réserves sur les données inconnues.
+- Options `--audit-tracking` pour la collecte et le rejeu ; anonymisation des clés avec les alias des dépôts.
+
 ## Primauté des audits applicables — non publiée
 
 - Correction de D-227/D-228 : les défauts hors audit ne remplacent plus les verdicts de Component × Version ; les défauts et réserves individuels restent visibles.
