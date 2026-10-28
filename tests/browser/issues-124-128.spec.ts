@@ -66,6 +66,11 @@ test('#124–#128 : ancienneté civile, traitement, liens de cohortes et répart
       await expect(distribution.getByLabel('Trier par', { exact: true })).toHaveValue('3');
       await expect(distribution.getByLabel('Ordre', { exact: true })).toHaveValue('-1');
       await expect(distribution.getByRole('columnheader', { name: /Reste à faire/ })).toBeVisible();
+      await expect(distribution.getByRole('columnheader', { name: /Traités/ })).toBeVisible();
+      await expect(distribution.locator('td').filter({ has: page.locator('progress') })).toHaveCount(1);
+      await expect(
+        distribution.locator('tbody tr').first().locator('td').nth(3).locator('progress, meter')
+      ).toHaveCount(0);
       await expect(distribution.getByRole('columnheader', { name: /^Total/ })).toHaveAttribute(
         'aria-sort',
         'descending'
@@ -73,10 +78,19 @@ test('#124–#128 : ancienneté civile, traitement, liens de cohortes et répart
     }
     await expect(criticality.locator('tbody tr')).toHaveCount(1);
     await criticality.getByLabel('Population représentée').selectOption('5');
-    await expect(criticality.locator('meter')).toHaveAttribute('value', '1');
+    await expect(criticality.locator('progress')).toHaveAttribute('value', '100');
+    await expect(criticality.locator('progress')).toHaveAttribute('max', '100');
+    await expect(criticality.locator('tbody tr').first().locator('td').nth(8)).toContainText('1/1 — 100 %');
     const download = page.waitForEvent('download');
     await criticality.getByRole('button', { name: 'Exporter en CSV', exact: true }).click();
-    expect(await readFile((await (await download).path())!, 'utf8')).toContain('Majeure');
+    const csv = await readFile((await (await download).path())!, 'utf8');
+    expect(csv).toContain('Majeure');
+    expect(csv).toContain('Traités');
+    expect(csv).toContain('1/1 — 100 %');
+    await criticality.locator('tbody tr').first().locator('td').nth(8).getByRole('button').click();
+    await expect(page.getByRole('dialog')).toContainText('Traités');
+    await expect(page.getByRole('dialog').locator('tbody tr')).toHaveCount(1);
+    await page.keyboard.press('Escape');
     await criticality.locator('tbody tr').first().locator('td').nth(5).getByRole('button').click();
     await expect(page.getByRole('dialog')).toContainText('Repli GitHub');
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);

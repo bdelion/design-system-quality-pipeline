@@ -407,8 +407,8 @@ select {
   margin: 0;
 }
 
-/* Le graphique complète le nombre cliquable et conserve une largeur bornée sur mobile. */
-meter {
+/* La progression complète le ratio traité cliquable et reste bornée sur mobile. */
+progress {
   width: 5rem;
   max-width: 30vw;
   margin-right: 0.4rem;

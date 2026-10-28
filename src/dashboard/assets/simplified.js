@@ -372,7 +372,7 @@ function selected(table, local) {
       )
     );
 }
-/** Installe les tableaux ; les répartitions commencent par Total décroissant, avant pagination et export. */
+/** Installe les tableaux et la progression calculée par Analytics ; les répartitions commencent par Total décroissant. */
 function mount(table) {
   const local = state.get(table.id) || {
     page: 0,
@@ -543,12 +543,11 @@ function mount(table) {
       row.cells.forEach((cell, index) => {
         const td = markReview('s3e', element('td', undefined, tr));
         td.dataset.reviewKey = 'field:' + index;
-        if (table.populationColumns && index === Number(local.population ?? 3)) {
-          const meter = markReview('review-distribution-meter', element('meter', undefined, td));
-          meter.min = 0;
-          meter.max = Math.max(1, ...rows.map((item) => Number(item.cells[index].value)));
-          meter.value = Number(cell.value);
-          meter.setAttribute('aria-label', row.cells[2].value + ' — ' + table.headers[index]);
+        if (index === table.progressColumn && typeof cell.sortValue === 'number') {
+          const progress = markReview('review-treatment-progress', element('progress', undefined, td));
+          progress.max = 100;
+          progress.value = cell.sortValue;
+          progress.setAttribute('aria-label', row.cells[2].value + ' — Traités : ' + display(cell.value));
         }
         const labelRefs =
           typeof cell.value === 'string' && !cell.refs && !cell.url

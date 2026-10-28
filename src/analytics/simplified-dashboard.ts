@@ -29,8 +29,10 @@ export interface SimpleRow {
 }
 /** Contrat d’un tableau, indépendant de sa pagination dans le navigateur. */
 export interface SimpleTable {
-  /** Colonnes de populations proposées au filtre et au graphique de répartition. */
+  /** Colonnes de populations proposées au filtre de répartition. */
   populationColumns?: number[];
+  /** Colonne de progression dont le pourcentage est calculé par Analytics dans sortValue. */
+  progressColumn?: number;
   id: string;
   title: string;
   description: string;

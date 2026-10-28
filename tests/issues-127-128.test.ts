@@ -44,7 +44,11 @@ it('#128 : réconcilie restant, réalisé, annulé et inconnu sans transformer l
     data.anomalies.push({ ...anomaly, anomalyId: issue.issueId, issueId: issue.issueId });
   }
   const table = simplifiedModel(snapshot).tables.find((item) => item.id === 'audit-criticality')!;
-  expect(table.rows[0]!.cells.slice(3).map((cell) => cell.value)).toEqual([4, 1, 1, 1, 1]);
+  expect(table.rows[0]!.cells.slice(3, 8).map((cell) => cell.value)).toEqual([4, 1, 1, 1, 1]);
+  expect(table.headers[8]).toBe('Traités');
+  expect(table.rows[0]!.cells[8]!.value).toBe('2/4 — 50 %');
+  expect(table.rows[0]!.cells[8]!.sortValue).toBe(50);
+  expect(table.rows[0]!.cells[8]!.refs).toEqual(['anomaly-a', 'population-1']);
 });
 
 it('#127/#128 : exclut une anomalie non enfant de l’audit et répartit uniquement les enfants explicites', () => {

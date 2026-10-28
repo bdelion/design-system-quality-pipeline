@@ -10,6 +10,9 @@ Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)
 
 ## Démarrer sans GitHub
 
+Dans les trois répartitions d’anomalies d’audit, la colonne **Traités** affiche
+la progression `(Réalisé + Annulées) / Total`, avec ses preuves et son export CSV.
+
 Pour conserver les corrections DateBox/Live Zone lors des prochaines collectes,
 voir les [fichiers locaux à sauvegarder et commandes de reprise](docs/08-implementation/reprise-locale-dashboards.md).
 

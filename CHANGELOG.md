@@ -1,3 +1,9 @@
+## Progression du traitement des anomalies — non publiée
+
+- Colonnes Traités dans les répartitions par criticité, critère et composant : (Réalisé + Annulées) / Total, numérateur/total, pourcentage, barre accessible et preuves exactes.
+- Suppression des barres comparatives sur Total et les autres effectifs ; inconnus conservés dans le dénominateur et hors du nombre traité.
+- Nouvelle mesure de la seule fonctionnalité sur la fixture de contrôle inchangée ; budgets classiques et croissance hors fonctionnalités à 0 % conservés.
+
 ## Primauté des audits applicables — non publiée
 
 - Correction de D-227/D-228 : les défauts hors audit ne remplacent plus les verdicts de Component × Version ; les défauts et réserves individuels restent visibles.
