@@ -30,7 +30,7 @@ export function auditChildAnomalies(data: NormalizedData, audits: Audit[]) {
   ];
 }
 
-/** Prépare les trois répartitions par campagne ; chaque case conserve ses issues distinctes et ses inconnues. */
+/** Prépare les répartitions et la progression (réalisées + annulées) / total avec leurs preuves distinctes. */
 export function auditDistributionTables(data: NormalizedData): SimpleTable[] {
   const anomalies = auditChildAnomalies(data, data.audits);
   const audits = new Map(data.audits.map((audit) => [audit.auditId, audit]));
@@ -75,9 +75,20 @@ export function auditDistributionTables(data: NormalizedData): SimpleTable[] {
       id: 'audit-' + dimension,
       title: 'Anomalies d’audit — ' + name.toLocaleLowerCase('fr'),
       description:
-        'Issues distinctes liées aux audits de la version, sans héritage. Réalisé = correction confirmée (Done + PR fusionnée), sans preuve automatique de conformité. Annulées et états inconnus séparés. Une issue multi-critères/composants peut apparaître dans plusieurs lignes.',
-      headers: ['Librairie', 'Version', name, 'Total', 'Restant', 'Réalisé', 'Annulées', 'Statut inconnu'],
+        'Issues distinctes des audits de la version. Réalisé = Done + PR fusionnée. Traités = (Réalisé + Annulées) / Total ; inconnus non traités. Ni correction ni annulation ne prouvent la conformité. Une issue multi-critères/composants peut apparaître dans plusieurs lignes.',
+      headers: [
+        'Librairie',
+        'Version',
+        name,
+        'Total',
+        'Reste à faire',
+        'Réalisé',
+        'Annulées',
+        'Statut inconnu',
+        'Traités'
+      ],
       populationColumns: [3, 4, 5],
+      progressColumn: 8,
       rows: [...groups.entries()].map(([key, group]) => {
         const ids = [...new Set(group.ids)];
         const populations = [
@@ -97,6 +108,8 @@ export function auditDistributionTables(data: NormalizedData): SimpleTable[] {
             })
           )
         ];
+        const treated = [...new Set([...populations[2]!, ...populations[3]!])];
+        const percentage = ids.length ? (100 * treated.length) / ids.length : null;
         return {
           reviewKey: key,
           repository: group.repository,
@@ -105,7 +118,15 @@ export function auditDistributionTables(data: NormalizedData): SimpleTable[] {
             { value: group.repository },
             { value: group.version },
             { value: group.label },
-            ...populations.map((refs) => ({ value: refs.length, refs }))
+            ...populations.map((refs) => ({ value: refs.length, refs })),
+            {
+              value:
+                percentage === null
+                  ? null
+                  : `${treated.length}/${ids.length} — ${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(percentage)} %`,
+              sortValue: percentage,
+              refs: treated
+            }
           ]
         };
       })

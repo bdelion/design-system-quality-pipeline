@@ -372,14 +372,14 @@ function selected(table, local) {
       )
     );
 }
-/** Installe tableau, filtre de population et représentation des effectifs déjà calculés. */
+/** Installe les tableaux et la progression calculée par Analytics ; les répartitions commencent par Total décroissant. */
 function mount(table) {
   const local = state.get(table.id) || {
     page: 0,
     size: 25,
     search: '',
-    sort: 0,
-    direction: 1,
+    sort: table.populationColumns ? 3 : 0,
+    direction: table.populationColumns ? -1 : 1,
     from: '',
     to: ''
   };
@@ -543,12 +543,11 @@ function mount(table) {
       row.cells.forEach((cell, index) => {
         const td = markReview('s3e', element('td', undefined, tr));
         td.dataset.reviewKey = 'field:' + index;
-        if (table.populationColumns && index === Number(local.population ?? 3)) {
-          const meter = markReview('review-distribution-meter', element('meter', undefined, td));
-          meter.min = 0;
-          meter.max = Math.max(1, ...rows.map((item) => Number(item.cells[index].value)));
-          meter.value = Number(cell.value);
-          meter.setAttribute('aria-label', row.cells[2].value + ' — ' + table.headers[index]);
+        if (index === table.progressColumn && typeof cell.sortValue === 'number') {
+          const progress = markReview('review-treatment-progress', element('progress', undefined, td));
+          progress.max = 100;
+          progress.value = cell.sortValue;
+          progress.setAttribute('aria-label', row.cells[2].value + ' — Traités : ' + display(cell.value));
         }
         const labelRefs =
           typeof cell.value === 'string' && !cell.refs && !cell.url
@@ -569,7 +568,9 @@ function mount(table) {
                 ? { state: 'open', requireState: true, directSingle: false }
                 : table.id === 'component-activity' && [6, 7, 8, 11].includes(index)
                   ? { allowBroader: false }
-                  : {}
+                  : space === 'versions'
+                    ? { matchLabels: false }
+                    : {}
             )
           );
         } else markReview('s3g', element('span', display(cell.value), td));

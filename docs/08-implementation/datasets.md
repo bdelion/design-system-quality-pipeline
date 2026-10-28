@@ -27,6 +27,19 @@ Une capture récente peut aussi être rejouée directement avec `pipeline --data
 
 `dataset.json` embarque `schemaVersion: 1`, `kind` (`fixture`, démonstration synthétique `demo`, ou rejeu privé `local`), `profileId`, `config`, `catalogue`, `rawData` et, facultativement, `historicalComponents`. Le périmètre de `config` doit correspondre exactement aux faits. Les conventions sont vérifiées avant interprétation, puis conservées avec les données ; l’environnement ne remplace pas les règles durant le rejeu.
 
+**IMPLÉMENTÉ — présence déclarée sans Excel.** Un composant du référentiel historique
+peut utiliser des observations déclaratives : `present: true`, `change: unspecified`,
+`evidence: []` et `declaration: { reference: confirmation-identifiee }`, avec version,
+canal, identité et nom historique. La référence doit désigner une confirmation
+conservée localement. L’import retient cette référence dans la provenance
+`local-declaration:<version>:<reference>` ; l’anonymisation la remplace par un alias.
+Ce mode ne fabrique ni cellules Excel, ni modifications techniques, ni conformité.
+Les observations peuvent commencer après la première version du référentiel : les
+versions omises restent non déclarées et leurs éventuelles preuves GitHub sont
+préservées. Une composante déclarative ne doit pas mélanger cellules Excel et
+déclarations ; chaque observation déclarative exige sa propre référence non vide.
+Les composants historiques fondés sur Excel gardent leur contrat complet antérieur.
+
 Le profil livré utilise le modèle `2.4` et les règles `dq-2026.10-audit-relations`, après le parcours autonome `2.3` / `dq-2026.10-dataset-workflow`. Il désactive les inférences historiques d’audit avec `auditDetection.allowLegacyIssueTypes: false` ; `Enhancement` et `Improvement` sont des variantes de `FEATURE`. Sans cette option, les anciens profils conservent leur compatibilité historique. Les références de tests et les anciens datasets gardent leurs versions de scénario. Voir le [diagnostic de l’issue #49](issue-49-audit-diagnostic.md) pour les limites de données et le parcours de vérification.
 
 `manifest.json` contient l’empreinte SHA-256 du fichier exact, l’empreinte du RAW source et l’état de revue `required`. Les fixtures préparées exigent leur manifeste, même lorsqu’on fournit directement `dataset.json`. Une modification du contenu sans manifeste cohérent est refusée. Copier ou renommer le dossier complet ne change pas la résolution. Le fichier de démonstration versionné peut être chargé directement sans manifeste de préparation.

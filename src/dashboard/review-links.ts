@@ -89,7 +89,7 @@ function issueBranches(issues: Issue[], rules: GithubProcessingConfig, family: '
   ];
 }
 
-/** Affine les accès des repositories, délais et campagnes sans modifier leurs populations ni leurs métriques. */
+/** Affine les accès de revue avec les seuls labels métier pertinents, sans modifier les populations. */
 export function applyReviewLinks(
   snapshot: Snapshot,
   tables: SimpleTable[],
@@ -177,8 +177,10 @@ export function applyReviewLinks(
       const branches = issueBranches(selected, rules, 'audit');
       if (index !== 3 && settings) {
         const rawTypes = [...new Set(selected.map((issue) => issue.rawIssueType))];
-        const common = selected[0]!.labels.filter((label) =>
-          selected.every((issue) => issue.labels.includes(label))
+        const recognition =
+          rules.auditDetection?.strategies.flatMap((strategy) => strategy.requiredLabels ?? []) ?? [];
+        const common = selected[0]!.labels.filter(
+          (label) => recognition.includes(label) && selected.every((issue) => issue.labels.includes(label))
         );
         const filters = [
           ...negatives,
@@ -212,6 +214,92 @@ export function applyReviewLinks(
             'Campagne GitHub actuelle, types et milestones sources ; les EPIC configurées sont exclues. Done reste un statut Project, pas Closed.'
           );
         }
+      }
+    }
+  }
+  distributionLinks(snapshot, tables, rules, settings);
+}
+
+/** Construit les liens des répartitions à partir des labels de leur dimension et des parents explicites. */
+function distributionLinks(
+  snapshot: Snapshot,
+  tables: SimpleTable[],
+  rules: GithubProcessingConfig,
+  settings?: ProjectLinkSettings
+): void {
+  const issues = new Map((snapshot.normalizedData.issues ?? []).map((issue) => [issue.issueId, issue]));
+  const criticalities: Record<string, string> = { blocking: 'Bloquante', major: 'Majeure', minor: 'Mineure' };
+  for (const table of tables.filter((item) => item.populationColumns)) {
+    for (const row of table.rows) {
+      const base = repositoryBase(snapshot, row.repository);
+      if (!base) continue;
+      const all = (row.cells[3]?.refs ?? []).flatMap((id) => (issues.get(id) ? [issues.get(id)!] : []));
+      if (!all.length) continue;
+      const dimension = String(row.cells[2]?.value);
+      const labels = [...new Set(all.flatMap((issue) => issue.labels))].filter((label) => {
+        if (table.id === 'audit-criticality') {
+          const prefix = rules.labels.accessibilityCriticalityPrefix;
+          const value = label.startsWith(prefix) ? label.slice(prefix.length).trim().toLowerCase() : '';
+          return criticalities[rules.labels.criticalityValues[value] ?? value] === dimension;
+        }
+        const prefix =
+          table.id === 'audit-category'
+            ? rules.labels.accessibilityCategoryPrefix
+            : rules.labels.componentPrefix;
+        return (
+          (label.startsWith(prefix) && label.slice(prefix.length).trim() === dimension) ||
+          (table.id === 'audit-component' && rules.issuePolicy?.componentLabels?.[label] === dimension)
+        );
+      });
+      const parents = [
+        ...new Set(
+          all.flatMap((issue) => {
+            const parent = issue.parentIssueId ? issues.get(issue.parentIssueId) : undefined;
+            if (!parent || !/^https:\/\/[^/]+\/[\w.-]+\/[\w.-]+\/issues\/[1-9]\d*$/.test(parent.url))
+              return [];
+            const url = new URL(parent.url);
+            if (url.origin !== new URL(base).origin) return [];
+            return [url.pathname.replace(/^\//, '').replace('/issues/', '#')];
+          })
+        )
+      ];
+      for (const cell of row.cells.slice(3)) {
+        if (!cell.refs?.length) continue;
+        let url = new URL(base + '/issues');
+        url.searchParams.set(
+          'q',
+          [
+            'is:issue',
+            ...(labels.length ? ['label:' + labels.map((label) => JSON.stringify(label)).join(',')] : [])
+          ].join(' ')
+        );
+        if (
+          settings &&
+          parents.length &&
+          parents.length === new Set(all.map((issue) => issue.parentIssueId)).size &&
+          all.every((issue) => issue.parentIssueId && issues.has(issue.parentIssueId))
+        ) {
+          const project = new URL(settings.url);
+          const repository =
+            settings.repositories?.[row.repository] ??
+            (settings.repositoryOwner
+              ? settings.repositoryOwner + '/' + row.repository.split('/').at(-1)
+              : row.repository);
+          const query = [
+            'repo:' + repository,
+            'parent-issue:' + parents.map((parent) => JSON.stringify(parent)).join(','),
+            ...(labels.length ? ['label:' + labels.map((label) => JSON.stringify(label)).join(',')] : [])
+          ].join(' ');
+          if (query.length <= 256) {
+            project.searchParams.set('filterQuery', query);
+            url = project;
+          }
+        }
+        destination(
+          cell,
+          url,
+          'Parents de la version sélectionnés localement ; aucun filtre milestone du parent appliqué aux enfants. Traitement et preuves exactes dans cette liste.'
+        );
       }
     }
   }

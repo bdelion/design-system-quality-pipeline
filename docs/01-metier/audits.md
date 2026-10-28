@@ -230,4 +230,12 @@ Pour un Audit de rattrapage post-PROD, la Version auditée reste la Version PROD
 
 ## Amendement de terminaison et restitution — D-244
 
+**CLARIFICATION CONFIRMÉE le 28 octobre 2026 — D-223, D-227 et D-228 :** le
+résultat de la cohorte d’audits terminés applicable au composant et à la version
+prévaut. Les anomalies hors audit restent visibles mais ne remplacent pas ce
+verdict, y compris si leur correction ou annulation manque de preuves. Sans
+audit terminé applicable, le verdict reste NON_COUVERT ; un audit futur ou en
+cours ne suffit pas à le rendre NON_CONFORME. Les anomalies pertinentes issues
+des audits applicables restent prises en compte selon D-224 et D-226.
+
 **DÉCIDÉ le 19 octobre 2026** : le statut Project Done suffit à considérer l’audit terminé ; Closed n’est plus une condition supplémentaire. Cet amendement de D-047 ne fabrique pas de date manquante. La synthèse privilégie la version auditée terminée la plus élevée. Un audit a un seul composant et les anomalies sont rattachées par leurs propres labels. Voir les [règles de vérification des corrections](../08-implementation/validation-metier-20261019.md).

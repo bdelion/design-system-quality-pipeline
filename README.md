@@ -10,6 +10,20 @@ Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)
 
 ## Démarrer sans GitHub
 
+Dans les trois répartitions d’anomalies d’audit, la colonne **Traités** affiche
+la progression `(Réalisé + Annulées) / Total`, avec ses preuves et son export CSV.
+
+Pour conserver les corrections DateBox/Live Zone lors des prochaines collectes,
+voir les [fichiers locaux à sauvegarder et commandes de reprise](docs/08-implementation/reprise-locale-dashboards.md).
+
+Une présence historique confirmée peut être importée sans classeur Excel avec
+une provenance déclarative explicite, sans déduire de conformité : voir le
+[contrat des datasets](docs/08-implementation/datasets.md).
+
+Le [diagnostic #130 des audits par version](docs/08-implementation/issue-130-audits-par-version.md)
+explique les écarts entre catalogue, audits, déclarations et verdicts métier, ainsi
+que les liens GitHub des répartitions.
+
 Le [diagnostic des calculs d’audit (#49)](docs/08-implementation/issue-49-audit-diagnostic.md) distingue la campagne courante, les relations parent collectées et les preuves historiques nécessaires aux verdicts par version.
 
 Les [conventions d’affichage du dashboard](docs/08-implementation/dashboard-coherence.md#référentiel-commun) précisent notamment les tris des tableaux et répartitions.

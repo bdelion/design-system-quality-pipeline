@@ -143,9 +143,23 @@ Dans les campagnes, **Audits terminés / composants (%)** remplace le ratio de t
 
 Les accès des campagnes utilisent types bruts, labels de reconnaissance et milestones sources ; les EPIC configurées sont exclues. Pour les résultats terminés, la vue Projects configurée utilise Done et les milestones des preuves, y compris héritées. [GitHub documente](https://docs.github.com/en/issues/planning-and-tracking-with-projects/customizing-views-in-your-project/filtering-projects) les filtres de champs de l’item et la sélection par parent ; il ne documente pas de filtre du parent selon le type ET le label de ses enfants. Aucun filtre fictif « sans/avec enfant BUG RGAA » n’est donc ajouté. La destination Projects demeure approchée et l’avertissement explique cette limite ; la liste locale reste la preuve du verdict.
 
-Trois sections distinctes présentent les anomalies d’audit par **criticité**, **critère d’accessibilité** et **composant**. Le sélecteur **Population représentée** choisit Total, Restant ou Réalisé ; il filtre les lignes à effectif positif et change la colonne représentée par les barres, avant pagination et export. Réalisé signifie correction confirmée (Done + PR fusionnée), sans rétablir automatiquement la conformité (D-226/D-244). Les annulations et statuts inconnus restent séparés. Une issue multi-critères/composants peut figurer dans plusieurs lignes : les sommes des lignes ne sont pas nécessairement des issues distinctes. Les filtres repository/version s’appliquent aux trois sections. Les graphiques sont des jauges HTML natives, avec valeurs textuelles et CSV ; aucune dépendance ECharts ni accès réseau n’est nécessaire. #99 reste une proposition plus large, pas un prérequis à ces répartitions.
+Trois sections distinctes présentent les anomalies d’audit par **criticité**, **critère d’accessibilité** et **composant**. Le sélecteur **Population représentée** choisit Total, Reste à faire ou Réalisé ; il filtre les lignes à effectif positif avant pagination et export. Les effectifs restent numériques, sans barre comparative. Réalisé signifie correction confirmée (Done + PR fusionnée), sans rétablir automatiquement la conformité (D-226/D-244). Les annulations et statuts inconnus restent séparés. Une issue multi-critères/composants peut figurer dans plusieurs lignes : les sommes des lignes ne sont pas nécessairement des issues distinctes. Les filtres repository/version s’appliquent aux trois sections. #99 reste une proposition plus large, pas un prérequis à ces répartitions.
 
-Les références de taille de la seule vue synthétique sont actualisées sur la fixture control/81 inchangée : HTML 60 367 octets, JSON 57 268 octets, maximum DOM 1 355 nœuds ; maximum initial 24 lignes rendues conservé. Les notes et réserves de la lecture D-246 ajoutent 766 octets à la première mesure de #128. Les références classiques et le seuil de croissance hors fonctionnalités restent inchangés. Les valeurs précédentes sont conservées dans `config/benchmark-simplified-baseline.json`.
+**DEMANDÉ ET IMPLÉMENTÉ — 28 octobre 2026 :** une colonne **Traités** porte seule
+une barre de progression HTML native, calculée par Analytics sur
+`(Réalisé + Annulées) / Total`. Elle affiche le numérateur, le total et le
+pourcentage, par exemple `2/4 — 50 %`. Les inconnus restent dans Total sans
+augmenter le nombre traité. Les annulations comptent dans le traitement, sans
+neutralisation métier implicite ni preuve de conformité. Le clic conserve les
+preuves exactes des issues réalisées ou annulées ; le tri et le CSV utilisent le
+même calcul. Le choix de population ne modifie pas ce dénominateur.
+
+La mesure de cet ajout sur control/81 est de 61 273 octets HTML, 58 174 octets JSON
+et 1 442 nœuds DOM maximum. L’empreinte de fixture, le maximum de 24 lignes et les
+budgets classiques sont inchangés. La référence précédente est conservée dans
+`treatedProgressMeasurement` ; la croissance hors fonctionnalités reste à 0 %.
+
+La mesure précédente de la vue synthétique sur control/81 était de 60 367 octets HTML, 57 268 octets JSON et 1 355 nœuds DOM ; maximum initial de 24 lignes rendues conservé. Les notes et réserves de la lecture D-246 ajoutaient 766 octets à la première mesure de #128. Les références classiques et le seuil de croissance hors fonctionnalités restent inchangés. Les valeurs précédentes sont conservées dans `config/benchmark-simplified-baseline.json`.
 
 **DIAGNOSTIC EFFECTUÉ — 27 octobre 2026 :** le [dataset fourni et les comparaisons de populations](diagnostic-124-128-20261027.md) expliquent les 154 j et reproduisent le résultat attendu 12/29 dans la lecture stricte validée par D-246. Les verdicts métier et les réserves des bugs inférés restent distincts ; aucun résultat métier n’est forcé pour égaler une recherche GitHub. Les cumuls restent indisponibles dans ce jeu sans catalogue historique exploitable.
 

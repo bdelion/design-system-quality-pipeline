@@ -29,8 +29,10 @@ export interface SimpleRow {
 }
 /** Contrat d’un tableau, indépendant de sa pagination dans le navigateur. */
 export interface SimpleTable {
-  /** Colonnes de populations proposées au filtre et au graphique de répartition. */
+  /** Colonnes de populations proposées au filtre de répartition. */
   populationColumns?: number[];
+  /** Colonne de progression dont le pourcentage est calculé par Analytics dans sortValue. */
+  progressColumn?: number;
   id: string;
   title: string;
   description: string;
@@ -67,7 +69,7 @@ function elapsed(start: string | undefined, end: string | undefined): number | n
   const value = (Date.parse(end ?? '') - Date.parse(start ?? '')) / 86400000;
   return Number.isFinite(value) && value >= 0 ? value : null;
 }
-/** Projette les métriques existantes en cinq espaces sans modifier le snapshot ni ses verdicts. */
+/** Projette les métriques en cinq espaces et explicite leurs périmètres, sans modifier les verdicts. */
 export function simplifiedModel(snapshot: Snapshot) {
   const sourceMilestones = new Map(
     snapshot.rawData.repositories.flatMap((repository) =>
@@ -425,12 +427,22 @@ export function simplifiedModel(snapshot: Snapshot) {
     );
     const declarationNote = declarationsKnown
       ? 'Audits terminés uniquement ; type GitHub BUG explicite et label RGAA du profil. Le lien parent est conservé même si le composant diffère. Sans BUG déclaré ne prouve pas la conformité métier.'
-      : 'Lecture déclarative absente de cet ancien snapshot : relancer le pipeline. Aucun zéro n’est déduit de cette absence.';
+      : 'Déclarations indisponibles : rejouer le pipeline. Aucun zéro déduit.';
+    const absenceVerdicts = withoutDeclaredBug.map((group) => {
+      const relation = relations.find((item) => item.componentId === group[0]!.componentId);
+      return relation ? (relation.verdict ?? 'NON_COUVERT') : 'HORS_CATALOGUE';
+    });
+    const absenceNote =
+      declarationNote +
+      (relations.length && declarationsKnown
+        ? ` Parmi ces composants sans déclaration : ${absenceVerdicts.filter((value) => value === 'CONFORME').length} conformes métier, ${absenceVerdicts.filter((value) => value === 'NON_CONFORME').length} non conformes, ${absenceVerdicts.filter((value) => value === 'HORS_CATALOGUE').length} hors catalogue ; les autres sont non couverts.`
+        : '');
     const completedComponents = new Set(completed.map((audit) => audit.componentId));
     const conformAudited = relations.filter(
       (item) => item.verdict === 'CONFORME' && completedComponents.has(item.componentId)
     );
     const conform = verdict('CONFORME');
+    conform.note += ' Verdict des audits applicables ; défauts hors audit séparés.';
     const nonConform = verdict('NON_CONFORME');
     const waitingAudits = [...state('pending'), ...waiting];
     const proofOfAuditedConform = ids(
@@ -462,7 +474,12 @@ export function simplifiedModel(snapshot: Snapshot) {
         cell(version, allAuditRefs),
         {
           ...cell(relations.length ? relations.length : null, allAuditRefs),
-          note: 'Nombre de composants connus dans le catalogue de cette version ; les issues liées sont les audits de la version, pas une issue par composant.'
+          note:
+            'Catalogue : composants distincts, pas des issues d’audit. ' +
+            (relations.length
+              ? `Réconciliation : ${Number(conform.value)} conformes + ${Number(nonConform.value)} non conformes + ${Number(verdict('NON_COUVERT').value)} non couverts = ${relations.length}. `
+              : '') +
+            `Audits : ${audits.length} issues sur ${new Set(audits.map((audit) => audit.componentId)).size} composants ; ${new Set(audits.filter((audit) => !relations.some((relation) => relation.componentId === audit.componentId)).map((audit) => audit.componentId)).size} hors catalogue connu.`
         },
         cell(audits.length, allAuditRefs),
         cell(waitingAudits.length, ids(waitingAudits)),
@@ -483,7 +500,7 @@ export function simplifiedModel(snapshot: Snapshot) {
           relations.length ? conformAudited.length : null,
           completed.length,
           proofOfAuditedConform,
-          'Composants conformes audités sur cette version / audits terminés sur cette version. Les conformités héritées seules sont exclues du numérateur.'
+          'Verdict métier conforme sur les composants audités / audits terminés. Sans BUG déclaré est une autre population ; les conformités héritées seules sont exclues.'
         ),
         ratio(
           relations.length ? Number(conform.value) : null,
@@ -501,7 +518,7 @@ export function simplifiedModel(snapshot: Snapshot) {
         cell(unknown.length, ids(unknown)),
         {
           ...cell(declarationsKnown ? withoutDeclaredBug.length : null, ids(withoutDeclaredBug.flat())),
-          note: declarationNote
+          note: absenceNote
         },
         {
           ...cell(declarationsKnown ? withDeclaredBug.length : null, ids(withDeclaredBug.flat())),
