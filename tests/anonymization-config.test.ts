@@ -6,37 +6,92 @@ import type { Catalogue } from '../src/catalogue.js';
 import type { RawDataset } from '../src/domain/types.js';
 
 const config: PipelineConfig = {
-  modelVersion: '2.1', ruleVersion: 'dq-2026.09', auditVersion: '2026.09',
-  scope: 'configured-github-repositories', githubOwner: 'myorga',
+  modelVersion: '2.1',
+  ruleVersion: 'dq-2026.09',
+  auditVersion: '2026.09',
+  scope: 'configured-github-repositories',
+  githubOwner: 'myorga',
   repositories: ['design-system-core', 'design-system-react', 'design-system-docs'],
   githubApiUrl: 'https://github.enterprise.io/api/v3',
   githubGraphqlUrl: 'https://github.enterprise.io/graphql',
   githubUrl: 'https://github.enterprise.io',
   github: {
-    labels: { componentPrefix: 'Component:', criticalityPrefix: 'rgaa:', categoryPrefix: 'a11y:', unknown: 'label:unknown', criticalityValues: { bloquante: 'blocking', majeure: 'major', mineure: 'minor' } },
+    labels: {
+      componentPrefix: 'Component:',
+      accessibilityCriticalityPrefix: 'rgaa:',
+      accessibilityCategoryPrefix: 'a11y:',
+      unknown: 'label:unknown',
+      criticalityValues: { bloquante: 'blocking', majeure: 'major', mineure: 'minor' }
+    },
     issueTypes: { anomaly: 'BUG', keywords: { AUDIT: ['audit'] } },
-    closingKeywords: ['close'], cancelledProjectStatuses: ['Cancelled']
+    projectStatuses: { keywords: { DONE: ['Done'], CANCELLED: ['Cancelled'] } },
+    closingKeywords: ['close'],
+    cancelledProjectStatuses: ['Cancelled']
   }
 };
 
 const catalogue: Catalogue = {
   version: '1.0',
   components: [
-    { name: 'Button', repository: 'design-system-core', stream: 'React', owner: 'Owner', squad: 'Squad', status: 'stable', rgaaLevel: 'AA', tags: [] },
-    { name: 'Modal', repository: 'design-system-react', stream: 'React', owner: 'Owner', squad: 'Squad', status: 'stable', rgaaLevel: 'AA', tags: [] }
+    {
+      name: 'Button',
+      repository: 'design-system-core',
+      stream: 'React',
+      owner: 'Owner',
+      squad: 'Squad',
+      status: 'stable',
+      rgaaLevel: 'AA',
+      tags: []
+    },
+    {
+      name: 'Modal',
+      repository: 'design-system-react',
+      stream: 'React',
+      owner: 'Owner',
+      squad: 'Squad',
+      status: 'stable',
+      rgaaLevel: 'AA',
+      tags: []
+    }
   ]
 };
 
 const source: RawDataset = {
-  collectedAt: '2026-09-28T10:00:00Z', nexusAvailable: false,
+  collectedAt: '2026-09-28T10:00:00Z',
+  nexusAvailable: false,
   catalogueComponents: ['Button'],
   repositories: [
-    { id: 'r1', name: 'source-core', owner: 'source-org', defaultBranch: 'main', issues: [], pullRequests: [] },
-    { id: 'r2', name: 'source-react', owner: 'source-org', defaultBranch: 'main', issues: [], pullRequests: [] }
+    {
+      id: 'r1',
+      name: 'source-core',
+      owner: 'source-org',
+      defaultBranch: 'main',
+      issues: [],
+      pullRequests: []
+    },
+    {
+      id: 'r2',
+      name: 'source-react',
+      owner: 'source-org',
+      defaultBranch: 'main',
+      issues: [],
+      pullRequests: []
+    }
   ]
 };
 
 describe('anonymized configuration', () => {
+  it('anonymise les bornes d’audit avec les mêmes alias que les dépôts sans conserver les noms source', () => {
+    const input = structuredClone(config);
+    input.github.auditTracking = { 'source-org/source-react': '1.7.1', 'outside/repo': '1.0.0' };
+    const map = createAnonymizationMapper('seed');
+    const result = anonymizePipelineConfig(input, source, map);
+    expect(result.github.auditTracking).toEqual({
+      [`${map('owner', 'source-org', 'owner')}/${map('repository', 'source-react', 'repo')}`]: '1.7.1'
+    });
+    expect(input.github.auditTracking).toHaveProperty('source-org/source-react');
+    expect(JSON.stringify(result.github.auditTracking)).not.toContain('source-org');
+  });
   it('derives repository scope and owner from the source RAW dataset', () => {
     const map = createAnonymizationMapper('seed');
     const result = anonymizePipelineConfig(config, source, map);
@@ -51,7 +106,12 @@ describe('anonymized configuration', () => {
 
   it('creates a catalogue matching the components declared by the source RAW dataset', () => {
     const map = createAnonymizationMapper('seed');
-    const result = anonymizeCatalogue(catalogue, source, { seed: 'seed', dateOffsetDays: -1, strictText: true, preserveComponentNames: true }, map);
+    const result = anonymizeCatalogue(
+      catalogue,
+      source,
+      { seed: 'seed', dateOffsetDays: -1, strictText: true, preserveComponentNames: true },
+      map
+    );
     expect(result.components).toHaveLength(1);
     expect(result.components[0]?.name).toBe('Button');
     expect(result.components[0]?.repository).toBe(map('repository', 'design-system-core', 'repo'));
@@ -59,7 +119,13 @@ describe('anonymized configuration', () => {
 
   it('fails clearly when RAW declares an unknown catalogue component', () => {
     const map = createAnonymizationMapper('seed');
-    expect(() => anonymizeCatalogue(catalogue, { ...source, catalogueComponents: ['Unknown'] }, { seed: 'seed', dateOffsetDays: -1, strictText: true, preserveComponentNames: true }, map))
-      .toThrow(/missing from catalogue\.yaml/);
+    expect(() =>
+      anonymizeCatalogue(
+        catalogue,
+        { ...source, catalogueComponents: ['Unknown'] },
+        { seed: 'seed', dateOffsetDays: -1, strictText: true, preserveComponentNames: true },
+        map
+      )
+    ).toThrow(/missing from catalogue\.yaml/);
   });
 });

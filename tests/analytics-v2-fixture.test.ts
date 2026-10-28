@@ -1,35 +1,47 @@
 import { describe, expect, it } from 'vitest';
-import { collectFixture } from '../src/collectors/fixture.js';
+import { collectFixture } from './support/fixtures.js';
 import { calculateKpis } from '../src/analytics/kpis.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { evaluateDataQuality } from '../src/quality/rules.js';
-import { loadConfig } from '../src/config.js';
+import { loadConfig } from './support/fixtures.js';
 
 describe('V2 fixture analytical contract', () => {
   it('produces the expected self-explaining metrics', async () => {
     const raw = await collectFixture();
-    const config = await loadConfig();
+    const config = await loadConfig('fixture');
     const normalized = normalizeGithub(raw, config.github, undefined, config.auditVersion);
     const issues = evaluateDataQuality(raw, normalized, config.github);
     const metrics = calculateKpis(normalized, issues).metrics;
 
     expect(metrics['portfolio.repositories']?.value).toBe(3);
     expect(metrics['portfolio.libraries']?.value).toBe(3);
-    expect(metrics['portfolio.components']?.value).toBe(8);
-    expect(metrics['portfolio.componentsAudited']?.value).toBe(1);
-    expect(metrics['portfolio.auditCoverage']?.value).toBe(12.5);
+    expect(metrics['portfolio.components']?.value).toBe('unknown');
+    expect(metrics['portfolio.componentsAudited']?.value).toBe('unknown');
+    expect(metrics['portfolio.auditCoverage']?.value).toBe('unknown');
     expect(metrics['audit.completed']?.value).toBe(1);
     expect(metrics['audit.conformityRate']?.value).toBe(100);
     expect(metrics['anomaly.total']?.value).toBe(7);
     expect(metrics['anomaly.open']?.value).toBe(3);
     expect(metrics['anomaly.correctedEver']?.value).toBe(4);
     expect(metrics['anomaly.correctionDelay.average']?.value).toBe(7.1);
-    expect(metrics['anomaly.correctionDelay.median']?.value).toBe(6.1);
-    expect(metrics['anomaly.correctionDelay.p90']?.value).toBe(12.4);
-    expect(metrics['anomaly.backlog.oldestAge']?.value).toBe(12.2);
+    const global = metrics['anomaly.correctionDelay.average'];
+    const actual = metrics['anomaly.correctionDelay.averageActual'];
+    const estimated = metrics['anomaly.correctionDelay.averageEstimated'];
+    expect(actual).toBeDefined();
+    expect(estimated).toBeDefined();
+    expect((actual?.sourceEntityIds.length ?? 0) + (estimated?.sourceEntityIds.length ?? 0)).toBe(
+      global?.sourceEntityIds.length
+    );
+    expect(typeof metrics['anomaly.correctionDelay.median']?.value).toBe('number');
+    expect(typeof metrics['anomaly.correctionDelay.p90']?.value).toBe('number');
+    expect(metrics['anomaly.backlog.oldestAge']?.value).toBe(29);
     expect(metrics['anomaly.criticalityCoverage']?.value).toBe(85.7);
-    expect(metrics['audit.conformityRate']?.reliability.status).toBe('reliable');
-    expect(metrics['portfolio.auditCoverage']?.reliability.status).toBe('partial');
+    // L'ancien RAW ne contient pas la borne package : le chiffre est conservé avec réserve explicite.
+    expect(metrics['audit.conformityRate']?.reliability.status).toBe('partial');
+    expect(metrics['audit.conformityRate']?.reliability.issueIds).toEqual(
+      expect.arrayContaining(issues.filter((issue) => issue.ruleId === 'DQ-033').map((issue) => issue.id))
+    );
+    expect(metrics['portfolio.auditCoverage']?.reliability.status).toBe('unknown');
     expect(metrics['anomaly.byCategory.focus']?.value).toBe(2);
     expect(metrics['anomaly.byCategory.name']?.value).toBe(2);
     expect(metrics['anomaly.byCategory.structure']?.value).toBe(1);

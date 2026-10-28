@@ -1,0 +1,115 @@
+{
+  "status": "validated",
+  "maxGrowthPercent": 0,
+  "fixtureHash": "92944855a6f1de050e2677f17b19cd8200242ca557a18e90e8a8f15318e46597",
+  "description": "Référence validée de la présentation compacte ; maximum DOM sur les cinq espaces, pagination initiale 25. Références des identifiants de revue validées séparément ci-dessous ; croissance ultérieure à 0 %.",
+  "pages": [
+    {
+      "page": "index.html",
+      "htmlBytes": 1330,
+      "jsonBytes": 0,
+      "initialTableRows": 0,
+      "domNodes": 31,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "simplified/index.html",
+      "htmlBytes": 68972,
+      "jsonBytes": 65873,
+      "initialTableRows": 0,
+      "domNodes": 1570,
+      "renderedTableRows": 24
+    }
+  ],
+  "treatedProgressMeasurement": {
+    "date": "2026-10-28",
+    "scope": "Ajout demandé des colonnes Traités : (Réalisées + Annulées) / Total, avec barre dédiée et preuves. Suppression des barres sur les effectifs. Fixture control/81 inchangée, budgets classiques inchangés, croissance hors fonctionnalités conservée à 0 %.",
+    "previous": {
+      "htmlBytes": 60367,
+      "jsonBytes": 57268,
+      "domNodes": 1355
+    },
+    "measured": {
+      "htmlBytes": 61273,
+      "jsonBytes": 58174,
+      "domNodes": 1442
+    }
+  },
+  "strictScopeMeasurement": {
+    "date": "2026-10-27",
+    "scope": "Lecture stricte des campagnes validée après diagnostic : notes distinguant déclaration et verdict métier, réserve pour les anciens snapshots. Même fixture, même DOM, +766 octets HTML/JSON ; aucune augmentation des références classiques.",
+    "previous": {
+      "htmlBytes": 59601,
+      "jsonBytes": 56502
+    }
+  },
+  "issues124To128Measurement": {
+    "date": "2026-10-27",
+    "scope": "Nouvelles répartitions demandées dans #128, colonnes directes #127 et explications des cohortes #126. Mesure sur la fixture control/81 inchangée ; croissance hors fonctionnalités interdite. Aucun seuil classique modifié.",
+    "previous": {
+      "htmlBytes": 46623,
+      "jsonBytes": 43524,
+      "domNodes": 857,
+      "renderedTableRows": 24
+    },
+    "measured": {
+      "htmlBytes": 59601,
+      "jsonBytes": 56502,
+      "domNodes": 1355,
+      "renderedTableRows": 24
+    }
+  },
+  "validation": {
+    "date": "2026-10-22",
+    "approval": "Oui, conserver ces ajouts et actualiser la référence",
+    "scope": "Tableaux librairie/composant et librairie/version, CSV et bandeau fixe ; HTML 44079 octets, JSON 42010 octets, DOM 689 nœuds.",
+    "previous": {
+      "htmlBytes": 31605,
+      "jsonBytes": 29576,
+      "domNodes": 686
+    }
+  },
+  "reviewIdentifiersValidation": {
+    "date": "2026-10-26",
+    "approval": "Oui, actualiser ces références",
+    "scope": "Identifiants permanents et valeurs distinctes des contrôles ; croissance ultérieure interdite (0 %). Maximum DOM des cinq espaces synthétiques ; limites antérieures conservées lorsqu’elles restent supérieures.",
+    "previousPages": [
+      {
+        "page": "index.html",
+        "htmlBytes": 799,
+        "jsonBytes": 0,
+        "initialTableRows": 0,
+        "domNodes": 30,
+        "renderedTableRows": 0
+      },
+      {
+        "page": "simplified/index.html",
+        "htmlBytes": 44079,
+        "jsonBytes": 42010,
+        "initialTableRows": 0,
+        "domNodes": 689,
+        "renderedTableRows": 24
+      }
+    ]
+  },
+  "auditTrackingMeasurement": {
+    "date": "2026-10-28",
+    "scope": "Issues #132-134 : bornes, latest et planification ; fixture control/81 inchangee, budgets classiques inchanges, croissance hors fonctionnalites a 0 %.",
+    "previous": {
+      "page": "simplified/index.html",
+      "htmlBytes": 61273,
+      "jsonBytes": 58174,
+      "initialTableRows": 0,
+      "domNodes": 1442,
+      "renderedTableRows": 24
+    },
+    "measured": {
+      "page": "simplified/index.html",
+      "htmlBytes": 68972,
+      "jsonBytes": 65873,
+      "initialTableRows": 0,
+      "domNodes": 1570,
+      "renderedTableRows": 24
+    }
+  }
+}

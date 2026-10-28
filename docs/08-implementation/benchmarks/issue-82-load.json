@@ -1,0 +1,543 @@
+{
+  "protocol": "dashboard-benchmark-v1",
+  "fixtureVersion": "dashboard-load-v1",
+  "fixtureHash": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15",
+  "scenario": "load",
+  "seed": 81,
+  "counts": {
+    "repositories": 3,
+    "issues": 1800,
+    "pullRequests": 1500,
+    "componentVersions": 2300,
+    "diagnostics": 3000
+  },
+  "revision": "86bb800b2eb239f370accf5f30db489e59421d07",
+  "workingTreeDirty": true,
+  "environment": {
+    "node": "v22.23.3",
+    "os": "win32",
+    "release": "10.0.19045",
+    "arch": "x64",
+    "cpu": "Intel(R) Core(TM) i3-4130 CPU @ 3.40GHz",
+    "logicalCpus": 4,
+    "memoryBytes": 8461107200
+  },
+  "browser": {
+    "version": "155.0.4283.62",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "conditions": {
+    "channel": "msedge",
+    "headless": true,
+    "locale": "fr-FR",
+    "timezone": "UTC",
+    "workers": 1,
+    "runs": 3,
+    "warmup": 1,
+    "cache": "nouveau contexte par passage, HTTP no-store, routage local uniquement",
+    "cpuThrottle": "aucun",
+    "network": "loopback uniquement, sans compression",
+    "readiness": "DOMContentLoaded pour navigation ; load + h1 visible + fonts.ready + deux requestAnimationFrame pour résultat ; pas une mesure d’interactivité complète",
+    "capture": "désactivée",
+    "preparation": "processus Node neuf par génération ; préparation normalisation/Analytics et démarrage exclus du temps de génération ; chauffe exclue des séries"
+  },
+  "preparationMs": 11755.51,
+  "generationMs": {
+    "samples": [14645.013900000002, 11855.321000000004, 12206.187400000003],
+    "median": 12206.187400000003,
+    "min": 11855.321000000004,
+    "max": 14645.013900000002,
+    "p25": 12030.754200000003,
+    "p75": 13425.600650000002,
+    "iqr": 1394.846449999999
+  },
+  "duplication": {
+    "scope": "copies exactes des scripts JSON embarqués, toutes pages ; inclut les répétitions au sein des pages",
+    "totalJsonBytes": 419418734,
+    "uniqueJsonBytes": 46310765,
+    "duplicateJsonBytes": 373107969
+  },
+  "pages": [
+    {
+      "page": "accessibility.html",
+      "htmlBytes": 51797213,
+      "htmlSha256": "5db79351a8812082792b8cab391c5fc5a32d2ee8878bc4e0696f219fe320d5b2",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 3540,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 84654,
+      "domElements": 48051,
+      "renderedTableRows": 3544,
+      "visibleTableRows": 3544,
+      "navigationMs": {
+        "samples": [3877.4446999999927, 3496.587999999989, 3279.17849999998],
+        "median": 3496.587999999989,
+        "min": 3279.17849999998,
+        "max": 3877.4446999999927,
+        "p25": 3387.8832499999844,
+        "p75": 3687.016349999991,
+        "iqr": 299.1331000000064
+      },
+      "resultReadyMs": {
+        "samples": [4360.539199999999, 3958.3788999999815, 3746.2244000000064],
+        "median": 3958.3788999999815,
+        "min": 3746.2244000000064,
+        "max": 4360.539199999999,
+        "p25": 3852.301649999994,
+        "p75": 4159.45904999999,
+        "iqr": 307.1573999999964
+      },
+      "captureMs": null
+    },
+    {
+      "page": "anomalies.html",
+      "htmlBytes": 47145030,
+      "htmlSha256": "71d2b3230fc0bb927f6993d06220f2afbd5ca1e5988b26801ebb6ef2c9717b1b",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 1770,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 119385,
+      "domElements": 64962,
+      "renderedTableRows": 1770,
+      "visibleTableRows": 1770,
+      "navigationMs": {
+        "samples": [3039.782099999953, 4068.980500000005, 4098.5638000000035],
+        "median": 4068.980500000005,
+        "min": 3039.782099999953,
+        "max": 4098.5638000000035,
+        "p25": 3554.381299999979,
+        "p75": 4083.7721500000043,
+        "iqr": 529.3908500000252
+      },
+      "resultReadyMs": {
+        "samples": [3479.7219999999506, 4502.35560000001, 4602.861600000004],
+        "median": 4502.35560000001,
+        "min": 3479.7219999999506,
+        "max": 4602.861600000004,
+        "p25": 3991.0387999999803,
+        "p75": 4552.608600000007,
+        "iqr": 561.5698000000266
+      },
+      "captureMs": null
+    },
+    {
+      "page": "audits.html",
+      "htmlBytes": 43984859,
+      "htmlSha256": "e64c2f2a79826db66b97d74d6a460f5c35232247f07ab9f86b1322dd6efb5917",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 2360,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 71196,
+      "domElements": 44494,
+      "renderedTableRows": 2360,
+      "visibleTableRows": 2360,
+      "navigationMs": {
+        "samples": [3907.812200000044, 4007.767200000002, 4917.219400000002],
+        "median": 4007.767200000002,
+        "min": 3907.812200000044,
+        "max": 4917.219400000002,
+        "p25": 3957.789700000023,
+        "p75": 4462.493300000002,
+        "iqr": 504.7035999999789
+      },
+      "resultReadyMs": {
+        "samples": [4327.520699999994, 4412.632100000046, 5444.603799999983],
+        "median": 4412.632100000046,
+        "min": 4327.520699999994,
+        "max": 5444.603799999983,
+        "p25": 4370.07640000002,
+        "p75": 4928.617950000014,
+        "iqr": 558.5415499999945
+      },
+      "captureMs": null
+    },
+    {
+      "page": "components.html",
+      "htmlBytes": 44507833,
+      "htmlSha256": "500e6e7034bf856cbbfd1f5766f2aa8542693523056ade175a428f4a49be853e",
+      "jsonBytes": 44482673,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "component-analysis-data",
+          "bytes": 3026232,
+          "sha256": "0de10453264c25ae6f6a46a3a7d429045ee53728e53b8d9ac11dcdd4740e16d5"
+        },
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 37478,
+      "domElements": 21525,
+      "renderedTableRows": 230,
+      "visibleTableRows": 230,
+      "navigationMs": {
+        "samples": [3295.838699999964, 3125.2636000000057, 1827.5260000000126],
+        "median": 3125.2636000000057,
+        "min": 1827.5260000000126,
+        "max": 3295.838699999964,
+        "p25": 2476.394800000009,
+        "p75": 3210.551149999985,
+        "iqr": 734.1563499999756
+      },
+      "resultReadyMs": {
+        "samples": [4111.4121999999625, 3740.7760000000126, 2442.663899999985],
+        "median": 3740.7760000000126,
+        "min": 2442.663899999985,
+        "max": 4111.4121999999625,
+        "p25": 3091.719949999999,
+        "p75": 3926.0940999999875,
+        "iqr": 834.3741499999887
+      },
+      "captureMs": null
+    },
+    {
+      "page": "epics.html",
+      "htmlBytes": 41461749,
+      "htmlSha256": "bf5b1f070d7f3af328e5c8787607e4d9f7ff6607559f96ea8cffbe753bcb73af",
+      "jsonBytes": 41456465,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "epic-activity-data",
+          "bytes": 24,
+          "sha256": "8f611bec64e223abfdb5be8bd064542dec768dd31ff768b8872bf4641068fec1"
+        },
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 152,
+      "domElements": 93,
+      "renderedTableRows": 0,
+      "visibleTableRows": 0,
+      "navigationMs": {
+        "samples": [1621.8195000000414, 1633.2484000000404, 1551.2052999999723],
+        "median": 1621.8195000000414,
+        "min": 1551.2052999999723,
+        "max": 1633.2484000000404,
+        "p25": 1586.512400000007,
+        "p75": 1627.533950000041,
+        "iqr": 41.02155000003404
+      },
+      "resultReadyMs": {
+        "samples": [1943.705100000021, 1965.4274000000441, 1864.2737999999663],
+        "median": 1943.705100000021,
+        "min": 1864.2737999999663,
+        "max": 1965.4274000000441,
+        "p25": 1903.9894499999937,
+        "p75": 1954.5662500000326,
+        "iqr": 50.57680000003893
+      },
+      "captureMs": null
+    },
+    {
+      "page": "graph.html",
+      "htmlBytes": 54184804,
+      "htmlSha256": "f0d1e9488930961751049f2ad9547b38fe17ff3099f859655611f023f7ac487d",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 1800,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 126559,
+      "domElements": 78418,
+      "renderedTableRows": 1800,
+      "visibleTableRows": 1800,
+      "navigationMs": {
+        "samples": [6939.476399999985, 6404.629599999986, 8485.108799999987],
+        "median": 6939.476399999985,
+        "min": 6404.629599999986,
+        "max": 8485.108799999987,
+        "p25": 6672.052999999985,
+        "p75": 7712.292599999986,
+        "iqr": 1040.2396000000008
+      },
+      "resultReadyMs": {
+        "samples": [7640.59719999996, 7001.120599999966, 9320.410800000012],
+        "median": 7640.59719999996,
+        "min": 7001.120599999966,
+        "max": 9320.410800000012,
+        "p25": 7320.858899999963,
+        "p75": 8480.503999999986,
+        "iqr": 1159.6451000000234
+      },
+      "captureMs": null
+    },
+    {
+      "page": "history.html",
+      "htmlBytes": 41464037,
+      "htmlSha256": "e0603045c16d6f6919fadf06a8317d92088a90e85825b1b564fa4c2976d2bd42",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 247,
+      "domElements": 146,
+      "renderedTableRows": 0,
+      "visibleTableRows": 0,
+      "navigationMs": {
+        "samples": [1799.779600000009, 1718.2842999999993, 1663.58269999997],
+        "median": 1718.2842999999993,
+        "min": 1663.58269999997,
+        "max": 1799.779600000009,
+        "p25": 1690.9334999999846,
+        "p75": 1759.0319500000041,
+        "iqr": 68.09845000001951
+      },
+      "resultReadyMs": {
+        "samples": [2151.570000000007, 2046.2908999999636, 2033.0715999999666],
+        "median": 2046.2908999999636,
+        "min": 2033.0715999999666,
+        "max": 2151.570000000007,
+        "p25": 2039.681249999965,
+        "p75": 2098.9304499999853,
+        "iqr": 59.24920000002021
+      },
+      "captureMs": null
+    },
+    {
+      "page": "index.html",
+      "htmlBytes": 41480874,
+      "htmlSha256": "3b5975fd1151a0ed55ad33a478d13c0eeca1165e88e1c4ed7ffc9218906b88e4",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 6,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 445,
+      "domElements": 266,
+      "renderedTableRows": 6,
+      "visibleTableRows": 6,
+      "navigationMs": {
+        "samples": [2322.4426000000094, 1670.4925999999978, 1769.8572999999742],
+        "median": 1769.8572999999742,
+        "min": 1670.4925999999978,
+        "max": 2322.4426000000094,
+        "p25": 1720.174949999986,
+        "p75": 2046.1499499999918,
+        "iqr": 325.9750000000058
+      },
+      "resultReadyMs": {
+        "samples": [2566.3175000000047, 1905.2439000000013, 2012.7052999999723],
+        "median": 2012.7052999999723,
+        "min": 1905.2439000000013,
+        "max": 2566.3175000000047,
+        "p25": 1958.9745999999868,
+        "p75": 2289.5113999999885,
+        "iqr": 330.5368000000017
+      },
+      "captureMs": null
+    },
+    {
+      "page": "issues.html",
+      "htmlBytes": 43311811,
+      "htmlSha256": "90f833cdbd1e789ec01b7b53fe7282fcb17da616fed1bddd9cf67595d15a159f",
+      "jsonBytes": 43284509,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 0,
+      "payloads": [
+        {
+          "id": "issue-explorer-data",
+          "bytes": 1828068,
+          "sha256": "658f7e9a1089c495096f9c038ff335b96fdeccf14a55fbbe9bbcfd8967845f31"
+        },
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 267795,
+      "domElements": 151710,
+      "renderedTableRows": 8880,
+      "visibleTableRows": 8880,
+      "navigationMs": {
+        "samples": [2165.4818000000087, 2174.334099999978, 2103.0389999999898],
+        "median": 2165.4818000000087,
+        "min": 2103.0389999999898,
+        "max": 2174.334099999978,
+        "p25": 2134.260399999999,
+        "p75": 2169.9079499999934,
+        "iqr": 35.647549999994226
+      },
+      "resultReadyMs": {
+        "samples": [5776.586499999976, 5570.184499999974, 5600.837100000004],
+        "median": 5600.837100000004,
+        "min": 5570.184499999974,
+        "max": 5776.586499999976,
+        "p25": 5585.510799999989,
+        "p75": 5688.71179999999,
+        "iqr": 103.20100000000093
+      },
+      "captureMs": null
+    },
+    {
+      "page": "quality.html",
+      "htmlBytes": 46182226,
+      "htmlSha256": "ec1d0a3470261d02ac461204906462e6a1221eb45a706f440861b6574f0de4ca",
+      "jsonBytes": 41456441,
+      "duplicateJsonBytes": 0,
+      "initialTableRows": 3006,
+      "payloads": [
+        {
+          "id": "snapshot",
+          "bytes": 41456441,
+          "sha256": "e98fa9b1930ec6540d17ee6d5568ea5d70ff2c228f6038f95e36cf8d50d46b15"
+        }
+      ],
+      "domNodes": 149127,
+      "domElements": 66099,
+      "renderedTableRows": 3006,
+      "visibleTableRows": 3006,
+      "navigationMs": {
+        "samples": [4216.534199999995, 3218.858100000012, 3670.0221999999485],
+        "median": 3670.0221999999485,
+        "min": 3218.858100000012,
+        "max": 4216.534199999995,
+        "p25": 3444.4401499999803,
+        "p75": 3943.2781999999715,
+        "iqr": 498.8380499999912
+      },
+      "resultReadyMs": {
+        "samples": [4833.3917000000365, 3833.235400000005, 4286.574299999978],
+        "median": 4286.574299999978,
+        "min": 3833.235400000005,
+        "max": 4833.3917000000365,
+        "p25": 4059.9048499999917,
+        "p75": 4559.983000000007,
+        "iqr": 500.07815000001574
+      },
+      "captureMs": null
+    }
+  ],
+  "comparison": [
+    {
+      "page": "accessibility.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "anomalies.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "audits.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "components.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "epics.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "graph.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "history.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "index.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "issues.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    },
+    {
+      "page": "quality.html",
+      "htmlBytes": -25950864,
+      "jsonBytes": -25950803,
+      "initialTableRows": 0,
+      "domNodes": -2,
+      "renderedTableRows": 0
+    }
+  ],
+  "budgetFailures": []
+}

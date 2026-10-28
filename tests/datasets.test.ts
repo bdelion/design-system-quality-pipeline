@@ -1,0 +1,449 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { mkdtemp, readFile, rename, rm, writeFile, readdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import * as fs from 'node:fs/promises';
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const original = await importOriginal<typeof import('node:fs/promises')>();
+  return { ...original, rename: vi.fn(original.rename) };
+});
+import {
+  collectRepositories,
+  dsqConfig,
+  loadDataset,
+  prepareDataset,
+  validateDataset
+} from '../src/datasets.js';
+import { runPipeline } from '../src/pipeline.js';
+import type { RawDataset } from '../src/domain/types.js';
+import { parse, stringify } from 'yaml';
+import { validateCatalogue } from '../src/catalogue.js';
+
+const execute = promisify(execFile);
+const directories: string[] = [];
+/** Réserve un espace de test indépendant des collectes et dashboards locaux. */
+async function directory() {
+  const path = await mkdtemp(join(tmpdir(), 'dsq-dataset-'));
+  directories.push(path);
+  return path;
+}
+afterEach(async () => {
+  vi.mocked(fs.rename).mockReset();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+  await Promise.all(directories.splice(0).map((path) => rm(path, { recursive: true, force: true })));
+});
+/** Fabrique des faits complets sans métadonnées de catalogue ni référence externe. */
+async function raw(): Promise<RawDataset> {
+  const config = await dsqConfig(['example/ui']);
+  return {
+    collectedAt: '2026-10-12T12:00:00Z',
+    catalogueComponents: [],
+    nexusAvailable: false,
+    repositories: [
+      {
+        id: 'repository-1',
+        owner: 'example',
+        name: 'ui',
+        defaultBranch: 'main',
+        issues: [
+          {
+            id: 'issue-1',
+            number: 1,
+            title: 'Texte privé à anonymiser',
+            state: 'OPEN',
+            issueType: 'UNKNOWN',
+            labels: [config.github.labels.componentPrefix + ' Button'],
+            criticities: [],
+            parents: [],
+            linkedPullRequestIds: [],
+            createdAt: '2026-10-01T12:00:00Z',
+            projectStatuses: []
+          }
+        ],
+        pullRequests: []
+      }
+    ]
+  };
+}
+
+it('collecte depuis la liste seule et conserve le profil appliqué sans écrire de secret', async () => {
+  vi.stubEnv('GITHUB_TOKEN', 'private-token');
+  vi.stubEnv('ANONYMIZATION_SEED', '');
+  vi.stubEnv('GITHUB_API_URL', 'https://api.test');
+  vi.stubEnv('GITHUB_GRAPHQL_URL', 'https://api.test/graphql');
+  vi.stubEnv('GITHUB_URL', 'https://github.test');
+  const root = await directory();
+  const path = join(root, 'nested', 'raw.json');
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url) => {
+      if (String(url).endsWith('/rate_limit'))
+        return Response.json({
+          resources: {
+            core: { remaining: 5000, reset: 2000000000 },
+            graphql: { remaining: 5000, reset: 2000000000 }
+          }
+        });
+      if (String(url).endsWith('/repos/example/ui'))
+        return Response.json({
+          id: 1,
+          name: 'ui',
+          full_name: 'example/ui',
+          owner: { login: 'example' },
+          default_branch: 'main'
+        });
+      if (String(url).includes('/contents/')) return new Response('', { status: 404 });
+      return Response.json([]);
+    })
+  );
+  const bounds = join(root, 'bounds.json');
+  await writeFile(bounds, JSON.stringify({ 'example/ui': '1.7.1' }));
+  await collectRepositories(['example/ui'], path, {}, bounds);
+  const content = await readFile(path, 'utf8');
+  expect(content).not.toContain('private-token');
+  expect(JSON.parse(content).collectionContext.config.githubOwner).toBe('example');
+  const context = JSON.parse(content).collectionContext;
+  expect(context.config.github.auditTracking).toEqual({ 'example/ui': '1.7.1' });
+  expect(typeof context.anonymizationSeed).toBe('string');
+  const prepared = await prepareDataset(path, join(root, 'prepared-with-local-seed'));
+  expect(JSON.stringify(prepared).includes(context.anonymizationSeed)).toBe(false);
+  const snapshot = await runPipeline(
+    join(root, 'prepared-with-local-seed'),
+    join(root, 'empty-capture-output')
+  );
+  expect(snapshot.analytics.metrics['portfolio.components']?.value).toBe('unknown');
+  expect(snapshot.analytics.metrics['issue.total']?.value).toBe(0);
+  const localSnapshot = await runPipeline(path, join(root, 'local-output'));
+  expect(localSnapshot.rawData.repositories[0]?.owner).toBe('example');
+  expect(JSON.stringify(localSnapshot).includes(context.anonymizationSeed)).toBe(false);
+  await expect(collectRepositories(['example/ui'], path)).rejects.toThrow('existant');
+  expect(await readFile(path, 'utf8')).toBe(content);
+});
+
+it('#132 : applique les bornes locales au rejeu sans modifier le contexte collecté', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const original = JSON.stringify({
+    ...(await raw()),
+    collectionContext: {
+      profileId: 'dsq',
+      config: await dsqConfig(['example/ui'])
+    }
+  });
+  await writeFile(input, original);
+  const tracking = join(root, 'tracking.json');
+  await writeFile(tracking, JSON.stringify({ 'example/ui': '1.7.1' }));
+  const output = await directory();
+  const snapshot = await runPipeline(input, output, [], undefined, undefined, tracking);
+  expect(snapshot.normalizedData.auditTracking).toEqual({ 'example/ui': '1.7.1' });
+  expect(await readFile(input, 'utf8')).toBe(original);
+  await writeFile(tracking, JSON.stringify({ 'example/ui': 'invalid' }));
+  await expect(runPipeline(input, join(root, 'invalid'), [], undefined, undefined, tracking)).rejects.toThrow(
+    'SemVer'
+  );
+});
+
+it('prépare sans catalogue et rejoue après déplacement sans modifier les faits du dataset', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const original = JSON.stringify(await raw());
+  await writeFile(input, original);
+  const dataset = await prepareDataset(input, join(root, 'dataset'), 'test-seed');
+  expect(dataset.catalogue).toBeNull();
+  await rename(join(root, 'dataset'), join(root, 'renamed'));
+  expect(await loadDataset(join(root, 'renamed'))).toEqual(dataset);
+  const snapshot = await runPipeline(join(root, 'renamed'), join(root, 'output'));
+  expect(snapshot.rawData).toEqual(dataset.rawData);
+  expect(snapshot.normalizedData.components[0]?.status).toBe('unknown');
+  expect(snapshot.normalizedData.components[0]?.owner).toBeUndefined();
+  expect(snapshot.analytics.metrics['portfolio.components']?.value).toBe('unknown');
+  expect(snapshot.analytics.metrics['portfolio.components']?.reliability.status).toBe('unknown');
+  expect(await readFile(input, 'utf8')).toBe(original);
+  expect(await readdir(join(root, 'output'))).toEqual(
+    expect.arrayContaining(['current', 'runs', 'dashboard'])
+  );
+  expect(JSON.stringify(dataset)).not.toContain('Texte privé');
+});
+
+it('génère un brouillon privé complétable sans inventer de métadonnées ni écraser une revue', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const value = await raw();
+  const config = await dsqConfig(['example/ui']);
+  config.github.labels.componentPrefix = 'DSQ:';
+  value.repositories[0]!.issues[0]!.labels = ['DSQ: Button', 'dsq: Button', 'DSQ: Modal'];
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...value,
+      collectionContext: { profileId: 'dsq', config, anonymizationSeed: 'private-seed' }
+    })
+  );
+  await prepareDataset(input, join(root, 'dataset'), '', undefined, true);
+  const path = `${input}.catalogue.draft.yaml`;
+  const content = await readFile(path, 'utf8');
+  const draft = parse(content);
+  expect(draft.draft).toBe(true);
+  expect(draft.components.map((item: { name: string }) => item.name)).toEqual(['Button', 'Modal']);
+  expect(draft.components[0]).toMatchObject({ repository: 'ui', status: null, rgaaLevel: null });
+  expect(content).not.toContain('private-seed');
+  expect(await readdir(join(root, 'dataset'))).not.toContain('catalogue.draft.yaml');
+  expect(() => validateCatalogue(draft)).toThrow('brouillon');
+  await expect(prepareDataset(input, join(root, 'rejected'), '', path)).rejects.toThrow('brouillon');
+  delete draft.draft;
+  for (const item of draft.components) {
+    Object.assign(item, {
+      owner: 'Équipe',
+      squad: 'Interface',
+      stream: 'React',
+      status: 'stable',
+      rgaaLevel: 'AA'
+    });
+  }
+  const approved = stringify(draft);
+  await writeFile(path, approved);
+  await prepareDataset(input, join(root, 'second'));
+  expect(await readFile(path, 'utf8')).toBe(approved);
+  const enriched = await prepareDataset(input, join(root, 'enriched'), '', path);
+  expect(enriched.catalogue?.components.map((item) => item.name)).toEqual(['Button', 'Modal']);
+});
+
+it('refuse les données incohérentes avant publication et les destinations existantes', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const value = await raw();
+  value.repositories[0]!.issues[0]!.linkedPullRequestIds = ['missing'];
+  await writeFile(input, JSON.stringify(value));
+  await expect(prepareDataset(input, join(root, 'dataset'), 'test-seed')).rejects.toThrow('relations');
+  const entries = await readdir(root);
+  expect(entries).not.toContain('dataset');
+  const diagnostics = entries.find((name) => name.startsWith('fixture-diagnostics-'))!;
+  const report = JSON.parse(await readFile(join(root, diagnostics, 'relations.json'), 'utf8'));
+  expect(report.relations[0]).toMatchObject({
+    sourceType: 'issue',
+    sourceNumber: value.repositories[0]!.issues[0]!.number,
+    missingType: 'PR',
+    referenceId: 'missing'
+  });
+  expect(report).not.toHaveProperty('rawData');
+  await writeFile(input, JSON.stringify(await raw()));
+  await prepareDataset(input, join(root, 'dataset'), 'test-seed');
+  await expect(prepareDataset(input, join(root, 'dataset'), 'test-seed')).rejects.toThrow(
+    'Destination existante'
+  );
+  await expect(prepareDataset(input, join(root, 'other'), '')).rejects.toThrow('ANONYMIZATION_SEED');
+});
+
+it('diagnostique une PR avant anonymisation sans exposer son identité en console', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const value = await raw();
+  value.repositories[0]!.pullRequests.push({
+    id: 'private-pr-id',
+    number: 42,
+    state: 'OPEN',
+    relatedIssueIds: ['private-missing-issue-id']
+  });
+  const original = JSON.stringify(value);
+  await writeFile(input, original);
+  let message = '';
+  try {
+    await prepareDataset(input, join(root, 'dataset'), 'private-seed');
+  } catch (error) {
+    message = (error as Error).message;
+  }
+  expect(message).toContain('Ouvrir le rapport local');
+  expect(message).toContain('Aucun dataset publié');
+  expect(message).not.toMatch(/private-pr-id|private-missing-issue-id|private-seed|example\/ui/);
+  const diagnostics = (await readdir(root)).find((name) => name.startsWith('fixture-diagnostics-'))!;
+  const reportText = await readFile(join(root, diagnostics, 'relations.json'), 'utf8');
+  expect(JSON.parse(reportText).relations[0]).toMatchObject({
+    repository: 'example/ui',
+    sourceType: 'PR',
+    sourceNumber: 42,
+    missingType: 'issue',
+    referenceId: 'private-missing-issue-id',
+    reason: 'Élément absent du RAW pour ce dépôt.'
+  });
+  expect(reportText).not.toMatch(/Texte privé|private-seed/);
+  expect(await readFile(input, 'utf8')).toBe(original);
+  expect(await readdir(root)).not.toContain('dataset');
+});
+
+it('vérifie le manifeste et refuse un profil ou périmètre corrompu sans repli implicite', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  await writeFile(input, JSON.stringify(await raw()));
+  const dataset = await prepareDataset(input, join(root, 'dataset'), 'test-seed');
+  const wrong = structuredClone(dataset);
+  wrong.config.repositories = ['unrelated'];
+  expect(() => validateDataset(wrong)).toThrow('périmètre');
+  const duplicate = structuredClone(dataset);
+  duplicate.config.repositories = [duplicate.config.repositories[0]!, duplicate.config.repositories[0]!];
+  expect(() => validateDataset(duplicate)).toThrow('repositories');
+  await writeFile(join(root, 'dataset', 'dataset.json'), JSON.stringify(wrong));
+  await expect(loadDataset(join(root, 'dataset'))).rejects.toThrow('empreinte');
+  await expect(loadDataset(join(root, 'missing'))).rejects.toMatchObject({ code: 'ENOENT' });
+  await expect(dsqConfig(['one/ui', 'two/ui'])).rejects.toThrow('owner unique');
+});
+
+it('enrichit depuis un catalogue approuvé sans modifier les faits ni inventer de métadonnées', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const catalogue = join(root, 'catalogue.yaml');
+  await writeFile(input, JSON.stringify(await raw()));
+  await writeFile(
+    catalogue,
+    JSON.stringify({
+      version: '1.0',
+      components: [
+        {
+          name: 'Button',
+          repository: 'ui',
+          stream: 'React',
+          owner: 'Team',
+          squad: 'DS',
+          status: 'stable',
+          rgaaLevel: 'AA',
+          tags: []
+        }
+      ]
+    })
+  );
+  const dataset = await prepareDataset(input, join(root, 'enriched'), 'test-seed', catalogue);
+  expect(dataset.catalogue?.components[0]?.owner).not.toBe('Team');
+  const snapshot = await runPipeline(join(root, 'enriched'), join(root, 'output'));
+  expect(snapshot.normalizedData.components[0]?.status).toBe('active');
+  expect(snapshot.analytics.metrics['portfolio.components']?.value).toBe(1);
+  expect(snapshot.rawData.catalogueComponents).toEqual([]);
+  const partial = await raw();
+  partial.repositories[0]!.issues.push({
+    ...partial.repositories[0]!.issues[0]!,
+    id: 'issue-2',
+    number: 2,
+    labels: [dataset.config.github.labels.componentPrefix + ' Other']
+  });
+  await writeFile(input, JSON.stringify(partial));
+  await prepareDataset(input, join(root, 'partial'), 'test-seed', catalogue);
+  const partialSnapshot = await runPipeline(join(root, 'partial'), join(root, 'partial-output'));
+  expect(partialSnapshot.normalizedData.components.map((component) => component.status).sort()).toEqual([
+    'active',
+    'unknown'
+  ]);
+  expect(partialSnapshot.analytics.metrics['portfolio.components']?.value).toBe('unknown');
+});
+
+it('conserve les labels métier par défaut et synchronise les alias de composants sur option', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const source = await raw();
+  await writeFile(input, JSON.stringify(source));
+  const plain = await prepareDataset(input, join(root, 'plain'), 'test-seed');
+  expect(plain.rawData.repositories[0]?.issues[0]?.labels).toEqual(source.repositories[0]?.issues[0]?.labels);
+  const anonymous = await prepareDataset(input, join(root, 'anonymous'), 'test-seed', undefined, true);
+  expect(anonymous.rawData.repositories[0]?.issues[0]?.labels).not.toEqual(
+    source.repositories[0]?.issues[0]?.labels
+  );
+  const snapshot = await runPipeline(join(root, 'anonymous'), join(root, 'anonymous-output'));
+  expect(snapshot.normalizedData.components[0]?.name).toMatch(/^component-/);
+  expect(await loadDataset(join(root, 'anonymous', 'dataset.json'))).toEqual(anonymous);
+});
+
+it('conserve les conventions capturées et transforme les règles par repository avec leurs alias', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const source = await raw();
+  const config = await dsqConfig(['example/ui']);
+  config.ruleVersion = 'captured-version';
+  config.github.labels.componentPrefix = 'Widget:';
+  config.github.accessibilityRecognition = { repositories: { ui: ['audit', 'rgaa'] } };
+  source.repositories[0]!.issues[0]!.labels = ['Widget: Button'];
+  await writeFile(input, JSON.stringify({ ...source, collectionContext: { profileId: 'dsq', config } }));
+  const dataset = await prepareDataset(input, join(root, 'dataset'), 'test-seed');
+  expect(dataset.config.ruleVersion).toBe('captured-version');
+  expect(dataset.config.github.labels.componentPrefix).toBe('Widget:');
+  const alias = dataset.rawData.repositories[0]!.name;
+  expect(dataset.config.github.accessibilityRecognition?.repositories?.[alias]).toEqual(['audit', 'rgaa']);
+  expect(config.github.accessibilityRecognition.repositories).toEqual({ ui: ['audit', 'rgaa'] });
+});
+
+it('annule une publication défaillante sans laisser de dossier partiel ni modifier le RAW', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const original = JSON.stringify(await raw());
+  await writeFile(input, original);
+  vi.mocked(fs.rename).mockRejectedValueOnce(new Error('Publication impossible'));
+  await expect(prepareDataset(input, join(root, 'dataset'), 'test-seed')).rejects.toThrow(
+    'Publication impossible'
+  );
+  expect(await readdir(root)).toEqual(['raw.json']);
+  expect(await readFile(input, 'utf8')).toBe(original);
+});
+
+it('rejette une forme RAW invalide et une destination de pipeline dans le dataset', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const source = await raw();
+  await writeFile(
+    input,
+    JSON.stringify({
+      ...source,
+      repositories: [
+        {
+          ...source.repositories[0],
+          issues: [{ ...source.repositories[0]!.issues[0], projectStatuses: [null] }]
+        }
+      ]
+    })
+  );
+  await expect(prepareDataset(input, join(root, 'invalid'), 'test-seed')).rejects.toThrow('Project');
+  await writeFile(input, JSON.stringify(source));
+  await prepareDataset(input, join(root, 'dataset'), 'test-seed');
+  await expect(runPipeline(join(root, 'dataset'), join(root, 'dataset', 'outputs'))).rejects.toThrow(
+    'distinct'
+  );
+});
+
+it('effectue le parcours CLI complet hors réseau et sans autre fichier de configuration local', async () => {
+  const root = await directory();
+  const input = join(root, 'raw.json');
+  const dataset = join(root, 'dataset');
+  await writeFile(input, JSON.stringify(await raw()));
+  await execute(process.execPath, [
+    '--import',
+    'tsx',
+    'src/cli.ts',
+    'fixture:prepare',
+    '--input',
+    input,
+    '--output',
+    dataset,
+    '--seed',
+    'test-seed'
+  ]);
+  const validation = await execute(process.execPath, [
+    '--import',
+    'tsx',
+    'src/cli.ts',
+    'fixture:validate',
+    '--dataset',
+    dataset
+  ]);
+  expect(validation.stdout).toContain('Dataset valide');
+  const result = await execute(process.execPath, [
+    '--import',
+    'tsx',
+    'src/cli.ts',
+    'pipeline',
+    '--dataset',
+    dataset,
+    '--output',
+    join(root, 'output')
+  ]);
+  expect(result.stdout).toContain('Pipeline terminé');
+  expect(result.stdout).toContain(join(root, 'output'));
+}, 30000);

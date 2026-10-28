@@ -5,36 +5,50 @@
   "description": "GitHub-first, read-only quality pipeline for Design Systems.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.15.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "node scripts/clean.mjs",
     "collect": "tsx src/cli.ts collect",
-    "validate": "tsx src/cli.ts validate",
-    "analyze": "tsx src/cli.ts analyze",
-    "snapshot": "tsx src/cli.ts snapshot",
-    "dashboard": "tsx src/cli.ts dashboard",
+    "dashboard:preview": "tsx scripts/preview-dashboard.ts",
     "pipeline": "tsx src/cli.ts pipeline",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "fixture:anonymize": "tsx src/cli.ts fixture:anonymize",
-    "fixture:validate": "tsx src/cli.ts fixture:validate"
+    "check": "npm run check:ai && npm run typecheck && npm run lint && npm run check:tsdoc && npm test && npm run build",
+    "fixture:prepare": "tsx src/cli.ts fixture:prepare",
+    "fixture:validate": "tsx src/cli.ts fixture:validate",
+    "format": "prettier --write \"{src,tests,scripts,config,docs,.github,.vscode,.agents}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
+    "format:check": "prettier --check \"{src,tests,scripts,config,docs,.github,.vscode,.agents}/**/*.{ts,tsx,js,mjs,json,jsonc,yml,yaml,md,css,html}\" \"*.{json,md,mjs,ts}\"",
+    "docs:api": "typedoc",
+    "diagnose:history": "node scripts/diagnose-history.mjs",
+    "test:browser": "playwright test",
+    "check:dashboard": "npm run check && npm run test:browser && npm run format:check && npm run docs:api",
+    "check:tsdoc": "node scripts/check-tsdoc.mjs",
+    "check:ai": "node scripts/check-ai-config.mjs",
+    "ai:index:update": "node scripts/update-ai-decisions-index.mjs",
+    "dashboard:serve": "tsx scripts/serve-dashboard.ts",
+    "benchmark:dashboard": "tsx scripts/dashboard-benchmark.ts"
   },
   "dependencies": {
+    "@octokit/request": "^10.0.16",
     "commander": "^14.0.0",
     "dotenv": "^18.0.1",
     "p-limit": "^7.3.3",
     "yaml": "^2.8.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.64.0",
     "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",
     "eslint": "^9.35.0",
+    "prettier": "3.9.9",
     "tsx": "^4.20.5",
+    "typedoc": "0.28.20",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.40.0",
     "vitest": "^5.0.2"

@@ -2,11 +2,39 @@ import { describe, expect, it } from 'vitest';
 import { METRIC_CONTRACTS, getMetricContract } from '../src/analytics/catalog.js';
 
 const generatedMetricIds = [
-  'portfolio.repositories', 'portfolio.libraries', 'portfolio.components', 'portfolio.componentsAudited', 'portfolio.auditCoverage',
-  'audit.completed', 'audit.conform', 'audit.conditional', 'audit.nonConform', 'audit.critical', 'audit.conformityRate',
-  'anomaly.total', 'anomaly.open', 'anomaly.inProgress', 'anomaly.done', 'anomaly.byCriticality.blocking', 'anomaly.byCriticality.major', 'anomaly.byCriticality.minor',
-  'anomaly.criticalityCoverage', 'anomaly.byCategory.*', 'anomaly.correctedEver', 'anomaly.reopened', 'anomaly.cancelled',
-  'anomaly.correctionDelay.average', 'anomaly.correctionDelay.median', 'anomaly.correctionDelay.p90', 'anomaly.backlog.oldestAge'
+  'portfolio.repositories',
+  'portfolio.libraries',
+  'portfolio.components',
+  'portfolio.componentsAudited',
+  'portfolio.auditCoverage',
+  'audit.completed',
+  'audit.conform',
+  'audit.conditional',
+  'audit.nonConform',
+  'audit.critical',
+  'audit.conformityRate',
+  'componentVersion.total',
+  'componentVersion.covered',
+  'componentVersion.auditCoverage',
+  'componentVersion.conform',
+  'componentVersion.nonConform',
+  'componentVersion.conformityRate',
+  'anomaly.total',
+  'anomaly.open',
+  'anomaly.inProgress',
+  'anomaly.done',
+  'anomaly.byCriticality.blocking',
+  'anomaly.byCriticality.major',
+  'anomaly.byCriticality.minor',
+  'anomaly.criticalityCoverage',
+  'anomaly.byCategory.*',
+  'anomaly.correctedEver',
+  'anomaly.reopened',
+  'anomaly.cancelled',
+  'anomaly.correctionDelay.average',
+  'anomaly.correctionDelay.median',
+  'anomaly.correctionDelay.p90',
+  'anomaly.backlog.oldestAge'
 ];
 
 describe('V2 metric contract', () => {
@@ -20,8 +48,14 @@ describe('V2 metric contract', () => {
   });
 
   it('declares flow metrics explicitly without mixing them into snapshot stocks', () => {
-    const flows = METRIC_CONTRACTS.filter((contract) => contract.kind === 'flow').map((contract) => contract.id);
+    const flows = METRIC_CONTRACTS.filter((contract) => contract.kind === 'flow').map(
+      (contract) => contract.id
+    );
     expect(flows).toEqual([
+      'issue.flow.created',
+      'issue.flow.treated',
+      'issue.flow.reopened',
+      'issue.flow.cancelled',
       'anomaly.flow.created',
       'anomaly.flow.corrected',
       'anomaly.flow.reopened',
