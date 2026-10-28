@@ -440,7 +440,7 @@ export function simplifiedModel(snapshot: Snapshot) {
       (item) => item.verdict === 'CONFORME' && completedComponents.has(item.componentId)
     );
     const conform = verdict('CONFORME');
-    conform.note += ' Métier : les anomalies non levées bloquent la conformité.';
+    conform.note += ' Verdict des audits applicables ; défauts hors audit séparés.';
     const nonConform = verdict('NON_CONFORME');
     const waitingAudits = [...state('pending'), ...waiting];
     const proofOfAuditedConform = ids(

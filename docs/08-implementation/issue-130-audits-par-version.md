@@ -1,5 +1,44 @@
 # Audits par version — correction et réconciliation #130
 
+## Résultat corrigé : primauté des audits applicables
+
+**CONFIRMÉ PAR L’UTILISATEUR ET IMPLÉMENTÉ — 28 octobre 2026.** Le verdict de
+`Component × Version` vient de ses audits terminés applicables, conformément à
+D-223/D-227/D-228. Le code qui remplaçait ce verdict par NON_CONFORME à cause
+d’autres anomalies est supprimé. Ces anomalies et leurs réserves restent visibles.
+
+Après réintégration déclarative de DateBox, regroupement confirmé de A11yProvider
+et A11yRegion en une identité métier Live Zone, puis recalcul, `1.7.1` compte
+**11 composants conformes, 15 non conformes et 50 non couverts : 76 au total**.
+Les 11 conformes sont Button, Input, Label, LinkButton, Live Zone, MediaCard, MultiButton,
+NumberInput, StringFormFragment, Tabs et Tag. Button, Input, NumberInput et
+StringFormFragment étaient exclus à tort par la surcharge des défauts hors audit.
+
+Les ratios deviennent **11/26 (42,31 %)** et **11/76 (14,47 %)**.
+Les 12 sans BUG RGAA déclaré restent une autre population : Radio possède un
+BUG reconnu par inférence dans son audit. Live Zone est désormais reconnu dans
+le catalogue et les 11 résultats d’audit conformes concernent bien 11 composants
+métier présents. Le résultat intermédiaire 10/77, avant regroupement, est remplacé.
+Les preuves Excel de A11yProvider et A11yRegion ont des présences identiques depuis
+`1.3.0` ; leurs deux cellules sont conservées dans chaque observation du groupe.
+Le fichier local `live-zone-grouping-declaration.yaml` consigne la confirmation
+utilisateur. Le rejeu final est dans `data/output/audit-precedence-live-zone/`.
+
+La section suivante conserve le diagnostic de l’ancienne capture pour expliquer
+le défaut de calcul ; ses 6/24/46 ne sont plus les résultats du pipeline corrigé.
+
+## Historique du diagnostic initial
+
+**CORRECTION DU RÉFÉRENTIEL — 28 octobre 2026.** Les chiffres ci-dessous décrivent
+la capture initiale, pas une validation de son catalogue. L’exclusion de DateBox
+était une erreur de sélection confirmée par l’utilisateur. Une présence déclarée
+depuis `0.0.2`, sans fausse cellule Excel, est ajoutée au référentiel local avec
+la référence `datebox-presence-20261028`. Le rejeu dans
+`data/output/datebox-declaration/` comporte désormais **77 composants** en `1.7.1`.
+Les discussions sur les verdicts d’AnchorDialog et Tooltip restent distinctes
+de cette correction de présence ; la réconciliation arithmétique initiale ne
+constitue pas une validation de ces verdicts.
+
 **IMPLÉMENTÉ.** Les répartitions commencent sur **Total décroissant**. La colonne
 existante `Restant` est nommée **Reste à faire** : elle compte les corrections non
 confirmées dont les statuts sont connus, hors annulations. Réalisé exige Done et
@@ -27,7 +66,8 @@ lien parent : [documentation GitHub](https://docs.github.com/en/issues/using-lab
 
 ## Réconciliation de la capture fournie
 
-Le snapshot local `data/output/20261027-0743-anonymise/current/snapshot.json`,
+Le snapshot initial conservé dans
+`data/output/20261027-0743-anonymise/runs/snapshot-20261028075208202-6ddd13b8.json`,
 capturé le 28 octobre, reproduit exactement les nombres de l’issue pour `1.7.1`.
 Il comporte les relations historiques absentes du premier diagnostic du 27 octobre.
 Les sources du dataset et le snapshot ont été lus sans modification.
@@ -55,7 +95,7 @@ Il n’est pas correct de remplacer les 6 conformes par les 12 sans déclaration
 
 Les ratios métier restent donc **6/26** et **6/76**. Un ratio 12/26 mesurerait une
 autre chose : la lecture déclarative, incluant ici un composant hors catalogue.
-Leurs définitions et les notes des preuves explicitent désormais cette distinction.
+Ces ratios décrivent l’ancien calcul ; ils sont remplacés par les résultats corrigés ci-dessus.
 
 ### Pourquoi 30 verdicts alors que 29 audits, dont 26 terminés ?
 

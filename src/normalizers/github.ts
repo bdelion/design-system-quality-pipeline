@@ -52,7 +52,7 @@ const collectedStatus: DataQualityStatus = 'reliable';
  * @param catalogue - Catalogue de composants éventuellement fourni.
  * @param auditVersion - Version des règles d'audit utilisée pour la provenance.
  * @param githubUrl - Base web capturée, utilisée uniquement en l’absence d’une URL source.
- * @param historicalComponents - Preuves locales de présence et d'identité, sans publication implicite.
+ * @param historicalComponents - Preuves locales de présence et d'identité, Excel ou déclaratives, sans publication implicite.
  * @returns Données métier normalisées, prêtes pour les contrôles et les KPI.
  */
 export function normalizeGithub(
@@ -224,7 +224,9 @@ export function normalizeGithub(
       const version = versionByLibraryAndNumber.get(`${library.libraryId}:${number}`)!;
       const localHistory = localHistories.get(repository.name);
       const localNames = new Set(
-        localHistory?.components.flatMap((c) => [c.name, ...c.history.map((h) => h.historicalName)]) ?? []
+        localHistory?.components
+          .filter((component) => component.history.some((observation) => observation.version === number))
+          .flatMap((c) => [c.name, ...c.history.map((h) => h.historicalName)]) ?? []
       );
       const names = new Set(snapshot.componentNames.filter((name) => !localNames.has(name)));
 
@@ -311,7 +313,9 @@ export function normalizeGithub(
           latestHistoricalComponentIdByName.set(key, componentId);
         const provenance = {
           source: 'catalogue' as const,
-          sourceId: `local-history:${observation.version}:${observation.evidence.map((e) => e.cell).join(',')}`,
+          sourceId: observation.declaration
+            ? `local-declaration:${observation.version}:${observation.declaration.reference}`
+            : `local-history:${observation.version}:${observation.evidence.map((e) => e.cell).join(',')}`,
           collectedAt: raw.collectedAt
         };
         if (!historicalComponentsById.has(componentId))

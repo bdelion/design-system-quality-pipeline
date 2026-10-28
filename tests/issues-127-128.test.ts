@@ -22,7 +22,7 @@ it('#127 : le ratio utilise les audits terminés et distingue résultats directs
   expect(row.cells[8]!.value).toBe(1);
   expect(row.cells[17]!.value).toBe(0);
   expect(row.cells[2]!.note).toContain('Réconciliation :');
-  expect(row.cells[8]!.note).toContain('anomalies non levées');
+  expect(row.cells[8]!.note).toContain('défauts hors audit séparés');
 });
 
 it('#128 : réconcilie restant, réalisé, annulé et inconnu sans transformer les inconnus en zéro conforme', () => {

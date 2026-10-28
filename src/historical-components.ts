@@ -5,10 +5,12 @@ export interface HistoricalComponentObservation {
   version: string;
   channel: 'release' | 'development';
   present: boolean;
-  change: 'added' | 'modified' | 'unchanged' | 'removed' | 'absent' | 'renamed';
+  change: 'added' | 'modified' | 'unchanged' | 'removed' | 'absent' | 'renamed' | 'unspecified';
   identity: string | null;
   historicalName: string;
   evidence: { cell: string; symbol: string; value: string }[];
+  /** Confirmation de présence indépendante d'un classeur ; aucun changement technique n'en est déduit. */
+  declaration?: { reference: string };
 }
 
 /** Référentiel local de présence ; ne constitue ni une publication ni un verdict d'audit. */
@@ -24,7 +26,7 @@ function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** Valide et réduit le référentiel aux preuves utiles, sans transporter les chemins privés du classeur. */
+/** Valide les preuves Excel ou les présences déclarées, sans inventer de cellules ni d'absences. */
 export function validateHistoricalComponents(value: unknown): HistoricalComponentCatalogue {
   /** Interrompt la lecture sans exposer une cellule nominative dans le diagnostic. */
   const fail = (): never => {
@@ -72,22 +74,39 @@ export function validateHistoricalComponents(value: unknown): HistoricalComponen
       !component.name ||
       components.some((c) => c.name === component.name) ||
       !Array.isArray(component.history) ||
-      component.history.length !== versions.length
+      !component.history.length
     )
       return fail();
     const history: HistoricalComponentObservation[] = [];
+    const declarative = component.history.every(
+      (observation: unknown) => record(observation) && observation.declaration !== undefined
+    );
+    if (
+      !declarative &&
+      component.history.some(
+        (observation: unknown) => record(observation) && observation.declaration !== undefined
+      )
+    )
+      return fail();
+    if (!declarative && component.history.length !== versions.length) return fail();
+    let previousVersionIndex = -1;
     const ended = new Set<string>();
     let previous: HistoricalComponentObservation | undefined;
     for (const [index, observation] of component.history.entries()) {
-      const version = versions[index]!;
+      const versionIndex = declarative
+        ? versions.findIndex((version) => record(observation) && version.version === observation.version)
+        : index;
+      const version = versions[versionIndex];
       if (
+        !version ||
+        versionIndex <= previousVersionIndex ||
         !record(observation) ||
         observation.version !== version.version ||
         observation.channel !== version.channel ||
         typeof observation.present !== 'boolean' ||
         typeof observation.historicalName !== 'string' ||
         !observation.historicalName ||
-        !['added', 'modified', 'unchanged', 'removed', 'absent', 'renamed'].includes(
+        !['added', 'modified', 'unchanged', 'removed', 'absent', 'renamed', 'unspecified'].includes(
           String(observation.change)
         ) ||
         !(
@@ -97,7 +116,20 @@ export function validateHistoricalComponents(value: unknown): HistoricalComponen
         !Array.isArray(observation.evidence)
       )
         return fail();
-      if (observation.present && (!observation.identity || !observation.evidence.length)) return fail();
+      previousVersionIndex = versionIndex;
+      if (declarative) {
+        if (
+          !record(observation.declaration) ||
+          typeof observation.declaration.reference !== 'string' ||
+          !observation.declaration.reference.trim() ||
+          !observation.present ||
+          observation.change !== 'unspecified' ||
+          observation.evidence.length
+        )
+          return fail();
+      } else if (observation.change === 'unspecified') return fail();
+      if (observation.present && (!observation.identity || (!declarative && !observation.evidence.length)))
+        return fail();
       if (observation.present) {
         const key = `${version.version}:${observation.historicalName}`;
         const owner = historicalNames.get(key);
@@ -119,19 +151,21 @@ export function validateHistoricalComponents(value: unknown): HistoricalComponen
       )
         return fail();
       if (
+        !declarative &&
         observation.present !==
-        observation.evidence.some((e) =>
-          ['+', '~', '='].includes((e as { value: string }).value.split('\n')[0]!)
-        )
+          observation.evidence.some((e) =>
+            ['+', '~', '='].includes((e as { value: string }).value.split('\n')[0]!)
+          )
       )
         return fail();
       const wasPresent = previous?.present ?? false;
       if (
-        observation.present
+        !declarative &&
+        (observation.present
           ? wasPresent
             ? !['modified', 'unchanged', 'renamed'].includes(String(observation.change))
             : observation.change !== 'added'
-          : observation.change !== (wasPresent ? 'removed' : 'absent')
+          : observation.change !== (wasPresent ? 'removed' : 'absent'))
       )
         return fail();
       if (wasPresent && observation.present && previous!.identity !== observation.identity) return fail();
@@ -150,6 +184,7 @@ export function validateHistoricalComponents(value: unknown): HistoricalComponen
         change: checked.change,
         identity: checked.identity,
         historicalName: checked.historicalName,
+        ...(checked.declaration ? { declaration: { reference: checked.declaration.reference } } : {}),
         evidence: checked.evidence.map((e) => ({ cell: e.cell, symbol: e.symbol, value: e.value }))
       });
       previous = checked;
@@ -188,7 +223,7 @@ export function historicalRepository(history: HistoricalComponentCatalogue, raw:
   return matches[0]!.name;
 }
 
-/** Anonymise les noms et les identités en conservant les cellules justificatives et les liens temporels. */
+/** Anonymise noms, identités et références déclaratives en conservant les preuves et liens temporels. */
 export function anonymizeHistoricalComponents(
   history: HistoricalComponentCatalogue,
   repository: string,
@@ -208,6 +243,7 @@ export function anonymizeHistoricalComponents(
         ...h,
         identity: h.identity ? identity(h.identity) : null,
         historicalName: componentName(h.historicalName),
+        ...(h.declaration ? { declaration: { reference: identity(h.declaration.reference) } } : {}),
         evidence: h.evidence.map((e) => ({
           cell: e.cell,
           symbol: componentName(e.symbol),

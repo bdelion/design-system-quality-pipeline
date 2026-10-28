@@ -11,6 +11,7 @@ import type { Audit, ComponentVersion, NormalizedData, Version } from '../domain
  * Matérialise D-220 à D-228 : héritage pour une identité stable sur les versions PROD suivantes.
  * La cohorte de la version auditée la plus récente applicable remplace les cohortes antérieures ;
  * chaque audit terminé et daté de cette cohorte contribue au verdict.
+ * D-227/D-228 : les anomalies hors cohorte ne remplacent ni ce résultat ni NON_COUVERT.
  */
 export function applyComponentVersionVerdicts(data: NormalizedData): void {
   const versions = data.versions ?? [];
@@ -33,25 +34,6 @@ export function applyComponentVersionVerdicts(data: NormalizedData): void {
         : auditCohortIsConform(applicable, data)
           ? 'CONFORME'
           : 'NON_CONFORME';
-    const currentBugs = data.anomalies.filter(
-      (anomaly) =>
-        anomaly.accessibility &&
-        !anomaly.neutralized &&
-        data.issues
-          ?.find((issue) => issue.issueId === anomaly.issueId)
-          ?.componentIds.includes(relation.componentId)
-    );
-    if (
-      currentBugs.some((anomaly) => {
-        const review = data.issues?.find((issue) => issue.issueId === anomaly.issueId)?.review;
-        return (
-          review &&
-          (!review.correctionConfirmed ||
-            !review.verifyingAuditIds.some((id) => applicable.some((audit) => audit.auditId === id)))
-        );
-      })
-    )
-      relation.verdict = 'NON_CONFORME';
   }
 }
 

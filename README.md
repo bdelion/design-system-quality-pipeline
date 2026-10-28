@@ -10,6 +10,13 @@ Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)
 
 ## Démarrer sans GitHub
 
+Pour conserver les corrections DateBox/Live Zone lors des prochaines collectes,
+voir les [fichiers locaux à sauvegarder et commandes de reprise](docs/08-implementation/reprise-locale-dashboards.md).
+
+Une présence historique confirmée peut être importée sans classeur Excel avec
+une provenance déclarative explicite, sans déduire de conformité : voir le
+[contrat des datasets](docs/08-implementation/datasets.md).
+
 Le [diagnostic #130 des audits par version](docs/08-implementation/issue-130-audits-par-version.md)
 explique les écarts entre catalogue, audits, déclarations et verdicts métier, ainsi
 que les liens GitHub des répartitions.

@@ -10,7 +10,7 @@
 - Le composant vient du label de l’issue, jamais de son parent audit. Les anomalies sans composant ont une liste et un compteur distincts. Les labels valides restent reconnus hors catalogue, avec réserve. L’exception exacte InputPagination est validée ; la généralisation à tous les labels égaux au catalogue reste **PROPOSÉE**, non appliquée.
 - Une anomalie compte une fois par composant, y compris dans le total global ; le nombre d’issues distinctes est séparé. Le multi-composant d’une anomalie est signalé comme à séparer. Un audit a exactement un composant ; sinon il reste consultable sans produire de verdict.
 - Un désaccord entre composant de l’audit et de l’anomalie est signalé. L’anomalie compte pour son propre composant ; elle ne bloque pas un résultat sans anomalie pour l’autre composant.
-- Les bugs sans audit restent visibles, ouverts ou fermés. Les bugs d’accessibilité connus sans audit affectent le composant mais pas les compteurs des audits. Les améliorations ont un compteur cliquable distinct et n’affectent pas la conformité.
+- Les bugs sans audit restent visibles, ouverts ou fermés. Les bugs d’accessibilité connus sans audit affectent l’inventaire des défauts du composant, pas le verdict de l’audit applicable ni ses compteurs (D-227, clarification utilisateur du 28 octobre 2026). Les améliorations ont un compteur cliquable distinct et n’affectent pas la conformité.
 
 ## Corrections et annulations
 

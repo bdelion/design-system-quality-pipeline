@@ -1,3 +1,13 @@
+## Primauté des audits applicables — non publiée
+
+- Correction de D-227/D-228 : les défauts hors audit ne remplacent plus les verdicts de Component × Version ; les défauts et réserves individuels restent visibles.
+- Rejeu de 1.7.1 avec DateBox et le regroupement métier Live Zone (A11yProvider + A11yRegion) : 11 conformes, 15 non conformes, 50 non couverts sur 76 composants ; ratios 11/26 et 11/76.
+
+## Historique déclaratif de DateBox — non publiée
+
+- Présences historiques confirmées sans Excel : provenance déclarative conservée, changements non renseignés et aucune absence inventée avant la première observation.
+- Correction locale de l’exclusion de DateBox depuis 0.0.2 ; catalogue 1.7.1 recalculé à 77 composants, sans déduction de conformité.
+
 ## Audits par version (#130) — non publiée
 
 - Répartitions initialement triées par Total décroissant ; colonne existante Restant renommée Reste à faire, avec états inconnus séparés.
