@@ -61,6 +61,16 @@ test('#124–#128 : ancienneté civile, traitement, liens de cohortes et répart
     await expect(campaign.locator('td').nth(12).getByRole('button')).toHaveText('1');
     await expect(campaign.locator('td').nth(17).getByRole('button')).toHaveText('0');
     const criticality = page.locator('[data-table-id="audit-criticality"]');
+    for (const id of ['audit-criticality', 'audit-category', 'audit-component']) {
+      const distribution = page.locator(`[data-table-id="${id}"]`);
+      await expect(distribution.getByLabel('Trier par', { exact: true })).toHaveValue('3');
+      await expect(distribution.getByLabel('Ordre', { exact: true })).toHaveValue('-1');
+      await expect(distribution.getByRole('columnheader', { name: /Reste à faire/ })).toBeVisible();
+      await expect(distribution.getByRole('columnheader', { name: /^Total/ })).toHaveAttribute(
+        'aria-sort',
+        'descending'
+      );
+    }
     await expect(criticality.locator('tbody tr')).toHaveCount(1);
     await criticality.getByLabel('Population représentée').selectOption('5');
     await expect(criticality.locator('meter')).toHaveAttribute('value', '1');

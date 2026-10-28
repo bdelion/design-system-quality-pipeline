@@ -10,6 +10,10 @@ Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)
 
 ## Démarrer sans GitHub
 
+Le [diagnostic #130 des audits par version](docs/08-implementation/issue-130-audits-par-version.md)
+explique les écarts entre catalogue, audits, déclarations et verdicts métier, ainsi
+que les liens GitHub des répartitions.
+
 Le [diagnostic des calculs d’audit (#49)](docs/08-implementation/issue-49-audit-diagnostic.md) distingue la campagne courante, les relations parent collectées et les preuves historiques nécessaires aux verdicts par version.
 
 Les [conventions d’affichage du dashboard](docs/08-implementation/dashboard-coherence.md#référentiel-commun) précisent notamment les tris des tableaux et répartitions.

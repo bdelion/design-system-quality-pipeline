@@ -30,7 +30,7 @@ export function auditChildAnomalies(data: NormalizedData, audits: Audit[]) {
   ];
 }
 
-/** Prépare les trois répartitions par campagne ; chaque case conserve ses issues distinctes et ses inconnues. */
+/** Prépare les répartitions et leur reste à faire ; chaque case conserve ses issues distinctes et ses inconnues. */
 export function auditDistributionTables(data: NormalizedData): SimpleTable[] {
   const anomalies = auditChildAnomalies(data, data.audits);
   const audits = new Map(data.audits.map((audit) => [audit.auditId, audit]));
@@ -76,7 +76,16 @@ export function auditDistributionTables(data: NormalizedData): SimpleTable[] {
       title: 'Anomalies d’audit — ' + name.toLocaleLowerCase('fr'),
       description:
         'Issues distinctes liées aux audits de la version, sans héritage. Réalisé = correction confirmée (Done + PR fusionnée), sans preuve automatique de conformité. Annulées et états inconnus séparés. Une issue multi-critères/composants peut apparaître dans plusieurs lignes.',
-      headers: ['Librairie', 'Version', name, 'Total', 'Restant', 'Réalisé', 'Annulées', 'Statut inconnu'],
+      headers: [
+        'Librairie',
+        'Version',
+        name,
+        'Total',
+        'Reste à faire',
+        'Réalisé',
+        'Annulées',
+        'Statut inconnu'
+      ],
       populationColumns: [3, 4, 5],
       rows: [...groups.entries()].map(([key, group]) => {
         const ids = [...new Set(group.ids)];

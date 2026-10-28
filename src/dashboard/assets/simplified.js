@@ -372,14 +372,14 @@ function selected(table, local) {
       )
     );
 }
-/** Installe tableau, filtre de population et représentation des effectifs déjà calculés. */
+/** Installe les tableaux ; les répartitions commencent par Total décroissant, avant pagination et export. */
 function mount(table) {
   const local = state.get(table.id) || {
     page: 0,
     size: 25,
     search: '',
-    sort: 0,
-    direction: 1,
+    sort: table.populationColumns ? 3 : 0,
+    direction: table.populationColumns ? -1 : 1,
     from: '',
     to: ''
   };
@@ -569,7 +569,9 @@ function mount(table) {
                 ? { state: 'open', requireState: true, directSingle: false }
                 : table.id === 'component-activity' && [6, 7, 8, 11].includes(index)
                   ? { allowBroader: false }
-                  : {}
+                  : space === 'versions'
+                    ? { matchLabels: false }
+                    : {}
             )
           );
         } else markReview('s3g', element('span', display(cell.value), td));

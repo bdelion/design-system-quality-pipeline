@@ -1,3 +1,9 @@
+## Audits par version (#130) — non publiée
+
+- Répartitions initialement triées par Total décroissant ; colonne existante Restant renommée Reste à faire, avec états inconnus séparés.
+- Liens limités aux labels métier de la dimension, sans Grooming accidentel ; sélection des audits parents dans une vue Project configurée, sans milestone parent appliquée aux enfants.
+- Notes de réconciliation catalogue/audits/verdicts et diagnostic des écarts 6/12, 24/14, 30/29 et 76/46. Lecture déclarative D-246 et verdicts métier conservés.
+
 ## Configuration des conventions — non publiée
 
 - Conventions de compatibilité déplacées du TypeScript vers `config/defaults/`, sans changement de leurs valeurs ; Grooming explicite dans le profil DSQ.

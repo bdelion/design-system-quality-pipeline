@@ -4,6 +4,59 @@ import { simplifiedModel } from '../src/analytics/simplified-dashboard.js';
 import { normalizeGithub } from '../src/normalizers/github.js';
 import { consolidationRaw, consolidationSnapshot, rules, rawIssue } from './support/consolidation.js';
 
+it('#130 : les répartitions ciblent les labels métier sans reprendre Grooming ni la milestone enfant', () => {
+  const snapshot = consolidationSnapshot();
+  const child = snapshot.normalizedData.issues!.find((issue) => issue.issueId === 'anomaly-a')!;
+  child.labels.push('Grooming');
+  child.labels = child.labels.map((label) => (label === 'rgaa:major' ? 'rgaa:Major' : label));
+  const raw = snapshot.rawData.repositories
+    .flatMap((repo) => repo.issues)
+    .find((issue) => issue.id === child.issueId)!;
+  raw.milestone = { id: 99, number: 99, title: '9.0.0' };
+  const model = simplifiedModel(snapshot);
+  applyReviewLinks(snapshot, model.tables, rules);
+  for (const id of ['audit-criticality', 'audit-category', 'audit-component']) {
+    const cell = model.tables.find((table) => table.id === id)!.rows[0]!.cells[3]!;
+    expect(cell.url).toBeDefined();
+    const query = new URL(cell.url!).searchParams.get('q')!;
+    expect(query).not.toContain('Grooming');
+    expect(query).not.toContain('milestone:');
+    expect(query).toContain('label:');
+    expect(cell.note).toContain('parent');
+    expect(cell.searchApproximate).toBe(true);
+  }
+});
+
+it('#130 : un Project peut sélectionner les parents de la version sans imposer Done aux enfants', () => {
+  const snapshot = consolidationSnapshot();
+  const model = simplifiedModel(snapshot);
+  applyReviewLinks(snapshot, model.tables, rules, {
+    url: 'https://github.com/orgs/acme/projects/1/views/1',
+    keywords: { DONE: ['Done'] }
+  });
+  const cell = model.tables.find((table) => table.id === 'audit-criticality')!.rows[0]!.cells[3]!;
+  const query = new URL(cell.url!).searchParams.get('filterQuery')!;
+  expect(query).toContain('parent-issue:"acme/ds-react#1"');
+  expect(query).toContain('label:"rgaa:major"');
+  expect(query).not.toContain('status:');
+  expect(query).not.toContain('milestone:');
+});
+
+it('#130 : les campagnes ne reprennent pas un label commun sans rôle dans la reconnaissance des audits', () => {
+  const snapshot = consolidationSnapshot();
+  for (const issue of snapshot.normalizedData.issues!) {
+    delete issue.rawIssueType;
+    issue.labels.push('Préparation');
+  }
+  const model = simplifiedModel(snapshot);
+  applyReviewLinks(snapshot, model.tables, rules, {
+    url: 'https://github.com/orgs/acme/projects/1/views/1',
+    keywords: { DONE: ['Done'] }
+  });
+  const row = model.campaigns.find((item) => item.version === '1.0.0')!;
+  expect(new URL(row.cells[6]!.url!).searchParams.get('filterQuery')).not.toContain('Préparation');
+});
+
 it('#126/#127 : liens de périmètre avec préfixe, Closed, Project Done et milestones sources', () => {
   const snapshot = consolidationSnapshot();
   const model = simplifiedModel(snapshot);
