@@ -12,6 +12,13 @@ sont dans `config/defaults/`. Pour les personnaliser au rejeu, voir les
 
 Le **[guide d’utilisation unique](docs/08-implementation/guide-utilisation.md)** regroupe les commandes, toutes leurs options, les fichiers requis et les recettes : dashboard GitHub à jour, rejeu privé, jeu anonymisé, catalogues et historiques.
 
+Le [rôle des catalogues par commande](docs/08-implementation/catalogues-et-commandes.md)
+précise quand sont lus les catalogues GitHub aux tags PROD, le catalogue courant
+et les référentiels historiques locaux, puis ce que l’anonymisation embarque.
+
+Pour produire ces référentiels depuis les classeurs `*_component_comparison.xlsx`,
+utiliser [`components:import`](docs/08-implementation/import-comparaisons-excel.md).
+
 ## Démarrer sans GitHub
 
 Dans les trois répartitions d’anomalies d’audit, la colonne **Traités** affiche
