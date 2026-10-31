@@ -153,6 +153,7 @@ Aucun déplacement massif de l'ancienne documentation n'est attendu tant que cet
 
 - [Première utilisation et scripts, pas à pas](08-implementation/guide-utilisation.md)
 - [Catalogues de composants : collecte, anonymisation et rejeu](08-implementation/catalogues-et-commandes.md)
+- [Générer les historiques depuis les comparaisons Excel](08-implementation/import-comparaisons-excel.md)
 - [Quotas GitHub, arrêt, décompte et reprise en mémoire](08-implementation/quotas-github.md)
 
 - [Fichiers nécessaires par source, isolation et renouvellement des données de test](08-implementation/configurations-et-tests.md)

@@ -1,5 +1,8 @@
 # Catalogues de composants : collecte, anonymisation et rejeu
 
+Pour constituer les référentiels locaux depuis les classeurs de comparaison,
+voir [l’import Excel par librairie](import-comparaisons-excel.md).
+
 **IMPLÉMENTÉ.** Cette page précise quelles sources sont lues par les commandes,
 à quel moment et ce qui est conservé. Les recettes sont dans le
 [guide d’utilisation](guide-utilisation.md#8-enrichir-un-jeu-avec-un-catalogue-ou-un-historique)
