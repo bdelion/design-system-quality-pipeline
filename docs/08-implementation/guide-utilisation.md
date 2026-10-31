@@ -108,6 +108,9 @@ Un serveur déjà démarré continue de servir son dossier initial. Pour consult
 
 ## 8. Enrichir un jeu avec un catalogue ou un historique
 
+Pour identifier les sources lues à chaque étape, consulter
+[Catalogues de composants : collecte, anonymisation et rejeu](catalogues-et-commandes.md).
+
 ### Compléter le catalogue métier courant
 
 Une première préparation sans `--catalogue` depuis un RAW crée ou conserve `data/local/mon-jeu/raw.json.catalogue.draft.yaml`, à côté du RAW. Ce brouillon garde les noms réels : le conserver privé. Compléter les valeurs « À remplacer », les dépôts et les champs `null` avec des informations vérifiées, puis retirer `draft: true` après revue.
