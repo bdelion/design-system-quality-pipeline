@@ -14,8 +14,8 @@
     },
     {
       "page": "simplified/index.html",
-      "htmlBytes": 70577,
-      "jsonBytes": 67478,
+      "htmlBytes": 70855,
+      "jsonBytes": 67756,
       "initialTableRows": 0,
       "domNodes": 1570,
       "renderedTableRows": 24
@@ -105,8 +105,8 @@
     },
     "measured": {
       "page": "simplified/index.html",
-      "htmlBytes": 70577,
-      "jsonBytes": 67478,
+      "htmlBytes": 70855,
+      "jsonBytes": 67756,
       "initialTableRows": 0,
       "domNodes": 1570,
       "renderedTableRows": 24

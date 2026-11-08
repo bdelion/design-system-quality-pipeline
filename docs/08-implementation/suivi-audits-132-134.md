@@ -65,8 +65,13 @@ dernier audit applicable tous traités après ce dernier audit terminé.
 **IMPLÉMENTÉ le 8 novembre 2026 :** la population d’audit et les dénominateurs
 des tableaux simplifiés retiennent uniquement les relations latest dont le
 composant possède `kind: ui`, rapproché exactement par `Public Names` / `name`.
-Les audits associés à des composants classés non-UI ou sans `kind` sont exclus
-des listes et de ces ratios. Les relations sans `kind` restent comptées comme
+Les audits des composants classés UI restent comptés par version même si la
+relation de ce composant au catalogue versionné manque ; seuls les
+dénominateurs de composants s’appuient sur les relations UI présentes dans
+cette version. Les audits associés à des composants classés non-UI ou sans
+`kind` sont exclus des compteurs UI. Un audit reste « en cours » dès qu’un de
+ses contextes projet porte un statut reconnu comme actif, même si un autre
+contexte est inconnu. Les relations sans `kind` restent comptées comme
 non classifiées et leurs effectifs figurent dans les réserves ; elles ne sont
 jamais assimilées à des composants non-UI. Dans l’exemple Excel/JSON fourni,
 83 noms publics UI correspondent exactement et forment la population UI

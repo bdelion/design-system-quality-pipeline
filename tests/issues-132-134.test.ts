@@ -229,3 +229,29 @@ it('#134 : limite la liste et les ratios aux kind ui et réserve les classificat
   expect(campaign.cells[2]?.note).toContain('Exclus (non-UI/sans kind/audits) : 1/1/0');
   expect(campaign.cells[7]?.note).toContain('dénominateur : 1');
 });
+
+it('conserve un audit UI en cours même sans relation de version et avec un autre statut inconnu', () => {
+  const snapshot = consolidationSnapshot();
+  const data = snapshot.normalizedData;
+  const ui = data.components[0]!;
+  ui.kind = 'ui';
+  const version = data.versions!.find((item) => item.number === '2.0.0')!;
+  const audit = data.audits.find((item) => item.issueId === 'audit-ongoing')!;
+  audit.componentId = ui.componentId;
+  audit.version = version.number;
+  audit.versionId = version.versionId;
+  data.componentVersions = data.componentVersions!.filter(
+    (relation) => !(relation.componentId === ui.componentId && relation.versionId === version.versionId)
+  );
+  const issue = data.issues!.find((item) => item.issueId === audit.issueId)!;
+  const unknownContext = structuredClone(issue.projectContexts[0]!);
+  unknownContext.projectId = 'unknown-project';
+  unknownContext.statusHistory = [];
+  delete unknownContext.status;
+  issue.projectContexts.push(unknownContext);
+
+  const campaign = simplifiedModel(snapshot).campaigns.find((row) => row.version === version.number)!;
+  expect(campaign.cells[3]?.value).toBe(2);
+  expect(campaign.cells[5]?.value).toBe(1);
+  expect(campaign.cells[16]?.value).toBe(0);
+});

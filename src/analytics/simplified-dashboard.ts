@@ -385,7 +385,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     id: 'campaigns',
     title: 'Audits et composants par version',
     description:
-      'Périmètre des composants et ratios : composants kind ui uniquement. Les composants sans kind restent non classifiés et sont exclus des populations UI ; leurs effectifs sont signalés dans les notes. En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants UI conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
+      'Périmètre des composants et ratios : composants kind ui uniquement. Les compteurs d’audits portent sur leurs audits par version, même si la relation catalogue de cette version manque ; les dénominateurs restent limités aux relations UI connues de la version. Les composants sans kind restent non classifiés et sont exclus des populations UI ; leurs effectifs sont signalés dans les notes. Un statut est inconnu seulement si aucun contexte projet n’a de statut reconnu. En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants UI conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
     headers: [
       'Librairie',
       'Version',
@@ -460,7 +460,7 @@ function repositoryUrl(snapshot: Snapshot, repository: string, suffix: string): 
     : '';
 }
 
-/** Produit les campagnes et leurs preuves pour le catalogue et les audits du périmètre fourni. */
+/** Construit les campagnes UI en séparant le catalogue de composants des événements d’audit. */
 function campaignRows(data: NormalizedData): SimpleRow[] {
   const issues = data.issues ?? [];
   const issueMap = new Map(issues.map((issue) => [issue.issueId, issue]));
@@ -493,17 +493,16 @@ function campaignRows(data: NormalizedData): SimpleRow[] {
     ];
     const population = auditComponentPopulation(data, allRelations);
     const relations = population.ui;
-    const uiComponentIds = new Set(relations.map((relation) => relation.componentId));
+    const uiComponentIds = new Set(
+      data.components.filter((component) => component.kind === 'ui').map((component) => component.componentId)
+    );
     const audits = campaignAudits.filter((audit) => uiComponentIds.has(audit.componentId));
     const excludedAudits = campaignAudits.length - audits.length;
     /** Sélectionne les audits selon leur progression déjà normalisée. */
     const unknown = audits.filter((audit) => {
       const source = issueMap.get(audit.issueId);
-      return (
-        source &&
-        (!source.projectContexts.length ||
-          source.projectContexts.some((context) => !currentProjectStatus(context)))
-      );
+      const statuses = source?.projectContexts.map((context) => currentProjectStatus(context)) ?? [];
+      return source && (!statuses.length || statuses.every((status) => status === undefined));
     });
     /** Compte les progressions connues séparément des statuts manquants. */
     const state = (name: string) =>
