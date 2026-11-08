@@ -23,7 +23,9 @@ describe('import des comparaisons Excel', () => {
     try {
       const input = join(directory, 'input');
       const output = join(directory, 'output');
+      const dependencyCatalogs = join(directory, 'dependency-catalogs');
       await mkdir(input);
+      await mkdir(dependencyCatalogs);
       await writeFile(
         join(input, 'lib_component_comparison.xlsx'),
         await workbook([
@@ -40,6 +42,8 @@ describe('import des comparaisons Excel', () => {
         input,
         '--output',
         output,
+        '--dependency-catalogs',
+        dependencyCatalogs,
         '--repositories',
         mapping
       ];
@@ -48,6 +52,9 @@ describe('import des comparaisons Excel', () => {
       const original = await readFile(file, 'utf8');
       expect(validateHistoricalComponents(parse(original)).repository).toBe('org/lib');
       expect(JSON.parse(await readFile(join(output, 'rapport.json'), 'utf8'))[0].components).toBe(1);
+      expect(JSON.parse(await readFile(join(output, 'rapport.json'), 'utf8'))[0].warnings[0]).toContain(
+        'absent'
+      );
       await expect(promisify(execFile)(process.execPath, args)).rejects.toThrow();
       expect(await readFile(file, 'utf8')).toBe(original);
     } finally {
@@ -73,6 +80,34 @@ describe('import des comparaisons Excel', () => {
       change: 'modified',
       evidence: [{ cell: 'C2', symbol: 'Button', value: '~\ndiffAST' }]
     });
+  });
+
+  it('attribue le kind par correspondance exacte avec les Public Names et conserve les autres lignes', async () => {
+    const result = await importComponentComparison(
+      await workbook([
+        ['Component', 'Source File', 'Public Names', '1.0.0'],
+        ['Button', 'src/button.tsx', 'Button', '+'],
+        ['helper', 'src/helper.ts', 'helper', '+'],
+        ['Unmatched', 'src/unmatched.ts', 'OtherName', '+']
+      ]),
+      'lib_component_comparison.xlsx',
+      'org/lib',
+      new Map([
+        ['Button', 'ui'],
+        ['helper', 'value']
+      ])
+    );
+
+    expect(result.catalogue.components.map(({ name, kind }) => [name, kind])).toEqual([
+      ['Button', 'ui'],
+      ['helper', 'value'],
+      ['Unmatched', undefined]
+    ]);
+    expect(result.exports[0]?.publicNames).toEqual(['Button']);
+    expect(validateHistoricalComponents(result.catalogue).components[0]?.kind).toBe('ui');
+    expect(result.warnings).toContain(
+      'Ligne 4 (OtherName) : aucun nom ne correspond au catalogue de dépendances.'
+    );
   });
 
   it('conserve une identité après renommage et en crée une autre après disparition', async () => {

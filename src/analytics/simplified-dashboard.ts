@@ -85,6 +85,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     )
   );
   const data = snapshot.normalizedData;
+  const hasComponentKinds = data.components.some((component) => component.kind !== undefined);
   const issues = data.issues ?? [];
   const facts = projectIssueFacts(data, snapshot.dataQuality.issues);
   const review = snapshot.analytics.businessReview ?? businessReview(data);
@@ -152,7 +153,15 @@ export function simplifiedModel(snapshot: Snapshot) {
                 issue.review.verification !== 'verified'
             )
           )
-        )
+        ),
+        ...(hasComponentKinds
+          ? [
+              cell(
+                data.components.find((component) => component.componentId === row.componentId)?.kind ?? null,
+                ids(related)
+              )
+            ]
+          : [])
       ]
     };
   });
@@ -167,7 +176,8 @@ export function simplifiedModel(snapshot: Snapshot) {
       'Bugs d’accessibilité',
       'Corrections d’accessibilité confirmées',
       'Bugs sans audit',
-      'Accessibilité sans vérification'
+      'Accessibilité sans vérification',
+      ...(hasComponentKinds ? ['Kind'] : [])
     ],
     rows: componentRows
   });

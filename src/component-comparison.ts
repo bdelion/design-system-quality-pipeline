@@ -13,7 +13,13 @@ export interface ComparisonImport {
   catalogue: HistoricalComponentCatalogue;
   source: { workbook: string; sheet: string; sha256: string };
   warnings: string[];
-  exports: { name: string; row: number; sourceFile: string; sourceName: string }[];
+  exports: {
+    name: string;
+    row: number;
+    sourceFile: string;
+    sourceName: string;
+    publicNames: string[];
+  }[];
 }
 
 /** Lit une cellule textuelle sans transformer une formule ou une erreur en absence. */
@@ -36,7 +42,8 @@ function exportName(value: string): string {
 export async function importComponentComparison(
   buffer: Buffer,
   filename: string,
-  repository: string
+  repository: string,
+  dependencyKinds?: ReadonlyMap<string, string>
 ): Promise<ComparisonImport> {
   if (!repository.trim()) throw new Error('Repository requis.');
   const workbook = new ExcelJS.Workbook();
@@ -66,6 +73,7 @@ export async function importComponentComparison(
     if (!columns.has(required)) throw new Error(`Colonne ${required} absente.`);
   versions.sort((a, b) => compareHistoricalVersions(a.version, b.version));
   if (!versions.length) throw new Error('Aucune colonne de version reconnue.');
+  const publicNamesColumn = columns.get('Public Names');
   const rows: { row: ExcelJS.Row; name: string; source: string }[] = [];
   sheet.eachRow((row, index) => {
     if (index === 1) return;
@@ -135,7 +143,29 @@ export async function importComponentComparison(
       previous = observation;
       return observation;
     });
-    return { name: qualified, history };
+    const publicNames = publicNamesColumn
+      ? text(row.getCell(publicNamesColumn))
+          .split(/[,;\n]/u)
+          .map((value) => value.trim())
+          .filter(Boolean)
+      : [name];
+    const matchedKinds = [
+      ...new Set(
+        publicNames.flatMap((publicName) => {
+          const kind = dependencyKinds?.get(publicName);
+          return kind ? [kind] : [];
+        })
+      )
+    ];
+    if (dependencyKinds && !matchedKinds.length)
+      warnings.push(
+        `Ligne ${row.number} (${publicNames.join(', ') || 'Public Names vide'}) : aucun nom ne correspond au catalogue de dépendances.`
+      );
+    if (matchedKinds.length > 1)
+      warnings.push(
+        `Ligne ${row.number} (${publicNames.join(', ')}) : plusieurs kind trouvés ; kind laissé inconnu.`
+      );
+    return { name: qualified, history, ...(matchedKinds.length === 1 ? { kind: matchedKinds[0] } : {}) };
   });
   const review = workbook.getWorksheet('Historique à vérifier');
   if (review && review.actualRowCount > 1)
@@ -159,7 +189,13 @@ export async function importComponentComparison(
       name: counts.get(name)! > 1 ? `${name} [ligne ${row.number}]` : name,
       row: row.number,
       sourceFile: source,
-      sourceName: name
+      sourceName: name,
+      publicNames: publicNamesColumn
+        ? text(row.getCell(publicNamesColumn))
+            .split(/[,;\n]/u)
+            .map((value) => value.trim())
+            .filter(Boolean)
+        : [name]
     }))
   };
 }

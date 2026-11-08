@@ -11,6 +11,23 @@ La lecture XLSX utilise [ExcelJS](https://github.com/exceljs/exceljs).
 npm.cmd run components:import -- --input .tmp --output config/local/historiques-excel-v1
 ```
 
+Pour enrichir les lignes Excel avec le `kind` du graphe de dépendances, ajouter
+`--dependency-catalogs` :
+
+```powershell
+npm.cmd run components:import -- --input .tmp/excel --dependency-catalogs .tmp/catalogues --output config/local/historiques-excel-v2
+```
+
+Le script associe les fichiers par préfixe de librairie :
+`<librairie>_component_comparison.xlsx` et
+`<librairie>-component-dependency-graph.dependencies.catalog.json`. Les noms de
+la colonne `Public Names` sont rapprochés exactement, casse comprise, de
+`nodes[].name`. Le `kind` est conservé sur la ligne historique lorsque
+les correspondances sont univoques. Tous les exports Excel restent dans
+l'historique ; le rapport indique les types comptés, les lignes Excel sans
+correspondance et les noms UI du graphe sans ligne Excel correspondante. Un catalogue absent laisse le `kind` inconnu et n'interrompt pas
+l'import du classeur. Un catalogue présent mais invalide interrompt l'import.
+
 Le dossier de sortie doit être nouveau, même s’il existe déjà vide. Les classeurs
 restent intacts. Le script lit la feuille `Component Comparison` par son nom et
 repère les colonnes par leurs en-têtes, sans supposer leur position.
@@ -20,6 +37,9 @@ symboles. Ce périmètre technique ne constitue pas une qualification de composa
 métier. Aucun propriétaire, statut actif, niveau RGAA ou résultat d’audit n’est
 inventé. Le YAML historique suffit à décrire ces identités et présences ; aucun
 catalogue courant `--catalogue` ni fichier d’identités séparé n’est nécessaire.
+Lorsque le graphe est fourni, les vues simplifiées du dashboard affichent le
+`kind` importé ; les valeurs sans correspondance restent vides et ne sont pas
+classées comme UI.
 
 Le nom précédant `_component_comparison.xlsx` devient le champ `repository`.
 Pour utiliser les noms réels des dépôts du RAW, fournir un fichier JSON local :
