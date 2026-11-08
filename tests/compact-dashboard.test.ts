@@ -72,6 +72,7 @@ describe('synthèse compacte et cohortes', () => {
     const snapshot = consolidationSnapshot();
     const data = snapshot.normalizedData;
     const base = data.components[0]!;
+    base.kind = 'ui';
     data.components = Array.from({ length: 4 }, (_, index) => ({
       ...base,
       componentId: 'c' + index,

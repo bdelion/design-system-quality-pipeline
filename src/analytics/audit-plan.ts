@@ -2,6 +2,7 @@ import type { Issue, NormalizedData } from '../domain/types.js';
 import { latestAuditVersions, compareAuditVersions } from '../domain/audit-tracking.js';
 import { isCompletedAudit, currentProjectStatus } from '../domain/business.js';
 import { auditChildAnomalies } from './audit-evidence.js';
+import { auditComponentPopulation } from './audit-components.js';
 import type { SimpleTable, SimpleRow } from './simplified-dashboard.js';
 
 /** Date le traitement confirmé depuis les transitions et les PR ; une date manquante reste inconnue. */
@@ -23,6 +24,7 @@ function treatmentDate(issue: Issue, data: NormalizedData): number | null {
 export function auditPlanTable(data: NormalizedData): SimpleTable {
   const rows: SimpleRow[] = [];
   const missing: string[] = [];
+  const unclassified: string[] = [];
   const latest = latestAuditVersions(data);
   const issues = new Map((data.issues ?? []).map((issue) => [issue.issueId, issue]));
   for (const library of data.libraries) {
@@ -36,8 +38,13 @@ export function auditPlanTable(data: NormalizedData): SimpleTable {
       missing.push(library.repository + ' ' + number);
       continue;
     }
-    for (const relation of data.componentVersions ?? []) {
-      if (relation.versionId !== version.versionId) continue;
+    const latestRelations = (data.componentVersions ?? []).filter(
+      (relation) => relation.versionId === version.versionId
+    );
+    const population = auditComponentPopulation(data, latestRelations);
+    if (population.unclassified.length)
+      unclassified.push(`${library.repository}: ${population.unclassified.length}`);
+    for (const relation of population.ui) {
       const component = data.components.find((c) => c.componentId === relation.componentId);
       const audits = data.audits.filter(
         (a) =>
@@ -108,6 +115,9 @@ export function auditPlanTable(data: NormalizedData): SimpleTable {
       'Catalogue de la dernière version publiée ou explicitement en développement. Motifs cumulables dans le périmètre suivi. Un audit en cours reste visible et ne vaut pas un audit terminé ; les inconnues sont signalées.' +
       (missing.length
         ? ' Catalogue latest indisponible : ' + missing.join(', ') + ' ; besoins impossibles à dénombrer.'
+        : '') +
+      (unclassified.length
+        ? ` Kind inconnu pour ${unclassified.join(', ')} relation(s) : ces composants restent non classifiés et hors du calcul UI.`
         : ''),
     headers: ['Librairie', 'Version', 'Composant', 'Motifs', 'Audits déjà planifiés ou en cours', 'Réserves'],
     rows

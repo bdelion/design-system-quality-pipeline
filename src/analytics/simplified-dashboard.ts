@@ -2,6 +2,7 @@ import { componentActivityTable } from './component-activity.js';
 import { auditTrackingData, latestAuditVersions, compareAuditVersions } from '../domain/audit-tracking.js';
 import { applyComponentVersionVerdicts } from './component-versions.js';
 import { auditPlanTable } from './audit-plan.js';
+import { auditComponentPopulation } from './audit-components.js';
 import type { NormalizedData } from '../domain/types.js';
 import type { Snapshot } from '../domain/types.js';
 import { auditProgress, currentProjectStatus } from '../domain/business.js';
@@ -384,7 +385,7 @@ export function simplifiedModel(snapshot: Snapshot) {
     id: 'campaigns',
     title: 'Audits et composants par version',
     description:
-      'En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
+      'Périmètre des composants et ratios : composants kind ui uniquement. Les composants sans kind restent non classifiés et sont exclus des populations UI ; leurs effectifs sont signalés dans les notes. En attente : audits non démarrés et Project Blocked. Conformes/non conformes : verdicts cumulés calculés par le pipeline. Le ratio sur les audits terminés ne prend que les composants conformes effectivement audités sur cette version ; le ratio sur tous les composants UI conserve l’héritage. Les ratios sont indisponibles si leur dénominateur est nul ou inconnu.',
     headers: [
       'Librairie',
       'Version',
@@ -474,12 +475,27 @@ function campaignRows(data: NormalizedData): SimpleRow[] {
   ]);
   for (const key of keys) {
     const [libraryId, version] = JSON.parse(key) as [string, string];
-    const audits = data.audits.filter(
+    const campaignAudits = data.audits.filter(
       (audit) =>
         audit.libraryId === libraryId &&
         audit.version === version &&
         issueMap.get(audit.issueId)?.issueType !== 'EPIC'
     );
+    const versionIds = (data.versions ?? [])
+      .filter((item) => item.libraryId === libraryId && item.number === version)
+      .map((item) => item.versionId);
+    const allRelations = [
+      ...new Map(
+        (data.componentVersions ?? [])
+          .filter((item) => versionIds.includes(item.versionId))
+          .map((item) => [item.componentId, item])
+      ).values()
+    ];
+    const population = auditComponentPopulation(data, allRelations);
+    const relations = population.ui;
+    const uiComponentIds = new Set(relations.map((relation) => relation.componentId));
+    const audits = campaignAudits.filter((audit) => uiComponentIds.has(audit.componentId));
+    const excludedAudits = campaignAudits.length - audits.length;
     /** Sélectionne les audits selon leur progression déjà normalisée. */
     const unknown = audits.filter((audit) => {
       const source = issueMap.get(audit.issueId);
@@ -497,16 +513,6 @@ function campaignRows(data: NormalizedData): SimpleRow[] {
         .get(audit.issueId)
         ?.projectContexts.some((context) => currentProjectStatus(context) === 'BLOCKED')
     );
-    const versionIds = (data.versions ?? [])
-      .filter((item) => item.libraryId === libraryId && item.number === version)
-      .map((item) => item.versionId);
-    const relations = [
-      ...new Map(
-        (data.componentVersions ?? [])
-          .filter((item) => versionIds.includes(item.versionId))
-          .map((item) => [item.componentId, item])
-      ).values()
-    ];
     const auditIds = new Set(audits.map((audit) => audit.auditId));
     const improvements = [
       ...new Set(
@@ -592,9 +598,9 @@ function campaignRows(data: NormalizedData): SimpleRow[] {
         cell(repo(libraryId), allAuditRefs),
         cell(version, allAuditRefs),
         {
-          ...cell(relations.length ? relations.length : null, allAuditRefs),
+          ...cell(allRelations.length ? relations.length : null, allAuditRefs),
           note:
-            'Catalogue : composants distincts, pas des issues d’audit. ' +
+            `Exclus (non-UI/sans kind/audits) : ${population.nonUi.length}/${population.unclassified.length}/${excludedAudits}. ` +
             (relations.length
               ? `Réconciliation : ${Number(conform.value)} conformes + ${Number(nonConform.value)} non conformes + ${Number(verdict('NON_COUVERT').value)} non couverts = ${relations.length}. `
               : '') +
