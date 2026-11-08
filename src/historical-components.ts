@@ -18,7 +18,7 @@ export interface HistoricalComponentCatalogue {
   schemaVersion: 1;
   repository: string;
   versions: { version: string; channel: 'release' | 'development'; sourceLabel: string }[];
-  components: { name: string; history: HistoricalComponentObservation[] }[];
+  components: { name: string; history: HistoricalComponentObservation[]; kind?: string }[];
 }
 
 /** Reconnaît un objet non nul pour contrôler un fichier externe sans conversion implicite. */
@@ -189,7 +189,11 @@ export function validateHistoricalComponents(value: unknown): HistoricalComponen
       });
       previous = checked;
     }
-    components.push({ name: component.name, history });
+    components.push({
+      name: component.name,
+      history,
+      ...(typeof component.kind === 'string' && component.kind.trim() ? { kind: component.kind } : {})
+    });
   }
   return { schemaVersion: 1, repository: value.repository, versions, components };
 }
@@ -239,6 +243,7 @@ export function anonymizeHistoricalComponents(
     })),
     components: history.components.map((c) => ({
       name: componentName(c.name),
+      ...(c.kind ? { kind: c.kind } : {}),
       history: c.history.map((h) => ({
         ...h,
         identity: h.identity ? identity(h.identity) : null,

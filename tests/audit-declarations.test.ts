@@ -30,6 +30,7 @@ it('distingue les enfants BUG RGAA déclarés des inférences, de la documentati
     'Composant de l’anomalie différent de celui de l’audit'
   );
   const snapshot = consolidationSnapshot();
+  data.components.forEach((component) => (component.kind = 'ui'));
   snapshot.rawData = raw;
   snapshot.normalizedData = data;
   const row = simplifiedModel(snapshot).campaigns.find((campaign) => campaign.version === '1.0.0')!;

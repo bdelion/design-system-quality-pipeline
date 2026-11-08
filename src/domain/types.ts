@@ -195,6 +195,8 @@ export interface Library {
 export interface Component {
   componentId: string;
   name: string;
+  /** Type technique issu d’un catalogue de graphe de dépendances ; absent si non rapproché. */
+  kind?: string;
   libraryId: string;
   status: 'active' | 'deprecated' | 'experimental' | 'removed' | 'unknown';
   aliases: string[];

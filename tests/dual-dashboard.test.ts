@@ -48,13 +48,14 @@ describe('deux présentations du même snapshot', () => {
 it('sépare les audits des composants et conserve les versions sans catalogue', () => {
   const snapshot = consolidationSnapshot();
   const data = snapshot.normalizedData;
+  data.components.forEach((component) => (component.kind = 'ui'));
   const first = data.audits[0]!;
   data.audits.push({ ...first, auditId: 'second-audit-same-component' });
   delete data.componentVersions;
   const model = simplifiedModel(snapshot);
   const campaign = model.campaigns.find((row) => row.version === first.version)!;
   expect(campaign.cells[8]?.value).toBeNull();
-  expect(campaign.cells[6]?.value).toBeGreaterThanOrEqual(2);
+  expect(campaign.cells[6]?.value).toBe(2);
 });
 
 it('exclut les dates inversées et les URL exécutables sans remplacer leur absence par zéro', () => {
@@ -78,6 +79,7 @@ it('surveille séparément les nouvelles pages sans augmenter les références c
   };
   const snapshot = benchmarkSnapshot('control', 81);
   expect(digest(JSON.stringify(snapshot))).toBe(baseline.fixtureHash);
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const output = await mkdtemp(join(tmpdir(), 'dsq-simple-budget-'));
   try {
     await generateDashboard(snapshot, output);

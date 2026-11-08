@@ -144,7 +144,9 @@ async function capture(): Promise<{ raw: RawDataset; config: Awaited<ReturnType<
 
 it('attribue ancien Table à RMCTable, sans transfert vers le nouveau Table ; Tag hérite en develop', async () => {
   const { raw, config } = await capture();
-  const normalized = normalizeGithub(raw, config.github, undefined, undefined, undefined, [history()]);
+  const historical = history();
+  historical.components.find((component) => component.name === 'Tag')!.kind = 'ui';
+  const normalized = normalizeGithub(raw, config.github, undefined, undefined, undefined, [historical]);
   applyComponentVersionVerdicts(normalized);
   const old = normalized.components.find((c) => c.name === 'RMCTable')!;
   const current = normalized.components.find((c) => c.name === 'Table')!;
@@ -164,6 +166,7 @@ it('attribue ancien Table à RMCTable, sans transfert vers le nouveau Table ; Ta
   expect(development).toMatchObject({ channel: 'development' });
   expect(development.prodTag).toBeUndefined();
   const tag = normalized.components.find((c) => c.name === 'Tag')!;
+  expect(tag.kind).toBe('ui');
   expect(
     evaluateDataQuality(raw, normalized, config.github).find((q) => q.ruleId === 'DQ-015')?.message
   ).toContain('3 composant(s)');

@@ -20,6 +20,7 @@ function evidence(value: SimpleCell['value'], issues: Issue[], note?: string): S
 /** Liste les issues et cohortes par composant ; l’ancienneté compte les jours civils à Paris au snapshot. */
 export function componentActivityTable(snapshot: Snapshot): SimpleTable {
   const data = snapshot.normalizedData;
+  const hasKinds = data.components.some((component) => component.kind !== undefined);
   const facts = new Map(projectIssueFacts(data, snapshot.dataQuality.issues).map((fact) => [fact.id, fact]));
   const rows: SimpleRow[] = [];
   for (const library of data.libraries) {
@@ -105,7 +106,16 @@ export function componentActivityTable(snapshot: Snapshot): SimpleTable {
             bucket('unknown'),
             'Statut Project absent, inconnu ou contradictoire ; aucune déduction depuis Closed.'
           ),
-          evidence(known ? measured.length : null, measured, note)
+          evidence(known ? measured.length : null, measured, note),
+          ...(hasKinds
+            ? [
+                evidence(
+                  component.kind ?? null,
+                  selected,
+                  'Kind issu du catalogue de graphe ; absent si aucun rapprochement exact.'
+                )
+              ]
+            : [])
         ]
       });
     }
@@ -127,7 +137,8 @@ export function componentActivityTable(snapshot: Snapshot): SimpleTable {
       'P90 (j)',
       'Plus ancienne issue ouverte',
       'Statuts inconnus',
-      'Délais mesurables'
+      'Délais mesurables',
+      ...(hasKinds ? ['Kind'] : [])
     ],
     rows
   };

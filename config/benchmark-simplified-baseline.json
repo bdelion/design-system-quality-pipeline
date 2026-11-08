@@ -14,8 +14,8 @@
     },
     {
       "page": "simplified/index.html",
-      "htmlBytes": 68972,
-      "jsonBytes": 65873,
+      "htmlBytes": 70855,
+      "jsonBytes": 67756,
       "initialTableRows": 0,
       "domNodes": 1570,
       "renderedTableRows": 24
@@ -94,7 +94,7 @@
   },
   "auditTrackingMeasurement": {
     "date": "2026-10-28",
-    "scope": "Issues #132-134 : bornes, latest et planification ; fixture control/81 inchangee, budgets classiques inchanges, croissance hors fonctionnalites a 0 %.",
+    "scope": "Issues #132-134 et suivi kind UI : p�rim�tre et d�nominateurs du dashboard simplifi�, avec signalement compact des exclusions. Fixture control/81 inchang�e ; hausse de taille li�e aux indicateurs de classification.",
     "previous": {
       "page": "simplified/index.html",
       "htmlBytes": 61273,
@@ -105,8 +105,8 @@
     },
     "measured": {
       "page": "simplified/index.html",
-      "htmlBytes": 68972,
-      "jsonBytes": 65873,
+      "htmlBytes": 70855,
+      "jsonBytes": 67756,
       "initialTableRows": 0,
       "domNodes": 1570,
       "renderedTableRows": 24
