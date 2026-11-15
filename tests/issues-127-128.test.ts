@@ -7,6 +7,7 @@ import { applyAuditDeclarations } from '../src/domain/audit-declarations.js';
 
 it('#127 : le ratio utilise les audits terminés et distingue résultats directs et hérités', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const data = snapshot.normalizedData;
   const inherited = data.componentVersions!.find(
     (relation) =>
@@ -27,6 +28,7 @@ it('#127 : le ratio utilise les audits terminés et distingue résultats directs
 
 it('#128 : réconcilie restant, réalisé, annulé et inconnu sans transformer les inconnus en zéro conforme', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const data = snapshot.normalizedData;
   applyIssueReviews(data, snapshot.rawData, rules);
   const original = data.issues!.find((issue) => issue.issueId === 'anomaly-a')!;
@@ -53,6 +55,7 @@ it('#128 : réconcilie restant, réalisé, annulé et inconnu sans transformer l
 
 it('#127/#128 : exclut une anomalie non enfant de l’audit et répartit uniquement les enfants explicites', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const data = snapshot.normalizedData;
   const source = data.anomalies.find((anomaly) => anomaly.issueId === 'anomaly-a')!;
   const unrelated = data.issues!.find((issue) => issue.issueId === 'bug-generic')!;

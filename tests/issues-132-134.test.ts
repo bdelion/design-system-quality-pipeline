@@ -28,6 +28,7 @@ it('#132 : compare SemVer et refuse une configuration ambiguë', () => {
 
 it('#132 : borne inclusive, dépôts absents exclus et activité conservée', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   snapshot.normalizedData.auditTracking = { 'acme/ds-react': '2.0.0' };
   const before = structuredClone(snapshot);
   const model = simplifiedModel(snapshot);
@@ -52,6 +53,7 @@ it('#132 : borne inclusive, dépôts absents exclus et activité conservée', ()
 
 it('#133 : agrège les audits sans multiplier le catalogue latest et conserve les preuves', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   snapshot.normalizedData.auditTracking = { 'acme/ds-react': '1.0.0' };
   const table = simplifiedModel(snapshot).tables.find((item) => item.id === 'campaigns')!;
   expect(table.latestRows).toHaveLength(1);
@@ -68,6 +70,7 @@ it('#133 : agrège les audits sans multiplier le catalogue latest et conserve le
 it('#133 : latest retient une publication prouvée ou le développement explicite et exclut les audits futurs du cumul', () => {
   const snapshot = consolidationSnapshot();
   const data = snapshot.normalizedData;
+  data.components.forEach((component) => (component.kind = 'ui'));
   data.auditTracking = { 'acme/ds-react': '1.0.0' };
   const development = data.versions!.find((version) => version.number === '2.0.0')!;
   delete development.prodTag;
@@ -100,6 +103,7 @@ it('#133 : latest retient une publication prouvée ou le développement explicit
 
 it('#134 : distingue absence d’audit terminé et évolution explicite, sans inventer une évolution', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   snapshot.normalizedData.auditTracking = { 'acme/ds-react': '1.0.0' };
   const version = snapshot.normalizedData.versions!.find((v) => v.number === '2.0.0')!;
   version.channel = 'development';
@@ -162,6 +166,7 @@ it('#133 : cumule les anomalies de deux versions et conserve une partition exact
 it('#134 : demande un réaudit après correction ou annulation, mais sépare inconnues et audit ultérieur', () => {
   const snapshot = consolidationSnapshot();
   const data = snapshot.normalizedData;
+  data.components.forEach((component) => (component.kind = 'ui'));
   data.auditTracking = { 'acme/ds-react': '1.0.0' };
   applyIssueReviews(data, snapshot.rawData, rules);
   const audit = data.audits.find((a) => a.issueId === 'audit-a')!;
@@ -185,4 +190,68 @@ it('#134 : demande un réaudit après correction ou annulation, mais sépare inc
   expect(reasons()).toContain('réaudit requis');
   issue.projectContexts = [];
   expect(reasons()).not.toContain('réaudit requis');
+});
+
+it('#134 : limite la liste et les ratios aux kind ui et réserve les classifications inconnues', () => {
+  const snapshot = consolidationSnapshot();
+  const data = snapshot.normalizedData;
+  data.auditTracking = { 'acme/ds-react': '1.0.0' };
+  const latest = data.versions!.find((version) => version.number === '2.0.0')!;
+  latest.channel = 'development';
+  const [ui, nonUi] = data.components;
+  ui!.kind = 'ui';
+  nonUi!.kind = 'value';
+  const latestRelations = data.componentVersions!.filter(
+    (relation) => relation.versionId === latest.versionId
+  );
+  const uiRelation = latestRelations.find((relation) => relation.componentId === ui!.componentId)!;
+  const nonUiRelation = latestRelations.find((relation) => relation.componentId === nonUi!.componentId)!;
+  uiRelation.change = 'modified';
+  nonUiRelation.change = 'modified';
+  const unknown = { ...nonUi!, componentId: 'component-unclassified', name: 'Unclassified' };
+  delete unknown.kind;
+  data.components.push(unknown);
+  data.componentVersions!.push({
+    ...nonUiRelation,
+    componentVersionId: 'component-version-unclassified',
+    componentId: unknown.componentId,
+    change: 'modified'
+  });
+
+  const model = simplifiedModel(snapshot);
+  const plan = model.tables.find((table) => table.id === 'audit-plan')!;
+  expect(plan.rows.map((row) => row.cells[2]?.value)).toEqual([ui!.name]);
+  expect(plan.description).toContain('1 relation(s)');
+  const campaign = model.tables
+    .find((table) => table.id === 'campaigns')!
+    .rows.find((row) => row.version === '2.0.0')!;
+  expect(campaign.cells[2]?.value).toBe(1);
+  expect(campaign.cells[2]?.note).toContain('Exclus (non-UI/sans kind/audits) : 1/1/0');
+  expect(campaign.cells[7]?.note).toContain('dénominateur : 1');
+});
+
+it('conserve un audit UI en cours même sans relation de version et avec un autre statut inconnu', () => {
+  const snapshot = consolidationSnapshot();
+  const data = snapshot.normalizedData;
+  const ui = data.components[0]!;
+  ui.kind = 'ui';
+  const version = data.versions!.find((item) => item.number === '2.0.0')!;
+  const audit = data.audits.find((item) => item.issueId === 'audit-ongoing')!;
+  audit.componentId = ui.componentId;
+  audit.version = version.number;
+  audit.versionId = version.versionId;
+  data.componentVersions = data.componentVersions!.filter(
+    (relation) => !(relation.componentId === ui.componentId && relation.versionId === version.versionId)
+  );
+  const issue = data.issues!.find((item) => item.issueId === audit.issueId)!;
+  const unknownContext = structuredClone(issue.projectContexts[0]!);
+  unknownContext.projectId = 'unknown-project';
+  unknownContext.statusHistory = [];
+  delete unknownContext.status;
+  issue.projectContexts.push(unknownContext);
+
+  const campaign = simplifiedModel(snapshot).campaigns.find((row) => row.version === version.number)!;
+  expect(campaign.cells[3]?.value).toBe(2);
+  expect(campaign.cells[5]?.value).toBe(1);
+  expect(campaign.cells[16]?.value).toBe(0);
 });

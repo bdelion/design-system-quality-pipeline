@@ -11,6 +11,7 @@ test('#132–#134 : bornes, latest indépendant, preuves, CSV et besoins d’aud
   page
 }) => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   snapshot.normalizedData.auditTracking = { 'acme/ds-react': '1.0.0' };
   const future = { ...snapshot.normalizedData.versions![0]!, number: '3.0.0', versionId: 'future' };
   delete future.prodTag;

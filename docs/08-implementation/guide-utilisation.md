@@ -2,6 +2,8 @@
 
 Ce guide est le point d’entrée pour utiliser la CLI depuis la racine du projet. Il décrit le comportement implémenté ; les détails techniques restent dans [Datasets autonomes](datasets.md).
 
+Si vous cherchez seulement les étapes à suivre, commencez par le [guide des parcours simples](parcours-simples.md). Cette page-ci sert de référence détaillée des commandes et options.
+
 | Je veux…                                                      | Parcours                                                                                                                 |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Essayer sans GitHub                                           | [Installer](#1-installer-et-vérifier-le-projet), puis [ouvrir la démonstration](#2-voir-la-démonstration)                |
@@ -107,6 +109,12 @@ Pour créer un **jeu anonymisé complet et à jour**, suivre la collecte de la s
 Un serveur déjà démarré continue de servir son dossier initial. Pour consulter une autre sortie, arrêter avec Ctrl+C et relancer `dashboard:serve` avec son dossier `dashboard`. Le serveur ne génère ni ne recollecte rien ; recharger le navigateur après génération.
 
 ## 8. Enrichir un jeu avec un catalogue ou un historique
+
+Pour identifier les sources lues à chaque étape, consulter
+[Catalogues de composants : collecte, anonymisation et rejeu](catalogues-et-commandes.md).
+
+Pour générer les référentiels depuis des fichiers `*_component_comparison.xlsx`,
+voir [`components:import` et ses options](import-comparaisons-excel.md).
 
 ### Compléter le catalogue métier courant
 

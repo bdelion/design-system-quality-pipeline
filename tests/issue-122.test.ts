@@ -5,6 +5,7 @@ import { consolidationSnapshot } from './support/consolidation.js';
 
 it('issue #122 : les cumuls ne listent que leurs audits applicables, même avec héritage', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const data = snapshot.normalizedData;
   const proof = data.audits.find((audit) => audit.issueId === 'audit-a')!;
   const inheritedVersion = data.versions!.find((version) => version.number === '2.0.0')!;

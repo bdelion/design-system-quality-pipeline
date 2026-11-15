@@ -35,6 +35,7 @@ describe('synthèse compacte et cohortes', () => {
     const snapshot = consolidationSnapshot();
     const template = snapshot.normalizedData.issues![0]!;
     const component = snapshot.normalizedData.components[0]!;
+    component.kind = 'ui';
     snapshot.normalizedData.issues = [
       issueFrom(template, 'i1', 'DONE', 2),
       issueFrom(template, 'i2', 'DONE', 4),
@@ -56,6 +57,7 @@ describe('synthèse compacte et cohortes', () => {
     expect(row.cells[9]?.refs).toEqual(['i4']);
     expect(row.cells[10]?.value).toBe(1);
     expect(row.cells[11]?.value).toBe(3);
+    expect(row.cells[12]?.value).toBe('ui');
     expect(row.cells[6]?.refs).toEqual(['i1', 'i2', 'i3']);
   });
 
@@ -70,6 +72,7 @@ describe('synthèse compacte et cohortes', () => {
     const snapshot = consolidationSnapshot();
     const data = snapshot.normalizedData;
     const base = data.components[0]!;
+    base.kind = 'ui';
     data.components = Array.from({ length: 4 }, (_, index) => ({
       ...base,
       componentId: 'c' + index,
@@ -112,6 +115,16 @@ describe('synthèse compacte et cohortes', () => {
     expect(
       simplifiedModel(snapshot).campaigns.find((item) => item.version === '2.0.0')?.cells[7]?.value
     ).toBeNull();
+  });
+
+  it('restitue le kind importé dans la table simplifiée des composants', () => {
+    const snapshot = consolidationSnapshot();
+    const component = snapshot.normalizedData.components[0]!;
+    component.kind = 'ui';
+    const table = simplifiedModel(snapshot).tables.find((item) => item.id === 'components')!;
+    const row = table.rows.find((item) => item.reviewKey === component.componentId)!;
+    expect(table.headers.at(-1)).toBe('Kind');
+    expect(row.cells.at(-1)?.value).toBe('ui');
   });
   it('préserve les liens de compteurs Enterprise et tous les états d’un total', () => {
     const snapshot = consolidationSnapshot();

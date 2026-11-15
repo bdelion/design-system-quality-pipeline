@@ -262,6 +262,9 @@ export function normalizeGithub(
             historicalComponentsById.set(componentId, {
               componentId,
               name,
+              ...(localHistory?.components.find((item) => item.name === name)?.kind
+                ? { kind: localHistory.components.find((item) => item.name === name)!.kind }
+                : {}),
               libraryId: library.libraryId,
               status: 'unknown',
               aliases: [],
@@ -324,6 +327,7 @@ export function normalizeGithub(
             componentId,
             libraryId: library.libraryId,
             name: component.name,
+            ...(component.kind ? { kind: component.kind } : {}),
             status: latest?.present && latest.identity === observation.identity ? 'active' : 'removed',
             aliases: [
               ...new Set(
@@ -912,6 +916,7 @@ function mergeComponents(
       previous?.provenance.sourceId?.startsWith('local-history:')
         ? {
             ...component,
+            ...(previous.kind && !component.kind ? { kind: previous.kind } : {}),
             status: previous.status,
             aliases: previous.aliases,
             provenance: previous.provenance

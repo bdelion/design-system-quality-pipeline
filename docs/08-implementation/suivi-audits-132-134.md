@@ -62,6 +62,21 @@ motifs observés : aucun audit terminé dans le périmètre suivi, évolution ex
 (`added`, `modified`, `renamed`) dans la version en développement, ou retours du
 dernier audit applicable tous traités après ce dernier audit terminé.
 
+**IMPLÉMENTÉ le 8 novembre 2026 :** la population d’audit et les dénominateurs
+des tableaux simplifiés retiennent uniquement les relations latest dont le
+composant possède `kind: ui`, rapproché exactement par `Public Names` / `name`.
+Les audits des composants classés UI restent comptés par version même si la
+relation de ce composant au catalogue versionné manque ; seuls les
+dénominateurs de composants s’appuient sur les relations UI présentes dans
+cette version. Les audits associés à des composants classés non-UI ou sans
+`kind` sont exclus des compteurs UI. Un audit reste « en cours » dès qu’un de
+ses contextes projet porte un statut reconnu comme actif, même si un autre
+contexte est inconnu. Les relations sans `kind` restent comptées comme
+non classifiées et leurs effectifs figurent dans les réserves ; elles ne sont
+jamais assimilées à des composants non-UI. Dans l’exemple Excel/JSON fourni,
+83 noms publics UI correspondent exactement et forment la population UI
+importable ; les noms UI sans ligne Excel restent signalés séparément.
+
 Le traitement exige une correction confirmée ou une annulation Project. Les dates
 de transition et de fusion sont utilisées ; la clôture est un repli si la
 transition manque. Un audit terminé après les traitements évite une relance
@@ -81,7 +96,9 @@ Les verdicts sont 11 conformes, 17 non conformes et 48 non couverts. Pour la
 criticité Majeure : 34 anomalies distinctes, 29 à faire, 5 réalisées, aucune
 annulée ou inconnue, soit 5/34 = 14,7 % traités, conformément à l’exemple de #133.
 
-La liste à auditer contient 75 composants distincts : 48 sans audit terminé dans
+Le rejeu de référence ci-dessous précède le filtrage par `kind` et conserve le
+périmètre historique complet ; ses compteurs de liste ne sont pas comparables au
+suivi UI filtré. La liste à auditer contient alors 75 composants distincts : 48 sans audit terminé dans
 le périmètre, 72 avec évolution explicitement renseignée en développement et
 1 avec retours tous traités nécessitant un réaudit. Les motifs se recoupent :
 leurs nombres ne s’additionnent pas. Aucun de ces 75 composants n’est présent

@@ -6,6 +6,7 @@ import { consolidationRaw, consolidationSnapshot, rules, rawIssue } from './supp
 
 it('#130 : les répartitions ciblent les labels métier sans reprendre Grooming ni la milestone enfant', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const child = snapshot.normalizedData.issues!.find((issue) => issue.issueId === 'anomaly-a')!;
   child.labels.push('Grooming');
   child.labels = child.labels.map((label) => (label === 'rgaa:major' ? 'rgaa:Major' : label));
@@ -29,6 +30,7 @@ it('#130 : les répartitions ciblent les labels métier sans reprendre Grooming 
 
 it('#130 : un Project peut sélectionner les parents de la version sans imposer Done aux enfants', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const model = simplifiedModel(snapshot);
   applyReviewLinks(snapshot, model.tables, rules, {
     url: 'https://github.com/orgs/acme/projects/1/views/1',
@@ -44,6 +46,7 @@ it('#130 : un Project peut sélectionner les parents de la version sans imposer 
 
 it('#130 : les campagnes ne reprennent pas un label commun sans rôle dans la reconnaissance des audits', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   for (const issue of snapshot.normalizedData.issues!) {
     delete issue.rawIssueType;
     issue.labels.push('Préparation');
@@ -59,6 +62,7 @@ it('#130 : les campagnes ne reprennent pas un label commun sans rôle dans la re
 
 it('#126/#127 : liens de périmètre avec préfixe, Closed, Project Done et milestones sources', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   const model = simplifiedModel(snapshot);
   applyReviewLinks(snapshot, model.tables, rules, {
     url: 'https://github.com/orgs/acme/projects/1/views/1',
@@ -102,6 +106,7 @@ it('#127 : ne spécialise pas une EPIC en audit, même si une stratégie la reco
 
 it('#126 : ne reconstruit pas de lien depuis des URL anonymisées', () => {
   const snapshot = consolidationSnapshot();
+  snapshot.normalizedData.components.forEach((component) => (component.kind = 'ui'));
   for (const issue of snapshot.normalizedData.issues!)
     issue.url = issue.url.replace('github.com', 'example.invalid');
   const model = simplifiedModel(snapshot);
