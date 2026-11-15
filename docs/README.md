@@ -56,20 +56,22 @@ Le registre n'a pas vocation à remplacer les documents métier thématiques : i
 
 Pour exécuter la CLI, commencer par le **[guide d’utilisation : commandes, fichiers et recettes](08-implementation/guide-utilisation.md)**. Il regroupe le parcours GitHub à jour, le rejeu local privé, l’anonymisation et les enrichissements ; les documents ci-dessous approfondissent les contrats.
 
-| Besoin                                  | Document                                   |
-| --------------------------------------- | ------------------------------------------ |
-| Comprendre le projet                    | `00-cadrage/vision.md`                     |
-| Comprendre le périmètre                 | `00-cadrage/perimetre.md`                  |
-| Consulter les décisions et questions    | `00-cadrage/questions-ouvertes.md`         |
-| Comprendre les objets métier            | `01-metier/modele-metier.md`               |
-| Comprendre le workflow                  | `02-workflow/README.md`                    |
-| Connaître les règles                    | `03-regles/README.md`                      |
-| Connaître les indicateurs               | `04-indicateurs/catalogue-indicateurs.md`  |
-| Comprendre les données                  | `05-donnees/architecture-donnees.md`       |
-| Comprendre l'architecture logicielle    | `06-architecture/architecture.md`          |
-| Comprendre les décisions d'architecture | `07-decisions/README.md`                   |
-| Développer                              | `08-implementation/guide-developpement.md` |
-| Préparer une présentation               | `../presentation/README.md`                |
+| Besoin                                                                  | Document                                     |
+| ----------------------------------------------------------------------- | -------------------------------------------- |
+| Suivre un parcours simple jusqu’au dashboard                            | `08-implementation/parcours-simples.md`      |
+| Enchaîner configuration, catalogues et dashboards pour trois librairies | `08-implementation/workflow-3-librairies.md` |
+| Comprendre le projet                                                    | `00-cadrage/vision.md`                       |
+| Comprendre le périmètre                                                 | `00-cadrage/perimetre.md`                    |
+| Consulter les décisions et questions                                    | `00-cadrage/questions-ouvertes.md`           |
+| Comprendre les objets métier                                            | `01-metier/modele-metier.md`                 |
+| Comprendre le workflow                                                  | `02-workflow/README.md`                      |
+| Connaître les règles                                                    | `03-regles/README.md`                        |
+| Connaître les indicateurs                                               | `04-indicateurs/catalogue-indicateurs.md`    |
+| Comprendre les données                                                  | `05-donnees/architecture-donnees.md`         |
+| Comprendre l'architecture logicielle                                    | `06-architecture/architecture.md`            |
+| Comprendre les décisions d'architecture                                 | `07-decisions/README.md`                     |
+| Développer                                                              | `08-implementation/guide-developpement.md`   |
+| Préparer une présentation                                               | `../presentation/README.md`                  |
 
 ## Rôle de `specifications/`
 

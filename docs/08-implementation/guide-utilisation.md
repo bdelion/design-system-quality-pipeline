@@ -2,6 +2,8 @@
 
 Ce guide est le point d’entrée pour utiliser la CLI depuis la racine du projet. Il décrit le comportement implémenté ; les détails techniques restent dans [Datasets autonomes](datasets.md).
 
+Si vous cherchez seulement les étapes à suivre, commencez par le [guide des parcours simples](parcours-simples.md). Cette page-ci sert de référence détaillée des commandes et options.
+
 | Je veux…                                                      | Parcours                                                                                                                 |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Essayer sans GitHub                                           | [Installer](#1-installer-et-vérifier-le-projet), puis [ouvrir la démonstration](#2-voir-la-démonstration)                |
