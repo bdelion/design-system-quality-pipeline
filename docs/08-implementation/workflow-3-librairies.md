@@ -34,9 +34,21 @@ Avant la collecte, vérifiez dans chacun des trois repositories que ce fichier e
 
 Cette preuve contient les noms observés dans le catalogue publié ; elle ne télécharge pas le YAML complet ni ses métadonnées métier. Si vous avez aussi besoin du catalogue métier courant (équipe, statut, niveau RGAA, etc.), il s’agit d’un fichier différent : partez du brouillon créé à côté du RAW à l’étape 4, faites vérifier ses valeurs, puis fournissez-le avec `--catalogue` à `fixture:prepare` à l’étape 5. N’inventez pas les champs inconnus.
 
+Ces catalogues GitHub ne contiennent pas non plus le classement technique `kind: ui` demandé par les tableaux d’audit simplifiés. Celui-ci vient du catalogue JSON du graphe de dépendances décrit à l’étape 3.
+
 ## 3. Créer l’historique des composants par version
 
 Rassemblez un export Excel `*_component_comparison.xlsx` par librairie dans `data/local/comparaisons`. Chaque fichier doit comporter la feuille `Component Comparison` et les colonnes attendues par l’importeur.
+
+Pour que les tableaux d’audit simplifiés comptent les composants UI, obtenez ou produisez aussi les catalogues JSON du graphe de dépendances, un par librairie. DSQ ne génère pas ces fichiers : `components:import` les lit et les rapproche des classeurs. Chaque fichier doit s’appeler `<préfixe-de-librairie>-component-dependency-graph.dependencies.catalog.json` et contenir `nodes`, avec pour chaque nœud son `name` et son `kind`. Pour un composant d’interface, le nom public doit correspondre exactement, casse comprise, à la colonne `Public Names` du classeur, et son type doit être `"ui"` en minuscules. Rangez ces fichiers dans `data/local/catalogues-graphe`.
+
+Exemple minimal de structure attendue dans chaque fichier JSON :
+
+```json
+{
+  "nodes": [{ "name": "Button", "kind": "ui" }]
+}
+```
 
 Les noms de fichier doivent correspondre aux repositories indiqués dans `repositories.json`. Si vos noms Excel sont différents, créez `config/local/repositories-excel.json`, par exemple :
 
@@ -48,15 +60,17 @@ Les noms de fichier doivent correspondre aux repositories indiqués dans `reposi
 }
 ```
 
-Générez les trois YAML historiques dans un dossier de sortie neuf :
+Générez les trois YAML historiques dans un dossier de sortie neuf. Cette commande associe les noms Excel aux dépôts GitHub et ajoute le classement `kind` :
 
 ```powershell
-npm.cmd run components:import -- --input data/local/comparaisons --output config/local/historiques-3-librairies --repositories config/local/repositories-excel.json
+npm.cmd run components:import -- --input data/local/comparaisons --dependency-catalogs data/local/catalogues-graphe --output config/local/historiques-3-librairies --repositories config/local/repositories-excel.json
 ```
+
+Si vous ne possédez pas de sortie de graphe, vous pouvez préparer ces petits JSON à partir d’une classification technique vérifiée. N’attribuez `kind: ui` qu’aux noms dont vous savez qu’ils sont des composants d’interface. Sinon, retirez l’option `--dependency-catalogs data/local/catalogues-graphe` : l’historique des présences sera tout de même créé, mais les composants ne seront pas classés pour les tableaux d’audit simplifiés.
 
 Les clés de `repositories-excel.json` doivent être exactement les préfixes des noms de classeurs, sans `_component_comparison.xlsx`. L’import crée un fichier `*-historique-composants.yaml` par librairie et un `rapport.json`.
 
-Ouvrez le rapport. Vérifiez que les trois librairies et toutes les versions voulues sont présentes. Examinez les lignes « à vérifier », les noms non rapprochés et les réserves. Corrigez les classeurs ou les correspondances, puis relancez dans un autre dossier de sortie. Gardez les exports, rapports et YAML locaux : ils peuvent contenir des noms réels.
+Ouvrez le rapport. Vérifiez que les trois librairies et toutes les versions voulues sont présentes. Examinez les lignes « à vérifier », les noms non rapprochés et les réserves. Vérifiez aussi dans chaque YAML généré que les composants UI ont `kind: ui`. Le rapport signale les noms UI du graphe sans ligne Excel correspondante ; un catalogue de graphe absent ou une correspondance de nom incorrecte laisse `kind` inconnu, sans bloquer l’import. Sans `kind: ui`, ces composants et leurs audits ne seront pas comptés dans les tableaux simplifiés « Audits et composants par version ». Corrigez les classeurs, graphes ou correspondances, puis relancez dans un autre dossier de sortie. Gardez les exports, rapports et YAML locaux : ils peuvent contenir des noms réels.
 
 ## 4. Collecter GitHub et générer le dashboard privé
 
@@ -89,6 +103,8 @@ npm.cmd run dashboard:serve -- data/output/3-librairies-anonymise/dashboard
 ```
 
 Si vous avez préparé un catalogue métier courant vérifié depuis le brouillon créé après la collecte, ajoutez aussi `--catalogue <chemin-vers-ce-catalogue.yaml>` à `fixture:prepare`. Sans ce fichier, les métadonnées métier absentes restent inconnues. N’ajoutez pas le fichier `audit-tracking.json` avec les noms réels au pipeline anonymisé : les bornes déjà embarquées utilisent les alias du jeu.
+
+Le champ `kind` déjà inclus dans les historiques est conservé pendant l’anonymisation. Il n’est pas nécessaire de le recopier dans le catalogue métier courant ni d’ajouter une option spéciale à `fixture:prepare` ou `pipeline`. Les tableaux simplifiés filtrent explicitement sur `kind: ui` (comportement implémenté ; voir [suivi des audits](suivi-audits-132-134.md#composants-%C3%A0-auditer--d-249)). D-249 établit les motifs des composants à auditer ; la classification `kind` provient, elle, du graphe de dépendances rapproché à l’import.
 
 La validation vérifie la structure et exécute le pipeline hors réseau ; elle ne certifie pas que chaque texte est anonyme. Avant tout partage, vérifiez le dataset et les pages HTML. Les réserves Data Quality peuvent rester visibles si les sources ou les historiques ne couvrent pas toutes les données.
 

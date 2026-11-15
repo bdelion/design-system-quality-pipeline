@@ -99,10 +99,12 @@ Demandez ou préparez un fichier `*_component_comparison.xlsx` par librairie. Pl
 Lancez l’import vers un dossier de sortie qui n’existe pas encore :
 
 ```powershell
-npm.cmd run components:import -- --input data/local/comparaisons --output config/local/historiques-v1
+npm.cmd run components:import -- --input data/local/comparaisons --dependency-catalogs data/local/catalogues-graphe --output config/local/historiques-v1
 ```
 
 Ouvrez `config/local/historiques-v1/rapport.json` et vérifiez les versions, les lignes signalées et les réserves. Le dossier contient un YAML `*-historique-composants.yaml` par librairie. Gardez les classeurs, le rapport et les YAML privés : ils peuvent contenir des noms réels et des chemins locaux.
+
+Vérifiez que les composants d’interface concernés ont `kind: ui` dans les YAML. Ces fichiers de graphe sont distincts de `config/catalogue.yaml` dans GitHub, et DSQ ne les génère pas : procurez-vous une sortie de l’outil de graphe ou préparez les JSON à partir d’une classification vérifiée. Chaque fichier doit contenir `nodes` et associer exactement le nom `Public Names` du classeur à un `kind` égal à `ui` en minuscules. Sans ce rapprochement, l’historique reste utilisable, mais ces composants et leurs audits ne sont pas comptés dans la vue simplifiée « Audits et composants par version ». Voir le [workflow détaillé des trois librairies](workflow-3-librairies.md#3-cr%C3%A9er-lhistorique-des-composants-par-version).
 
 Si le nom d’une librairie dans le classeur ne correspond pas au dépôt GitHub, créez `config/local/repositories.json` avec une correspondance, par exemple :
 
