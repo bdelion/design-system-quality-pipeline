@@ -92,7 +92,47 @@ Si vous avez préparé un catalogue métier courant vérifié depuis le brouillo
 
 La validation vérifie la structure et exécute le pipeline hors réseau ; elle ne certifie pas que chaque texte est anonyme. Avant tout partage, vérifiez le dataset et les pages HTML. Les réserves Data Quality peuvent rester visibles si les sources ou les historiques ne couvrent pas toutes les données.
 
-## Si vous actualisez les données plus tard
+## 6. Copier le jeu anonymisé sur un autre PC pour un diagnostic
+
+Transférez le **dossier de fixture complet** `datasets/3-librairies-anonymise/`. Il doit contenir les deux fichiers suivants :
+
+```text
+3-librairies-anonymise/
+  dataset.json
+  manifest.json
+```
+
+`dataset.json` contient les faits pseudonymisés, la configuration réellement appliquée, le catalogue éventuellement fourni, les bornes `audit-tracking` sous les alias anonymisés et les historiques embarqués. `manifest.json` permet de vérifier que le jeu n’a pas été altéré. Copiez le dossier entier ; ne copiez pas `dataset.json` seul et ne modifiez aucun des deux fichiers.
+
+Sur Windows, créez une archive ZIP du dossier :
+
+```powershell
+New-Item -ItemType Directory -Force data/transfer | Out-Null
+Compress-Archive -Path datasets/3-librairies-anonymise -DestinationPath data/transfer/3-librairies-anonymise.zip
+```
+
+Copiez le ZIP sur l’autre PC puis extrayez-le dans le checkout du projet :
+
+```powershell
+Expand-Archive -Path data/transfer/3-librairies-anonymise.zip -DestinationPath datasets/transfert-recu
+npm.cmd ci
+npm.cmd run fixture:validate -- --dataset datasets/transfert-recu/3-librairies-anonymise
+npm.cmd run pipeline -- --dataset datasets/transfert-recu/3-librairies-anonymise --output data/output/diagnostic-3-librairies
+```
+
+Le dossier de validation est ainsi conservé tel quel ; `pipeline` écrit les résultats dans un dossier séparé. Pour examiner le dashboard, lancez :
+
+```powershell
+npm.cmd run dashboard:serve -- data/output/diagnostic-3-librairies/dashboard
+```
+
+Joignez au jeu une courte note `attendus.md` qui indique le commit utilisé (`git rev-parse HEAD`), les commandes exécutées, la page et les filtres concernés, ce que vous attendiez, ce que vous avez observé et le message d’erreur exact s’il y en a un. Utilisez le même commit du projet sur les deux PC pour comparer les résultats.
+
+Si le problème porte sur l’affichage, vous pouvez aussi transmettre le dossier `data/output/3-librairies-anonymise/dashboard/` entier ou, de préférence, le régénérer sur le PC de diagnostic. Pour un problème de calcul, `snapshot.json` dans `data/output/3-librairies-anonymise/current/` aide à comparer les résultats ; il est facultatif puisque le pipeline peut le reconstruire depuis la fixture.
+
+Ne joignez pas le RAW, `.env`, token, graine privée, fichiers source Excel, brouillon de catalogue avec noms réels ni le dossier privé `config/local/`. La fixture anonymisée suffit pour rejouer hors réseau ; elle ne permet pas de refaire une collecte GitHub. L’anonymisation ne garantit pas que chaque texte libre est anonyme : relisez la fixture et les notes avant transfert. Pour un cas sensible, préparez et vérifiez une copie dédiée au diagnostic.
+
+## 7. Si vous actualisez les données plus tard
 
 Une nouvelle collecte doit écrire dans un nouveau RAW. Les dossiers de sortie existants ne sont pas écrasés : choisissez aussi de nouveaux noms pour les jeux et dashboards, ou archivez vos anciens résultats avant de relancer.
 

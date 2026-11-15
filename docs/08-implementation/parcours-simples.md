@@ -71,6 +71,8 @@ La préparation remplace les identités selon la graine privée enregistrée dan
 
 La fixture contient les faits collectés et les conventions de traitement. Elle ne crée pas les informations absentes. Une réserve Data Quality, un catalogue manquant ou un historique incomplet peut donc rendre certaines parties du dashboard inconnues ou partielles, même si la validation passe.
 
+Pour copier un jeu anonymisé sur un autre PC afin de reproduire un bug, transférez ensemble `dataset.json` et `manifest.json` dans le dossier de fixture. Les étapes d’archive, de validation, de rejeu et la liste des fichiers privés à exclure sont dans le [workflow de transfert et diagnostic](workflow-3-librairies.md#6-copier-le-jeu-anonymis%C3%A9-sur-un-autre-pc-pour-un-diagnostic).
+
 ## Je veux ajouter le catalogue métier courant
 
 Un catalogue courant décrit les métadonnées que vous connaissez maintenant : par exemple l’équipe ou le niveau RGAA d’un composant. Il ne raconte pas, à lui seul, quels composants existaient dans chaque ancienne version.
